@@ -27,7 +27,7 @@ QStudioMetrics is distributed under LGPLv3 license, this means that:
 - voluntary contributions are welcome.
 
 
-Copyright (C) 2016 Giuseppe Marco Randazzo gmrandazzo _AT gmail _DOT_ com
+Copyright (C) 2016 Giuseppe Marco Randazzo gmrandazzo@gmail.com
 
 To know more in details how the licens work please read the file "LICENSE" or
 go to "http://www.gnu.org/licenses/lgpl-3.0.html"
@@ -53,4 +53,4 @@ To install for all users on Unix/Linux/OSX/Windows:
 You need help? Support?
 =======================
 
-Write to: gmrandazzo _AT_ gmail _DOT_ com
+Write to: gmrandazzo@gmail.com
