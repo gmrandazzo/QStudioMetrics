@@ -1,0 +1,45 @@
+ClassModelDialog.cpp:void ClassModelDialog::ObjInvertSelection()
+ClassModelDialog.cpp:void ClassModelDialog::VarInvertSelection()
+ClassModelDialog.cpp:  connect(ui.objInvertSelectionButton, SIGNAL(clicked(bool)), SLOT(ObjInvertSelection()));
+ClassModelDialog.cpp:  connect(ui.varInvertSelectionButton, SIGNAL(clicked(bool)), SLOT(VarInvertSelection()));
+ClassPlotDialog.cpp:void ClassPlotDialog::InvertSelection()
+ClassPlotDialog.cpp:  connect(ui.invertselectionButton, SIGNAL(clicked(bool)), SLOT(InvertSelection()));
+DoPredictionDialog.cpp:void DoPredictionDialog::VarInvertSelection()
+DoPredictionDialog.cpp:void DoPredictionDialog::ObjInvertSelection()
+DoPredictionDialog.cpp:    ui.yvarInvertSelectionButton->hide();
+DoPredictionDialog.cpp:  connect(ui.objInvertSelectionButton, SIGNAL(clicked(bool)), SLOT(ObjInvertSelection()));
+DoPredictionDialog.cpp:  connect(ui.yvarInvertSelectionButton, SIGNAL(clicked(bool)), SLOT(VarInvertSelection()));
+ExportTableDialog.cpp:void ExportTableDialog::ObjInvertSelection()
+ExportTableDialog.cpp:void ExportTableDialog::VarInvertSelection()
+ExportTableDialog.cpp:  connect(ui.objinvertselectionButton, SIGNAL(clicked(bool)), SLOT(ObjInvertSelection()));
+ExportTableDialog.cpp:  connect(ui.varinvertselectionButton, SIGNAL(clicked(bool)), SLOT(VarInvertSelection()));
+ExtractDataDialog.cpp:void ExtractDataDialog::VariablesInvertSelection()
+ExtractDataDialog.cpp:void ExtractDataDialog::ObjectsInvertSelection()
+ExtractDataDialog.cpp:  connect(ui.objInvertSelectionButton, SIGNAL(clicked(bool)), SLOT(ObjectsInvertSelection()));
+ExtractDataDialog.cpp:  connect(ui.varInvertSelectionButton, SIGNAL(clicked(bool)), SLOT(VariablesInvertSelection()));
+FindCorrelationWidget.cpp:void FindCorrelationWidget::InvertSelection()
+FindCorrelationWidget.cpp:  connect(ui.invertselectionButton, SIGNAL(clicked(bool)), this, SLOT(InvertSelection()));
+ImportFromFileDialog.cpp:void ImportFromFileDialog::ObjInvertSelection()
+ImportFromFileDialog.cpp:void ImportFromFileDialog::VarInvertSelection()
+ImportFromFileDialog.cpp:  connect(ui.objinvertselectionButton, SIGNAL(clicked(bool)), SLOT(ObjInvertSelection()));
+ImportFromFileDialog.cpp:  connect(ui.varinvertselectionButton, SIGNAL(clicked(bool)), SLOT(VarInvertSelection()));
+ModelDialog.cpp:void ModelDialog::ObjInvertSelection()
+ModelDialog.cpp:void ModelDialog::XVarInvertSelection()
+ModelDialog.cpp:void ModelDialog::YVarInvertSelection()
+ModelDialog.cpp:        ui.yvarInvertSelectionButton->hide();
+ModelDialog.cpp:  connect(ui.objInvertSelectionButton, SIGNAL(clicked(bool)), SLOT(ObjInvertSelection()));
+ModelDialog.cpp:  connect(ui.xvarInvertSelectionButton, SIGNAL(clicked(bool)), SLOT(XVarInvertSelection()));
+ModelDialog.cpp:  connect(ui.yvarInvertSelectionButton, SIGNAL(clicked(bool)), SLOT(YVarInvertSelection()));
+ObjectSelectorDialog.cpp:void ObjectSelectorDialog::InvertSelection()
+ObjectSelectorDialog.cpp:  connect(ui.invertSelectionButton, SIGNAL(clicked(bool)), SLOT(InvertSelection()));
+ObjectSelectorDialog.cpp:  connect(ui.invertSelectionButton, SIGNAL(clicked(bool)), SLOT(InvertSelection()));
+ScatterPlot2D.cpp:    menu.addAction("&Invert Selection", this, SLOT(invertSelection()));
+ScatterPlot2D.cpp:    menu.addAction("&Invert Selection", this, SLOT(invertSelection()));
+ScatterPlot3D.cpp:// Invert Selected Points
+ScatterPlot3D.cpp:  connect(ui.buttonInvertSelection, SIGNAL(clicked(bool)), SLOT(invertSelection()));
+ScatterPlot3D.cpp:  connect(ui.buttonInvertSelection, SIGNAL(clicked(bool)), SLOT(invertSelection()));
+ScatterPlot3D.cpp:  connect(ui.buttonInvertSelection, SIGNAL(clicked(bool)), SLOT(invertSelection()));
+ScatterPlot3D.cpp:  connect(ui.buttonInvertSelection, SIGNAL(clicked(bool)), SLOT(invertSelection()));
+VariableSelectorDialog.cpp:void VariableSelectorDialog::InvertSelection()
+VariableSelectorDialog.cpp:  connect(ui.invertselectButton, SIGNAL(clicked(bool)), SLOT(InvertSelection()));
+VariableSelectorDialog.cpp:  connect(ui.invertselectButton, SIGNAL(clicked(bool)), SLOT(InvertSelection()));

@@ -1,0 +1,22 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource prefix="/">
+    <file>qsmlogo.png</file>
+    <file>qsmwindlogo.png</file>
+    <file>pca.png</file>
+    <file>pls.png</file>
+    <file>mlr.png</file>
+    <file>lda.png</file>
+    <file>obj.png</file>
+    <file>var.png</file>
+    <file>data.png</file>
+    <file>advanced_datapretreatment.png</file>
+    <file>merge.png</file>
+    <file>label.png</file>
+    <file>varplot.png</file>
+    <file>saveproject.png</file>
+    <file>newproject.png</file>
+    <file>openproject.png</file>
+    <file>openrecents.png</file>
+    <file>quit.png</file>
+  </qresource>
+</RCC>

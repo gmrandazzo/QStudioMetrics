@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=QStudioMetrics
+GenericName=QStudio Metrics: Make Easy Multivariate Models
+Icon=qstudiometrics
+Exec=QStudioMetrics %U
+TryExec=QStudioMetrics
+Terminal=false
+Type=Application
+Categories=Education;Science;DataVisualization;Qt

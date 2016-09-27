@@ -1,0 +1,8 @@
+
+TODO
+- FIX Extract/Merge data
+- ADD Topological analysis
+- ADD confusion matrix and cosine similarity matrix between class for LDA
+- ADD Dendogram plot for hierarchical clustering
+- ADD Cluster validation
+- ADD variable profile plot

@@ -1,0 +1,1423 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>905</width>
+    <height>694</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>QStudioMetrics</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="icons/icons.qrc">
+    <normaloff>:/qsmwindlogo.png</normaloff>:/qsmwindlogo.png</iconset>
+  </property>
+  <property name="dockNestingEnabled">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_4">
+    <item row="0" column="0" colspan="2">
+     <widget class="QMdiArea" name="mdiArea">
+      <property name="minimumSize">
+       <size>
+        <width>600</width>
+        <height>400</height>
+       </size>
+      </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+      <property name="viewMode">
+       <enum>QMdiArea::SubWindowView</enum>
+      </property>
+      <property name="documentMode">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <spacer name="horizontalSpacer_5">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>493</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="1" column="1">
+     <widget class="QFrame" name="progressframe">
+      <property name="minimumSize">
+       <size>
+        <width>207</width>
+        <height>38</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>207</width>
+        <height>38</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QProgressBar" name="progressBar">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>22</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>100</width>
+           <height>22</height>
+          </size>
+         </property>
+         <property name="value">
+          <number>24</number>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="abortButton">
+         <property name="minimumSize">
+          <size>
+           <width>74</width>
+           <height>21</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>74</width>
+           <height>21</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Abort</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>905</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <widget class="QMenu" name="menuOpen_Recents">
+     <property name="title">
+      <string>Recent Files...</string>
+     </property>
+     <property name="icon">
+      <iconset resource="icons/icons.qrc">
+       <normaloff>:/openrecents.png</normaloff>:/openrecents.png</iconset>
+     </property>
+     <addaction name="action_1"/>
+     <addaction name="action_2"/>
+     <addaction name="action_3"/>
+     <addaction name="action_4"/>
+    </widget>
+    <addaction name="actionNewProject"/>
+    <addaction name="actionOpenProject"/>
+    <addaction name="menuOpen_Recents"/>
+    <addaction name="actionSave"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
+    <addaction name="separator"/>
+    <addaction name="actionPreferences"/>
+   </widget>
+   <widget class="QMenu" name="menuModels">
+    <property name="title">
+     <string>&amp;Models</string>
+    </property>
+    <addaction name="actionPCA"/>
+    <addaction name="actionPCA_Prediction"/>
+    <addaction name="separator"/>
+    <addaction name="actionPLS"/>
+    <addaction name="actionPLS_Validator"/>
+    <addaction name="actionPLS_Prediction"/>
+    <addaction name="actionPLSVariableSelection"/>
+    <addaction name="separator"/>
+    <addaction name="actionUPCA"/>
+    <addaction name="actionUPCA_Prediction"/>
+    <addaction name="separator"/>
+    <addaction name="actionUPLS"/>
+    <addaction name="actionUPLS_Validator"/>
+    <addaction name="actionUPLS_Prediction"/>
+    <addaction name="actionUPLSVariableSelection"/>
+    <addaction name="separator"/>
+    <addaction name="actionMLR"/>
+    <addaction name="actionMLR_Validator"/>
+    <addaction name="actionMLR_Prediction"/>
+    <addaction name="separator"/>
+    <addaction name="actionLDA"/>
+    <addaction name="actionLDA_Validator"/>
+    <addaction name="actionLDA_Prediction"/>
+   </widget>
+   <widget class="QMenu" name="menuGraphs">
+    <property name="title">
+     <string>&amp;Graphs</string>
+    </property>
+    <widget class="QMenu" name="menuPlot_UPCA_Model">
+     <property name="title">
+      <string>Plot UPCA Model</string>
+     </property>
+     <widget class="QMenu" name="menu3D_Space_2">
+      <property name="title">
+       <string>3D Space</string>
+      </property>
+      <addaction name="actionUPCA3DScore_Plot"/>
+      <addaction name="actionUPCA3DLoadings_Plot"/>
+      <addaction name="separator"/>
+      <addaction name="actionUPCA3DScore_Plot_Prediction"/>
+     </widget>
+     <widget class="QMenu" name="menu2D_Space_2">
+      <property name="title">
+       <string>2D Space</string>
+      </property>
+      <addaction name="actionUPCA2DScore_Plot"/>
+      <addaction name="actionUPCA2DLoadings_Plot"/>
+      <addaction name="separator"/>
+      <addaction name="actionUPCA2DScore_Plot_Prediction"/>
+     </widget>
+     <addaction name="menu2D_Space_2"/>
+     <addaction name="menu3D_Space_2"/>
+    </widget>
+    <widget class="QMenu" name="menuVariable">
+     <property name="title">
+      <string>Plot Variable</string>
+     </property>
+     <property name="icon">
+      <iconset resource="icons/icons.qrc">
+       <normaloff>:/varplot.png</normaloff>:/varplot.png</iconset>
+     </property>
+     <addaction name="actionVariableDistribution"/>
+     <addaction name="actionVariable_vs_Variable"/>
+    </widget>
+    <widget class="QMenu" name="menuPlot_Variable_Selection">
+     <property name="title">
+      <string>Plot Variable Selection</string>
+     </property>
+     <addaction name="actionVarSel_R2Q2_Plot"/>
+     <addaction name="actionVarSel_Ftest_Nvar_Plot"/>
+     <addaction name="actionVarSel_Ftest_Q2_Plot"/>
+     <addaction name="actionModIncVar_Variables_Plot"/>
+    </widget>
+    <widget class="QMenu" name="menuPlot_UPLS_Model">
+     <property name="title">
+      <string>Plot UPLS Model</string>
+     </property>
+     <widget class="QMenu" name="menu3D_Space_4">
+      <property name="title">
+       <string>3D Space</string>
+      </property>
+      <addaction name="actionUPLS3D_ttt_Score_Plot"/>
+      <addaction name="actionUPLS3D_uuu_Score_Plot"/>
+      <addaction name="actionUPLS3D_ppp_Loadings_Plot"/>
+      <addaction name="actionUPLS3D_qqq_Loadings_Plot"/>
+      <addaction name="actionUPLS3D_www_Weights_Plot"/>
+      <addaction name="separator"/>
+      <addaction name="actionUPLS3D_ttt_Score_Plot_Prediction"/>
+     </widget>
+     <widget class="QMenu" name="menu2D_Space_4">
+      <property name="title">
+       <string>2D Space</string>
+      </property>
+      <addaction name="actionUPLS_Plot"/>
+      <addaction name="actionUPLS2D_tt_Score_Plot"/>
+      <addaction name="actionUPLS2D_uu_Score_Plot"/>
+      <addaction name="actionUPLS2D_pp_Loadings_Plot"/>
+      <addaction name="actionUPLS2D_qq_Loadings_Plot"/>
+      <addaction name="actionUPLS2D_ww_Weights_Plot"/>
+      <addaction name="separator"/>
+      <addaction name="actionUPLSRecalc_vs_Exp"/>
+      <addaction name="actionUPLSRecal_Residuals_vs_Exp"/>
+      <addaction name="separator"/>
+      <addaction name="actionUPLSR2_Q2"/>
+      <addaction name="actionUPLSPred_vs_Exp"/>
+      <addaction name="actionUPLSPred_Residuals_vs_Exp"/>
+      <addaction name="separator"/>
+      <addaction name="actionUPLS2DScore_Plot_Prediction"/>
+      <addaction name="actionUPLSRecalc_vs_Exp_with_Prediction"/>
+      <addaction name="actionUPLSPred_vs_Exp_with_Prediction"/>
+      <addaction name="actionUPLSR2_Prediction"/>
+     </widget>
+     <addaction name="menu2D_Space_4"/>
+     <addaction name="menu3D_Space_4"/>
+    </widget>
+    <widget class="QMenu" name="menuPlot_MLR">
+     <property name="title">
+      <string>Plot MLR</string>
+     </property>
+     <property name="icon">
+      <iconset resource="icons/icons.qrc">
+       <normaloff>:/mlr.png</normaloff>:/mlr.png</iconset>
+     </property>
+     <addaction name="actionMLR_Recalc_vs_Exp"/>
+     <addaction name="actionMLR_Recalc_Residuals_vs_Exp"/>
+     <addaction name="actionMLR_Beta_Coefficients"/>
+     <addaction name="separator"/>
+     <addaction name="actionMLR_Predict_vs_Exp"/>
+     <addaction name="actionMLR_Predict_Residuals_vs_Exp"/>
+     <addaction name="actionMLR_Y_Scrambling_Plot"/>
+     <addaction name="separator"/>
+     <addaction name="actionMLR_Recal_vs_Exp_and_Prediction"/>
+     <addaction name="actionMLR_Predict_vs_Exp_and_Prediction"/>
+    </widget>
+    <widget class="QMenu" name="menuPlot_PLS_Model">
+     <property name="title">
+      <string>Plot PLS Model</string>
+     </property>
+     <property name="icon">
+      <iconset resource="icons/icons.qrc">
+       <normaloff>:/pls.png</normaloff>:/pls.png</iconset>
+     </property>
+     <widget class="QMenu" name="menu3D_Space_3">
+      <property name="title">
+       <string>3D Space</string>
+      </property>
+      <addaction name="actionPLS3D_ttt_Score_Plot"/>
+      <addaction name="actionPLS3D_uuu_Score_Plot"/>
+      <addaction name="actionPLS3D_ppp_Loadings_Plot"/>
+      <addaction name="actionPLS3D_qqq_Loadings_Plot"/>
+      <addaction name="actionPLS3D_www_Weights_Plot"/>
+      <addaction name="separator"/>
+      <addaction name="actionPLS3D_ttt_Score_Plot_Prediction"/>
+      <addaction name="separator"/>
+      <addaction name="actionPLS3D_Q2_Dynamic_Sample_Validator_Plot"/>
+      <addaction name="actionPLS3D_SDEP_Dynamic_Sample_Validator_Plot"/>
+     </widget>
+     <widget class="QMenu" name="menu2D_Space_3">
+      <property name="title">
+       <string>2D Space</string>
+      </property>
+      <addaction name="actionPLS_Plot"/>
+      <addaction name="actionPLS2D_tt_Score_Plot"/>
+      <addaction name="actionPLS2D_uu_Score_Plot"/>
+      <addaction name="actionPLS2D_pp_Loadings_Plot"/>
+      <addaction name="actionPLS2D_qq_Loadings_Plot"/>
+      <addaction name="actionPLS2D_ww_Weights_Plot"/>
+      <addaction name="actionPLSBeta_Coefficients"/>
+      <addaction name="actionBetaCoeffDWPlot"/>
+      <addaction name="separator"/>
+      <addaction name="actionPLSRecalc_vs_Exp"/>
+      <addaction name="actionPLSRecalc_Residuals_vs_Exp"/>
+      <addaction name="separator"/>
+      <addaction name="actionPLSR2_Q2"/>
+      <addaction name="actionPLSPred_vs_Exp"/>
+      <addaction name="actionPLSPred_Residuals_vs_Exp"/>
+      <addaction name="actionPLSYScrambling"/>
+      <addaction name="actionPLSQ2_Sample_Validator"/>
+      <addaction name="actionPLSSDEP_Sample_Validator_Plot"/>
+      <addaction name="separator"/>
+      <addaction name="actionPLS2DScore_Plot_Prediction"/>
+      <addaction name="actionPLSRecalc_vs_Exp_with_Prediction"/>
+      <addaction name="actionPLSPred_vs_Exp_with_Prediction"/>
+      <addaction name="actionPLSR2_Prediction"/>
+      <addaction name="separator"/>
+     </widget>
+     <addaction name="menu2D_Space_3"/>
+     <addaction name="menu3D_Space_3"/>
+    </widget>
+    <widget class="QMenu" name="menuPlot_LDA">
+     <property name="title">
+      <string>Plot LDA</string>
+     </property>
+     <property name="icon">
+      <iconset resource="icons/icons.qrc">
+       <normaloff>:/lda.png</normaloff>:/lda.png</iconset>
+     </property>
+     <addaction name="action2D_Feature_Plot"/>
+     <addaction name="action3D_Feature_Plot"/>
+     <addaction name="actionProbability_Distribution_Plot"/>
+     <addaction name="separator"/>
+     <addaction name="action2D_Feature_Plot_and_Predictions"/>
+     <addaction name="action3D_Feature_Plot_and_Predictions"/>
+     <addaction name="actionProbability_Distribution_Plot_and_Predictions"/>
+    </widget>
+    <widget class="QMenu" name="menuPlot_PCA_Model">
+     <property name="title">
+      <string>Plot PCA Model</string>
+     </property>
+     <property name="icon">
+      <iconset resource="icons/icons.qrc">
+       <normaloff>:/pca.png</normaloff>:/pca.png</iconset>
+     </property>
+     <widget class="QMenu" name="menu3D_Space">
+      <property name="title">
+       <string>3D Space</string>
+      </property>
+      <addaction name="actionPCA3DScore_Plot"/>
+      <addaction name="actionPCA3DLoadings_Plot"/>
+      <addaction name="separator"/>
+      <addaction name="actionPCA3DScore_Plot_Prediction"/>
+     </widget>
+     <widget class="QMenu" name="menu2D_Space">
+      <property name="title">
+       <string>2D Space</string>
+      </property>
+      <addaction name="actionPCA2DScore_Plot"/>
+      <addaction name="actionPCA2DLoadings_Plot"/>
+      <addaction name="actionPCA2DLoadingsMVAND_Plot"/>
+      <addaction name="separator"/>
+      <addaction name="actionPCA2DScore_Plot_Prediction"/>
+     </widget>
+     <addaction name="menu2D_Space"/>
+     <addaction name="menu3D_Space"/>
+    </widget>
+    <addaction name="menuVariable"/>
+    <addaction name="menuPlot_PCA_Model"/>
+    <addaction name="menuPlot_PLS_Model"/>
+    <addaction name="menuPlot_UPCA_Model"/>
+    <addaction name="menuPlot_UPLS_Model"/>
+    <addaction name="menuPlot_MLR"/>
+    <addaction name="menuPlot_LDA"/>
+    <addaction name="menuPlot_Variable_Selection"/>
+   </widget>
+   <widget class="QMenu" name="menuData">
+    <property name="title">
+     <string>&amp;Data</string>
+    </property>
+    <addaction name="actionAdd_Remove_Object_Labels"/>
+    <addaction name="actionAdd_Remove_Variable_Labels"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdvanced_Pretreatment"/>
+    <addaction name="actionExtract_Data_Objects_and_Variables"/>
+    <addaction name="actionMerge_Data"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionManual"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>&amp;Window</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionLog_Window"/>
+    <addaction name="actionProject_Window"/>
+    <addaction name="actionViewer_Window"/>
+    <addaction name="actionCascade_SubWindows"/>
+    <addaction name="actionTile_SubWindows"/>
+   </widget>
+   <widget class="QMenu" name="menuExtensions">
+    <property name="title">
+     <string>Extensions</string>
+    </property>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuData"/>
+   <addaction name="menuModels"/>
+   <addaction name="menuGraphs"/>
+   <addaction name="menuWindow"/>
+   <addaction name="menuExtensions"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="minimumSize">
+    <size>
+     <width>280</width>
+     <height>234</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>524287</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Projects</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QGridLayout" name="gridLayout_8">
+     <item row="0" column="0">
+      <layout class="QGridLayout" name="gridLayout_6">
+       <item row="0" column="0">
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="5">
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>36</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="0" column="0">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>36</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="0" column="1" colspan="2">
+          <widget class="QPushButton" name="addProject">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>74</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>74</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Add</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="3" colspan="2">
+          <widget class="QPushButton" name="removeProject">
+           <property name="minimumSize">
+            <size>
+             <width>74</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>74</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QTreeWidget" name="treeWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
+         </property>
+         <property name="showDropIndicator" stdset="0">
+          <bool>true</bool>
+         </property>
+         <property name="dragEnabled">
+          <bool>false</bool>
+         </property>
+         <property name="rootIsDecorated">
+          <bool>true</bool>
+         </property>
+         <attribute name="headerVisible">
+          <bool>false</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string notr="true">1</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_2">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>113</width>
+     <height>138</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Log</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QGridLayout" name="gridLayout_3">
+     <item row="0" column="0">
+      <widget class="QTextEdit" name="log">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_3">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Viewer</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_4">
+    <layout class="QGridLayout" name="gridLayout_5">
+     <item row="0" column="0">
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="tab_1">
+        <attribute name="title">
+         <string>No Objetcs</string>
+        </attribute>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actionOpenProject">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/openproject.png</normaloff>:/openproject.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open Project...</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/quit.png</normaloff>:/quit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionPCA">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/pca.png</normaloff>:/pca.png</iconset>
+   </property>
+   <property name="text">
+    <string>PCA</string>
+   </property>
+  </action>
+  <action name="actionPLS">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/pls.png</normaloff>:/pls.png</iconset>
+   </property>
+   <property name="text">
+    <string>PLS</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionAdd_Remove_Variable_Labels">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/label.png</normaloff>:/label.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add/Show/Remove Variable Labels</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/saveproject.png</normaloff>:/saveproject.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save Project...</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Export</string>
+   </property>
+  </action>
+  <action name="actionUPLS">
+   <property name="text">
+    <string>UPLS</string>
+   </property>
+  </action>
+  <action name="actionLog_Window">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Log Window</string>
+   </property>
+  </action>
+  <action name="actionProject_Window">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Project Window</string>
+   </property>
+  </action>
+  <action name="actionUPCA">
+   <property name="text">
+    <string>UPCA</string>
+   </property>
+  </action>
+  <action name="actionNewProject">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/newproject.png</normaloff>:/newproject.png</iconset>
+   </property>
+   <property name="text">
+    <string>New Project</string>
+   </property>
+  </action>
+  <action name="actionTest">
+   <property name="text">
+    <string>Test</string>
+   </property>
+  </action>
+  <action name="actionPCA2DScore_Plot">
+   <property name="text">
+    <string>t/t Score Plot</string>
+   </property>
+  </action>
+  <action name="actionPCA2DLoadings_Plot">
+   <property name="text">
+    <string>p/p Loadings Plot</string>
+   </property>
+  </action>
+  <action name="actionPCA3DScore_Plot">
+   <property name="text">
+    <string>t/t/t Score Plot</string>
+   </property>
+  </action>
+  <action name="actionPCA3DLoadings_Plot">
+   <property name="text">
+    <string>p/p/p Loadings Plot</string>
+   </property>
+  </action>
+  <action name="actionUPCA2DScore_Plot">
+   <property name="text">
+    <string>t/t Score Plot</string>
+   </property>
+  </action>
+  <action name="actionUPCA2DLoadings_Plot">
+   <property name="text">
+    <string>p/p Loadings Plot</string>
+   </property>
+  </action>
+  <action name="actionUPCA3DScore_Plot">
+   <property name="text">
+    <string>t/t/t Score Plot</string>
+   </property>
+  </action>
+  <action name="actionUPCA3DLoadings_Plot">
+   <property name="text">
+    <string>p/p/p Loadings Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS_Plot">
+   <property name="text">
+    <string>t/u PLS Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS2D_tt_Score_Plot">
+   <property name="text">
+    <string>t/t Score Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS2D_pp_Loadings_Plot">
+   <property name="text">
+    <string>p/p Loadings Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS2D_ww_Weights_Plot">
+   <property name="text">
+    <string>w/w Weights Plot</string>
+   </property>
+  </action>
+  <action name="actionPLSPred_vs_Exp">
+   <property name="text">
+    <string>Pred vs Exp</string>
+   </property>
+  </action>
+  <action name="actionPLSR2_Q2">
+   <property name="text">
+    <string>R2 and Q2</string>
+   </property>
+  </action>
+  <action name="actionPLS3D_ttt_Score_Plot">
+   <property name="text">
+    <string>t/t/t Score Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS3D_ppp_Loadings_Plot">
+   <property name="text">
+    <string>p/p/p Loadings Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS3D_www_Weights_Plot">
+   <property name="text">
+    <string>w/w/w Weights Plot</string>
+   </property>
+  </action>
+  <action name="actionUPLS_Plot">
+   <property name="text">
+    <string>t/u UPLS Plot</string>
+   </property>
+  </action>
+  <action name="actionUPLS2D_tt_Score_Plot">
+   <property name="text">
+    <string>t/t Score Plot</string>
+   </property>
+  </action>
+  <action name="actionUPLS2D_pp_Loadings_Plot">
+   <property name="text">
+    <string>p/p Loadings Plot</string>
+   </property>
+  </action>
+  <action name="actionUPLS2D_ww_Weights_Plot">
+   <property name="text">
+    <string>w/w Weights Plot</string>
+   </property>
+  </action>
+  <action name="actionUPLSPred_vs_Exp">
+   <property name="text">
+    <string>Pred vs Exp</string>
+   </property>
+  </action>
+  <action name="actionUPLSR2_Q2">
+   <property name="text">
+    <string>R2 and  Q2</string>
+   </property>
+  </action>
+  <action name="actionUPLS3D_ttt_Score_Plot">
+   <property name="text">
+    <string>t/t/t Score Plot</string>
+   </property>
+  </action>
+  <action name="actionUPLS3D_ppp_Loadings_Plot">
+   <property name="text">
+    <string>p/p/p Loadings Plot</string>
+   </property>
+  </action>
+  <action name="actionUPLS3D_www_Weights_Plot">
+   <property name="text">
+    <string>w/w/w Weights Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS_Validator">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/pls.png</normaloff>:/pls.png</iconset>
+   </property>
+   <property name="text">
+    <string>PLS Validator</string>
+   </property>
+  </action>
+  <action name="actionUPLS_Validator">
+   <property name="text">
+    <string>UPLS Validator</string>
+   </property>
+  </action>
+  <action name="actionPLS_Prediction">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/pls.png</normaloff>:/pls.png</iconset>
+   </property>
+   <property name="text">
+    <string>PLS Prediction</string>
+   </property>
+  </action>
+  <action name="actionUPLS_Prediction">
+   <property name="text">
+    <string>UPLS Prediction</string>
+   </property>
+  </action>
+  <action name="actionPCA_Prediction">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/pca.png</normaloff>:/pca.png</iconset>
+   </property>
+   <property name="text">
+    <string>PCA Prediction</string>
+   </property>
+  </action>
+  <action name="actionUPCA_Prediction">
+   <property name="text">
+    <string>UPCA Prediction</string>
+   </property>
+  </action>
+  <action name="actionPLS2D_uu_Score_Plot">
+   <property name="text">
+    <string>u/u Score Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS2D_qq_Loadings_Plot">
+   <property name="text">
+    <string>q/q Loadings Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS3D_uuu_Score_Plot">
+   <property name="text">
+    <string>u/u/u Score Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS3D_qqq_Loadings_Plot">
+   <property name="text">
+    <string>q/q/q Loadings Plot</string>
+   </property>
+  </action>
+  <action name="actionUPLS2D_uu_Score_Plot">
+   <property name="text">
+    <string>u/u Score Plot</string>
+   </property>
+  </action>
+  <action name="actionUPLS2D_qq_Loadings_Plot">
+   <property name="text">
+    <string>q/q Loadings Plot</string>
+   </property>
+  </action>
+  <action name="actionUPLS3D_uuu_Score_Plot">
+   <property name="text">
+    <string>u/u/u Score Plot</string>
+   </property>
+  </action>
+  <action name="actionUPLS3D_qqq_Loadings_Plot">
+   <property name="text">
+    <string>q/q/q Loadings Plot</string>
+   </property>
+  </action>
+  <action name="action_Test">
+   <property name="text">
+    <string>Test</string>
+   </property>
+  </action>
+  <action name="actionPCA2DScore_Plot_Prediction">
+   <property name="text">
+    <string>t/t Score Plot with Prediction</string>
+   </property>
+  </action>
+  <action name="actionPCA3DScore_Plot_Prediction">
+   <property name="text">
+    <string>t/t/t Score Plot Prediction</string>
+   </property>
+  </action>
+  <action name="actionUPCA2DScore_Plot_Prediction">
+   <property name="text">
+    <string>t/t Score Plot Prediction</string>
+   </property>
+  </action>
+  <action name="actionUPCA3DScore_Plot_Prediction">
+   <property name="text">
+    <string>t/t/t Score Plot Prediction</string>
+   </property>
+  </action>
+  <action name="actionPLS2DScore_Plot_Prediction">
+   <property name="text">
+    <string>t/t Score Plot and External Prediction</string>
+   </property>
+  </action>
+  <action name="actionPLSRecalc_vs_Exp">
+   <property name="text">
+    <string>Recalc vs Exp</string>
+   </property>
+  </action>
+  <action name="actionPLS3D_ttt_Score_Plot_Prediction">
+   <property name="text">
+    <string>t/t/t Score Plot and Prediction</string>
+   </property>
+  </action>
+  <action name="actionCascade_SubWindows">
+   <property name="text">
+    <string>Cascade SubWindows</string>
+   </property>
+  </action>
+  <action name="actionTile_SubWindows">
+   <property name="text">
+    <string>Tile SubWindow</string>
+   </property>
+  </action>
+  <action name="actionUPLS2DScore_Plot_Prediction">
+   <property name="text">
+    <string>t/t Score Plot and Prediction</string>
+   </property>
+  </action>
+  <action name="actionUPLS3D_ttt_Score_Plot_Prediction">
+   <property name="text">
+    <string>t/t/t Score Plot and Prediction</string>
+   </property>
+  </action>
+  <action name="actionUPLSRecalc_vs_Exp">
+   <property name="text">
+    <string>Recalc vs Exp</string>
+   </property>
+  </action>
+  <action name="actionUPLSRecalc_vs_Exp_with_Prediction">
+   <property name="text">
+    <string>Recalc vs Exp and Prediction</string>
+   </property>
+  </action>
+  <action name="actionPLSRecalc_vs_Exp_with_Prediction">
+   <property name="text">
+    <string>Recalc vs Exp and External Prediction</string>
+   </property>
+  </action>
+  <action name="actionVariableDistribution">
+   <property name="text">
+    <string>Distribution</string>
+   </property>
+  </action>
+  <action name="actionVariable_vs_Variable">
+   <property name="text">
+    <string>Variable vs Variable</string>
+   </property>
+  </action>
+  <action name="actionAdd_Remove_Object_Labels">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/label.png</normaloff>:/label.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add/Show/Remove Object Labels</string>
+   </property>
+  </action>
+  <action name="actionExtract_Data_Objects_and_Variables">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/data.png</normaloff>:/data.png</iconset>
+   </property>
+   <property name="text">
+    <string>Extract Data</string>
+   </property>
+  </action>
+  <action name="action2DSpace_Clusters">
+   <property name="text">
+    <string>2D Space Cluster</string>
+   </property>
+  </action>
+  <action name="action3DSpace_Clusters">
+   <property name="text">
+    <string>3D Space Cluster</string>
+   </property>
+  </action>
+  <action name="actionClustering">
+   <property name="text">
+    <string>Clustering</string>
+   </property>
+  </action>
+  <action name="actionPLSVariableSelection">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/pls.png</normaloff>:/pls.png</iconset>
+   </property>
+   <property name="text">
+    <string>PLS Variable Selection</string>
+   </property>
+  </action>
+  <action name="actionUPLSVariableSelection">
+   <property name="text">
+    <string>UPLS Variable Selection</string>
+   </property>
+  </action>
+  <action name="actionVarSel_R2Q2_Plot">
+   <property name="text">
+    <string>Variable Selection R2/Q2</string>
+   </property>
+  </action>
+  <action name="actionVarSel_Ftest_Nvar_Plot">
+   <property name="text">
+    <string>Variable Selection F-test /  N° Variables</string>
+   </property>
+  </action>
+  <action name="actionVarSel_Ftest_Q2_Plot">
+   <property name="text">
+    <string>Variable Selection F-test / Q2</string>
+   </property>
+  </action>
+  <action name="actionModIncVar_Variables_Plot">
+   <property name="text">
+    <string>Model Including Variable / Variables</string>
+   </property>
+  </action>
+  <action name="actionViewer_Window">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Viewer Window</string>
+   </property>
+  </action>
+  <action name="actionShow_Object_Labels">
+   <property name="text">
+    <string>Show Object Labels</string>
+   </property>
+  </action>
+  <action name="actionShow_Variable_Labels">
+   <property name="text">
+    <string>Show Variable Labels</string>
+   </property>
+  </action>
+  <action name="actionPLSR2_Prediction">
+   <property name="text">
+    <string>R2/Q2 Model and R2 External Prediction</string>
+   </property>
+  </action>
+  <action name="actionUPLSR2_Prediction">
+   <property name="text">
+    <string>R2 Prediction</string>
+   </property>
+  </action>
+  <action name="actionPLSRecalc_Residuals_vs_Exp">
+   <property name="text">
+    <string>Recalc Residuals vs Exp</string>
+   </property>
+  </action>
+  <action name="actionPLSPred_Residuals_vs_Exp">
+   <property name="text">
+    <string>Pred Residuals vs Exp</string>
+   </property>
+  </action>
+  <action name="actionUPLSRecal_Residuals_vs_Exp">
+   <property name="text">
+    <string>Recal Residuals vs Exp</string>
+   </property>
+  </action>
+  <action name="actionUPLSPred_Residuals_vs_Exp">
+   <property name="text">
+    <string>Pred Residuals vs Exp</string>
+   </property>
+  </action>
+  <action name="actionMLR">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/mlr.png</normaloff>:/mlr.png</iconset>
+   </property>
+   <property name="text">
+    <string>MLR</string>
+   </property>
+  </action>
+  <action name="actionMLR_Validator">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/mlr.png</normaloff>:/mlr.png</iconset>
+   </property>
+   <property name="text">
+    <string>MLR Validator</string>
+   </property>
+  </action>
+  <action name="actionMLR_Prediction">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/mlr.png</normaloff>:/mlr.png</iconset>
+   </property>
+   <property name="text">
+    <string>MLR Prediction</string>
+   </property>
+  </action>
+  <action name="actionMLR_Recalc_vs_Exp">
+   <property name="text">
+    <string>Recalc vs Exp</string>
+   </property>
+  </action>
+  <action name="actionMLR_Recalc_Residuals_vs_Exp">
+   <property name="text">
+    <string>Recalc Residuals vs Exp</string>
+   </property>
+  </action>
+  <action name="actionMLR_Predict_vs_Exp">
+   <property name="text">
+    <string>Predict vs Exp</string>
+   </property>
+  </action>
+  <action name="actionMLR_Predict_Residuals_vs_Exp">
+   <property name="text">
+    <string>Predict Residuals vs Exp</string>
+   </property>
+  </action>
+  <action name="actionMLR_R2_and_Q2">
+   <property name="text">
+    <string>R2 and Q2</string>
+   </property>
+  </action>
+  <action name="actionMLR_Recal_vs_Exp_and_Prediction">
+   <property name="text">
+    <string>Recal vs Exp and Prediction</string>
+   </property>
+  </action>
+  <action name="actionMLR_R2_Prediction">
+   <property name="text">
+    <string>R2 Prediction</string>
+   </property>
+  </action>
+  <action name="actionPLSPred_vs_Exp_with_Prediction">
+   <property name="text">
+    <string>Pred vs Exp and External Prediction</string>
+   </property>
+  </action>
+  <action name="actionUPLSPred_vs_Exp_with_Prediction">
+   <property name="text">
+    <string>Pred vs Exp and Prediction</string>
+   </property>
+  </action>
+  <action name="action_1">
+   <property name="text">
+    <string>-</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>-</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>-</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>-</string>
+   </property>
+  </action>
+  <action name="actionMLR_Predict_vs_Exp_and_Prediction">
+   <property name="text">
+    <string>Predict vs Exp and Prediction</string>
+   </property>
+  </action>
+  <action name="actionLDA">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/lda.png</normaloff>:/lda.png</iconset>
+   </property>
+   <property name="text">
+    <string>LDA</string>
+   </property>
+  </action>
+  <action name="actionLDA_Validator">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/lda.png</normaloff>:/lda.png</iconset>
+   </property>
+   <property name="text">
+    <string>LDA Validator</string>
+   </property>
+  </action>
+  <action name="actionLDA_Prediction">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/lda.png</normaloff>:/lda.png</iconset>
+   </property>
+   <property name="text">
+    <string>LDA Prediction</string>
+   </property>
+  </action>
+  <action name="action2D_Feature_Plot">
+   <property name="text">
+    <string>2D Feature Plot</string>
+   </property>
+  </action>
+  <action name="action3D_Feature_Plot">
+   <property name="text">
+    <string>3D Feature Plot</string>
+   </property>
+  </action>
+  <action name="actionProbability_Distribution_Plot">
+   <property name="text">
+    <string>Probability Distribution Plot</string>
+   </property>
+  </action>
+  <action name="action2D_Feature_Plot_and_Predictions">
+   <property name="text">
+    <string>2D Feature Plot and Predictions</string>
+   </property>
+  </action>
+  <action name="action3D_Feature_Plot_and_Predictions">
+   <property name="text">
+    <string>3D Feature Plot and Predictions</string>
+   </property>
+  </action>
+  <action name="actionProbability_Distribution_Plot_and_Predictions">
+   <property name="text">
+    <string>Probability Distribution Plot and Predictions</string>
+   </property>
+  </action>
+  <action name="actionPCA2DLoadingsMVAND_Plot">
+   <property name="text">
+    <string>p Loading Multivariate Normal Distribution</string>
+   </property>
+  </action>
+  <action name="actionManual">
+   <property name="text">
+    <string>Manual</string>
+   </property>
+  </action>
+  <action name="actionAdvanced_Pretreatment">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/advanced_datapretreatment.png</normaloff>:/advanced_datapretreatment.png</iconset>
+   </property>
+   <property name="text">
+    <string>Advanced Pretreatment</string>
+   </property>
+  </action>
+  <action name="actionMerge_Data">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/merge.png</normaloff>:/merge.png</iconset>
+   </property>
+   <property name="text">
+    <string>Merge Data</string>
+   </property>
+  </action>
+  <action name="actionQ2_Scrambled">
+   <property name="text">
+    <string>Q2 Scrambled</string>
+   </property>
+  </action>
+  <action name="actionPLSYScrambling">
+   <property name="text">
+    <string>Y Scrambling Plot</string>
+   </property>
+  </action>
+  <action name="actionSDEP_Scrambled">
+   <property name="text">
+    <string>SDEP Scrambled</string>
+   </property>
+  </action>
+  <action name="actionSDEC_Scrambled">
+   <property name="text">
+    <string>SDEC Scrambled</string>
+   </property>
+  </action>
+  <action name="actionMLR_Y_Scrambling_Plot">
+   <property name="text">
+    <string>Y Scrambling Plot</string>
+   </property>
+  </action>
+  <action name="actionPLSQ2_Sample_Validator">
+   <property name="text">
+    <string>Q2 Sample Validator Plot</string>
+   </property>
+  </action>
+  <action name="actionPLSSDEP_Sample_Validator_Plot">
+   <property name="text">
+    <string>SDEP Sample Validator Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS3D_Q2_Dynamic_Sample_Validator_Plot">
+   <property name="text">
+    <string>Q2 Dynamic Sample Validator Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS3D_SDEP_Dynamic_Sample_Validator_Plot">
+   <property name="text">
+    <string>SDEP Dynamic Sample Validator Plot</string>
+   </property>
+  </action>
+  <action name="actionPLSBeta_Coefficients">
+   <property name="text">
+    <string>Beta Coefficients Plot</string>
+   </property>
+  </action>
+  <action name="actionMLR_Beta_Coefficients">
+   <property name="text">
+    <string>Beta Coefficients</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+  </action>
+  <action name="actionBetaCoeffDWPlot">
+   <property name="text">
+    <string>Beta Coefficients Durbin-Watson Plot</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="icons/icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>
