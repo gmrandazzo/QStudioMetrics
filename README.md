@@ -6,10 +6,12 @@ The software is writen in C++ using the Qt4 framework and run under Linux, Windo
 QStudioMetrics compute:
   - Principal Component Analysis (PCA)
   - Partial Least Squares (PLS)
+  - Multiple Linear Regression (MLR)
   - Linar Discriminant Analysis (LDA)
   - Unfolding Principal Component Analysis (UPCA)
   - Unfolding Partial Least Squares (UPLS)
   - Clustering analysis: Hierarchical and K-Means
+  - Model validation: leave-one-out, bootstrap k-fold cross validation, y-scrambling
 
 ![ScreenShot](https://github.com/gmrandazzo/QStudioMetrics/blob/master/vars/qsmgui.png)
 
