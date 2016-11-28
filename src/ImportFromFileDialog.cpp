@@ -107,10 +107,10 @@ bool StringListModel::removeRows(int position, int rows, const QModelIndex &pare
 void ImportFromFileDialog::BuildArray()
 {
   if(file.size() > 0){
-    
+
     QList< int > rows, cols; // rows and cols to get...
     QList< int > empty_cols;
-    
+
     if(ui.listView_2->model()->rowCount() == ui.listView_2->selectionModel()->selectedRows().size()){
       for(int i = 0; i < ui.listView_2->model()->rowCount(); i++){
         rows.append(i);
@@ -125,7 +125,7 @@ void ImportFromFileDialog::BuildArray()
         // QApplication::processEvents();
       }
     }
-    
+
     a->getVarName().append("Object Names");
     if(ui.listView_3->model()->rowCount() == ui.listView_3->selectionModel()->selectedRows().size()){
       for(int i = 0; i < ui.listView_3->model()->rowCount(); i++){
@@ -141,14 +141,14 @@ void ImportFromFileDialog::BuildArray()
         // QApplication::processEvents();
       }
     }
-    
+
     array *_a_ = a->Array();
     for(int i = 0; i < ui.levelBox->value(); i++){
       AddArrayMatrix(&_a_, rows.size(), cols.size());
     }
-    
+
     a->setName(ui.filename->text());
-    
+
     size_t ncols;
     if(FirstColumnObjNames() == true){
       if(file.size() > 1){
@@ -166,7 +166,7 @@ void ImportFromFileDialog::BuildArray()
         ncols = file[0].size()/ui.levelBox->value();
       }
     }
-    
+
     if(FirstRowVarNames() == true){
       for(int i = 0; i < rows.size(); i++){
         if(FirstColumnObjNames() == true){
@@ -179,7 +179,7 @@ void ImportFromFileDialog::BuildArray()
               qDebug() << QString("i %1").arg(i);
               qDebug() << QString("ncols %1").arg(ncols);
               qDebug() << QString("c %1").arg(c);
-              
+
               qDebug() << QString("file_row %1").arg(QString::number(file.size()));
               qDebug() << QString("file_col %1").arg(QString::number(file.first().size()));
               qDebug() << QString("row_to_get %1").arg(QString::number(rows[i]+1));
@@ -212,7 +212,7 @@ void ImportFromFileDialog::BuildArray()
               bool converted;
               int col = cols[j]+(ncols*c);
               double val = file[rows[i]+1][col].toDouble(&converted);
-              
+
               if(converted == true){
                 setArrayValue(a->Array(), c, i, l, val);
               }
@@ -241,7 +241,7 @@ void ImportFromFileDialog::BuildArray()
               bool converted;
               int col = (cols[j]+1)+(ncols*c);
               double val = file[rows[i]][col].toDouble(&converted);
-              
+
               if(converted == true){
                 setArrayValue(a->Array(), c, i, l, val);
               }
@@ -266,7 +266,7 @@ void ImportFromFileDialog::BuildArray()
               bool converted;
               int col = cols[j]+(ncols*c);
               double val = file[rows[i]][col].toDouble(&converted);
-              
+
               if(converted == true){
                 setArrayValue(a->Array(), c, i, l, val);
               }
@@ -286,10 +286,10 @@ void ImportFromFileDialog::BuildArray()
         }
       }
     }
-    
+
     for(int j = 0; j < empty_cols.size(); j++){
       for(size_t k = 0; k < a->Array()->order; k++){
-        bool make_correction = false;      
+        bool make_correction = false;
         int empty = 0;
         double mean = 0.f;
         for(size_t i = 0; i < a->Array()->m[k]->row; i++){
@@ -302,7 +302,7 @@ void ImportFromFileDialog::BuildArray()
           }
           // QApplication::processEvents();
         }
-        
+
         if(make_correction == true){
           mean /= (a->Array()->m[k]->row - empty);
           for(size_t i = 0; i < a->Array()->m[k]->row; i++){
@@ -331,11 +331,11 @@ void ImportFromFileDialog::BuildMatrix()
     ui.progressBar->setRange(0, 0);
     QList< int > rows, cols; // rows and cols to get...
     QList< int > empty_cols;
-    
-    
+
+
     if(ui.listView_2->model()->rowCount() == ui.listView_2->selectionModel()->selectedRows().size()){
       m->getObjName().append(tab1->getStringList());
-      
+
       for(int i = 0; i < ui.listView_2->model()->rowCount(); i++){
         rows.append(i);
         // QApplication::processEvents();
@@ -348,7 +348,7 @@ void ImportFromFileDialog::BuildMatrix()
         // QApplication::processEvents();
       }
     }
-    
+
     m->getVarName().append("Object Names");
     if(ui.listView_3->model()->rowCount() == ui.listView_3->selectionModel()->selectedRows().size()){
       m->getVarName().append(tab2->getStringList());
@@ -364,7 +364,7 @@ void ImportFromFileDialog::BuildMatrix()
         // QApplication::processEvents();
       }
     }
-    
+
     /*
     for(int i = 0; i < ui.listView_2->model()->rowCount(); i++){
       if(ui.listView_2->selectionModel()->isSelected(ui.listView_2->model()->index(i, 0)) == true){
@@ -376,7 +376,7 @@ void ImportFromFileDialog::BuildMatrix()
       }
       // QApplication::processEvents();
     }
-    
+
     m->getVarName().append("Object Names");
     for(int i = 0; i < ui.listView_3->model()->rowCount(); i++){
       if(ui.listView_3->selectionModel()->isSelected(ui.listView_3->model()->index(i, 0)) == true){
@@ -389,11 +389,11 @@ void ImportFromFileDialog::BuildMatrix()
       // QApplication::processEvents();
     }
     */
-    
+
     matrix *_m_ = m->Matrix();
-    ResizeMatrix(&_m_, rows.size(), cols.size()); 
+    ResizeMatrix(&_m_, rows.size(), cols.size());
     m->setName(ui.filename->text());
-    
+
     if(FirstRowVarNames() == true){
       for(int i = 0; i < rows.size(); i++){
         if(FirstColumnObjNames() == true){
@@ -401,7 +401,7 @@ void ImportFromFileDialog::BuildMatrix()
 //                         qDebug() << QString("row %1  col %2").arg(QString::number(rows[i]+1)).arg(QString::number(cols[j]+1));
             bool converted;
             double val = -9999;
-            
+
             if(rows[i]+1 < file.size()){
               if(cols[j]+1 < file[rows[i]+1].size()){
                 file[rows[i]+1][cols[j]+1].replace(",", ".");
@@ -414,7 +414,7 @@ void ImportFromFileDialog::BuildMatrix()
             else{
               converted = false;
             }
-            
+
             if(converted == true){
               setMatrixValue(m->Matrix(), i, j, val);
             }
@@ -434,7 +434,7 @@ void ImportFromFileDialog::BuildMatrix()
           for(int j = 0; j < cols.size(); j++){
             bool converted;
             double val = -9999;
-            
+
             if(rows[i]+1 < file.size()){
               if(cols[j] < file[rows[i]+1].size()){
                 file[rows[i]+1][cols[j]].replace(",",".");
@@ -447,7 +447,7 @@ void ImportFromFileDialog::BuildMatrix()
             else{
               converted = false;
             }
-            
+
             if(converted == true){
               setMatrixValue(m->Matrix(), i, j, val);
             }
@@ -466,12 +466,12 @@ void ImportFromFileDialog::BuildMatrix()
       }
     }
     else{
-      for(int i = 0; i < rows.size(); i++){  
+      for(int i = 0; i < rows.size(); i++){
         if(FirstColumnObjNames() == true){
           for(int j = 0; j < cols.size(); j++){
             bool converted;
             double val = -9999;
-            
+
             if(rows[i] < file.size()){
               if(cols[j]+1 < file[rows[i]].size()){
                 file[rows[i]][cols[j]+1].replace(",",".");
@@ -484,7 +484,7 @@ void ImportFromFileDialog::BuildMatrix()
             else{
               converted = false;
             }
-            
+
             if(converted == true){
               setMatrixValue(m->Matrix(), i, j, val);
             }
@@ -504,7 +504,7 @@ void ImportFromFileDialog::BuildMatrix()
           for(int j = 0; j < cols.size(); j++){
             bool converted;
             double val = -9999;
-            
+
             if(rows[i] < file.size()){
               if(cols[j] < file[rows[i]].size()){
                 file[rows[i]][cols[j]].replace(",",".");
@@ -517,7 +517,7 @@ void ImportFromFileDialog::BuildMatrix()
             else{
               converted = false;
             }
-            
+
             if(converted == true){
               setMatrixValue(m->Matrix(), i, j, val);
             }
@@ -535,7 +535,7 @@ void ImportFromFileDialog::BuildMatrix()
         }
       }
     }
-    
+
     for(int j = 0; j < empty_cols.size(); j++){
       double mean = 0.f;
       int empty = 0;
@@ -548,9 +548,9 @@ void ImportFromFileDialog::BuildMatrix()
         }
         // QApplication::processEvents();
       }
-      
+
       mean /= (m->Matrix()->row - empty);
-      
+
       for(int i = 0; i < (int)m->Matrix()->row; i++){
         if(FLOAT_EQ(getMatrixValue(m->Matrix(), i, empty_cols[j]), -9999, EPSILON)){
           setMatrixValue(m->Matrix(), i, empty_cols[j], mean);
@@ -569,14 +569,14 @@ void ImportFromFileDialog::GetColumtoDiscard()
 {
   QList<int> col_check;
   int row = 0;
-  
+
   for(int k = 0; k < file.size(); k++){
     if(row == 0){
       for(int i = 0; i < file[k].size(); i++){
         col_check.append(0);
       }
     }
-    
+
     for(int i = 0; i < file[k].size(); i++){
       bool ok;
       file[k][i].toDouble(&ok);
@@ -597,11 +597,11 @@ void ImportFromFileDialog::GetColumtoDiscard()
     }
     row++;
   }
-  
+
   for(int i = 0; i < col_check.size(); i++){
-    
+
     if((100 - ((col_check[i] * 100) / row)) > ui.colmissvalueBox->value()){ // skip this column... too much empty line or converted lines....
-      columntoskip.append(i); 
+      columntoskip.append(i);
     }
     else{
       continue;
@@ -614,7 +614,7 @@ void ImportFromFileDialog::LoadVariableNames()
   varnames.clear();
   ui.progressBar->show();
   ui.progressBar->setRange(0 ,0);
-  
+
   if(FirstColumnObjNames() == true){
     if(FirstRowVarNames() == true){
       for(int j = 1; j < file.first().size(); j++){
@@ -681,18 +681,18 @@ void ImportFromFileDialog::LoadVariableNames()
         }
         // QApplication::processEvents();
       }
-    } 
+    }
   }
-  
+
   tab2->Clear();
-  
+
   if(ui.matrixButton->isChecked()){
     tab2->AppendRows(varnames);
     /*
     for(int i = 0; i < varnames.size(); i++){
       QList<QStandardItem*> row;
       row.append(new QStandardItem(varnames[i]));
-      tab2->appendRow(row); 
+      tab2->appendRow(row);
       // QApplication::processEvents();
     }
     */
@@ -722,7 +722,7 @@ void ImportFromFileDialog::LoadObjectNames()
   objnames.clear();
   ui.progressBar->show();
   ui.progressBar->setRange(0 ,0);
-  
+
   if(FirstRowVarNames() == true){
     if(FirstColumnObjNames() == true){
       for(int i = 1; i < file.size(); i++){
@@ -751,9 +751,9 @@ void ImportFromFileDialog::LoadObjectNames()
       }
     }
   }
-  
+
   tab1->Clear();
-  
+
   tab1->AppendRows(objnames);
   /*
   for(int i = 0; i < objnames.size(); i++){
@@ -761,7 +761,7 @@ void ImportFromFileDialog::LoadObjectNames()
     // QApplication::processEvents();
   }
   */
-  
+
   ui.progressBar->hide();
   ui.progressBar->setRange(0 ,1);
 }
@@ -773,23 +773,23 @@ void ImportFromFileDialog::LoadFile(QString file_)
   if(info.exists()){
     ui.progressBar->show();
     ui.progressBar->setRange(0, 0);
-    
+
     for(int i = 0; i < file.size(); i++){
       file[i].clear();
     }
     file.clear();
-    
+
     QFile f(ui.file->text());
     if(!f.open(QIODevice::ReadOnly | QIODevice::Text))
       return;
-    
+
     QTextStream in(&f);
     if(ui.startlineBox->value() != ui.stoplineBox->value() && ui.stoplineBox->value() > ui.startlineBox->value()){
       int c = 0;
       while(!in.atEnd()){
         QString line = in.readLine();
         if(c >= ui.startlineBox->value() && c <= ui.stoplineBox->value()){
-          if(QString(line[0]).compare(getSkipChar(), Qt::CaseInsensitive) == 0){ // skip line starting with 
+          if(QString(line[0]).compare(getSkipChar(), Qt::CaseInsensitive) == 0){ // skip line starting with
             continue;
           }
           else{
@@ -806,7 +806,7 @@ void ImportFromFileDialog::LoadFile(QString file_)
     else{
       while(!in.atEnd()){
         QString line = in.readLine();
-        if(QString(line[0]).compare(getSkipChar(), Qt::CaseInsensitive) == 0){ // skip line starting with 
+        if(QString(line[0]).compare(getSkipChar(), Qt::CaseInsensitive) == 0){ // skip line starting with
           continue;
         }
         else{
@@ -817,7 +817,7 @@ void ImportFromFileDialog::LoadFile(QString file_)
     }
     f.close();
   }
-  
+
   ui.progressBar->hide();
   ui.progressBar->setRange(0, 1);
 }
@@ -876,7 +876,7 @@ QString ImportFromFileDialog::getSeparator()
   else if(ui.splitlineby->currentIndex() == 3) // ;
     return ";";
   else{ // PERSONAL
-    return ui.splitlineby->currentText(); 
+    return ui.splitlineby->currentText();
   }
 }
 
@@ -899,37 +899,37 @@ void ImportFromFileDialog::UpdateView()
 {
   bool LoadFileInMem_ = false;
   bool Transpose_ = false;
-  
+
   if(ui.splitlineby->currentIndex() != idsplitlinebyindex){
     idsplitlinebyindex = ui.splitlineby->currentIndex();
     LoadFileInMem_ = true;
   }
-  
+
   if(ui.ignorelinebychar->text().compare("#") == false){
     LoadFileInMem_ = true;
   }
-  
+
   if(ui.startlineBox->value() != idstartlinebox){
     LoadFileInMem_ = true;
     idstartlinebox = ui.startlineBox->value();
   }
-  
+
   if(ui.stoplineBox->value() != idstoplinebox){
     LoadFileInMem_ = true;
     idstoplinebox = ui.startlineBox->value();
   }
-  
+
   if(ui.transpose->isChecked() != transposestatus){
     Transpose_ = true;
     transposestatus = ui.transpose->isChecked();
   }
-  
+
   if(LoadFileInMem_ == true)
     LoadFileInMem();
-  
+
   if(Transpose_ == true)
     Transpose();
-  
+
   Preview();
 }
 
@@ -967,7 +967,7 @@ void ImportFromFileDialog::Open()
     QFileInfo last(ui.file->text());
     path = last.absoluteFilePath();
   }
-  
+
   QStringList list = ui.file->text().split("/", QString::SkipEmptyParts);
   if(list.size() > 0){
     list.last().remove(".txt", Qt::CaseInsensitive);
@@ -983,7 +983,7 @@ void ImportFromFileDialog::LoadFileInMem()
 {
   columntoskip.clear();
   LoadFile(ui.file->text());
-  
+
   /*
   if(ui.transpose->isChecked()){
     Transpose();
@@ -1010,11 +1010,11 @@ void ImportFromFileDialog::Transpose()
         }
       }
     }
-    
+
     for(int i = 0; i < file.size(); i++){
       file[i].clear();
     }
-    
+
     file.clear();
     file = file_;
   }
@@ -1038,7 +1038,7 @@ void ImportFromFileDialog::ObjInvertSelection()
   bottomRight = model->index(model->rowCount()-1, 0);
   toggleSelection.select(topLeft, bottomRight);
   selectionModel->select(toggleSelection, QItemSelectionModel::Toggle);
-  
+
   CountNObjects();
 }
 
@@ -1121,7 +1121,7 @@ void ImportFromFileDialog::EnableDisable()
   else{
     ui.okButton->setEnabled(false);
   }
-  
+
   CountNObjects();
   CountNVariables();
 }
@@ -1133,13 +1133,13 @@ void ImportFromFileDialog::Preview()
     LoadObjectNames();
     GetColumtoDiscard();
     LoadVariableNames();
-    
+
     int maxrowtoget = 10;
     int maxcoltoget = 10;
-    
+
     // Import the temporary file in mem...
     QList<QStringList> previewfile;
-    
+
     if(ui.matrixButton->isChecked()){
       if(maxrowtoget  < file.size()){
         for(int i = 0; i < maxrowtoget; i++){
@@ -1173,15 +1173,15 @@ void ImportFromFileDialog::Preview()
           previewfile.append(lst);
         }
       }
-      
+
       if(varnames.size() < maxcoltoget){
         maxcoltoget = varnames.size();
       }
-      
+
       if(objnames.size() < maxrowtoget){
         maxrowtoget = objnames.size();
       }
-      
+
       if(previewfile.size() > 0 && previewfile.last().size() > 0){
         if(FirstRowVarNames() == true){
           for(int i = 0; i < previewfile.first().size(); i++){
@@ -1192,7 +1192,7 @@ void ImportFromFileDialog::Preview()
               model->setHorizontalHeaderItem(i, new QStandardItem(QString("[%1] ~ %2").arg(QString::number(i)).arg(previewfile.first()[i])));
             }
           }
-          
+
           model->setHorizontalHeaderItem(maxcoltoget, new QStandardItem(QString("...")));
           previewfile.removeFirst();
         }
@@ -1205,26 +1205,26 @@ void ImportFromFileDialog::Preview()
               model->setHorizontalHeaderItem(i, new QStandardItem(QString("[%1] ~ Var %2").arg(QString::number(i)).arg(QString::number(i+1))));
             }
           }
-          
+
           model->setHorizontalHeaderItem(maxcoltoget, new QStandardItem(QString("...")));
         }
-        
+
         // load previewfile for preview.......
         for(int i = 0; i < previewfile.size(); i++){
           QList<QStandardItem*> row;
-          
+
           if(FirstColumnObjNames() == true){
             row.append(new QStandardItem(previewfile[i].first()));
-            
+
             for(int j = 1; j < previewfile[i].size(); j++){
               row.append(new QStandardItem(previewfile[i][j]));
             }
-            
+
             row.append(new QStandardItem("..."));
             model->appendRow(row);
           }
           else{
-            row.append(new QStandardItem(QString("Object %1").arg(QString::number(i+1)))); 
+            row.append(new QStandardItem(QString("Object %1").arg(QString::number(i+1))));
             for(int j = 0; j < maxcoltoget-1; j++){
               if(j < previewfile[i].size()){
                 row.append(new QStandardItem(previewfile[i][j]));
@@ -1237,19 +1237,19 @@ void ImportFromFileDialog::Preview()
             model->appendRow(row);
           }
         }
-        
+
         // last empty row
         QList<QStandardItem*> lastrow;
         if(FirstColumnObjNames() == true){
           lastrow.append(new QStandardItem(previewfile.last().first()));
-          
+
           for(int j = 1; j < previewfile.last().size()+1; j++){
             lastrow.append(new QStandardItem("..."));
           }
           model->appendRow(lastrow);
         }
         else{
-          lastrow.append(new QStandardItem(QString("Object %1").arg(QString::number(maxrowtoget)))); 
+          lastrow.append(new QStandardItem(QString("Object %1").arg(QString::number(maxrowtoget))));
           for(int j = 0; j < maxcoltoget; j++){
             lastrow.append(new QStandardItem("..."));
           }
@@ -1305,15 +1305,15 @@ void ImportFromFileDialog::Preview()
           previewfile.append(lst);
         }
       }
-      
+
       if(varnames.size() < maxcoltoget){
         maxcoltoget = varnames.size();
       }
-      
+
       if(objnames.size() < maxrowtoget){
         maxrowtoget = objnames.size();
       }
-      
+
       if(previewfile.size() > 0 && previewfile.last().size() > 0){
         int ncols;
         if(FirstColumnObjNames() == true){
@@ -1332,7 +1332,7 @@ void ImportFromFileDialog::Preview()
             ncols = (file[0].size())/ui.levelBox->value();
           }
         }
-        
+
         if(FirstRowVarNames() == true){
           for(int i = 0; i < previewfile.first().size(); i++){
             if(i == 0){
@@ -1348,7 +1348,7 @@ void ImportFromFileDialog::Preview()
               }
             }
           }
-          
+
           model->setHorizontalHeaderItem(maxcoltoget, new QStandardItem(QString("...")));
           previewfile.removeFirst();
         }
@@ -1366,17 +1366,17 @@ void ImportFromFileDialog::Preview()
               }
             }
           }
-          
+
           model->setHorizontalHeaderItem(maxcoltoget, new QStandardItem(QString("...")));
         }
-        
+
         // load previewfile for preview.......
         for(int i = 0; i < previewfile.size(); i++){
           QList<QStandardItem*> row;
-          
+
           if(FirstColumnObjNames() == true){
             row.append(new QStandardItem(previewfile[i].first()));
-            
+
             for(int j = 1; j < previewfile[i].size(); j++){
               if(j < ncols){
                 row.append(new QStandardItem(previewfile[i][j]));
@@ -1385,12 +1385,12 @@ void ImportFromFileDialog::Preview()
                 break;
               }
             }
-            
+
             row.append(new QStandardItem("..."));
             model->appendRow(row);
           }
           else{
-            row.append(new QStandardItem(QString("Object %1").arg(QString::number(i+1)))); 
+            row.append(new QStandardItem(QString("Object %1").arg(QString::number(i+1))));
             for(int j = 0; j < maxcoltoget-1; j++){
               if(j < ncols){
                 row.append(new QStandardItem(previewfile[i][j]));
@@ -1399,24 +1399,24 @@ void ImportFromFileDialog::Preview()
                 break;
               }
             }
-            
+
             row.append(new QStandardItem("..."));
             model->appendRow(row);
           }
         }
-        
+
         // last empty row
         QList<QStandardItem*> lastrow;
         if(FirstColumnObjNames() == true){
           lastrow.append(new QStandardItem(previewfile.last().first()));
-          
+
           for(int j = 1; j < previewfile.last().size()+1; j++){
             lastrow.append(new QStandardItem("..."));
           }
           model->appendRow(lastrow);
         }
         else{
-          lastrow.append(new QStandardItem(QString("Object %1").arg(QString::number(maxrowtoget)))); 
+          lastrow.append(new QStandardItem(QString("Object %1").arg(QString::number(maxrowtoget))));
           for(int j = 0; j < maxcoltoget; j++){
             lastrow.append(new QStandardItem("..."));
           }
@@ -1448,23 +1448,23 @@ void ImportFromFileDialog::Preview()
 ImportFromFileDialog::ImportFromFileDialog(): QDialog()
 {
   ui.setupUi(this);
-  
+
   model = new QStandardItemModel();
-  
+
   ui.tableView->setModel(model);
-  
+
   m = new MATRIX;
   a = new ARRAY;
-  
+
   connect(ui.okButton, SIGNAL(clicked(bool)), SLOT(OK()));
   connect(ui.cancelButton, SIGNAL(clicked(bool)), SLOT(reject()));
   connect(ui.openButton, SIGNAL(clicked(bool)), this, SLOT(Open()));
-  
+
   idsplitlinebyindex = ui.splitlineby->currentIndex();
   idstartlinebox = ui.startlineBox->value();
   idstoplinebox = ui.startlineBox->value();
   transposestatus = ui.transpose->isChecked();
-  
+
   /*
   connect(ui.file, SIGNAL(textChanged(QString)), SLOT(LoadFileInMem()));
   connect(ui.splitlineby, SIGNAL(currentIndexChanged(int)), SLOT(LoadFileInMem()));
@@ -1478,35 +1478,35 @@ ImportFromFileDialog::ImportFromFileDialog(): QDialog()
   connect(ui.colmissvalueBox, SIGNAL(valueChanged(int)), SLOT(Preview()));
   connect(ui.levelBox, SIGNAL(valueChanged(int)), SLOT(Preview()));
   */
-  
+
   connect(ui.updateView, SIGNAL(clicked(bool)), SLOT(UpdateView()));
-  
+
   connect(ui.objselectAllButton, SIGNAL(clicked(bool)), SLOT(ObjSelectAll()));
   connect(ui.objinvertselectionButton, SIGNAL(clicked(bool)), SLOT(ObjInvertSelection()));
   connect(ui.objunselectAllButton, SIGNAL(clicked(bool)), SLOT(ObjUnselectAll()));
 //   connect(ui.objselectbymatchButton, SIGNAL(clicked(bool)), SLOT(ObjSelectBy()));
-  
+
   connect(ui.varselectAllButton, SIGNAL(clicked(bool)), SLOT(VarSelectAll()));
   connect(ui.varinvertselectionButton, SIGNAL(clicked(bool)), SLOT(VarInvertSelection()));
   connect(ui.varunselectAllButton, SIGNAL(clicked(bool)), SLOT(VarUnselectAll()));
 //   connect(ui.varselectbymatchButton, SIGNAL(clicked(bool)), SLOT(VarSelectBy()));
-  
+
   ui.varselectbymatchButton->hide();
   ui.objselectbymatchButton->hide();
-  
+
   tab1 = new StringListModel();
   tab2 = new StringListModel();
-  
+
   ui.listView_2->setModel(tab1);
   ui.listView_3->setModel(tab2);
-  
+
   /*ui.listView_2->horizontalHeader()->setDefaultSectionSize(200);
   ui.listView_3->horizontalHeader()->setDefaultSectionSize(200);*/
-  
+
   connect(ui.listView_2->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisable()));
   connect(ui.listView_3->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisable()));
-  
-  
+
+
   CountNObjects();
   CountNVariables();
   EnableDisable();

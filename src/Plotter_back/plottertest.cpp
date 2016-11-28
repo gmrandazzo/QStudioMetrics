@@ -1,5 +1,4 @@
 #include <QtGui>
-#include <QApplication>
 #include "plotter.h"
 
 /*
@@ -13,14 +12,14 @@ void PlotFromfile(Plotter *plotter, const QString &fileName)
       QStringList fields = line.split(';', QString::SkipEmptyParts);
       qreal x = fields[1].toDouble();
       qreal y = fields[2].toDouble();
-      QString name = fields[0];
+      QString name = fields[0]; 
 //       qDebug() << x << y << name;
       plotter->addPoint(x, y, name);
     }
   }
-
+  
 //   plotter->getPoint(0)->setSelection(true);
-
+  
 //   plotter->getPoint(1)->setSelection(true);
   plotter->Refresh();
 }
@@ -46,13 +45,13 @@ void RandomPlot(Plotter *plotter)
     plotter->addPoint(x, y, name);
   }
 //   plotter->getPoint(0)->setSelection(true);
-
+  
 //   plotter->getPoint(1)->setSelection(true);
 
   QVector< QPointF > line;
   line.append(QPointF(0,0));
   line.append(QPointF(0.01,0.01));
-
+  
   plotter->addCurve(line, "ciccio", Qt::red);
   plotter->Refresh();
 }
@@ -73,7 +72,7 @@ void GaussianPlot(Plotter *plotter)
     curve1.append(QPointF(x, y));
     cc++;
   }
-
+  
   qreal dx = 7.5 / (steps-1);
   for (int i = 0; i < steps; ++i){
     qreal x = i * dx;
@@ -83,7 +82,7 @@ void GaussianPlot(Plotter *plotter)
     curve2.append(QPointF(x, y));
     cc++;
   }
-
+  
   plotter->addPoint(0, 0, "zero");
   curve3.append(QPointF(0,0));
   plotter->addPoint(1, 1, "uno");
@@ -94,7 +93,7 @@ void GaussianPlot(Plotter *plotter)
   plotter->addCurve(curve1, "fit1", Qt::red);
   plotter->addCurve(curve2, "fit2", Qt::blue);
   plotter->addCurve(curve3, "fit3", Qt::black);
-
+  
   plotter->Refresh();
 }
 

@@ -7,6 +7,8 @@
 #include <QMap>
 #include <QString>
 #include <QStringList>
+#include <QMessageBox>
+#include <QProgressDialog>
 
 #ifdef DEBUG
 #include <QDebug>

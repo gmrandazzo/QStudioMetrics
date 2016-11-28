@@ -147,7 +147,7 @@ void PCAPlot::LoadingsMVANormDistrib(ScatterPlot2D **plot2D)
 
       for(uint j = 0; j < classvar->m[k]->col; j++){
         for(uint i = 0; i < classvar->m[k]->row; i++){
-          my[k]->data[i][j] = 1./sqrt(2 * pi* sdev->data[j]) * exp(-square((classvar->m[k]->data[i][j] - mean->data[j])/sdev->data[j])/2.f);
+          my[k]->data[i][j] = 1./sqrt(2 * _pi_* sdev->data[j]) * exp(-square((classvar->m[k]->data[i][j] - mean->data[j])/sdev->data[j])/2.f);
         }
       }
 

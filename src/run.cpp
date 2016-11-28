@@ -5,6 +5,7 @@
 #include <QtCore>
 #include <QThread>
 #include <QThreadPool>
+#include <QtConcurrent/QtConcurrent>
 
 #include <scientific.h>
 

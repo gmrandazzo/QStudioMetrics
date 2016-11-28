@@ -1,13 +1,41 @@
-cmake_minimum_required(VERSION 2.8)
-set(Version "1.8.0")
-
 project(QStudioMetrics)
+cmake_minimum_required(VERSION 2.8)
+set(VERSION "1.9.0")
+set(AUTHOR "Giuseppe Marco Randazzo")
 
-find_package(Qt4 REQUIRED)
-#find_package(Qt5Widgets REQUIRED)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
 
-include(${QT_USE_FILE})
-SET(QT_USE_QTNETWORK TRUE)
+#set(_components
+#    Core
+#    Gui
+#    DBus
+#    Designer
+#    Declarative
+#    Script
+#    ScriptTools
+#    Network
+#    Test
+#    Xml
+#    Svg
+#    Sql
+#    Widgets
+#    PrintSupport
+#    Concurrent
+#    UiTools
+#    WebKit
+#    WebKitWidgets
+#    OpenGL)
+
+set(_components Core Gui Widgets PrintSupport Concurrent)
+foreach(_component ${_components})
+  find_package(Qt5${_component})
+  list(APPEND QT5_LIBRARIES ${Qt5${_component}_LIBRARIES})
+endforeach()
+
+
+#find_package(Qt5 COMPONENTS Core Concurrent Widgets PrintSupport)
+#set(QT5_LIBRARIES Qt5::Widgets Qt5::PrintSupport)
 
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE}) # include UseVTK.cmake
@@ -28,7 +56,7 @@ if(WIN32)
   SET_PROPERTY(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE QT_NO_DEBUG)
   add_definitions(${QT_DEFINITIONS})
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-elseif(APPLE) 
+elseif(APPLE)
   if(cmake_build_type_tolower STREQUAL "debug")
     message(STATUS "Build Debug: APPLE")
     set(CMAKE_BUILD_TYPE "Debug")
@@ -38,21 +66,20 @@ elseif(APPLE)
     set(CMAKE_BUILD_TYPE "Release")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRELEASE -O2 -Wall -Wnewline-eof")
   endif()
-  add_definitions(${QT_DEFINITIONS})
 else()
   message(STATUS "Build Release: Linux")
   if(cmake_build_type_tolower STREQUAL "debug")
     set(CMAKE_BUILD_TYPE "Debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -Wall -pedantic -g -Wno-long-long ")
-    add_definitions(${QT_DEFINITIONS} --debug)
   else()
     set(CMAKE_BUILD_TYPE "Release")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRELEASE -O2 -Wall -Wno-long-long ")
-    add_definitions(${QT_DEFINITIONS})
   endif()
 endif(WIN32)
 
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
+
+add_definitions(${QT5_DEFINITIONS})
 
 if(NOT SCIENTIFIC_LIB_DIR)
   message(SEND_ERROR "Please specify the libscientific library path with -DSCIENTIFIC_LIB_DIR=...")

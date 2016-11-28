@@ -1,25 +1,17 @@
 PROJECT(libplotter)
 cmake_minimum_required(VERSION 2.8)
 set(AUTHOR "Giuseppe Marco Randazzo")
-set(VERSION "1.0.5")
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_MACOSX_RPATH 1)
-
-find_package(Qt5 COMPONENTS Core Widgets PrintSupport)
-set(QT5_LIBRARIES Qt5::Widgets Qt5::PrintSupport Qt5::Core)
-add_definitions(${QT5_DEFINITIONS})
+set(VERSION "1.0.1")
 
 if(WIN32)
   message(STATUS "OS: Windows")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pipe -mwindows -pedantic -Wall -static")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static-libstdc++ -s -Wl,-O1")
-elseif(APPLE)
+elseif(APPLE) 
   message(STATUS "Build Release: APPLE")
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall -Wno-long-long -DDEBUG")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall -Wno-long-long")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+  add_definitions(${QT_DEFINITIONS})
 else(WIN32)
   message(STATUS "OS: Unix")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pedantic -Wall -Werror -g")
@@ -27,6 +19,10 @@ else(WIN32)
 endif(WIN32)
 
 # set(CMAKE_INSTALL_PREFIX "/usr/local/")
+
+find_package(Qt4 REQUIRED)
+include(${QT_USE_FILE})
+
 
 set(PLOTTER_SRC
     plotter.cpp
@@ -43,23 +39,38 @@ set(PLOTTERTEST_SRC plottertest.cpp)
 set(icon_RCC plotter.qrc)
 
 # start building interface from moc
-QT5_WRAP_CPP(PLOTTER_MOC_H ${PLOTTER_H})
-QT5_ADD_RESOURCES(icon_RCC_SRCS ${icon_RCC})
+QT4_WRAP_CPP(PLOTTER_MOC_H ${PLOTTER_H})
+# QT4_WRAP_UI(PLOTTER_UIS_H ${PLOTTER_UIS})
+# generate rules for building source files from the resources
+QT4_ADD_RESOURCES(icon_RCC_SRCS ${icon_RCC})
+
+
+# source_group("Resources" FILES
+#   ${PLOTTER_UIS}
+# )
+ 
+# source_group("Generated" FILES
+#   ${PLOTTER_UIS_H}
+#   ${PLOTTER_MOC_H}
+# )
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(libplotter SHARED ${PLOTTER_SRC} ${PLOTTER_H} ${icon_RCC_SRCS})
-#add_library(libplotter STATIC ${PLOTTER_SRC} ${PLOTTER_H} ${icon_RCC_SRCS})
+add_library(libplotter SHARED ${PLOTTER_SRC} ${PLOTTER_MOC_H} ${PLOTTER_H} ${icon_RCC_SRCS})
+# add_library(libplotter STATIC ${PLOTTER_SRC} ${PLOTTER_MOC_H} ${PLOTTER_H} ${icon_RCC_SRCS})
 set_target_properties(libplotter PROPERTIES OUTPUT_NAME "plotter")
 
 
-if(WIN32)
-  target_link_libraries(libplotter Qt5::Widgets "-mwindows")
-else()
-  target_link_libraries(libplotter ${QT5_LIBRARIES})
 
+
+
+if(WIN32)
+  target_link_libraries(libplotter ${QT_LIBRARIES} "-mwindows")
+else()
+  target_link_libraries(libplotter ${QT_LIBRARIES})
+  
   add_executable(test ${PLOTTERTEST_SRC})
-  target_link_libraries(test libplotter ${QT5_LIBRARIES})
+  target_link_libraries(test libplotter ${QT_LIBRARIES})
 endif()
 
 # install(TARGETS libplotter LIBRARY DESTINATION lib COMPONENT Libraries)

@@ -92,7 +92,7 @@ public:
       hash.append(QString::number(ceil(getDVectorValue(v, 0)))); // get the element 0
       hash.append(QString::number(ceil(getDVectorValue(v, (size_t)ceil((v->size-1)/2))))); // get the middle element
       hash.append(QString::number(ceil(getDVectorValue(v, v->size-1)))); // get the last element
-      hash.append(name.toAscii().toHex()); // get the last element
+      hash.append(name.toLatin1().toHex()); // get the last element
     }
     else{
       hash = "Vector Empty!";

@@ -174,21 +174,23 @@ set(QSTUDIOMETRICS_UIS
 
 add_subdirectory(Plotter)
 
-set(QSTUDIOMETRIC_CMDPCA_SRC DATAIO.cpp qstudiom-pca.cpp)
-set(QSTUDIOMETRIC_CMDPLS_SRC DATAIO.cpp qstudiom-pls.cpp)
-set(QSTUDIOMETRIC_CMDUPCA_SRC DATAIO.cpp qstudiom-upca.cpp)
-set(QSTUDIOMETRIC_CMDUPLS_SRC DATAIO.cpp qstudiom-upls.cpp)
-set(QSTUDIOMETRIC_CMDBINTEST_SRC DATAIO.cpp qstudiom-bintest.cpp)
-set(QSTUDIOMETRIC_CMDDOE_SRC DATAIO.cpp qstudiom-doe.cpp)
-set(QSTUDIOMETRIC_CMDMDC_SRC DATAIO.cpp qstudiom-mdc.cpp)
+set(QSTUDIOMETRICS_CMDPCA_SRC DATAIO.cpp qstudiom-pca.cpp)
+set(QSTUDIOMETRICS_CMDPLS_SRC DATAIO.cpp qstudiom-pls.cpp)
+set(QSTUDIOMETRICS_CMDUPCA_SRC DATAIO.cpp qstudiom-upca.cpp)
+set(QSTUDIOMETRICS_CMDUPLS_SRC DATAIO.cpp qstudiom-upls.cpp)
+set(QSTUDIOMETRICS_CMDBINTEST_SRC DATAIO.cpp qstudiom-bintest.cpp)
+set(QSTUDIOMETRICS_CMDDOE_SRC DATAIO.cpp qstudiom-doe.cpp)
+set(QSTUDIOMETRICS_CMDMDC_SRC DATAIO.cpp qstudiom-mdc.cpp)
 
 set(icon_RCC icons/icons.qrc)
 
 # start building interface from moc
-QT4_WRAP_CPP(QSTUDIOMETRICS_MOC_H ${QSTUDIOMETRICS_H})
-QT4_WRAP_UI(QSTUDIOMETRICS_UIS_H ${QSTUDIOMETRICS_UIS})
+set(CMAKE_AUTOMOC OFF)
+#set(AUTOMOC_MOC_OPTIONS PROPERTIES FOLDER CMakeAutomocTargets)
+QT5_WRAP_CPP(QSTUDIOMETRICS_MOC_H ${QSTUDIOMETRICS_H})
+QT5_WRAP_UI(QSTUDIOMETRICS_UIS_H ${QSTUDIOMETRICS_UIS})
 # generate rules for building source files from the resources
-QT4_ADD_RESOURCES(icon_RCC_SRCS ${icon_RCC})
+QT5_ADD_RESOURCES(icon_RCC_SRCS ${icon_RCC})
 
 
 source_group("Resources" FILES
@@ -214,47 +216,46 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_executable(QStudioMetrics ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS})
 
 if(WIN32)
-  target_link_libraries(QStudioMetrics libplotter ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a ${QT_LIBRARIES} ${VTK_LIBRARIES})
+  target_link_libraries(QStudioMetrics libplotter ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a ${QT5_LIBRARIES} ${VTK_LIBRARIES})
 
-  add_executable(qsm-pca ${QSTUDIOMETRIC_CMDPCA_SRC})
+  add_executable(qsm-pca ${QSTUDIOMETRICS_CMDPCA_SRC})
   target_link_libraries(qsm-pca ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a)
 
-  add_executable(qsm-pls ${QSTUDIOMETRIC_CMDPLS_SRC})
+  add_executable(qsm-pls ${QSTUDIOMETRICS_CMDPLS_SRC})
   target_link_libraries(qsm-pls ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a)
 
-  add_executable(qsm-mdc ${QSTUDIOMETRIC_CMDMDC_SRC})
+  add_executable(qsm-mdc ${QSTUDIOMETRICS_CMDMDC_SRC})
   target_link_libraries(qsm-mdc ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a)
-
 else()
-  target_link_libraries(QStudioMetrics scientific libplotter ${QT_LIBRARIES} ${VTK_LIBRARIES})
+  target_link_libraries(QStudioMetrics scientific libplotter ${QT5_LIBRARIES} ${VTK_LIBRARIES})
   #add_executable(qsm-objselector qsmcompselector.cpp DATAIO.cpp)
   #target_link_libraries(qsm-objselector scientific)
 
-  add_executable(qsm-pca ${QSTUDIOMETRIC_CMDPCA_SRC})
+  add_executable(qsm-pca ${QSTUDIOMETRICS_CMDPCA_SRC})
   target_link_libraries(qsm-pca scientific)
 
-  add_executable(qsm-pls ${QSTUDIOMETRIC_CMDPLS_SRC})
+  add_executable(qsm-pls ${QSTUDIOMETRICS_CMDPLS_SRC})
   target_link_libraries(qsm-pls scientific)
 
-  add_executable(qsm-mdc ${QSTUDIOMETRIC_CMDMDC_SRC})
+  add_executable(qsm-mdc ${QSTUDIOMETRICS_CMDMDC_SRC})
   target_link_libraries(qsm-mdc scientific)
 
-  #add_executable(qsm-mlr ${QSTUDIOMETRIC_CMDMLR_SRC})
+  #add_executable(qsm-mlr ${QSTUDIOMETRICS_CMDMLR_SRC})
   #target_link_libraries(qsm-mlr scientific)
 
-  #add_executable(qsm-lda ${QSTUDIOMETRIC_CMDLDA_SRC})
+  #add_executable(qsm-lda ${QSTUDIOMETRICS_CMDLDA_SRC})
   #target_link_libraries(qsm-lda scientific)s
 
-  #add_executable(qsm-upca ${QSTUDIOMETRIC_CMDUPCA_SRC})
+  #add_executable(qsm-upca ${QSTUDIOMETRICS_CMDUPCA_SRC})
   #target_link_libraries(qsm-upca scientific)
 
-  #add_executable(qsm-upls ${QSTUDIOMETRIC_CMDUPLS_SRC})
+  #add_executable(qsm-upls ${QSTUDIOMETRICS_CMDUPLS_SRC})
   #target_link_libraries(qsm-upls scientific)
 
-  #add_executable(qsm-bintest ${QSTUDIOMETRIC_CMDBINTEST_SRC})
+  #add_executable(qsm-bintest ${QSTUDIOMETRICS_CMDBINTEST_SRC})
   #target_link_libraries(qsm-bintest scientific)
 
-  #add_executable(qsm-doe ${QSTUDIOMETRIC_CMDDOE_SRC})
+  #add_executable(qsm-doe ${QSTUDIOMETRICS_CMDDOE_SRC})
   #target_link_libraries(qsm-doe scientific)
 endif()
 
@@ -313,6 +314,6 @@ if(cmake_build_type_tolower STREQUAL "debug")
     target_link_libraries(testimportmatrix scientific)
     target_link_libraries(testimportarray scientific)
     target_link_libraries(testimportpcamodel scientific)
-    target_link_libraries(qsmprojectcompressor ${QT_LIBRARIES})
+    target_link_libraries(qsmprojectcompressor ${QT5_LIBRARIES})
   endif()
 endif()

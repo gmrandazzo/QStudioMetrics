@@ -7,7 +7,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QString>
 #include <QTextStream>
-#include <QtConcurrentRun>
+#include <QtConcurrent/QtConcurrentRun>
 #include <QFutureWatcher>
 
 /*

@@ -1,9 +1,4 @@
 #include <QtGui>
-#include <QToolButton>
-#include <QPrinter>
-#include <QMessageBox>
-#include <QStylePainter>
-#include <QStyleOptionFocusRect>
 #include <cmath>
 
 #include "plotter.h"
@@ -21,20 +16,10 @@ inline double round(double n, unsigned d)
 Plotter::Plotter(QWidget *parent)
     : QWidget(parent)
 {
-  #ifdef DEBUG
-  printf("Plotter::Plotter\n");
-  #endif
   rescalefactor = 0.25;
   labeldetail = false;
-
-  QPalette Pal(palette());
-
-  // set black background
-  Pal.setColor(QPalette::Background, Qt::white);
   setBackgroundRole(QPalette::Light);
   setAutoFillBackground(true);
-  setPalette(Pal);
-
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 //   setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   setFocusPolicy(Qt::StrongFocus);
@@ -57,9 +42,6 @@ Plotter::Plotter(QWidget *parent)
 
 Plotter::~Plotter()
 {
-  #ifdef DEBUG
-  printf("Plotter::~Plotter\n");
-  #endif
   for(int i = 0; i < p.size(); i++)
     delete p[i];
   p.clear();
@@ -70,9 +52,6 @@ Plotter::~Plotter()
 
 void Plotter::Refresh()
 {
-  #ifdef DEBUG
-  printf("Plotter::Refresh\n");
-  #endif
   if(zoomStack.size() > 0 && p.size() > 0){
     qreal minX, maxX, minY, maxY;
     // search min max between scatters
@@ -145,41 +124,26 @@ void Plotter::Refresh()
 
 void Plotter::setXaxisName(QString xaxisname)
 {
-  #ifdef DEBUG
-  printf("Plotter::setXaxisName\n");
-  #endif
   m_xaxisname = xaxisname;
 }
 
 void Plotter::setYaxisName(QString yaxisname)
 {
-  #ifdef DEBUG
-  printf("Plotter::setYaxisName\n");
-  #endif
   m_yaxisname = yaxisname;
 }
 
 void Plotter::setPlotTitle(QString plottitle)
 {
-  #ifdef DEBUG
-  printf("Plotter::setPlotTitle\n");
-  #endif
   m_plottitle = plottitle;
 }
 
 void Plotter::setLabelDetail(bool labeldetail_)
 {
-  #ifdef DEBUG
-  printf("Plotter::setLabelDetail\n");
-  #endif
   labeldetail = labeldetail_;
 }
 
 void Plotter::setXminXmaxXTick(double xmin, double xmax, int xtick)
 {
-  #ifdef DEBUG
-  printf("Plotter::setXminXmaxXTick\n");
-  #endif
   if(zoomStack.size() > 0 && curZoom < zoomStack.size()){
     zoomStack[curZoom].minX = xmin;
     zoomStack[curZoom].maxX = xmax;
@@ -191,9 +155,6 @@ void Plotter::setXminXmaxXTick(double xmin, double xmax, int xtick)
 
 void Plotter::setYminYmaxYTick(double ymin, double ymax, int ytick)
 {
-  #ifdef DEBUG
-  printf("Plotter::setYminYmaxYTick\n");
-  #endif
   if(zoomStack.size() > 0 && curZoom < zoomStack.size()){
     zoomStack[curZoom].minY = ymin;
     zoomStack[curZoom].maxY = ymax;
@@ -204,9 +165,6 @@ void Plotter::setYminYmaxYTick(double ymin, double ymax, int ytick)
 
 void Plotter::DoSelection(int low, int high)
 {
-  #ifdef DEBUG
-  printf("Plotter::DoSelection\n");
-  #endif
   int i;
   for(i = low; i < high; i++){
     p[i]->setSelection(true);
@@ -215,9 +173,6 @@ void Plotter::DoSelection(int low, int high)
 
 void Plotter::Select(int from, int to)
 {
-  #ifdef DEBUG
-  printf("Plotter::Select\n");
-  #endif
   if(from < to){
     int mid = (from+to)/2;
     Select(from, mid);
@@ -228,9 +183,6 @@ void Plotter::Select(int from, int to)
 
 void Plotter::SelectAll()
 {
-  #ifdef DEBUG
-  printf("Plotter::SelectAll\n");
-  #endif
   Select(0, p.size());
   /*
   for(int i = 0; i < p.size(); i++)
@@ -241,9 +193,6 @@ void Plotter::SelectAll()
 
 void Plotter::DoUnselection(int low, int high)
 {
-  #ifdef DEBUG
-  printf("Plotter::DoUnselection\n");
-  #endif
   int i;
   for(i = low; i < high; i++){
     if(p[i]->isSelected() == true){
@@ -255,9 +204,6 @@ void Plotter::DoUnselection(int low, int high)
 
 void Plotter::Unselect(int from, int to)
 {
-  #ifdef DEBUG
-  printf("Plotter::Unselect\n");
-  #endif
   if(from < to){
     int mid = (from+to)/2;
     Unselect(from, mid);
@@ -268,9 +214,6 @@ void Plotter::Unselect(int from, int to)
 
 void Plotter::ClearSelection()
 {
-  #ifdef DEBUG
-  printf("Plotter::ClearSelection\n");
-  #endif
   /* Unselection by divide and conqueror technique*/
   Unselect(0, p.size());
   /*for(int i = 0; i < p.size(); i++){
@@ -285,38 +228,26 @@ void Plotter::ClearSelection()
 
 void Plotter::RemoveCurveAt(int cid)
 {
-  #ifdef DEBUG
-  printf("Plotter::RemoveCurveAt\n");
-  #endif
   curveMap.remove(cid);
 }
 
 void Plotter::RemoveAllCurves()
 {
-  #ifdef DEBUG
-  printf("Plotter::RemoveAllCurves\n");
-  #endif
   curveMap.clear();
 }
 
 void Plotter::setPlotSettings(const PlotSettings &settings)
 {
-  #ifdef DEBUG
-  printf("Plotter::setPlotSettings\n");
-  #endif
-  zoomStack.clear();
-  zoomStack.append(settings);
-  curZoom = 0;
-  zoomInButton->hide();
-  zoomOutButton->hide();
-  refreshPixmap();
+    zoomStack.clear();
+    zoomStack.append(settings);
+    curZoom = 0;
+    zoomInButton->hide();
+    zoomOutButton->hide();
+    refreshPixmap();
 }
 
 void Plotter::zoomOut()
 {
-  #ifdef DEBUG
-  printf("Plotter::zoomOut\n");
-  #endif
   if(curZoom > 0){
     --curZoom;
     zoomOutButton->setEnabled(curZoom > 0);
@@ -328,9 +259,6 @@ void Plotter::zoomOut()
 
 void Plotter::zoomIn()
 {
-  #ifdef DEBUG
-  printf("Plotter::zoomIn\n");
-  #endif
   if(curZoom < zoomStack.count() - 1){
     ++curZoom;
     zoomInButton->setEnabled(curZoom < zoomStack.count() - 1);
@@ -350,9 +278,6 @@ void Plotter::setCurveData(int id, const QVector<QPointF> &data)
 
 void Plotter::addPoint(qreal x, qreal y, QString name)
 {
-  #ifdef DEBUG
-  printf("Plotter::addPoint(qreal x, qreal y, QString name)\n");
-  #endif
   p.append(new DataPoint(x, y, name));
 //   p.last()->setX(x);
 //   p.last()->setY(y);
@@ -361,9 +286,6 @@ void Plotter::addPoint(qreal x, qreal y, QString name)
 
 void Plotter::addPoint(qreal x, qreal y, QString name, QColor color, int radius)
 {
-  #ifdef DEBUG
-  printf("Plotter::addPoint(qreal x, qreal y, QString name, QColor color, int radius)\n");
-  #endif
   p.append(new DataPoint(x, y, name));
   p.last()->setColor(color);
   p.last()->setRadius(radius);
@@ -371,26 +293,17 @@ void Plotter::addPoint(qreal x, qreal y, QString name, QColor color, int radius)
 
 void Plotter::addCurve(QVector< QPointF > curve, QString name, QColor color)
 {
-  #ifdef DEBUG
-  printf("Plotter::addCurve\n");
-  #endif
   curveMap.append(DataCurve(curve, name, color));
 }
 
 
 int Plotter::PointSize() const
 {
-  #ifdef DEBUG
-  printf("Plotter::PointSize\n");
-  #endif
   return p.size();
 }
 
 DataPoint* Plotter::getPoint(int id)
 {
-  #ifdef DEBUG
-  printf("Plotter::getPoint\n");
-  #endif
   if(id < p.size())
     return p[id];
   else
@@ -399,9 +312,6 @@ DataPoint* Plotter::getPoint(int id)
 
 void Plotter::RemovePointAt(int id)
 {
-  #ifdef DEBUG
-  printf("Plotter::RemovePointAt\n");
-  #endif
   if(id < p.size()){
     delete p[id];
     p.remove(id);
@@ -410,9 +320,6 @@ void Plotter::RemovePointAt(int id)
 
 void Plotter::RemovePoint(DataPoint *dp)
 {
-  #ifdef DEBUG
-  printf("Plotter::RemovePoint\n");
-  #endif
   int indx = p.indexOf(dp);
   if(indx > -1){
     delete p[indx];
@@ -422,9 +329,6 @@ void Plotter::RemovePoint(DataPoint *dp)
 
 void Plotter::RemoveAllPoints()
 {
-  #ifdef DEBUG
-  printf("Plotter::RemoveAllPoints\n");
-  #endif
   for(int i = 0; i < p.size(); i++){
     delete p[i];
   }
@@ -434,9 +338,6 @@ void Plotter::RemoveAllPoints()
 
 QVector< DataCurve > Plotter::getCurves()
 {
-  #ifdef DEBUG
-  printf("Plotter::getCurves\n");
-  #endif
   return curveMap;
 }
 
@@ -450,25 +351,16 @@ void Plotter::clearCurve(int id)
 
 QSize Plotter::minimumSizeHint() const
 {
-  #ifdef DEBUG
-  printf("Plotter::minimumSizeHint\n");
-  #endif
   return QSize(6 * Margin, 4 * Margin);
 }
 
 QSize Plotter::sizeHint() const
 {
-  #ifdef DEBUG
-  printf("Plotter::sizeHint\n");
-  #endif
   return QSize(12 * Margin, 8 * Margin);
 }
 
 void Plotter::SaveAsImage(QString imgname)
 {
-  #ifdef DEBUG
-  printf("Plotter::SaveAsImage\n");
-  #endif
   /*
   QByteArray bytes;
   QBuffer buffer(&bytes);
@@ -503,9 +395,6 @@ void Plotter::SaveAsImage(QString imgname)
 
 void Plotter::paintEvent(QPaintEvent * event)
 {
-  #ifdef DEBUG
-  printf("Plotter::paintEvent\n");
-  #endif
   Q_UNUSED(event);
 
   QStylePainter painter(this);
@@ -529,9 +418,6 @@ void Plotter::paintEvent(QPaintEvent * event)
 
 void Plotter::resizeEvent(QResizeEvent *event)
 {
-  #ifdef DEBUG
-  printf("Plotter::resizeEvent\n");
-  #endif
   Q_UNUSED(event);
   int x = width() - (zoomInButton->width()
                       + zoomOutButton->width() + 10);
@@ -542,9 +428,6 @@ void Plotter::resizeEvent(QResizeEvent *event)
 
 void Plotter::mousePressEvent(QMouseEvent *event)
 {
-  #ifdef DEBUG
-  printf("Plotter::mousePressEvent\n");
-  #endif
   QRect rect(Margin, Margin, width() - 2 * Margin, height() - 2 * Margin);
 
   //zoom with the middle button
@@ -565,9 +448,6 @@ void Plotter::mousePressEvent(QMouseEvent *event)
 
 void Plotter::mouseMoveEvent(QMouseEvent *event)
 {
-  #ifdef DEBUG
-  printf("Plotter::mouseMoveEvent\n");
-  #endif
   if(rubberBandIsShown == true){
     updateRubberBandRegion();
     rubberBandRect.setBottomRight(event->pos());
@@ -577,9 +457,6 @@ void Plotter::mouseMoveEvent(QMouseEvent *event)
 
 void Plotter::mouseReleaseEvent(QMouseEvent *event)
 {
-  #ifdef DEBUG
-  printf("Plotter::mouseReleaseEvent\n");
-  #endif
   if((event->button() == Qt::MiddleButton) && rubberBandIsShown == true){
     rubberBandIsShown = false;
     updateRubberBandRegion();
@@ -653,9 +530,6 @@ void Plotter::mouseReleaseEvent(QMouseEvent *event)
 
 void Plotter::keyPressEvent(QKeyEvent *event)
 {
-  #ifdef DEBUG
-  printf("Plotter::keyPressEvent\n");
-  #endif
   switch (event->key()){
   case Qt::Key_Plus:
     zoomIn();
@@ -686,9 +560,6 @@ void Plotter::keyPressEvent(QKeyEvent *event)
 
 void Plotter::wheelEvent(QWheelEvent *event)
 {
-  #ifdef DEBUG
-  printf("Plotter::wheelEvent\n");
-  #endif
   int numDegrees = event->delta() / 8;
   int numTicks = numDegrees / 15;
 
@@ -704,9 +575,6 @@ void Plotter::wheelEvent(QWheelEvent *event)
 
 void Plotter::updateRubberBandRegion()
 {
-  #ifdef DEBUG
-  printf("Plotter::updateRubberBandRegion\n");
-  #endif
   QRect rect = rubberBandRect.normalized();
   update(rect.left(), rect.top(), rect.width(), 1);
   update(rect.left(), rect.top(), 1, rect.height());
@@ -716,14 +584,8 @@ void Plotter::updateRubberBandRegion()
 
 void Plotter::refreshPixmap()
 {
-  #ifdef DEBUG
-  printf("Plotter::refreshPixmap\n");
-  #endif
-  // fill the background with the white color!
   pixmap = QPixmap(size());
-  pixmap.fill(Qt::white);
-  
-  /*pixmap.fill(this, 0, 0); OBSOLETE FUNCTION in qt5 */
+  pixmap.fill(this, 0, 0);
 
   QPainter painter(&pixmap);
   painter.initFrom(this);
@@ -740,9 +602,6 @@ void Plotter::refreshPixmap()
 }
 
 int getDecimals(double x){
-  #ifdef DEBUG
-  printf("Plotter::getDecimals\n");
-  #endif
   QString str = QString::number(x);
   QString decimals = str.split(".").last();
   int i, d = 1;
@@ -762,9 +621,7 @@ int getDecimals(double x){
 
 void Plotter::drawGrid(QPainter *painter)
 {
-  #ifdef DEBUG
-  printf("Plotter::drawGrid\n");
-  #endif
+
   QRect rect(Margin, Margin, width() - 2 * Margin, height() - 2 * Margin);
   if(!rect.isValid())
       return;
@@ -889,9 +746,6 @@ void Plotter::drawGrid(QPainter *painter)
 
 void Plotter::drawCurves(QPainter *painter)
 {
-  #ifdef DEBUG
-  printf("Plotter::drawCurves\n");
-  #endif
   PlotSettings settings = zoomStack[curZoom];
   QRect rect(Margin, Margin,
               width() - 2 * Margin, height() - 2 * Margin);
@@ -936,9 +790,6 @@ typedef struct{
 
 void *drawScatterThread(void *arg_)
 {
-  #ifdef DEBUG
-  printf("Plotter::drawScatterThread\n");
-  #endif
   scatter_th_arg *arg = (scatter_th_arg*) arg_;
 
   for(int i = arg->from; i < arg->to; i++){
@@ -963,9 +814,6 @@ void *drawScatterThread(void *arg_)
 
 void Plotter::drawScatters(QPainter *painter)
 {
-  #ifdef DEBUG
-  printf("Plotter::drawScatters\n");
-  #endif
   PlotSettings settings = zoomStack[curZoom];
   QRect rect(Margin, Margin,
               width() - 2 * Margin, height() - 2 * Margin);
@@ -1095,37 +943,28 @@ void Plotter::drawScatters(QPainter *painter)
 
 PlotSettings::PlotSettings()
 {
-  #ifdef DEBUG
-  printf("PlotSettings::PlotSettings\n");
-  #endif
-  minX = 0.0;
-  maxX = 10.0;
-  numXTicks = 10;
+    minX = 0.0;
+    maxX = 10.0;
+    numXTicks = 10;
 
-  minY = 0.0;
-  maxY = 10.0;
-  numYTicks = 10;
+    minY = 0.0;
+    maxY = 10.0;
+    numYTicks = 10;
 }
 
 void PlotSettings::scroll(int dx, int dy)
 {
-  #ifdef DEBUG
-  printf("PlotSettings::scroll\n");
-  #endif
-  double stepX = spanX() / numXTicks;
-  minX += dx * stepX;
-  maxX += dx * stepX;
+    double stepX = spanX() / numXTicks;
+    minX += dx * stepX;
+    maxX += dx * stepX;
 
-  double stepY = spanY() / numYTicks;
-  minY += dy * stepY;
-  maxY += dy * stepY;
+    double stepY = spanY() / numYTicks;
+    minY += dy * stepY;
+    maxY += dy * stepY;
 }
 
 void PlotSettings::adjust()
 {
-  #ifdef DEBUG
-  printf("PlotSettings::adjust\n");
-  #endif
   adjustAxis(minX, maxX, numXTicks);
   adjustAxis(minY, maxY, numYTicks);
 }
@@ -1158,22 +997,19 @@ void PlotSettings::adjust()
 
 void PlotSettings::adjustAxis(double &min, double &max, int &numTicks)
 {
-  #ifdef DEBUG
-  printf("PlotSettings::adjustAxis\n");
-  #endif
-  const int MinTicks = 4;
-  double grossStep = (max - min) / MinTicks;
-  double step = pow(10.0, floor(log10(grossStep)));
+    const int MinTicks = 4;
+    double grossStep = (max - min) / MinTicks;
+    double step = pow(10.0, floor(log10(grossStep)));
 
-  if (5 * step < grossStep) {
-      step *= 5;
-  } else if (2 * step < grossStep) {
-      step *= 2;
-  }
+    if (5 * step < grossStep) {
+        step *= 5;
+    } else if (2 * step < grossStep) {
+        step *= 2;
+    }
 
-  numTicks = int(ceil(max / step) - floor(min / step));
-  if (numTicks < MinTicks)
-      numTicks = MinTicks;
-  min = floor(min / step) * step;
-  max = ceil(max / step) * step;
+    numTicks = int(ceil(max / step) - floor(min / step));
+    if (numTicks < MinTicks)
+        numTicks = MinTicks;
+    min = floor(min / step) * step;
+    max = ceil(max / step) * step;
 }
