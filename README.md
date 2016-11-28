@@ -37,10 +37,10 @@ go to "http://www.gnu.org/licenses/lgpl-3.0.html"
 Dependencies
 ============
 - a c++ compiler
-- cmake
-- Qt4
-- libscientific
-- VTK
+- cmake >= 2.8.9
+- Qt5
+- libscientific > 0.8
+- VTK >= 7.0
 
 Install
 =======
