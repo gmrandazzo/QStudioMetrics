@@ -23,6 +23,11 @@
 // Define interaction style 
 vtkStandardNewMacro(MouseInteractorStylePP);
 
+// For compatibility with new VTK generic data arrays
+#ifdef vtkGenericDataArray_h
+#define InsertNextTupleValue InsertNextTypedTuple
+#endif
+
 void ScatterPlot3D::StartRun()
 {
   abort = false;

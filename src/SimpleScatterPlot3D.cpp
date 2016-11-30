@@ -12,6 +12,11 @@
 #include <QMessageBox>
 #include <QDebug>
 
+// For compatibility with new VTK generic data arrays
+#ifdef vtkGenericDataArray_h
+#define InsertNextTupleValue InsertNextTypedTuple
+#endif
+
 
 QColor SimpleScatterPlot3D::makeColor(double val, double min, double max, QColor &color1, QColor &color2)
 {
@@ -216,7 +221,7 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QString windowtitle, QStrin
   cubeAxesActor->DrawYGridlinesOn();
   cubeAxesActor->DrawZGridlinesOn();
 #if VTK_MAJOR_VERSION > 5
-  cubeAxesActor->SetGridLineLocation(VTK_GRID_LINES_FURTHEST);
+  cubeAxesActor->SetGridLineLocation(vtkCubeAxesActor::vtkCubeAxesActor::VTK_GRID_LINES_FURTHEST);
 #endif
   
   cubeAxesActor->SetXTitle(QString("%1").arg(xname).toUtf8().constData());
@@ -355,7 +360,7 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QList<double> colorvalue, Q
   cubeAxesActor->DrawYGridlinesOn();
   cubeAxesActor->DrawZGridlinesOn();
 #if VTK_MAJOR_VERSION > 5
-  cubeAxesActor->SetGridLineLocation(VTK_GRID_LINES_FURTHEST);
+  cubeAxesActor->SetGridLineLocation(vtkCubeAxesActor::VTK_GRID_LINES_FURTHEST);
 #endif
   
   cubeAxesActor->XAxisMinorTickVisibilityOff();

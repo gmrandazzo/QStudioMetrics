@@ -4,7 +4,7 @@ set(VERSION "1.9.0")
 set(AUTHOR "Giuseppe Marco Randazzo")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOMOC OFF)
 
 #set(_components
 #    Core
@@ -33,9 +33,6 @@ foreach(_component ${_components})
   list(APPEND QT5_LIBRARIES ${Qt5${_component}_LIBRARIES})
 endforeach()
 
-
-#find_package(Qt5 COMPONENTS Core Concurrent Widgets PrintSupport)
-#set(QT5_LIBRARIES Qt5::Widgets Qt5::PrintSupport)
 
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE}) # include UseVTK.cmake
