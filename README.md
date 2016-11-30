@@ -1,7 +1,7 @@
 # QStudioMetrics
 
 QStudioMetrics is a sofware to develop data mining and multivariate analysis studies.
-The software is writen in C++ using the Qt4 framework and run under Linux, Windows and OSX.
+The software is writen in C++ using the Qt5 framework and run under Linux, Windows and OSX.
 
 QStudioMetrics compute:
   - Principal Component Analysis (PCA)
