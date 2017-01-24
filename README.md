@@ -48,7 +48,7 @@ Install
 To install for all users on Unix/Linux/OSX/Windows:
 
 
-  cmake .. -DSCIENTIFIC_LIB_DIR=/usr/local/lib -DSCIENTIFIC_INCLUDE_DIR=/usr/local/include/
+  cmake .. -DCMAKE_PREFIX_PATH=/usr/local/Cellar/qt5/5.7.0/  -DSCIENTIFIC_LIB_DIR=/usr/local/lib -DSCIENTIFIC_INCLUDE_DIR=/usr/local/include/
   make
 
 

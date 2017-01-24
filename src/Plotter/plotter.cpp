@@ -727,6 +727,11 @@ void Plotter::refreshPixmap()
 
   QPainter painter(&pixmap);
   painter.initFrom(this);
+  
+  painter.setRenderHint(QPainter::Antialiasing);
+  painter.setRenderHint(QPainter::TextAntialiasing);
+  painter.setRenderHint(QPainter::HighQualityAntialiasing);
+  //painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
   drawGrid(&painter);
 
