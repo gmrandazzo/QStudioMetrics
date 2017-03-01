@@ -110,34 +110,34 @@ return color1
 void ScatterPlot2D::BuildLine(qreal angular_coeff)
 {
   qreal xmin, xmax, ymin, ymax;
-  xmin = xmax = plotter->getPoint(0)->x();
-  ymin = ymax = plotter->getPoint(0)->y();
-  for(int i = 1; i < plotter->PointSize(); i++){
-    if(plotter->getPoint(i)->x() < xmin){
-      xmin = plotter->getPoint(i)->x();
+  xmin = xmax = qchart->getPoint(0)->x();
+  ymin = ymax = qchart->getPoint(0)->y();
+  for(int i = 1; i < qchart->PointSize(); i++){
+    if(qchart->getPoint(i)->x() < xmin){
+      xmin = qchart->getPoint(i)->x();
     }
     /*
-    if(plotter->getPoint(i)->x() > xmax){
-      xmax = plotter->getPoint(i)->x();
+    if(qchart->getPoint(i)->x() > xmax){
+      xmax = qchart->getPoint(i)->x();
     }
 
-    if(plotter->getPoint(i)->y() < ymin){
-      ymin = plotter->getPoint(i)->y();
+    if(qchart->getPoint(i)->y() < ymin){
+      ymin = qchart->getPoint(i)->y();
     }
     */
-    if(plotter->getPoint(i)->y() > ymax){
-      ymax = plotter->getPoint(i)->y();
+    if(qchart->getPoint(i)->y() > ymax){
+      ymax = qchart->getPoint(i)->y();
     }
   }
 
   ymin = xmin * angular_coeff;
   xmax = ymax / angular_coeff;
 
-  plotter->RemoveAllCurves();
+  qchart->RemoveAllCurves();
   QVector< QPointF > line;
   line.append(QPointF(xmin, ymin));
   line.append(QPointF(xmax, ymax));
-  plotter->addCurve(line, "fit line", Qt::red);
+  qchart->addCurve(line, "fit line", Qt::red);
 
 
   /*
@@ -169,7 +169,7 @@ void ScatterPlot2D::BuildLine(qreal angular_coeff)
     line.append(QPointF(xmin, ymin));
     line.append(QPointF(xmax, ymax));
 
-    plotter->addCurve(line, "fit line", Qt::red);
+    qchart->addCurve(line, "fit line", Qt::red);
   }*/
 }
 
@@ -191,8 +191,8 @@ void ScatterPlot2D::BuildHotellingEllipse()
   qDebug() << "Build Confidence Ellipse";
   matrix *xy, *covxy;
   int vpoint = 0;
-  for(int i = 0; i < plotter->PointSize(); i++){
-    if(plotter->getPoint(i)->isVisible() == true){
+  for(int i = 0; i < qchart->PointSize(); i++){
+    if(qchart->getPoint(i)->isVisible() == true){
       vpoint++;
     }
     else
@@ -200,10 +200,10 @@ void ScatterPlot2D::BuildHotellingEllipse()
   }
   NewMatrix(&xy, vpoint, 2);
   vpoint = 0;
-  for(int i = 0; i < plotter->PointSize(); i++){
-   if(plotter->getPoint(i)->isVisible() == true){
-     xy->data[vpoint][0] = plotter->getPoint(i)->x();
-     xy->data[vpoint][1] = plotter->getPoint(i)->y();
+  for(int i = 0; i < qchart->PointSize(); i++){
+   if(qchart->getPoint(i)->isVisible() == true){
+     xy->data[vpoint][0] = qchart->getPoint(i)->x();
+     xy->data[vpoint][1] = qchart->getPoint(i)->y();
      vpoint++;
    }
   }
@@ -297,8 +297,8 @@ void ScatterPlot2D::BuildHotellingEllipse()
 
   /*Draw the ellipse*/
   int cid = -1;
-  for(size_t i = 0; i < plotter->getCurves().size(); i++){
-    if(plotter->getCurves()[i].name().compare("Hotelling ellipse 95% confidence") == 0){
+  for(size_t i = 0; i < qchart->getCurves().size(); i++){
+    if(qchart->getCurves()[i].name().compare("Hotelling ellipse 95% confidence") == 0){
       cid = i;
       break;
     }
@@ -309,11 +309,11 @@ void ScatterPlot2D::BuildHotellingEllipse()
 
   if(cid > -1){
     for(size_t i = 0; i < r_ellipse->row; i++){
-      plotter->getCurves()[cid].getPoints()[i].setX(r_ellipse->data[i][0]+cc->data[0]);
-      plotter->getCurves()[cid].getPoints()[i].setY(r_ellipse->data[i][1]+cc->data[1]);
+      qchart->getCurves()[cid].getPoints()[i].setX(r_ellipse->data[i][0]+cc->data[0]);
+      qchart->getCurves()[cid].getPoints()[i].setY(r_ellipse->data[i][1]+cc->data[1]);
     }
-    plotter->getCurves()[cid].getPoints()[r_ellipse->row].setX(r_ellipse->data[0][0]+cc->data[0]);
-    plotter->getCurves()[cid].getPoints()[r_ellipse->row].setY(r_ellipse->data[0][1]+cc->data[1]);
+    qchart->getCurves()[cid].getPoints()[r_ellipse->row].setX(r_ellipse->data[0][0]+cc->data[0]);
+    qchart->getCurves()[cid].getPoints()[r_ellipse->row].setY(r_ellipse->data[0][1]+cc->data[1]);
   }
   else{
     QVector< QPointF > curve;
@@ -321,7 +321,7 @@ void ScatterPlot2D::BuildHotellingEllipse()
       curve.append(QPointF(r_ellipse->data[i][0]+cc->data[0],r_ellipse->data[i][1]+cc->data[1]));
     }
     curve.append(QPointF(r_ellipse->data[0][0]+cc->data[0],r_ellipse->data[0][1]+cc->data[1])); // Close the curve
-    plotter->addCurve(curve, "Hotelling ellipse 95% confidence", Qt::black);
+    qchart->addCurve(curve, "Hotelling ellipse 95% confidence", Qt::black);
   }
 
   DelDVector(&cc);
@@ -400,34 +400,34 @@ void ScatterPlot2D::initPoint(QList<matrix*> mx, QList<matrix*> my, QList<QStrin
 
   // plot... we suppose that
   for(int i = 0; i < p.size(); i++){
-    plotter->addPoint(p[i].coord[0], p[i].coord[1], p[i].name, p[i].color, p[i].radius);
+    qchart->addPoint(p[i].coord[0], p[i].coord[1], p[i].name, p[i].color, p[i].radius);
   }
 
   if(autonameaxes == true){
     if(axischange == SINGLEAXIS){
       if(nameaxisext.size() > 0){
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
       }
       else{
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXYaxis->value())));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valXYaxis->value())));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXYaxis->value())));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valXYaxis->value())));
       }
     }
     else{
       if(nameaxisext.size() > 0){
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXaxis->value()-1]));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valYaxis->value()-1]));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXaxis->value()-1]));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valYaxis->value()-1]));
       }
       else{
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXaxis->value())));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valYaxis->value())));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXaxis->value())));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valYaxis->value())));
       }
     }
   }
   else{
-    plotter->setXaxisName(xaxisname);
-    plotter->setYaxisName(yaxisname);
+    qchart->setXaxisName(xaxisname);
+    qchart->setYaxisName(yaxisname);
   }
 }
 
@@ -486,12 +486,12 @@ void ScatterPlot2D::initPoint(QList<matrix*> mx, QList<QStringList> name)
   // Plot the point
   if(mincc >= 2){
     for(int i = 0; i < p.size(); i++){
-      plotter->addPoint(p[i].coord[0], p[i].coord[1], p[i].name, p[i].color, p[i].radius);
+      qchart->addPoint(p[i].coord[0], p[i].coord[1], p[i].name, p[i].color, p[i].radius);
     }
   }
   else{
     for(int i = 0; i < p.size(); i++){
-      plotter->addPoint(p[i].coord[0], p[i].coord[0], p[i].name, p[i].color, p[i].radius);
+      qchart->addPoint(p[i].coord[0], p[i].coord[0], p[i].name, p[i].color, p[i].radius);
     }
   }
 
@@ -505,44 +505,44 @@ void ScatterPlot2D::initPoint(QList<matrix*> mx, QList<QStringList> name)
     y = (uint) ui.valYaxis->value()-1;
   }
 
-  for(int i = 0; i < plotter->PointSize(); i++){
-    plotter->getPoint(i)->setX(p[i].coord[x]);
-    plotter->getPoint(i)->setY(p[i].coord[y]);
+  for(int i = 0; i < qchart->PointSize(); i++){
+    qchart->getPoint(i)->setX(p[i].coord[x]);
+    qchart->getPoint(i)->setY(p[i].coord[y]);
   }
 
 
   if(autonameaxes == true){
     if(axischange == SINGLEAXIS){
       if(nameaxisext.size() > 0){
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
       }
       else{
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXYaxis->value())));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valXYaxis->value())));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXYaxis->value())));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valXYaxis->value())));
       }
     }
     else{
       if(nameaxisext.size() > 0){
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXaxis->value()-1]));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valYaxis->value()-1]));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXaxis->value()-1]));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valYaxis->value()-1]));
       }
       else{
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXaxis->value())));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valYaxis->value())));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXaxis->value())));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valYaxis->value())));
       }
     }
   }
   else{
-    plotter->setXaxisName(xaxisname);
-    plotter->setYaxisName(yaxisname);
+    qchart->setXaxisName(xaxisname);
+    qchart->setYaxisName(yaxisname);
   }
 }
 
 
 void ScatterPlot2D::SelectAll()
 {
-  plotter->SelectAll();
+  qchart->SelectAll();
 }
 
 void ScatterPlot2D::SelectBy()
@@ -551,12 +551,12 @@ void ScatterPlot2D::SelectBy()
 
   QStringList objname;
 
-  NewMatrix(&coordinates, plotter->PointSize(), 2);
+  NewMatrix(&coordinates, qchart->PointSize(), 2);
 
-  for(int i = 0; i < plotter->PointSize(); i++){
-    coordinates->data[i][0] = plotter->getPoint(i)->x();
-    coordinates->data[i][1] = plotter->getPoint(i)->y();
-    objname.append(plotter->getPoint(i)->name());
+  for(int i = 0; i < qchart->PointSize(); i++){
+    coordinates->data[i][0] = qchart->getPoint(i)->x();
+    coordinates->data[i][1] = qchart->getPoint(i)->y();
+    objname.append(qchart->getPoint(i)->name());
   }
 
   QStringList selectedobject;
@@ -585,7 +585,7 @@ void ScatterPlot2D::SelectBy()
   }
 
   for(int i = 0; i < selectedobjid.size(); i++){
-    plotter->getPoint(selectedobjid[i])->setSelection(true);
+    qchart->getPoint(selectedobjid[i])->setSelection(true);
     selectedIDS.append(selectedobjid[i]);
   }
 
@@ -599,8 +599,8 @@ void ScatterPlot2D::SelectByVarlabels()
   QList<int> selectedIDS_;
 
   QStringList varnames;
-  for(int i = 0; i < plotter->PointSize(); i++){
-    varnames.append(plotter->getPoint(i)->name());
+  for(int i = 0; i < qchart->PointSize(); i++){
+    varnames.append(qchart->getPoint(i)->name());
   }
 
   if(typedata == MATRIXDATA){
@@ -617,8 +617,8 @@ void ScatterPlot2D::SelectByVarlabels()
       }
     }
     else{
-      for(int i = 0; i < plotter->PointSize(); i++){
-        objnames.append(plotter->getPoint(i)->name());
+      for(int i = 0; i < qchart->PointSize(); i++){
+        objnames.append(qchart->getPoint(i)->name());
       }
     }
     VariableSelectorDialog vseldialog(objnames, varnames, (*mxlst), xid, varlabels);
@@ -626,9 +626,9 @@ void ScatterPlot2D::SelectByVarlabels()
     if(vseldialog.exec() == QDialog::Accepted){
       QStringList varselected = vseldialog.getSelectedVariables();
 
-      for(int i = 0; i < plotter->PointSize(); i++){
-        if(varselected.indexOf(plotter->getPoint(i)->name()) > -1){
-          plotter->getPoint(i)->setSelection(true);
+      for(int i = 0; i < qchart->PointSize(); i++){
+        if(varselected.indexOf(qchart->getPoint(i)->name()) > -1){
+          qchart->getPoint(i)->setSelection(true);
           selectedIDS_.append(i);
         }
         else{
@@ -644,9 +644,9 @@ void ScatterPlot2D::SelectByVarlabels()
     VariableSelectorDialog vseldialog(varnames, varlabels);
     if(vseldialog.exec() == QDialog::Accepted){
       QStringList varselected = vseldialog.getSelectedVariables();
-      for(int i = 0; i < plotter->PointSize(); i++){
-        if(varselected.indexOf(plotter->getPoint(i)->name()) > -1){
-          plotter->getPoint(i)->setSelection(true);
+      for(int i = 0; i < qchart->PointSize(); i++){
+        if(varselected.indexOf(qchart->getPoint(i)->name()) > -1){
+          qchart->getPoint(i)->setSelection(true);
           selectedIDS_.append(i);
         }
         else{
@@ -666,12 +666,12 @@ void ScatterPlot2D::SelectByVarlabels()
 void ScatterPlot2D::invertSelection()
 {
   QList<int> selectedIDS_;
-  for(int i = 0; i < plotter->PointSize(); i++){
-    if(plotter->getPoint(i)->isSelected() == true){
-      plotter->getPoint(i)->setSelection(false);
+  for(int i = 0; i < qchart->PointSize(); i++){
+    if(qchart->getPoint(i)->isSelected() == true){
+      qchart->getPoint(i)->setSelection(false);
     }
     else{
-      plotter->getPoint(i)->setSelection(true);
+      qchart->getPoint(i)->setSelection(true);
       selectedIDS_.append(i);
     }
   }
@@ -683,7 +683,7 @@ void ScatterPlot2D::invertSelection()
 void ScatterPlot2D::hideSelection()
 {
   for(int i = 0; i < selectedIDS.size(); i++){
-    plotter->getPoint(selectedIDS[i])->setVisible(false);
+    qchart->getPoint(selectedIDS[i])->setVisible(false);
   }
   PlotUpdate();
   clearSelection();
@@ -692,7 +692,7 @@ void ScatterPlot2D::hideSelection()
 void ScatterPlot2D::clearSelection()
 {
   selectedIDS.clear();
-  plotter->ClearSelection();
+  qchart->ClearSelection();
   PlotUpdate();
 }
 
@@ -703,7 +703,7 @@ void ScatterPlot2D::SetSelectionObjLabels()
   else{
     QStringList selectedobj;
     for(int i = 0; i < selectedIDS.size(); i++){
-      selectedobj.append(plotter->getPoint(selectedIDS[i])->name());
+      selectedobj.append(qchart->getPoint(selectedIDS[i])->name());
     }
     LabelDialog ldialog(objlabels, selectedobj, LabelDialog::OBJLABELS);
     ldialog.exec();
@@ -719,7 +719,7 @@ void ScatterPlot2D::SetSelectionVarLabels()
     QStringList selectedobj;
 
     for(int i = 0; i < selectedIDS.size(); i++){
-      selectedobj.append(plotter->getPoint(selectedIDS[i])->name());
+      selectedobj.append(qchart->getPoint(selectedIDS[i])->name());
     }
 
     LabelDialog ldialog(varlabels, selectedobj, LabelDialog::VARLABELS);
@@ -735,8 +735,8 @@ void ScatterPlot2D::setSelectionStyle()
     if(obj.exec() == QDialog::Accepted){
       for(int i = 0; i < selectedIDS.size(); i++){
 
-        plotter->getPoint(selectedIDS[i])->setRadius(obj.getFixedSymbolSize());
-        plotter->getPoint(selectedIDS[i])->setColor(obj.getSolidSymbolColor());
+        qchart->getPoint(selectedIDS[i])->setRadius(obj.getFixedSymbolSize());
+        qchart->getPoint(selectedIDS[i])->setColor(obj.getSolidSymbolColor());
 
         /*
         if(obj.getSymbolType() == 0){
@@ -800,7 +800,7 @@ void ScatterPlot2D::setSelectionStyle()
           if(changecolor == SelectionStyleDialog::FIXED){
             // FIXED COLOR CHANGE
             for(int i = 0; i < selectedIDS.size(); i++){
-              plotter->getPoint(selectedIDS[i])->setColor(obj.getSolidSymbolColor());
+              qchart->getPoint(selectedIDS[i])->setColor(obj.getSolidSymbolColor());
             }
           }
           else if(changecolor == SelectionStyleDialog::GRADIENT){
@@ -813,7 +813,7 @@ void ScatterPlot2D::setSelectionStyle()
             QList <double> dval;
 
             for(int i = 0; i < selectedIDS.size(); i++){
-              objnameselected.append(plotter->getPoint(selectedIDS[i])->name());
+              objnameselected.append(qchart->getPoint(selectedIDS[i])->name());
               dval.append(9999.0);
             }
 
@@ -851,7 +851,7 @@ void ScatterPlot2D::setSelectionStyle()
                 continue;
               }
               else{
-                plotter->getPoint(selectedIDS[i])->setColor(makeColor(dval[i], min, max, mincolor, maxcolor));
+                qchart->getPoint(selectedIDS[i])->setColor(makeColor(dval[i], min, max, mincolor, maxcolor));
               }
             }
           }
@@ -860,7 +860,7 @@ void ScatterPlot2D::setSelectionStyle()
             // FIXED SIZE CHANGE
             int symsize = obj.getFixedSymbolSize();
             for(int i = 0; i < selectedIDS.size(); i++){
-              plotter->getPoint(selectedIDS[i])->setRadius(symsize);
+              qchart->getPoint(selectedIDS[i])->setRadius(symsize);
             }
           }
           else if(changesize == SelectionStyleDialog::GRADIENT){
@@ -873,7 +873,7 @@ void ScatterPlot2D::setSelectionStyle()
             QList <double> dval;
 
             for(int i = 0; i < selectedIDS.size(); i++){
-              objnameselected.append(plotter->getPoint(selectedIDS[i])->name());
+              objnameselected.append(qchart->getPoint(selectedIDS[i])->name());
               dval.append(9999.0);
             }
 
@@ -911,7 +911,7 @@ void ScatterPlot2D::setSelectionStyle()
                 continue;
               }
               else{
-                plotter->getPoint(selectedIDS[i])->setRadius(makeSize(dval[i], min, max, minsymbsize, maxsymbsize));
+                qchart->getPoint(selectedIDS[i])->setRadius(makeSize(dval[i], min, max, minsymbsize, maxsymbsize));
               }
             }
           }
@@ -921,8 +921,8 @@ void ScatterPlot2D::setSelectionStyle()
         SelectionStyleDialog obj;
         if(obj.exec() == QDialog::Accepted){
           for(int i = 0; i < selectedIDS.size(); i++){
-            plotter->getPoint(selectedIDS[i])->setRadius(obj.getFixedSymbolSize());
-            plotter->getPoint(selectedIDS[i])->setColor(obj.getSolidSymbolColor());
+            qchart->getPoint(selectedIDS[i])->setRadius(obj.getFixedSymbolSize());
+            qchart->getPoint(selectedIDS[i])->setColor(obj.getSolidSymbolColor());
             /*
             if(obj.getSymbolType() == 0){
             vtkPlotPoints::SafeDownCast(p.point()[selectedIDS[i]])->SetMarkerStyle(vtkPlotPoints::CIRCLE);
@@ -1013,7 +1013,7 @@ void ScatterPlot2D::setSelectionStyle()
 
         if(changecolor == SelectionStyleDialog::FIXED){
           for(int i = 0; i < selectedIDS.size(); i++){
-            plotter->getPoint(selectedIDS[i])->setColor(obj.getSolidSymbolColor());
+            qchart->getPoint(selectedIDS[i])->setColor(obj.getSolidSymbolColor());
           }
         }
         else if(changecolor == SelectionStyleDialog::GRADIENT){
@@ -1025,7 +1025,7 @@ void ScatterPlot2D::setSelectionStyle()
             QList <double> dval;
 
             for(int i = 0; i < selectedIDS.size(); i++){
-              objnameselected.append(plotter->getPoint(selectedIDS[i])->name());
+              objnameselected.append(qchart->getPoint(selectedIDS[i])->name());
               dval.append(9999.0);
             }
 
@@ -1063,14 +1063,14 @@ void ScatterPlot2D::setSelectionStyle()
                 continue;
               }
               else{
-                plotter->getPoint(selectedIDS[i])->setColor(makeColor(dval[i], min, max, mincolor, maxcolor));
+                qchart->getPoint(selectedIDS[i])->setColor(makeColor(dval[i], min, max, mincolor, maxcolor));
               }
             }
           }
 
           if(changesize == SelectionStyleDialog::FIXED){
             for(int i = 0; i < selectedIDS.size(); i++){
-              plotter->getPoint(selectedIDS[i])->setRadius(obj.getFixedSymbolSize());
+              qchart->getPoint(selectedIDS[i])->setRadius(obj.getFixedSymbolSize());
             }
           }
           else if(changesize == SelectionStyleDialog::GRADIENT){
@@ -1082,7 +1082,7 @@ void ScatterPlot2D::setSelectionStyle()
               QList <double> dval;
 
               for(int i = 0; i < selectedIDS.size(); i++){
-                objnameselected.append(plotter->getPoint(selectedIDS[i])->name());
+                objnameselected.append(qchart->getPoint(selectedIDS[i])->name());
                 dval.append(-9999.0);
               }
 
@@ -1120,7 +1120,7 @@ void ScatterPlot2D::setSelectionStyle()
                   continue;
                 }
                 else{
-                  plotter->getPoint(selectedIDS[i])->setRadius(makeSize(dval[i], min, max, minsymbsize, maxsymbsize));
+                  qchart->getPoint(selectedIDS[i])->setRadius(makeSize(dval[i], min, max, minsymbsize, maxsymbsize));
                 }
               }
             }
@@ -1136,7 +1136,7 @@ void ScatterPlot2D::SaveSelection()
 
   std::vector<std::string> namelst;
   for(int i = 0; i < selectedIDS.size(); i++){
-    namelst.push_back(plotter->getPoint(selectedIDS[i])->name().toUtf8().data());
+    namelst.push_back(qchart->getPoint(selectedIDS[i])->name().toUtf8().data());
   }
 
   DATAIO::WriteStringList(fileName.toUtf8().data(), namelst);
@@ -1152,7 +1152,7 @@ void ScatterPlot2D::SavePlotImage()
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save Plot to Image"), "", tr("JPEG (*.jpg);;PNG (*.png);; PDF (*.pdf);;All Files (*)"));
 
   if(!fileName.isEmpty()){
-    plotter->SaveAsImage(fileName);
+    qchart->SaveAsImage(fileName);
   }
 }
 
@@ -1160,8 +1160,8 @@ void ScatterPlot2D::setOnOffHotellingEllipse()
 {
   if(ehotel == true){ // Remove Hotelling
     int cid = -1;
-    for(size_t i = 0; i < plotter->getCurves().size(); i++){
-      if(plotter->getCurves()[i].name().compare("Hotelling ellipse 95% confidence") == 0){
+    for(size_t i = 0; i < qchart->getCurves().size(); i++){
+      if(qchart->getCurves()[i].name().compare("Hotelling ellipse 95% confidence") == 0){
         cid = i;
         break;
       }
@@ -1170,7 +1170,7 @@ void ScatterPlot2D::setOnOffHotellingEllipse()
       }
     }
     if(cid > -1){
-      plotter->RemoveCurveAt(cid);
+      qchart->RemoveCurveAt(cid);
     }
     ehotel = false;
   }
@@ -1195,9 +1195,9 @@ void ScatterPlot2D::DoClusterAnalysis()
       NewMatrix(&coordinates, p.size(), 2);
 
 
-      for(int i = 0; i < plotter->PointSize(); i++){
-        coordinates->data[i][0] = plotter->getPoint(i)->x();
-        coordinates->data[i][1] = plotter->getPoint(i)->y();
+      for(int i = 0; i < qchart->PointSize(); i++){
+        coordinates->data[i][0] = qchart->getPoint(i)->x();
+        coordinates->data[i][1] = qchart->getPoint(i)->y();
       }
 
       int ncluster = 2;
@@ -1308,7 +1308,7 @@ void ScatterPlot2D::DoClusterAnalysis()
       }
 
 
-      for(int i = 0; i < plotter->PointSize(); i++){
+      for(int i = 0; i < qchart->PointSize(); i++){
         int id = getUIVectorValue(clusterids, i)-1;
         if(id > -1){
           if(id < QtColours.size()){
@@ -1317,7 +1317,7 @@ void ScatterPlot2D::DoClusterAnalysis()
           else{
             color = colors[id-QtColours.size()];
           }
-          plotter->getPoint(i)->setColor(color);
+          qchart->getPoint(i)->setColor(color);
         }
         else{
           continue;
@@ -1333,10 +1333,10 @@ void ScatterPlot2D::DoClusterAnalysis()
           clusterobjlabels.last().name = QString("%1_%2").arg(docluster.getClusterLabelSufix()).arg(QString::number(i+1));
         }
 
-        for(int i = 0; i < plotter->PointSize(); i++){
+        for(int i = 0; i < qchart->PointSize(); i++){
           int id = getUIVectorValue(clusterids, i)-1;
           if(id > -1){
-            clusterobjlabels[id].objects.append(plotter->getPoint(i)->name());
+            clusterobjlabels[id].objects.append(qchart->getPoint(i)->name());
           }
           else{
             continue;
@@ -1485,9 +1485,9 @@ void ScatterPlot2D::DoClusterAnalysis()
 
       for(uint i = 0; i < clusterids->size; i++){
         int objid = -1;
-        for(int j = 0; j < plotter->PointSize(); j++){
+        for(int j = 0; j < qchart->PointSize(); j++){
           if(ismatrix == true){
-            if((*mxlst)[dataid]->getObjName()[i].compare(plotter->getPoint(j)->name()) == 0){
+            if((*mxlst)[dataid]->getObjName()[i].compare(qchart->getPoint(j)->name()) == 0){
               objid = j;
               break;
             }
@@ -1496,7 +1496,7 @@ void ScatterPlot2D::DoClusterAnalysis()
             }
           }
           else{
-            if((*arlst)[dataid]->getObjName()[i].compare(plotter->getPoint(j)->name()) == 0){
+            if((*arlst)[dataid]->getObjName()[i].compare(qchart->getPoint(j)->name()) == 0){
               objid = j;
               break;
             }
@@ -1515,10 +1515,10 @@ void ScatterPlot2D::DoClusterAnalysis()
             else{
               color = colors[id-QtColours.size()];
             }
-            plotter->getPoint(objid)->setColor(color);
+            qchart->getPoint(objid)->setColor(color);
 
             if(docluster.SaveClusterLabels() == true){
-              clusterobjlabels[id].objects.append(plotter->getPoint(objid)->name());
+              clusterobjlabels[id].objects.append(qchart->getPoint(objid)->name());
             }
           }
           else{
@@ -1545,10 +1545,10 @@ void ScatterPlot2D::SetSelectionName()
 {
   spi.pid = pid;
   spi.imgname.clear();
-  for(int i = 0; i < plotter->PointSize(); i++){
-    if(plotter->getPoint(i)->isVisible() == true
-      && plotter->getPoint(i)->isSelected() == true){
-      spi.imgname.append(plotter->getPoint(i)->name());
+  for(int i = 0; i < qchart->PointSize(); i++){
+    if(qchart->getPoint(i)->isVisible() == true
+      && qchart->getPoint(i)->isSelected() == true){
+      spi.imgname.append(qchart->getPoint(i)->name());
     }
     else{
       continue;
@@ -1567,10 +1567,10 @@ void ScatterPlot2D::CloseFindCorrelationWidget()
 void ScatterPlot2D::HighlightObjects(highlightSignal hhs)
 {
   for(int i = 0; i < hhs.vid1.size(); i++){
-    if(hhs.vid1[i] < plotter->PointSize() && hhs.vid1[i] > -1)
-      plotter->getPoint(hhs.vid1[i])->setSelection(true);
-    if(hhs.vid2[i] < plotter->PointSize() && hhs.vid2[i] > -1)
-      plotter->getPoint(hhs.vid2[i])->setSelection(true);
+    if(hhs.vid1[i] < qchart->PointSize() && hhs.vid1[i] > -1)
+      qchart->getPoint(hhs.vid1[i])->setSelection(true);
+    if(hhs.vid2[i] < qchart->PointSize() && hhs.vid2[i] > -1)
+      qchart->getPoint(hhs.vid2[i])->setSelection(true);
   }
   PlotUpdate();
 }
@@ -1588,11 +1588,11 @@ void ScatterPlot2D::FindCorrelations()
   matrix *correl, *disterr, *coordinates;
   QStringList varnames;
 
-  NewMatrix(&coordinates, plotter->PointSize(), 2);
-  for(int i = 0; i < plotter->PointSize(); i++){
-    coordinates->data[i][0] = plotter->getPoint(i)->x();
-    coordinates->data[i][1] = plotter->getPoint(i)->y();
-    varnames.append(plotter->getPoint(i)->name());
+  NewMatrix(&coordinates, qchart->PointSize(), 2);
+  for(int i = 0; i < qchart->PointSize(); i++){
+    coordinates->data[i][0] = qchart->getPoint(i)->x();
+    coordinates->data[i][1] = qchart->getPoint(i)->y();
+    varnames.append(qchart->getPoint(i)->name());
   }
 
   // Now calculating the angle with the following formula:
@@ -1601,8 +1601,8 @@ void ScatterPlot2D::FindCorrelations()
   // BC = distance second point from center
   // AB = distance from the first point and the second point
 
-  NewMatrix(&correl, plotter->PointSize(), plotter->PointSize());
-  NewMatrix(&disterr, plotter->PointSize(), plotter->PointSize());
+  NewMatrix(&correl, qchart->PointSize(), qchart->PointSize());
+  NewMatrix(&disterr, qchart->PointSize(), qchart->PointSize());
   for(uint i = 0; i < coordinates->row; i++){
     double p1c = sqrt(square(coordinates->data[i][0]) + square(coordinates->data[i][1]));
     double p2c = 0.f, p1p2 = 0.f;
@@ -1709,8 +1709,8 @@ void ScatterPlot2D::ShowContextMenu(const QPoint& pos)
 void ScatterPlot2D::getPointSelected()
 {
   selectedIDS.clear();
-  for(int i = 0; i < plotter->PointSize(); i++){
-    if(plotter->getPoint(i)->isSelected() == true){
+  for(int i = 0; i < qchart->PointSize(); i++){
+    if(qchart->getPoint(i)->isSelected() == true){
       selectedIDS.append(i);
     }
     else{
@@ -1730,12 +1730,12 @@ void ScatterPlot2D::ResetPlot()
   selectedIDS.clear();
 
   for(int i = 0; i < p.size(); i++){
-    plotter->getPoint(i)->setColor(p[i].color);
-    plotter->getPoint(i)->setX(p[i].coord[0]);
-    plotter->getPoint(i)->setY(p[i].coord[1]);
-    plotter->getPoint(i)->setRadius(p[i].radius);
-    plotter->getPoint(i)->setVisible(true);
-    plotter->getPoint(i)->setSelection(false);
+    qchart->getPoint(i)->setColor(p[i].color);
+    qchart->getPoint(i)->setX(p[i].coord[0]);
+    qchart->getPoint(i)->setY(p[i].coord[1]);
+    qchart->getPoint(i)->setRadius(p[i].radius);
+    qchart->getPoint(i)->setVisible(true);
+    qchart->getPoint(i)->setSelection(false);
   }
 
 
@@ -1748,13 +1748,13 @@ void ScatterPlot2D::ResetPlot()
     ui.valYaxis->setValue(ui.valYaxis->minimum());
   }
   setAxis();
-  plotter->Refresh();
+  qchart->Refresh();
 }
 
 void ScatterPlot2D::PlotUpdate()
 {
-  plotter->Refresh();
-  plotter->update();
+  qchart->Refresh();
+  qchart->update();
 }
 
 void ScatterPlot2D::setAxis()
@@ -1769,9 +1769,9 @@ void ScatterPlot2D::setAxis()
     y = (uint) ui.valYaxis->value()-1;
   }
 
-  for(int i = 0; i < plotter->PointSize(); i++){
-    plotter->getPoint(i)->setX(p[i].coord[x]);
-    plotter->getPoint(i)->setY(p[i].coord[y]);
+  for(int i = 0; i < qchart->PointSize(); i++){
+    qchart->getPoint(i)->setX(p[i].coord[x]);
+    qchart->getPoint(i)->setY(p[i].coord[y]);
   }
 
   if(axischange == SINGLEAXIS){
@@ -1783,33 +1783,33 @@ void ScatterPlot2D::setAxis()
   if(autonameaxes == true){
     if(axischange == SINGLEAXIS){
       if(nameaxisext.size() > 0){
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
       }
       else{
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXYaxis->value())));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valXYaxis->value())));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXYaxis->value())));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valXYaxis->value())));
       }
     }
     else{
       if(nameaxisext.size() > 0){
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXaxis->value()-1]));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valYaxis->value()-1]));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXaxis->value()-1]));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valYaxis->value()-1]));
       }
       else{
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXaxis->value())));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valYaxis->value())));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXaxis->value())));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valYaxis->value())));
       }
     }
   }
   else{
-    plotter->setXaxisName(xaxisname);
-    plotter->setYaxisName(yaxisname);
+    qchart->setXaxisName(xaxisname);
+    qchart->setYaxisName(yaxisname);
   }
 
   if(curves.size() > 0){
     if(acoeff.size() == 0){
-      plotter->RemoveAllCurves();
+      qchart->RemoveAllCurves();
     }
     // elase is already done
     for(int k = 0; k < curves.size(); k++){
@@ -1817,7 +1817,7 @@ void ScatterPlot2D::setAxis()
       for(uint i = 0; i < curves[k]->row; i++){
         line.append(QPointF(curves[k]->data[i][x], curves[k]->data[i][y]));
       }
-      plotter->addCurve(line, curvenames[k], curvecolors[k]);
+      qchart->addCurve(line, curvenames[k], curvecolors[k]);
     }
   }
 
@@ -1848,28 +1848,28 @@ void ScatterPlot2D::setAxisNameExtensions(QStringList nameaxisext_)
   if(autonameaxes == true){
     if(axischange == SINGLEAXIS){
       if(nameaxisext.size() > 0){
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valXYaxis->value()-1]));
       }
       else{
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXYaxis->value())));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valXYaxis->value())));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXYaxis->value())));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valXYaxis->value())));
       }
     }
     else{
       if(nameaxisext.size() > 0){
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXaxis->value()-1]));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valYaxis->value()-1]));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(nameaxisext[ui.valXaxis->value()-1]));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(nameaxisext[ui.valYaxis->value()-1]));
       }
       else{
-        plotter->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXaxis->value())));
-        plotter->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valYaxis->value())));
+        qchart->setXaxisName(QString("%1 %2").arg(xaxisname).arg(QString::number(ui.valXaxis->value())));
+        qchart->setYaxisName(QString("%1 %2").arg(yaxisname).arg(QString::number(ui.valYaxis->value())));
       }
     }
   }
   else{
-    plotter->setXaxisName(xaxisname);
-    plotter->setYaxisName(yaxisname);
+    qchart->setXaxisName(xaxisname);
+    qchart->setYaxisName(yaxisname);
   }
 }
 
@@ -1925,13 +1925,13 @@ ScatterPlot2D::ScatterPlot2D(QList<matrix*> &m_, QList<QStringList>& objname, QS
   cwidget = 0;
   ehotel = false;
 
-//       plotter.setWindowTitle(QObject::tr("Plotter"));
-//     PlotFromfile(&plotter, argv[1]);
+//       qchart.setWindowTitle(QObject::tr("qchart"));
+//     PlotFromfile(&qchart, argv[1]);
 
   plotLayout = new QVBoxLayout();
-  plotter = new Plotter();
-  plotter->setPlotTitle(windowtitle);
-  plotLayout->addWidget(plotter);
+  qchart = new QChart();
+  qchart->setPlotTitle(windowtitle);
+  plotLayout->addWidget(qchart);
   ui.plotwidget->setLayout(plotLayout);
 
   ui.valXYaxis_name->hide();
@@ -1973,7 +1973,7 @@ ScatterPlot2D::ScatterPlot2D(QList<matrix*> &m_, QList<QStringList>& objname, QS
   ui.valYaxis->setMaximum(maxcol);
 
   //Finally render the scene
-  plotter->Refresh();
+  qchart->Refresh();
 
   // Set up action signals and slots
   connect(ui.valXaxis, SIGNAL(valueChanged(int)), SLOT(setAxis()));
@@ -1996,9 +1996,9 @@ ScatterPlot2D::ScatterPlot2D(QList<matrix*> &m_, QList<QStringList>& objname, QL
   ehotel = false;
 
   plotLayout = new QVBoxLayout();
-  plotter = new Plotter();
-  plotter->setPlotTitle(windowtitle);
-  plotLayout->addWidget(plotter);
+  qchart = new QChart();
+  qchart->setPlotTitle(windowtitle);
+  plotLayout->addWidget(qchart);
   ui.plotwidget->setLayout(plotLayout);
 
   ui.valXYaxis_name->hide();
@@ -2044,7 +2044,7 @@ ScatterPlot2D::ScatterPlot2D(QList<matrix*> &m_, QList<QStringList>& objname, QL
   ui.valYaxis->setMaximum(maxcol);
 
   //Finally render the scene
-  plotter->Refresh();
+  qchart->Refresh();
   // Set up action signals and slots
   connect(ui.valXaxis, SIGNAL(valueChanged(int)), SLOT(setAxis()));
   connect(ui.valYaxis, SIGNAL(valueChanged(int)), SLOT(setAxis()));
@@ -2065,9 +2065,9 @@ ScatterPlot2D::ScatterPlot2D(QList<matrix*> &m_, QList<QStringList>& objname, QL
   ehotel = false;
 
   plotLayout = new QVBoxLayout();
-  plotter = new Plotter();
-  plotter->setPlotTitle(windowtitle);
-  plotLayout->addWidget(plotter);
+  qchart = new QChart();
+  qchart->setPlotTitle(windowtitle);
+  plotLayout->addWidget(qchart);
   ui.plotwidget->setLayout(plotLayout);
 
   ui.valXYaxis_name->hide();
@@ -2111,7 +2111,7 @@ ScatterPlot2D::ScatterPlot2D(QList<matrix*> &m_, QList<QStringList>& objname, QL
   ui.valYaxis->setMaximum(maxcol);
 
   //Finally render the scene
-  plotter->Refresh();
+  qchart->Refresh();
 
   // Set up action signals and slots
   connect(ui.valXaxis, SIGNAL(valueChanged(int)), SLOT(setAxis()));
@@ -2132,8 +2132,8 @@ ScatterPlot2D::ScatterPlot2D(QList<matrix*> &mx_, QList<matrix*> &my_, dvector* 
   ehotel = false;
 
   plotLayout = new QVBoxLayout();
-  plotter = new Plotter();
-  plotLayout->addWidget(plotter);
+  qchart = new QChart();
+  plotLayout->addWidget(qchart);
   ui.plotwidget->setLayout(plotLayout);
 
   ui.valXaxis->hide();
@@ -2179,7 +2179,7 @@ ScatterPlot2D::ScatterPlot2D(QList<matrix*> &mx_, QList<matrix*> &my_, dvector* 
     BuildLine(acoeff.first());
 
     //Finally render the scene
-    plotter->Refresh();
+    qchart->Refresh();
 
     // Set up action signals and slots
     connect(ui.valXYaxis, SIGNAL(valueChanged(int)), SLOT(setAxis()));
@@ -2202,9 +2202,9 @@ ScatterPlot2D::ScatterPlot2D(QList<matrix*>& mx_, QList<matrix*>& my_, dvector* 
   ehotel = false;
 
   plotLayout = new QVBoxLayout();
-  plotter = new Plotter();
-  plotter->setPlotTitle(windowtitle);
-  plotLayout->addWidget(plotter);
+  qchart = new QChart();
+  qchart->setPlotTitle(windowtitle);
+  plotLayout->addWidget(qchart);
   ui.plotwidget->setLayout(plotLayout);
 
   ui.valXaxis->hide();
@@ -2256,7 +2256,7 @@ ScatterPlot2D::ScatterPlot2D(QList<matrix*>& mx_, QList<matrix*>& my_, dvector* 
     BuildLine(acoeff.first());
 
     //Finally render the scene
-    plotter->Refresh();
+    qchart->Refresh();
 
     // Set up action signals and slots
     connect(ui.valXYaxis, SIGNAL(valueChanged(int)), SLOT(setAxis()));
@@ -2279,9 +2279,9 @@ ScatterPlot2D::ScatterPlot2D(QList< matrix* >& mx_, QList< matrix* >& my_, dvect
   ehotel = false;
 
   plotLayout = new QVBoxLayout();
-  plotter = new Plotter();
-  plotter->setPlotTitle(windowtitle);
-  plotLayout->addWidget(plotter);
+  qchart = new QChart();
+  qchart->setPlotTitle(windowtitle);
+  plotLayout->addWidget(qchart);
   ui.plotwidget->setLayout(plotLayout);
 
   ui.valXaxis->hide();
@@ -2335,7 +2335,7 @@ ScatterPlot2D::ScatterPlot2D(QList< matrix* >& mx_, QList< matrix* >& my_, dvect
     BuildLine(acoeff.first());
 
     //Finally render the scene
-    plotter->Refresh();
+    qchart->Refresh();
 
     // Set up action signals and slots
     connect(ui.valXYaxis, SIGNAL(valueChanged(int)), SLOT(setAxis()));
@@ -2358,9 +2358,9 @@ ScatterPlot2D::ScatterPlot2D(QList< matrix* >& mx_, QList< matrix* >& my_, QList
   ehotel = false;
 
   plotLayout = new QVBoxLayout();
-  plotter = new Plotter();
-  plotter->setPlotTitle(windowtitle);
-  plotLayout->addWidget(plotter);
+  qchart = new QChart();
+  qchart->setPlotTitle(windowtitle);
+  plotLayout->addWidget(qchart);
   ui.plotwidget->setLayout(plotLayout);
 
   ui.valXaxis->hide();
@@ -2408,7 +2408,7 @@ ScatterPlot2D::ScatterPlot2D(QList< matrix* >& mx_, QList< matrix* >& my_, QList
     ui.valXYaxis->setMaximum(maxcol);
 
     //Finally render the scene
-    plotter->Refresh();
+    qchart->Refresh();
 
     // Set up action signals and slots
     connect(ui.valXYaxis, SIGNAL(valueChanged(int)), SLOT(setAxis()));
@@ -2431,9 +2431,9 @@ ScatterPlot2D::ScatterPlot2D(QList< matrix* >& mx_, QList< matrix* >& my_, QList
   ehotel = false;
 
   plotLayout = new QVBoxLayout();
-  plotter = new Plotter();
-  plotter->setPlotTitle(windowtitle);
-  plotLayout->addWidget(plotter);
+  qchart = new QChart();
+  qchart->setPlotTitle(windowtitle);
+  plotLayout->addWidget(qchart);
   ui.plotwidget->setLayout(plotLayout);
 
   ui.valXaxis->hide();
@@ -2479,7 +2479,7 @@ ScatterPlot2D::ScatterPlot2D(QList< matrix* >& mx_, QList< matrix* >& my_, QList
     ui.valXYaxis->setMaximum(maxcol);
 
     //Finally render the scene
-    plotter->Refresh();
+    qchart->Refresh();
 
     // Set up action signals and slots
     connect(ui.valXYaxis, SIGNAL(valueChanged(int)), SLOT(setAxis()));
@@ -2502,9 +2502,9 @@ ScatterPlot2D::ScatterPlot2D(QList< matrix* >& mx_, QList< matrix* >& my_, QList
   ehotel = false;
 
   plotLayout = new QVBoxLayout();
-  plotter = new Plotter();
-  plotter->setPlotTitle(windowtitle);
-  plotLayout->addWidget(plotter);
+  qchart = new QChart();
+  qchart->setPlotTitle(windowtitle);
+  plotLayout->addWidget(qchart);
   ui.plotwidget->setLayout(plotLayout);
 
   ui.valXaxis->hide();
@@ -2550,7 +2550,7 @@ ScatterPlot2D::ScatterPlot2D(QList< matrix* >& mx_, QList< matrix* >& my_, QList
     ui.valXYaxis->setMaximum(maxcol);
 
     //Finally render the scene
-    plotter->Refresh();
+    qchart->Refresh();
 
     // Set up action signals and slots
     connect(ui.valXYaxis, SIGNAL(valueChanged(int)), SLOT(setAxis()));
@@ -2565,7 +2565,7 @@ ScatterPlot2D::ScatterPlot2D(QList< matrix* >& mx_, QList< matrix* >& my_, QList
 
 ScatterPlot2D::~ScatterPlot2D()
 {
-  delete plotter;
+  delete qchart;
   delete plotLayout;
   if(cwidget != 0)
     delete cwidget;

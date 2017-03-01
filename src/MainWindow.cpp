@@ -1302,7 +1302,7 @@ void MainWindow::UpdateImageWindow(ImageSignal is)
         img->setScaledContents(true);
         img->pixmap()->scaled(247, 170, Qt::KeepAspectRatioByExpanding);
 
-        ui.tabWidget->addTab(img, projects->value(is.pid)->getImages()[i].name);
+        ui.tabWidget->addTab(img, projects->value(is.pid)->getImages()[i].name); 
       }
       else{
         continue;

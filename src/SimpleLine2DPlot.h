@@ -9,12 +9,12 @@
 #include "ui_SimpleLine2DPlot.h"
 
 
-#include "Plotter/plotter.h"
+#include "QChart/qchart.h"
 
 class SimpleLine2DPlot: public QWidget
 {
   Q_OBJECT
-  
+
 public:
   SimpleLine2DPlot(matrix *m, QStringList curvenames, QString windowtitle, QStringList columntitle, QString xaxestitle, QString yaxestitle);
   // Simple Line Plot with one x (first column of m) and more y objects
@@ -26,10 +26,10 @@ public:
 private slots:
   void slotExit();
   void SavePlotImage();
-  
+
 private:
   Ui::SimpleLine2DPlot ui;
-  Plotter *plotter;
+  QChart *qchart;
 };
 
 #endif

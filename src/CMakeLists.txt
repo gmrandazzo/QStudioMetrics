@@ -172,7 +172,7 @@ set(QSTUDIOMETRICS_UIS
 #     ProgressBarDialog.ui
     MainWindow.ui)
 
-add_subdirectory(Plotter)
+add_subdirectory(QChart)
 
 set(QSTUDIOMETRICS_CMDPCA_SRC DATAIO.cpp qstudiom-pca.cpp)
 set(QSTUDIOMETRICS_CMDPLS_SRC DATAIO.cpp qstudiom-pls.cpp)
@@ -215,7 +215,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_executable(QStudioMetrics ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS})
 
 if(WIN32)
-  target_link_libraries(QStudioMetrics libplotter ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a ${QT5_LIBRARIES} ${VTK_LIBRARIES})
+  target_link_libraries(QStudioMetrics libqchart ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a ${QT5_LIBRARIES} ${VTK_LIBRARIES})
 
   add_executable(qsm-pca ${QSTUDIOMETRICS_CMDPCA_SRC})
   target_link_libraries(qsm-pca ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a)
@@ -226,7 +226,7 @@ if(WIN32)
   add_executable(qsm-mdc ${QSTUDIOMETRICS_CMDMDC_SRC})
   target_link_libraries(qsm-mdc ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a)
 else()
-  target_link_libraries(QStudioMetrics scientific libplotter ${QT5_LIBRARIES} ${VTK_LIBRARIES})
+  target_link_libraries(QStudioMetrics scientific libqchart ${QT5_LIBRARIES} ${VTK_LIBRARIES})
   #add_executable(qsm-objselector qsmcompselector.cpp DATAIO.cpp)
   #target_link_libraries(qsm-objselector scientific)
 
