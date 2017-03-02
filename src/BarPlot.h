@@ -30,10 +30,10 @@ extern "C" {
 class BarPlot: public QWidget
 {
   Q_OBJECT
-  
+
 public:
-  BarPlot(dvector *v_, QStringList varnames, QString windowtitle, QString xaxestitle, QString yaxestitle);
-  BarPlot(QList<dvector*> v_, QString windowtitle, QString xaxestitle, QString yaxestitle, QStringList labelname);
+  BarPlot(dvector *v_, QStringList varnames, QString windowtitle, QString xaxestitle, QString yaxestitle, QWidget *parent = 0);
+  BarPlot(QList<dvector*> v_, QString windowtitle, QString xaxestitle, QString yaxestitle, QStringList labelname, QWidget *parent = 0);
   ~BarPlot();
 
 private slots:
@@ -41,17 +41,16 @@ private slots:
   void SavePlotImage();
   void RescalePlot();
   void PlotUpdate();
-  
+
 private:
   Ui::BarPlot ui;
   QList<dvector*> vlst;
   dvector *v;
   QList<QColor> colors;
-  
+
   vtkSmartPointer<vtkContextView> view;
   vtkSmartPointer<vtkChartXY> chart;
   vtkSmartPointer<vtkTable> table;
 };
 
 #endif
-

@@ -16,7 +16,7 @@ void BarPlot::slotExit()
 }
 
 void BarPlot::PlotUpdate()
-{  
+{
   chart->Modified();
   chart->Update();
   ui.qvtkWidget->repaint();
@@ -31,7 +31,7 @@ void BarPlot::RescalePlot()
 void BarPlot::SavePlotImage()
 {
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save Plot to Image"), "", tr("JPEG (*.jpg);;PNG (*.png);;All Files (*)"));
-  
+
   if(!fileName.isEmpty()){
     vtkWindowToImageFilter *filter = vtkWindowToImageFilter::New();
     filter->SetInput(ui.qvtkWidget->GetRenderWindow());
@@ -53,37 +53,37 @@ void BarPlot::SavePlotImage()
   }
 }
 
-BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle, QString xaxestitle, QString yaxestitle)
+BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle, QString xaxestitle, QString yaxestitle, QWidget *parent) : QWidget(parent)
 {
   ui.setupUi(this);
-  
+
   setWindowTitle(windowtitle);
 
   // deep copy;
   initDVector(&v);
   DVectorCopy(v_, &v);
-  
+
   // Set up a 2D scene, add an XY chart to it
   view = vtkSmartPointer<vtkContextView>::New();
   view->GetRenderer()->SetBackground(1.0, 1.0, 1.0);
   view->GetRenderWindow()->SetSize(400, 300);
-  
+
   chart = vtkSmartPointer<vtkChartXY>::New();
   view->GetScene()->AddItem(chart);
   chart->SetTitle(windowtitle.toStdString());
   chart->SetShowLegend(false);
- 
+
   // Create a table with some points in it...
   table = vtkSmartPointer<vtkTable>::New();
- 
+
   vtkSmartPointer<vtkDoubleArray> arrStep = vtkSmartPointer<vtkDoubleArray>::New();
   arrStep->SetName("Step Size");
   table->AddColumn(arrStep);
-  
+
   vtkSmartPointer<vtkDoubleArray> arrVar = vtkSmartPointer<vtkDoubleArray>::New();
   arrVar->SetName("Variables");
   table->AddColumn(arrVar);
-  
+
   vtkSmartPointer<vtkStringArray> xLabels;
   if(varnames.size() > 0){
     xLabels = vtkSmartPointer<vtkStringArray>::New();
@@ -98,7 +98,7 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle, QString
     table->SetValue(i, 0, i+1);
     table->SetValue(i, 1, getDVectorValue(v, i));
   }
-  
+
   int QtColours[]= {9, 7, 8, 2, 14, 13, 15, 10, 16, 11, 17, 12, 18, 5, 4, 6, 19}; // used for get the different colors
   // Add multiple line plots, setting the colors etc
   vtkPlot *plot = chart->AddPlot(vtkChart::BAR);
@@ -106,19 +106,19 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle, QString
 
   if(varnames.size() > 0)
     plot->SetIndexedLabels(xLabels);
-  
+
   QColor color = QColor((Qt::GlobalColor)QtColours[0]);
   plot->SetColor(color.redF(), color.greenF(), color.blueF());
-  
+
   chart->SetSelectionMode(vtkContextScene::SELECTION_NONE);
   chart->GetAxis(vtkAxis::BOTTOM)->SetTitle(xaxestitle.toStdString().c_str());
   chart->GetAxis(vtkAxis::LEFT)->SetTitle(yaxestitle.toStdString().c_str());
   //Finally render the scene
   chart->Update();
   view->GetRenderWindow()->SetMultiSamples(0);
-  
+
   // VTK/Qt wedded
-  view->SetInteractor(ui.qvtkWidget->GetInteractor()); 
+  view->SetInteractor(ui.qvtkWidget->GetInteractor());
   ui.qvtkWidget->SetRenderWindow(view->GetRenderWindow());
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.rescaleplotButton, SIGNAL(clicked(bool)), SLOT(RescalePlot()));
@@ -126,12 +126,12 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle, QString
   PlotUpdate();
 }
 
-BarPlot::BarPlot(QList<dvector*> vlst_, QString windowtitle, QString xaxestitle, QString yaxestitle, QStringList labelname)
+BarPlot::BarPlot(QList<dvector*> vlst_, QString windowtitle, QString xaxestitle, QString yaxestitle, QStringList labelname, QWidget *parent) : QWidget(parent)
 {
   ui.setupUi(this);
-  
+
   setWindowTitle(windowtitle);
-  
+
   v = 0;
   // deep copy
   for(int i = 0; i < vlst_.size(); i++){
@@ -139,24 +139,24 @@ BarPlot::BarPlot(QList<dvector*> vlst_, QString windowtitle, QString xaxestitle,
     initDVector(&vlst.last());
     DVectorCopy(vlst_[i], &vlst.last());
   }
-  
+
   // Set up a 2D scene, add an XY chart to it
   view = vtkSmartPointer<vtkContextView>::New();
   view->GetRenderer()->SetBackground(1.0, 1.0, 1.0);
   view->GetRenderWindow()->SetSize(400, 300);
-  
+
   chart = vtkSmartPointer<vtkChartXY>::New();
   view->GetScene()->AddItem(chart);
   chart->SetTitle(windowtitle.toStdString());
   chart->SetShowLegend(true);
- 
+
   // Create a table with some points in it...
   table = vtkSmartPointer<vtkTable>::New();
- 
+
   vtkSmartPointer<vtkDoubleArray> arrStep = vtkSmartPointer<vtkDoubleArray>::New();
   arrStep->SetName("Step Size");
   table->AddColumn(arrStep);
-  
+
   int c = 0;
   for(int i = 0; i < vlst.size(); i++){
     vtkSmartPointer<vtkDoubleArray> arr = vtkSmartPointer<vtkDoubleArray>::New();
@@ -169,23 +169,23 @@ BarPlot::BarPlot(QList<dvector*> vlst_, QString windowtitle, QString xaxestitle,
     }
     table->AddColumn(arr);
   }
- 
+
   //get min and max....
   double min, max;
   DVectorMinMax(vlst[0], &min, &max);
-  
+
   for(int i = 1; i < vlst.size(); i++){
     double tmp_min = 0.f, tmp_max = 0.f;
     DVectorMinMax(vlst[i], &tmp_min, &tmp_max);
     if(tmp_min < min){
       min = tmp_min;
     }
-    
+
     if(tmp_max > max){
       max = tmp_max;
     }
   }
-  
+
   // step of 20
   double step = (max - min) / 20;
   table->SetNumberOfRows(20);
@@ -214,7 +214,7 @@ BarPlot::BarPlot(QList<dvector*> vlst_, QString windowtitle, QString xaxestitle,
   for(int i = 0; i < vlst.size(); i++){
     vtkPlot *plot = chart->AddPlot(vtkChart::BAR);
     plot->SetInputData(table, 0, i+1);
-    
+
     QColor color;
     if(i < (int)(sizeof(QtColours)/sizeof(QtColours[0]))){
       color = QColor((Qt::GlobalColor)QtColours[i]);
@@ -222,19 +222,19 @@ BarPlot::BarPlot(QList<dvector*> vlst_, QString windowtitle, QString xaxestitle,
     else{
       color.setRgb(randInt(0, 255), randInt(0, 255), randInt(0, 255));
     }
-    
+
     plot->SetColor(color.redF(), color.greenF(), color.blueF());
   }
-  
+
   chart->SetSelectionMode(vtkContextScene::SELECTION_NONE);
   chart->GetAxis(vtkAxis::BOTTOM)->SetTitle(xaxestitle.toStdString().c_str());
   chart->GetAxis(vtkAxis::LEFT)->SetTitle(yaxestitle.toStdString().c_str());
   //Finally render the scene
   chart->Update();
   view->GetRenderWindow()->SetMultiSamples(0);
-  
+
   // VTK/Qt wedded
-  view->SetInteractor(ui.qvtkWidget->GetInteractor()); 
+  view->SetInteractor(ui.qvtkWidget->GetInteractor());
   ui.qvtkWidget->SetRenderWindow(view->GetRenderWindow());
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.rescaleplotButton, SIGNAL(clicked(bool)), SLOT(RescalePlot()));
@@ -247,7 +247,7 @@ BarPlot::~BarPlot()
   if(v != 0){
     DelDVector(&v);
   }
-  
+
   for(int i = 0; i < vlst.size(); i++){
     if(vlst[i]->size > 0){
       DelDVector(&vlst[i]);

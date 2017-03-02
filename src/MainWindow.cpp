@@ -1302,7 +1302,7 @@ void MainWindow::UpdateImageWindow(ImageSignal is)
         img->setScaledContents(true);
         img->pixmap()->scaled(247, 170, Qt::KeepAspectRatioByExpanding);
 
-        ui.tabWidget->addTab(img, projects->value(is.pid)->getImages()[i].name); 
+        ui.tabWidget->addTab(img, projects->value(is.pid)->getImages()[i].name);
       }
       else{
         continue;
@@ -6159,7 +6159,7 @@ void MainWindow::PlotModIncVarVar()
     QStringList allvarnames = projects->value(pid)->getMatrix(projects->value(pid)->getVarSelModel(mid)->getXHash())->getVarName();
     allvarnames.removeFirst();
 
-    BarPlot *bplot = new BarPlot(v, allvarnames, QString("Models Including Variable - %1").arg(projects->value(pid)->getVarSelModel(mid)->getName()), "Variable Number", "Models Including Variable");
+    BarPlot *bplot = new BarPlot(v, allvarnames, QString("Models Including Variable - %1").arg(projects->value(pid)->getVarSelModel(mid)->getName()), "Variable Number", "Models Including Variable", this);
     MDIChild *graphchild = createMdiChild();
     graphchild->setWidget(bplot);
     graphchild->setWindowID(pid);
