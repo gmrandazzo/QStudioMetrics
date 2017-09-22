@@ -29,7 +29,7 @@ void ProjectManager::Finish()
             continue;
           }
         }
-        
+
         if(duplicate == false){
           data->getImages().append(IMAGE());
           QString imgname = finfo.fileName();
@@ -72,7 +72,7 @@ void ProjectManager::Finish()
               continue;
             }
           }
-          
+
           if(duplicate == false){
             data->getImages().append(IMAGE());
             QString imgname = finfo.fileName();
@@ -101,7 +101,7 @@ void ProjectManager::Remove()
   QModelIndexList indexes = ui.tableView->selectionModel()->selectedRows();
   if(indexes.size() < 1)
     return;
-  
+
   QModelIndex current;
   Q_FOREACH(current, indexes){
     if(table->index(current.row(), 2).data(Qt::DisplayRole).toString().compare("Matrix") == 0){
@@ -129,19 +129,19 @@ void ProjectManager::Add()
     row.append(new QStandardItem(iffd.getMatrix()->getName()));
     row.append(new QStandardItem("Matrix"));
     table->appendRow(row);
-    
+
     data->addMatrix();
     matrix *_m_ = data->getMATRIXList().last()->Matrix();
     MatrixCopy(iffd.getMatrix()->Matrix(), &_m_);
-    
+
     for(int i = 0; i < iffd.getMatrix()->getObjName().size(); i++){
       data->getMATRIXList().last()->getObjName().append(iffd.getMatrix()->getObjName()[i]);
     }
-    
+
     for(int i = 0; i < iffd.getMatrix()->getVarName().size(); i++){
       data->getMATRIXList().last()->getVarName().append(iffd.getMatrix()->getVarName()[i]);
     }
-    
+
     data->getMATRIXList().last()->setName(iffd.getMatrix()->getName());
     data->getMATRIXList().last()->GenHash();
     matrixid.append(data->MatrixCount()-1);
@@ -153,21 +153,21 @@ void ProjectManager::Add()
       row.append(new QStandardItem("Array"));
 
       table->appendRow(row);
-      
+
       data->addArray();
       array *_a_ = data->getARRAYList().last()->Array();
       for(int i = 0; i < (int)iffd.getArray()->Array()->order; i++){
         ArrayAppendMatrix(&_a_, iffd.getArray()->Array()->m[i]);
       }
-      
+
       for(int i = 0; i < iffd.getArray()->getObjName().size(); i++){
         data->getARRAYList().last()->getObjName().append(iffd.getArray()->getObjName()[i]);
       }
-      
+
       for(int i = 0; i < iffd.getArray()->getVarName().size(); i++){
         data->getARRAYList().last()->getVarName().append(iffd.getArray()->getVarName()[i]);
       }
-      
+
       data->getARRAYList().last()->setName(iffd.getArray()->getName());
       data->getARRAYList().last()->GenHash();
       arrayid.append(data->ArrayCount()-1);
@@ -180,13 +180,13 @@ void ProjectManager::Add()
 
 void ProjectManager::AddImagesAsRGB()
 {
-  QFileDialog fimgdialog; 
-  
+  QFileDialog fimgdialog;
+
   fimgdialog.setFileMode(QFileDialog::DirectoryOnly);
   fimgdialog.setOptions(QFileDialog::ShowDirsOnly);
   fimgdialog.setDirectory(lastpath);
   fimgdialog.setWindowTitle(tr("Open Image Directory"));
-  
+
 //   QString dirname = QFileDialog::getExistingDirectory(this, tr("Open Directory"), lastpath, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
   if(fimgdialog.exec()){
     QString dirname = fimgdialog.selectedFiles().first();
@@ -198,7 +198,7 @@ void ProjectManager::AddImagesAsRGB()
       row.append(new QStandardItem(dirinfo.fileName()));
       row.append(new QStandardItem("Matrix"));
       table->appendRow(row);
-      
+
       QList< QList <float> > imgmx;
       QStringList imgname;
       int colsize = 999999999;
@@ -214,11 +214,11 @@ void ProjectManager::AddImagesAsRGB()
             split.last().toLower().compare("ppm") == 0 ||
             split.last().toLower().compare("xbm") == 0 ||
             split.last().toLower().compare("xpm") == 0){
-            
+
             imgmx.append(QList<float>());
-          
+
             QImage img(fileInfo.absoluteFilePath());
-            
+
             QString rowname = fileInfo.absoluteFilePath();
             rowname.remove(".jpg");
             rowname.remove(".jpeg");
@@ -228,17 +228,17 @@ void ProjectManager::AddImagesAsRGB()
             rowname.remove(".xbm");
             rowname.remove(".xpm");
             imgname.append(rowname);
-            
+
             for(int row = 1; row < img.height() + 1; ++row){
               for(int col = 1; col < img.width() + 1; ++col){
                 QColor clrCurrent(img.pixel(row,col));
                 imgmx.last().append(clrCurrent.red() +  clrCurrent.green() + clrCurrent.blue());
               }
             }
-            
+
             if(imgmx.last().size() < colsize)
               colsize = imgmx.last().size();
-            
+
           }
           else{
             continue;
@@ -248,12 +248,12 @@ void ProjectManager::AddImagesAsRGB()
           continue;
         }
       }
-      
+
       if(imgname.size() > 0){
         data->addMatrix();
         matrix *_m_ = data->getMATRIXList().last()->Matrix();
         ResizeMatrix(&_m_, imgmx.size(), colsize);
-        
+
         for(int i = 0; i < imgmx.size(); i++){
           QFileInfo finfo(imgname[i]);
           data->getMATRIXList().last()->getObjName().append(finfo.fileName());
@@ -265,7 +265,7 @@ void ProjectManager::AddImagesAsRGB()
         for(uint i = 0; i < _m_->col; i++){
           data->getMATRIXList().last()->getVarName().append(QString("pixel%1").arg(i+1));
         }
-        
+
         data->getMATRIXList().last()->setName(dirinfo.fileName());
         data->getMATRIXList().last()->GenHash();
         matrixid.append(data->MatrixCount()-1);
@@ -281,13 +281,13 @@ void ProjectManager::AddImagesAsRGB()
 
 void ProjectManager::AddImageList()
 {
-  QFileDialog fimgdialog; 
-  
+  QFileDialog fimgdialog;
+
   fimgdialog.setFileMode(QFileDialog::DirectoryOnly);
   fimgdialog.setOptions(QFileDialog::ShowDirsOnly);
   fimgdialog.setDirectory(lastpath);
   fimgdialog.setWindowTitle(tr("Open Image Directory"));
-  
+
 //   QString dirname = QFileDialog::getExistingDirectory(this, tr("Open Directory"), lastpath, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
   if(fimgdialog.exec()){
     QString dirname = fimgdialog.selectedFiles().first();
@@ -300,12 +300,12 @@ void ProjectManager::AddImageList()
       row.append(new QStandardItem("Image List"));
       table->appendRow(row);
       imagenamelst.append(QStringList());
-      
+
       QFileInfoList list = dir.entryInfoList();
       for(int i = 0; i < list.size(); i++){
         QFileInfo fileInfo = list.at(i);
         QStringList split = fileInfo.fileName().split(".", QString::SkipEmptyParts);
-        if(!split.isEmpty()){       
+        if(!split.isEmpty()){
           if(split.last().toLower().compare("jpg") == 0 ||
             split.last().toLower().compare("jpeg") == 0 ||
             split.last().toLower().compare("png") == 0 ||
@@ -353,18 +353,18 @@ void ProjectManager::setWindowName(QString name_)
 ProjectManager::ProjectManager(DATA *data_)
 {
   ui.setupUi(this);
-  
+
   data = data_;
   appendstate = false;
   table = new QStandardItemModel(0, 3);
-  
+
   QStringList labels;
   labels << "File" << "Data Name" << "Type";
   table->setHorizontalHeaderLabels(labels);
 
-  ui.tableView->setSelectionBehavior(QAbstractItemView::SelectRows);  
+  ui.tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
   ui.tableView->setModel(table);
-  
+
   connect(ui.addFileButton, SIGNAL(clicked(bool)) , SLOT(Add()));
   connect(ui.addImageAsRGB, SIGNAL(clicked(bool)), SLOT(AddImagesAsRGB()));
   connect(ui.addImageListButton, SIGNAL(clicked(bool)), SLOT(AddImageList()));

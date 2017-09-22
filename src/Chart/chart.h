@@ -1,5 +1,5 @@
-#ifndef QCHART_H
-#define QCHART_H
+#ifndef CHART_H
+#define CHART_H
 
 #include <QMap>
 #include <QPixmap>
@@ -14,13 +14,13 @@ class id;
 class QToolButton;
 class PlotSettings;
 
-class QChart : public QWidget
+class Chart : public QWidget
 {
     Q_OBJECT
 
 public:
-    QChart(QWidget *parent = 0);
-    ~QChart();
+    Chart(QWidget *parent = 0);
+    ~Chart();
 
     void setXaxisName(QString xaxisname);
     void setYaxisName(QString yaxisname);

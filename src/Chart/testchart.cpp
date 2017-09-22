@@ -1,6 +1,6 @@
 #include <QtGui>
 #include <QApplication>
-#include "qchart.h"
+#include "chart.h"
 
 /*
 void PlotFromfile(Plotter *plotter, const QString &fileName)
@@ -36,28 +36,28 @@ double randnum(double low, double high){
   return (high-low) * uniform0to1Random() - high;
 }
 
-void RandomPlot(QChart *qchart)
+void RandomPlot(Chart *chart)
 {
   qsrand(20);
   for(int i = 0; i < 20; i++){
     qreal x = (qreal)randnum(-0.01, 0.01);
     qreal y = (qreal)randnum(-0.01, 0.01);
     QString name = QString("Obj%1").arg(i+1);
-    qchart->addPoint(x, y, name);
+    chart->addPoint(x, y, name);
   }
-//   qchart->getPoint(0)->setSelection(true);
+//   chart->getPoint(0)->setSelection(true);
 
-//   qchart->getPoint(1)->setSelection(true);
+//   chart->getPoint(1)->setSelection(true);
 
   QVector< QPointF > line;
   line.append(QPointF(0,0));
   line.append(QPointF(0.01,0.01));
 
-  qchart->addCurve(line, "ciccio", Qt::red);
-  qchart->Refresh();
+  chart->addCurve(line, "ciccio", Qt::red);
+  chart->Refresh();
 }
 
-void GaussianPlot(QChart *qchart)
+void GaussianPlot(Chart *chart)
 {
   QList<int> domain;
   domain << -1 << 1;
@@ -69,7 +69,7 @@ void GaussianPlot(QChart *qchart)
     qreal x = domain[0] + stepsize * i;
     qreal y = exp(- ((x-0.12)*(x-0.12))/0.23);
     QString name = QString("Obj%1").arg(cc);
-    qchart->addPoint(x, y, name);
+    chart->addPoint(x, y, name);
     curve1.append(QPointF(x, y));
     cc++;
   }
@@ -79,37 +79,37 @@ void GaussianPlot(QChart *qchart)
     qreal x = i * dx;
     qreal y = cos(i*dx);
     QString name = QString("Obj%1").arg(cc);
-    qchart->addPoint(x, y, name);
+    chart->addPoint(x, y, name);
     curve2.append(QPointF(x, y));
     cc++;
   }
 
-  qchart->addPoint(0, 0, "zero");
+  chart->addPoint(0, 0, "zero");
   curve3.append(QPointF(0,0));
-  qchart->addPoint(1, 1, "uno");
+  chart->addPoint(1, 1, "uno");
   curve3.append(QPointF(1,1));
-  qchart->addPoint(2, 2, "due");
+  chart->addPoint(2, 2, "due");
   curve3.append(QPointF(2,2));
 
-  qchart->addCurve(curve1, "fit1", Qt::red);
-  qchart->addCurve(curve2, "fit2", Qt::blue);
-  qchart->addCurve(curve3, "fit3", Qt::black);
+  chart->addCurve(curve1, "fit1", Qt::red);
+  chart->addCurve(curve2, "fit2", Qt::blue);
+  chart->addCurve(curve3, "fit3", Qt::black);
 
-  qchart->Refresh();
+  chart->Refresh();
 }
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    QChart qchart;
-    qchart.setWindowTitle(QObject::tr("QChart"));
+    Chart chart;
+    chart.setWindowTitle(QObject::tr("Chart"));
     //PlotFromfile(&plotter, argv[1]);
     //RandomPlot(&plotter);
-    GaussianPlot(&qchart);
-    qchart.setXaxisName("X axis");
-    qchart.setYaxisName("Y axis");
-    qchart.setPlotTitle("Test Plot...");
-    qchart.resize(400, 400);
-    qchart.show();
+    GaussianPlot(&chart);
+    chart.setXaxisName("X axis");
+    chart.setYaxisName("Y axis");
+    chart.setPlotTitle("Test Plot...");
+    chart.resize(400, 400);
+    chart.show();
     return app.exec();
 }

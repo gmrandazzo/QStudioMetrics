@@ -26,23 +26,23 @@ void SimpleLine2DPlot::SavePlotImage()
 {
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save Plot to Image"), "", tr("JPEG (*.jpg);;PNG (*.png);;All Files (*)"));
   if(!fileName.isEmpty()){
-    qchart->SaveAsImage(fileName);
+    chart->SaveAsImage(fileName);
   }
 }
 
 void SimpleLine2DPlot::setLabelDetail(bool labeldetail_)
 {
-  qchart->setLabelDetail(labeldetail_);
+  chart->setLabelDetail(labeldetail_);
 }
 
 void SimpleLine2DPlot::setXminXmanXTicks(double xmin, double xmax, int xtick)
 {
-    qchart->setXminXmaxXTick(xmin, xmax, xtick);
+    chart->setXminXmaxXTick(xmin, xmax, xtick);
 }
 
 void SimpleLine2DPlot::setYminYmanYTicks(double ymin, double ymax, int ytick)
 {
-    qchart->setYminYmaxYTick(ymin, ymax, ytick);
+    chart->setYminYmaxYTick(ymin, ymax, ytick);
 }
 
 SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename, QString windowtitle, QString xaxestitle, QString yaxestitle)
@@ -52,26 +52,26 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename, QString windowt
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
-  qchart = new QChart();
-  plotLayout->addWidget(qchart);
+  chart = new Chart();
+  plotLayout->addWidget(chart);
   ui.plotwidget->setLayout(plotLayout);
 
-  qchart->setXaxisName(xaxestitle);
-  qchart->setYaxisName(yaxestitle);
+  chart->setXaxisName(xaxestitle);
+  chart->setYaxisName(yaxestitle);
 
   for(uint j = 1; j < m->col; j++){
     //QVector< QPointF > curve;
     for(uint i = 0; i < m->row; i++){
       qreal x = m->data[i][0];
       qreal y = m->data[i][j];
-      qchart->addPoint(x, y, QString("%1").arg(curvename), Qt::black, 5);
+      chart->addPoint(x, y, QString("%1").arg(curvename), Qt::black, 5);
       //curve.append(QPointF(x, y));
     }
-    //qchart->addCurve(curve, QString("%1").arg(curvenames[j-1]), Qt::blue); Mean
-    //qchart->addCurve(curve, QString("%1").arg(curvenames[j-1]), Qt::red); Mediane
+    //chart->addCurve(curve, QString("%1").arg(curvenames[j-1]), Qt::blue); Mean
+    //chart->addCurve(curve, QString("%1").arg(curvenames[j-1]), Qt::red); Mediane
   }
 
-  qchart->Refresh();
+  chart->Refresh();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
 }
@@ -83,8 +83,8 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString wi
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
-  qchart = new QChart();
-  plotLayout->addWidget(qchart);
+  chart = new Chart();
+  plotLayout->addWidget(chart);
   ui.plotwidget->setLayout(plotLayout);
 
   // Set default colors
@@ -101,21 +101,21 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString wi
   if(columntitle.size() < (int)m->col)
     return;
 
-  qchart->setXaxisName(xaxestitle);
-  qchart->setYaxisName(yaxestitle);
+  chart->setXaxisName(xaxestitle);
+  chart->setYaxisName(yaxestitle);
 
   for(uint j = 1; j < m->col; j++){
     QVector< QPointF > curve;
     for(uint i = 0; i < m->row; i++){
       qreal x = m->data[i][0];
       qreal y = m->data[i][j];
-      qchart->addPoint(x, y, QString("%1").arg(curvenames[j-1]), colors[j-1], 5);
+      chart->addPoint(x, y, QString("%1").arg(curvenames[j-1]), colors[j-1], 5);
       curve.append(QPointF(x, y));
     }
-    qchart->addCurve(curve, QString("%1").arg(curvenames[j-1]), colors[j-1]);
+    chart->addCurve(curve, QString("%1").arg(curvenames[j-1]), colors[j-1]);
   }
 
-  qchart->Refresh();
+  chart->Refresh();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
 }

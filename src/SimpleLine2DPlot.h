@@ -9,7 +9,7 @@
 #include "ui_SimpleLine2DPlot.h"
 
 
-#include "QChart/qchart.h"
+#include "Chart/chart.h"
 
 class SimpleLine2DPlot: public QWidget
 {
@@ -29,7 +29,7 @@ private slots:
 
 private:
   Ui::SimpleLine2DPlot ui;
-  QChart *qchart;
+  Chart *chart;
 };
 
 #endif

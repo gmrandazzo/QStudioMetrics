@@ -1,6 +1,7 @@
 #ifndef SCATTERPLOT3D_H
 #define SCATTERPLOT3D_H
 #include <scientific.h>
+#include <QApplication>
 
 #include <QWidget>
 #include <QList>
@@ -48,22 +49,22 @@ class MouseInteractorStylePP : public vtkInteractorStyleTrackballCamera
 public:
   static MouseInteractorStylePP* New();
   vtkTypeMacro(MouseInteractorStylePP, vtkInteractorStyleTrackballCamera);
- 
+
   virtual void OnLeftButtonDown(){
     picked[0] = picked[1] = picked[2] = -9999;
 //     qDebug() << "Picking pixel: " << this->Interactor->GetEventPosition()[0] << " " << this->Interactor->GetEventPosition()[1];
-    this->Interactor->GetPicker()->Pick(this->Interactor->GetEventPosition()[0], 
-                        this->Interactor->GetEventPosition()[1], 
+    this->Interactor->GetPicker()->Pick(this->Interactor->GetEventPosition()[0],
+                        this->Interactor->GetEventPosition()[1],
                         0,  // always zero.
                         this->Interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
-    
-   
+
+
     this->Interactor->GetPicker()->GetPickPosition(picked);
 //     qDebug() << "Picked value: " << picked[0] << " " << picked[1] << " " << picked[2];
     // Forward events
     vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
   }
-  
+
   double *getPicked(){ return picked; }
 private:
   double picked[3];
@@ -87,7 +88,7 @@ public:
     mapper_ = vtkSmartPointer<vtkPolyDataMapper>::New();
     actor_ = vtkSmartPointer<vtkActor>::New();
   }
-  void Update(){ 
+  void Update(){
     points_->Modified();
     colors_->Modified();
     sphereSource_->Modified();
@@ -98,17 +99,17 @@ public:
     actor_->Modified();
   }
   int NumberOfPoints(){ return pointid_.size(); }
-  
+
   QList<POINT3DID> &pointid(){ return pointid_; }
   QStringList &labels(){ return labels_;}
   vtkSmartPointer<vtkPoints> &points(){ return points_; }
   vtkSmartPointer<vtkUnsignedCharArray> &colors(){ return colors_; }
-  vtkSmartPointer<vtkPolyData> &polydata(){ return polydata_; } 
+  vtkSmartPointer<vtkPolyData> &polydata(){ return polydata_; }
   vtkSmartPointer<vtkSphereSource> &sphereSource(){ return sphereSource_; }
   vtkSmartPointer<vtkGlyph3D> &glyph3D(){ return glyph3D_; }
   vtkSmartPointer<vtkPolyDataMapper> &mapper(){ return mapper_; }
   vtkSmartPointer<vtkActor> &actor(){ return actor_; }
-  
+
 private:
   QList<POINT3DID> pointid_;
   QStringList labels_;
@@ -124,7 +125,7 @@ private:
 class ScatterPlot3D: public QWidget
 {
   Q_OBJECT
-  
+
 public:
   enum{
     SCORES = 0,
@@ -132,15 +133,15 @@ public:
     OBJECTLABELS = 0,
     VARIABLELABELS = 1
   };
-  
+
   ScatterPlot3D(matrix *m_, QStringList &objname, QString windowtitle, QString xname_, QString yname_, QString zname);
   ScatterPlot3D(QList<matrix*> m_, QList<QStringList> &objname, QString windowtitle, QString xname_, QString yname_, QString zname_);
   ScatterPlot3D(QList<matrix*> m_, QList<QStringList> &objname, QList<MATRIX*> *mxlst, QStringList xhash_, QStringList yhash, LABELS *objlabels_, LABELS *varlabels_, QString windowtitle, QString xname, QString yname, QString zname, int type_);
   ScatterPlot3D(QList<matrix*> m_, QList<QStringList> &objname, QList<ARRAY*> *arlst, QStringList xhash_, QStringList yhash, LABELS  *objlabels_, LABELS *varlabels_, QString windowtitle,  QString xname, QString yname, QString zname, int type_);
   ~ScatterPlot3D();
-  
+
   void setPID(int pid_){ pid = pid_; }
-  
+
 public slots:
   void slotExit();
   void setPoints();
@@ -167,7 +168,7 @@ public slots:
 
 signals:
   void ScatterPlot3DImageSignalChanged(ImageSignal new_spi);
-  
+
 private:
   Ui::ScatterPlot3D ui;
   void setScalingFactor();
@@ -189,19 +190,18 @@ private:
   vtkSmartPointer<vtkPointPicker> pointPicker;
   vtkSmartPointer<MouseInteractorStylePP> style;
   vtkSmartPointer<vtkEventQtSlotConnect> Connections;
-  
+
   ImageSignal spimgsign;
-  
+
   QString xname, yname, zname;
   QColor makeColor(double val, double min, double max, QColor &color1, QColor &color2);
-  
+
   int GetIDinmxlst(QString mxhash);
   int GetIDinarlst(QString arhash);
-  
+
   bool abort;
   void StartRun();
   void StopRun();
 };
 
 #endif
-

@@ -1,7 +1,7 @@
 #ifndef SIMPLESCATTERPLOT3D_H
 #define SIMPLESCATTERPLOT3D_H
 #include <scientific.h>
-
+#include <QApplication>
 #include <QWidget>
 #include <QList>
 #include <QStandardItem>
@@ -54,7 +54,7 @@ public:
     mapper_ = vtkSmartPointer<vtkPolyDataMapper>::New();
     actor_ = vtkSmartPointer<vtkActor>::New();
   }
-  void Update(){ 
+  void Update(){
     points_->Modified();
     colors_->Modified();
     sphereSource_->Modified();
@@ -67,12 +67,12 @@ public:
   QStringList &labels(){ return labels_;}
   vtkSmartPointer<vtkPoints> &points(){ return points_; }
   vtkSmartPointer<vtkUnsignedCharArray> &colors(){ return colors_; }
-  vtkSmartPointer<vtkPolyData> &polydata(){ return polydata_; } 
+  vtkSmartPointer<vtkPolyData> &polydata(){ return polydata_; }
   vtkSmartPointer<vtkSphereSource> &sphereSource(){ return sphereSource_; }
   vtkSmartPointer<vtkGlyph3D> &glyph3D(){ return glyph3D_; }
   vtkSmartPointer<vtkPolyDataMapper> &mapper(){ return mapper_; }
   vtkSmartPointer<vtkActor> &actor(){ return actor_; }
-  
+
 private:
   QStringList labels_;
   vtkSmartPointer<vtkPoints> points_;
@@ -87,7 +87,7 @@ private:
 class SimpleScatterPlot3D: public QWidget
 {
   Q_OBJECT
-  
+
 public:
   /*
    * m matrix must be of type x;y;z
@@ -97,7 +97,7 @@ public:
   SimpleScatterPlot3D(matrix *m_, QList<double> colorvalue, QString windowtitle, QString xname_, QString yname_, QString zname);
   ~SimpleScatterPlot3D();
   void setPID(int pid_){ pid = pid_; }
-  
+
 public slots:
   void slotExit();
   void PlotUpdate();
@@ -123,4 +123,3 @@ private:
 };
 
 #endif
-

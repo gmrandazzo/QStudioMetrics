@@ -6,7 +6,7 @@
 #include <QStyleOptionFocusRect>
 #include <cmath>
 
-#include "qchart.h"
+#include "chart.h"
 
 #define EPSILON 1e-3  /* Define your own tolerance*/
 #define FLOAT_EQ(x,v, EPSILON) (((v - EPSILON) < x) && (x <( v + EPSILON)))
@@ -18,11 +18,11 @@ inline double round(double n, unsigned d)
   return floor(n * pow(10., d) + .5) / pow(10., d);
 }
 
-QChart::QChart(QWidget *parent)
+Chart::Chart(QWidget *parent)
     : QWidget(parent)
 {
   #ifdef DEBUG
-  printf("QChart::QChart\n");
+  printf("Chart::Chart\n");
   #endif
   rescalefactor = 0.25;
   labeldetail = false;
@@ -55,10 +55,10 @@ QChart::QChart(QWidget *parent)
   setPlotSettings(PlotSettings());
 }
 
-QChart::~QChart()
+Chart::~Chart()
 {
   #ifdef DEBUG
-  printf("QChart::~QChart\n");
+  printf("Chart::~Chart\n");
   #endif
   for(int i = 0; i < p.size(); i++)
     delete p[i];
@@ -68,10 +68,10 @@ QChart::~QChart()
   delete zoomOutButton;
 }
 
-void QChart::Refresh()
+void Chart::Refresh()
 {
   #ifdef DEBUG
-  printf("QChart::Refresh\n");
+  printf("Chart::Refresh\n");
   #endif
   if(zoomStack.size() > 0 && p.size() > 0){
     qreal minX, maxX, minY, maxY;
@@ -143,42 +143,42 @@ void QChart::Refresh()
   refreshPixmap();
 }
 
-void QChart::setXaxisName(QString xaxisname)
+void Chart::setXaxisName(QString xaxisname)
 {
   #ifdef DEBUG
-  printf("QChart::setXaxisName\n");
+  printf("Chart::setXaxisName\n");
   #endif
   m_xaxisname = xaxisname;
 }
 
-void QChart::setYaxisName(QString yaxisname)
+void Chart::setYaxisName(QString yaxisname)
 {
   #ifdef DEBUG
-  printf("QChart::setYaxisName\n");
+  printf("Chart::setYaxisName\n");
   #endif
   m_yaxisname = yaxisname;
 }
 
-void QChart::setPlotTitle(QString plottitle)
+void Chart::setPlotTitle(QString plottitle)
 {
   #ifdef DEBUG
-  printf("QChart::setPlotTitle\n");
+  printf("Chart::setPlotTitle\n");
   #endif
   m_plottitle = plottitle;
 }
 
-void QChart::setLabelDetail(bool labeldetail_)
+void Chart::setLabelDetail(bool labeldetail_)
 {
   #ifdef DEBUG
-  printf("QChart::setLabelDetail\n");
+  printf("Chart::setLabelDetail\n");
   #endif
   labeldetail = labeldetail_;
 }
 
-void QChart::setXminXmaxXTick(double xmin, double xmax, int xtick)
+void Chart::setXminXmaxXTick(double xmin, double xmax, int xtick)
 {
   #ifdef DEBUG
-  printf("QChart::setXminXmaxXTick\n");
+  printf("Chart::setXminXmaxXTick\n");
   #endif
   if(zoomStack.size() > 0 && curZoom < zoomStack.size()){
     zoomStack[curZoom].minX = xmin;
@@ -189,10 +189,10 @@ void QChart::setXminXmaxXTick(double xmin, double xmax, int xtick)
 }
 
 
-void QChart::setYminYmaxYTick(double ymin, double ymax, int ytick)
+void Chart::setYminYmaxYTick(double ymin, double ymax, int ytick)
 {
   #ifdef DEBUG
-  printf("QChart::setYminYmaxYTick\n");
+  printf("Chart::setYminYmaxYTick\n");
   #endif
   if(zoomStack.size() > 0 && curZoom < zoomStack.size()){
     zoomStack[curZoom].minY = ymin;
@@ -202,10 +202,10 @@ void QChart::setYminYmaxYTick(double ymin, double ymax, int ytick)
   }
 }
 
-void QChart::DoSelection(int low, int high)
+void Chart::DoSelection(int low, int high)
 {
   #ifdef DEBUG
-  printf("QChart::DoSelection\n");
+  printf("Chart::DoSelection\n");
   #endif
   int i;
   for(i = low; i < high; i++){
@@ -213,10 +213,10 @@ void QChart::DoSelection(int low, int high)
   }
 }
 
-void QChart::Select(int from, int to)
+void Chart::Select(int from, int to)
 {
   #ifdef DEBUG
-  printf("QChart::Select\n");
+  printf("Chart::Select\n");
   #endif
   if(from < to){
     int mid = (from+to)/2;
@@ -226,10 +226,10 @@ void QChart::Select(int from, int to)
   }
 }
 
-void QChart::SelectAll()
+void Chart::SelectAll()
 {
   #ifdef DEBUG
-  printf("QChart::SelectAll\n");
+  printf("Chart::SelectAll\n");
   #endif
   Select(0, p.size());
   /*
@@ -239,10 +239,10 @@ void QChart::SelectAll()
   refreshPixmap();
 }
 
-void QChart::DoUnselection(int low, int high)
+void Chart::DoUnselection(int low, int high)
 {
   #ifdef DEBUG
-  printf("QChart::DoUnselection\n");
+  printf("Chart::DoUnselection\n");
   #endif
   int i;
   for(i = low; i < high; i++){
@@ -253,10 +253,10 @@ void QChart::DoUnselection(int low, int high)
   }
 }
 
-void QChart::Unselect(int from, int to)
+void Chart::Unselect(int from, int to)
 {
   #ifdef DEBUG
-  printf("QChart::Unselect\n");
+  printf("Chart::Unselect\n");
   #endif
   if(from < to){
     int mid = (from+to)/2;
@@ -266,10 +266,10 @@ void QChart::Unselect(int from, int to)
   }
 }
 
-void QChart::ClearSelection()
+void Chart::ClearSelection()
 {
   #ifdef DEBUG
-  printf("QChart::ClearSelection\n");
+  printf("Chart::ClearSelection\n");
   #endif
   /* Unselection by divide and conqueror technique*/
   Unselect(0, p.size());
@@ -283,26 +283,26 @@ void QChart::ClearSelection()
   refreshPixmap();
 }
 
-void QChart::RemoveCurveAt(int cid)
+void Chart::RemoveCurveAt(int cid)
 {
   #ifdef DEBUG
-  printf("QChart::RemoveCurveAt\n");
+  printf("Chart::RemoveCurveAt\n");
   #endif
   curveMap.remove(cid);
 }
 
-void QChart::RemoveAllCurves()
+void Chart::RemoveAllCurves()
 {
   #ifdef DEBUG
-  printf("QChart::RemoveAllCurves\n");
+  printf("Chart::RemoveAllCurves\n");
   #endif
   curveMap.clear();
 }
 
-void QChart::setPlotSettings(const PlotSettings &settings)
+void Chart::setPlotSettings(const PlotSettings &settings)
 {
   #ifdef DEBUG
-  printf("QChart::setPlotSettings\n");
+  printf("Chart::setPlotSettings\n");
   #endif
   zoomStack.clear();
   zoomStack.append(settings);
@@ -312,10 +312,10 @@ void QChart::setPlotSettings(const PlotSettings &settings)
   refreshPixmap();
 }
 
-void QChart::zoomOut()
+void Chart::zoomOut()
 {
   #ifdef DEBUG
-  printf("QChart::zoomOut\n");
+  printf("Chart::zoomOut\n");
   #endif
   if(curZoom > 0){
     --curZoom;
@@ -326,10 +326,10 @@ void QChart::zoomOut()
   }
 }
 
-void QChart::zoomIn()
+void Chart::zoomIn()
 {
   #ifdef DEBUG
-  printf("QChart::zoomIn\n");
+  printf("Chart::zoomIn\n");
   #endif
   if(curZoom < zoomStack.count() - 1){
     ++curZoom;
@@ -341,17 +341,17 @@ void QChart::zoomIn()
 }
 
 /*
-void QChart::setCurveData(int id, const QVector<QPointF> &data)
+void Chart::setCurveData(int id, const QVector<QPointF> &data)
 {
     curveMap[id] = data;
 
 }
 */
 
-void QChart::addPoint(qreal x, qreal y, QString name)
+void Chart::addPoint(qreal x, qreal y, QString name)
 {
   #ifdef DEBUG
-  printf("QChart::addPoint(qreal x, qreal y, QString name)\n");
+  printf("Chart::addPoint(qreal x, qreal y, QString name)\n");
   #endif
   p.append(new DataPoint(x, y, name));
 //   p.last()->setX(x);
@@ -359,37 +359,37 @@ void QChart::addPoint(qreal x, qreal y, QString name)
 //   p.last()->setName(name);
 }
 
-void QChart::addPoint(qreal x, qreal y, QString name, QColor color, int radius)
+void Chart::addPoint(qreal x, qreal y, QString name, QColor color, int radius)
 {
   #ifdef DEBUG
-  printf("QChart::addPoint(qreal x, qreal y, QString name, QColor color, int radius)\n");
+  printf("Chart::addPoint(qreal x, qreal y, QString name, QColor color, int radius)\n");
   #endif
   p.append(new DataPoint(x, y, name));
   p.last()->setColor(color);
   p.last()->setRadius(radius);
 }
 
-void QChart::addCurve(QVector< QPointF > curve, QString name, QColor color)
+void Chart::addCurve(QVector< QPointF > curve, QString name, QColor color)
 {
   #ifdef DEBUG
-  printf("QChart::addCurve\n");
+  printf("Chart::addCurve\n");
   #endif
   curveMap.append(DataCurve(curve, name, color));
 }
 
 
-int QChart::PointSize() const
+int Chart::PointSize() const
 {
   #ifdef DEBUG
-  printf("QChart::PointSize\n");
+  printf("Chart::PointSize\n");
   #endif
   return p.size();
 }
 
-DataPoint* QChart::getPoint(int id)
+DataPoint* Chart::getPoint(int id)
 {
   #ifdef DEBUG
-  printf("QChart::getPoint\n");
+  printf("Chart::getPoint\n");
   #endif
   if(id < p.size())
     return p[id];
@@ -397,10 +397,10 @@ DataPoint* QChart::getPoint(int id)
     return 0;
 }
 
-void QChart::RemovePointAt(int id)
+void Chart::RemovePointAt(int id)
 {
   #ifdef DEBUG
-  printf("QChart::RemovePointAt\n");
+  printf("Chart::RemovePointAt\n");
   #endif
   if(id < p.size()){
     delete p[id];
@@ -408,10 +408,10 @@ void QChart::RemovePointAt(int id)
   }
 }
 
-void QChart::RemovePoint(DataPoint *dp)
+void Chart::RemovePoint(DataPoint *dp)
 {
   #ifdef DEBUG
-  printf("QChart::RemovePoint\n");
+  printf("Chart::RemovePoint\n");
   #endif
   int indx = p.indexOf(dp);
   if(indx > -1){
@@ -420,10 +420,10 @@ void QChart::RemovePoint(DataPoint *dp)
   }
 }
 
-void QChart::RemoveAllPoints()
+void Chart::RemoveAllPoints()
 {
   #ifdef DEBUG
-  printf("QChart::RemoveAllPoints\n");
+  printf("Chart::RemoveAllPoints\n");
   #endif
   for(int i = 0; i < p.size(); i++){
     delete p[i];
@@ -432,42 +432,42 @@ void QChart::RemoveAllPoints()
 }
 
 
-QVector< DataCurve > QChart::getCurves()
+QVector< DataCurve > Chart::getCurves()
 {
   #ifdef DEBUG
-  printf("QChart::getCurves\n");
+  printf("Chart::getCurves\n");
   #endif
   return curveMap;
 }
 
 /*
-void QChart::clearCurve(int id)
+void Chart::clearCurve(int id)
 {
     curveMap.remove(id);
     refreshPixmap();
 }
 */
 
-QSize QChart::minimumSizeHint() const
+QSize Chart::minimumSizeHint() const
 {
   #ifdef DEBUG
-  printf("QChart::minimumSizeHint\n");
+  printf("Chart::minimumSizeHint\n");
   #endif
   return QSize(6 * Margin, 4 * Margin);
 }
 
-QSize QChart::sizeHint() const
+QSize Chart::sizeHint() const
 {
   #ifdef DEBUG
-  printf("QChart::sizeHint\n");
+  printf("Chart::sizeHint\n");
   #endif
   return QSize(12 * Margin, 8 * Margin);
 }
 
-void QChart::SaveAsImage(QString imgname)
+void Chart::SaveAsImage(QString imgname)
 {
   #ifdef DEBUG
-  printf("QChart::SaveAsImage\n");
+  printf("Chart::SaveAsImage\n");
   #endif
   /*
   QByteArray bytes;
@@ -501,10 +501,10 @@ void QChart::SaveAsImage(QString imgname)
    QMessageBox::information(this, "Plot Saved!", QString("The plot has been saved as %1").arg(imgname), QMessageBox::Ok);
 }
 
-void QChart::paintEvent(QPaintEvent * event)
+void Chart::paintEvent(QPaintEvent * event)
 {
   #ifdef DEBUG
-  printf("QChart::paintEvent\n");
+  printf("Chart::paintEvent\n");
   #endif
   Q_UNUSED(event);
 
@@ -527,10 +527,10 @@ void QChart::paintEvent(QPaintEvent * event)
   }
 }
 
-void QChart::resizeEvent(QResizeEvent *event)
+void Chart::resizeEvent(QResizeEvent *event)
 {
   #ifdef DEBUG
-  printf("QChart::resizeEvent\n");
+  printf("Chart::resizeEvent\n");
   #endif
   Q_UNUSED(event);
   int x = width() - (zoomInButton->width()
@@ -540,10 +540,10 @@ void QChart::resizeEvent(QResizeEvent *event)
   refreshPixmap();
 }
 
-void QChart::mousePressEvent(QMouseEvent *event)
+void Chart::mousePressEvent(QMouseEvent *event)
 {
   #ifdef DEBUG
-  printf("QChart::mousePressEvent\n");
+  printf("Chart::mousePressEvent\n");
   #endif
   QRect rect(Margin, Margin, width() - 2 * Margin, height() - 2 * Margin);
 
@@ -563,10 +563,10 @@ void QChart::mousePressEvent(QMouseEvent *event)
   }
 }
 
-void QChart::mouseMoveEvent(QMouseEvent *event)
+void Chart::mouseMoveEvent(QMouseEvent *event)
 {
   #ifdef DEBUG
-  printf("QChart::mouseMoveEvent\n");
+  printf("Chart::mouseMoveEvent\n");
   #endif
   if(rubberBandIsShown == true){
     updateRubberBandRegion();
@@ -575,10 +575,10 @@ void QChart::mouseMoveEvent(QMouseEvent *event)
   }
 }
 
-void QChart::mouseReleaseEvent(QMouseEvent *event)
+void Chart::mouseReleaseEvent(QMouseEvent *event)
 {
   #ifdef DEBUG
-  printf("QChart::mouseReleaseEvent\n");
+  printf("Chart::mouseReleaseEvent\n");
   #endif
   if((event->button() == Qt::MiddleButton) && rubberBandIsShown == true){
     rubberBandIsShown = false;
@@ -651,10 +651,10 @@ void QChart::mouseReleaseEvent(QMouseEvent *event)
   }
 }
 
-void QChart::keyPressEvent(QKeyEvent *event)
+void Chart::keyPressEvent(QKeyEvent *event)
 {
   #ifdef DEBUG
-  printf("QChart::keyPressEvent\n");
+  printf("Chart::keyPressEvent\n");
   #endif
   switch (event->key()){
   case Qt::Key_Plus:
@@ -684,10 +684,10 @@ void QChart::keyPressEvent(QKeyEvent *event)
   }
 }
 
-void QChart::wheelEvent(QWheelEvent *event)
+void Chart::wheelEvent(QWheelEvent *event)
 {
   #ifdef DEBUG
-  printf("QChart::wheelEvent\n");
+  printf("Chart::wheelEvent\n");
   #endif
   int numDegrees = event->delta() / 8;
   int numTicks = numDegrees / 15;
@@ -702,10 +702,10 @@ void QChart::wheelEvent(QWheelEvent *event)
   refreshPixmap();
 }
 
-void QChart::updateRubberBandRegion()
+void Chart::updateRubberBandRegion()
 {
   #ifdef DEBUG
-  printf("QChart::updateRubberBandRegion\n");
+  printf("Chart::updateRubberBandRegion\n");
   #endif
   QRect rect = rubberBandRect.normalized();
   update(rect.left(), rect.top(), rect.width(), 1);
@@ -714,10 +714,10 @@ void QChart::updateRubberBandRegion()
   update(rect.right(), rect.top(), 1, rect.height());
 }
 
-void QChart::refreshPixmap()
+void Chart::refreshPixmap()
 {
   #ifdef DEBUG
-  printf("QChart::refreshPixmap\n");
+  printf("Chart::refreshPixmap\n");
   #endif
   // fill the background with the white color!
   pixmap = QPixmap(size());
@@ -746,7 +746,7 @@ void QChart::refreshPixmap()
 
 int getDecimals(double x){
   #ifdef DEBUG
-  printf("QChart::getDecimals\n");
+  printf("Chart::getDecimals\n");
   #endif
   QString str = QString::number(x);
   QString decimals = str.split(".").last();
@@ -788,10 +788,10 @@ int zeros_after_decimal_point(double x)
   return i;
 }
 
-void QChart::drawGrid(QPainter *painter)
+void Chart::drawGrid(QPainter *painter)
 {
   #ifdef DEBUG
-  printf("QChart::drawGrid\n");
+  printf("Chart::drawGrid\n");
   #endif
   QRect rect(Margin, Margin, width() - 2 * Margin, height() - 2 * Margin);
   if(!rect.isValid())
@@ -804,7 +804,7 @@ void QChart::drawGrid(QPainter *painter)
 
   qreal min, max, stepx, stepy;
 
-  int nintegers = integer_digits(settings.spanX())-1;
+  int nintegers = integer_digits(settings.spanX());
   //printf("nintegers %d\n", nintegers);
 
   if(nintegers > 0){
@@ -821,10 +821,11 @@ void QChart::drawGrid(QPainter *painter)
   min = floor(settings.minX);
   max = ceil(settings.maxX);
 
-  int pxelsz = (int)ceil(8*height()/480.);
+  //float factor = rect.width() / painter->fontMetrics().width("-20");
 
-  QFont font("SansSerif", 8);
-  font.setPixelSize(pxelsz);
+  qreal factor = rect.width()/480.;
+  QFont font("SansSerif", 5);
+  font.setPointSizeF(font.pointSizeF()*factor);
   font.setStyleStrategy(QFont::ForceOutline);
   painter->setFont(font);
 
@@ -837,14 +838,17 @@ void QChart::drawGrid(QPainter *painter)
         painter->setPen(axespen);
         painter->drawLine(x, rect.bottom(), x, rect.bottom() + 5);
         if(FLOAT_EQ(ix, 0.f, 1e-5)){
-          painter->drawText(x - 50, rect.bottom() + 5, 100, 15,
+          painter->drawText(x - 50, rect.bottom() + 10, 100, 15,
                           Qt::AlignHCenter | Qt::AlignTop,
                           QString::number(0));
         }
         else{
-          painter->drawText(x - 50, rect.bottom() + 5, 100, 15,
+          painter->drawText(x - 50, rect.bottom() + 10, 100, 15,
                           Qt::AlignHCenter | Qt::AlignTop,
                           QString::number(ix, 'g', getDecimals(stepx)));
+          /*
+          painter->drawText(x - 2, rect.bottom()+20, QString::number(ix, 'g', getDecimals(stepx)));
+          */
         }
       }
       else{
@@ -853,7 +857,7 @@ void QChart::drawGrid(QPainter *painter)
   }
 
   //stepy = settings.spanY() / settings.numYTicks;
-  nintegers = integer_digits(settings.spanY())-1;
+  nintegers = integer_digits(settings.spanY());
   if(nintegers > 0){
     stepy = (0.5 * (double)nintegers);
   }
@@ -874,12 +878,12 @@ void QChart::drawGrid(QPainter *painter)
       painter->setPen(axespen);
       painter->drawLine(rect.left() - 5, y, rect.left(), y);
       if(FLOAT_EQ(iy, 0.f, 1e-5)){
-        painter->drawText(rect.left() - Margin, y - 10, Margin - 5, 20,
+        painter->drawText(rect.left() - Margin -5, y - 10, Margin - 5, 20,
                        Qt::AlignRight | Qt::AlignVCenter,
                        QString::number(0));
       }
       else{
-        painter->drawText(rect.left() - Margin, y - 10, Margin - 5, 20,
+        painter->drawText(rect.left() - Margin -5, y - 10, Margin - 5, 20,
                        Qt::AlignRight | Qt::AlignVCenter,
                        QString::number(iy, 'g', getDecimals(stepy)));
       }
@@ -915,10 +919,9 @@ void QChart::drawGrid(QPainter *painter)
   }
 
   // Draw Axis names...
-  pxelsz = (int)ceil(12*height()/480.);
-  font.setPointSize(12);
-  font.setPixelSize(pxelsz);
-  font.setStyleStrategy(QFont::ForceOutline);
+  //factor = rect.height()/640.;
+  font.setPointSize(10);
+  font.setPointSizeF(font.pointSizeF()*factor);
   painter->setFont(font);
   QFontMetrics fm(font);
   qreal xmarkTextWidth = fm.width(m_xaxisname);
@@ -946,10 +949,10 @@ void QChart::drawGrid(QPainter *painter)
   painter->drawRect(rect.adjusted(0, 0, -1, -1));
 }
 
-void QChart::drawCurves(QPainter *painter)
+void Chart::drawCurves(QPainter *painter)
 {
   #ifdef DEBUG
-  printf("QChart::drawCurves\n");
+  printf("Chart::drawCurves\n");
   #endif
   PlotSettings settings = zoomStack[curZoom];
   QRect rect(Margin, Margin,
@@ -983,7 +986,7 @@ void QChart::drawCurves(QPainter *painter)
   }
 }
 
-
+/*
 typedef struct{
   QVector <QRectF> point; //this will be shared from the main thread
   QVector <DataPoint*> p; // this will be shared from the main thread
@@ -993,10 +996,11 @@ typedef struct{
   int from, to;
 } scatter_th_arg;
 
+
 void *drawScatterThread(void *arg_)
 {
   #ifdef DEBUG
-  printf("QChart::drawScatterThread\n");
+  printf("Chart::drawScatterThread\n");
   #endif
   scatter_th_arg *arg = (scatter_th_arg*) arg_;
 
@@ -1018,12 +1022,12 @@ void *drawScatterThread(void *arg_)
     else
       break;
   }
-}
+}*/
 
-void QChart::drawScatters(QPainter *painter)
+void Chart::drawScatters(QPainter *painter)
 {
   #ifdef DEBUG
-  printf("QChart::drawScatters\n");
+  printf("Chart::drawScatters\n");
   #endif
   PlotSettings settings = zoomStack[curZoom];
   QRect rect(Margin, Margin,

@@ -199,6 +199,9 @@ VariableSelectionDialog::VariableSelectionDialog(PROJECTS* projects, int type_):
   connect(ui.cancelButton, SIGNAL(clicked()), SLOT(reject()));
   connect(ui.okButton, SIGNAL(clicked()), SLOT(OK()));
   
+  ui.okButton->setAutoDefault(true);
+  ui.okButton->setDefault(true);
+
   connect(ui.listView->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setProject(QModelIndex)));
   connect(ui.listView_2->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setModel(QModelIndex)));
   connect(ui.GAcrossovertype, SIGNAL(currentIndexChanged(int)), SLOT(UpdateCrossoverType()));

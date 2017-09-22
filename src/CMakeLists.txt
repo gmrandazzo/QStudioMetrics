@@ -172,7 +172,7 @@ set(QSTUDIOMETRICS_UIS
 #     ProgressBarDialog.ui
     MainWindow.ui)
 
-add_subdirectory(QChart)
+add_subdirectory(Chart)
 
 set(QSTUDIOMETRICS_CMDPCA_SRC DATAIO.cpp qstudiom-pca.cpp)
 set(QSTUDIOMETRICS_CMDPLS_SRC DATAIO.cpp qstudiom-pls.cpp)
@@ -202,7 +202,7 @@ source_group("Generated" FILES
 )
 
 if(WIN32)
-  set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE QT_NO_DEBUG)
+  set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE)
   set(APP_ICON_RC ${CMAKE_CURRENT_SOURCE_DIR}/win32_icon.rc)
   if(APP_ICON_RC)
     set(WIN32_ICON_O ${CMAKE_CURRENT_BINARY_DIR}/_app_icon.o)
@@ -213,85 +213,38 @@ endif()
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(QStudioMetrics ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS})
+target_link_libraries(QStudioMetrics ${LIBSCIENTIFIC_LIBRARY} libchart ${QT5_LIBRARIES} ${VTK_LIBRARIES})
 
-if(WIN32)
-  target_link_libraries(QStudioMetrics libqchart ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a ${QT5_LIBRARIES} ${VTK_LIBRARIES})
+add_executable(qsm-pca ${QSTUDIOMETRICS_CMDPCA_SRC})
+target_link_libraries(qsm-pca ${LIBSCIENTIFIC_LIBRARY})
 
-  add_executable(qsm-pca ${QSTUDIOMETRICS_CMDPCA_SRC})
-  target_link_libraries(qsm-pca ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a)
+add_executable(qsm-pls ${QSTUDIOMETRICS_CMDPLS_SRC})
+target_link_libraries(qsm-pls ${LIBSCIENTIFIC_LIBRARY})
 
-  add_executable(qsm-pls ${QSTUDIOMETRICS_CMDPLS_SRC})
-  target_link_libraries(qsm-pls ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a)
+add_executable(qsm-mdc ${QSTUDIOMETRICS_CMDMDC_SRC})
+target_link_libraries(qsm-mdc ${LIBSCIENTIFIC_LIBRARY})
 
-  add_executable(qsm-mdc ${QSTUDIOMETRICS_CMDMDC_SRC})
-  target_link_libraries(qsm-mdc ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a)
-else()
-  target_link_libraries(QStudioMetrics scientific libqchart ${QT5_LIBRARIES} ${VTK_LIBRARIES})
-  #add_executable(qsm-objselector qsmcompselector.cpp DATAIO.cpp)
-  #target_link_libraries(qsm-objselector scientific)
+#add_executable(qsm-objselector qsmcompselector.cpp DATAIO.cpp)
+#target_link_libraries(qsm-objselector ${LIBSCIENTIFIC_LIBRARY})
 
-  add_executable(qsm-pca ${QSTUDIOMETRICS_CMDPCA_SRC})
-  target_link_libraries(qsm-pca scientific)
+#add_executable(qsm-mlr ${QSTUDIOMETRICS_CMDMLR_SRC})
+#target_link_libraries(qsm-mlr ${LIBSCIENTIFIC_LIBRARY})
 
-  add_executable(qsm-pls ${QSTUDIOMETRICS_CMDPLS_SRC})
-  target_link_libraries(qsm-pls scientific)
+#add_executable(qsm-lda ${QSTUDIOMETRICS_CMDLDA_SRC})
+#target_link_libraries(qsm-lda ${LIBSCIENTIFIC_LIBRARY})s
 
-  add_executable(qsm-mdc ${QSTUDIOMETRICS_CMDMDC_SRC})
-  target_link_libraries(qsm-mdc scientific)
+#add_executable(qsm-upca ${QSTUDIOMETRICS_CMDUPCA_SRC})
+#target_link_libraries(qsm-upca ${LIBSCIENTIFIC_LIBRARY})
 
-  #add_executable(qsm-mlr ${QSTUDIOMETRICS_CMDMLR_SRC})
-  #target_link_libraries(qsm-mlr scientific)
+#add_executable(qsm-upls ${QSTUDIOMETRICS_CMDUPLS_SRC})
+#target_link_libraries(qsm-upls ${LIBSCIENTIFIC_LIBRARY})
 
-  #add_executable(qsm-lda ${QSTUDIOMETRICS_CMDLDA_SRC})
-  #target_link_libraries(qsm-lda scientific)s
+#add_executable(qsm-bintest ${QSTUDIOMETRICS_CMDBINTEST_SRC})
+#target_link_libraries(qsm-bintest ${LIBSCIENTIFIC_LIBRARY})
 
-  #add_executable(qsm-upca ${QSTUDIOMETRICS_CMDUPCA_SRC})
-  #target_link_libraries(qsm-upca scientific)
+#add_executable(qsm-doe ${QSTUDIOMETRICS_CMDDOE_SRC})
+#target_link_libraries(qsm-doe ${LIBSCIENTIFIC_LIBRARY})
 
-  #add_executable(qsm-upls ${QSTUDIOMETRICS_CMDUPLS_SRC})
-  #target_link_libraries(qsm-upls scientific)
-
-  #add_executable(qsm-bintest ${QSTUDIOMETRICS_CMDBINTEST_SRC})
-  #target_link_libraries(qsm-bintest scientific)
-
-  #add_executable(qsm-doe ${QSTUDIOMETRICS_CMDDOE_SRC})
-  #target_link_libraries(qsm-doe scientific)
-endif()
-
-#if(APPLE)
-#  set(CMAKE_BUNDLE_LOCATION "/Applications")
-#  if(USE_VERSIONED_BUNDLE_LOCATION)
-#    set(CMAKE_BUNDLE_NAME "QStudioMetrics${Version}")
-#  else(USE_VERSIONED_BUNDLE_LOCATION)
-#    set(CMAKE_BUNDLE_NAME "QStudioMetrics")
-#  endif(USE_VERSIONED_BUNDLE_LOCATION)
-#  set(CMAKE_INSTALL_PREFIX "/Applications/${CMAKE_BUNDLE_NAME}.app/Contents")
-#  set(CMAKE_INSTALL_NAME_DIR "@executable_path/../${LIB_INSTALL_DIR}")
-#  set(MACOSX_BUNDLE_INFO_STRING "QStudioMetrics - version ${Version}")
-#  set(MACOSX_BUNDLE_BUNDLE_VERSION ${Version})
-#  # Change following line to point to actual icns file in bundle.
-#  set(MACOSX_BUNDLE_ICON_FILE "qsm.icns")
-
-#  set(CMAKE_INSTALL_DESTINATION_ARGS
-#      BUNDLE DESTINATION "${CMAKE_BUNDLE_LOCATION}")
-  # This also sets the bundle name correctly
-#  set_target_properties(avogadro-app
-#    PROPERTIES OUTPUT_NAME "${CMAKE_BUNDLE_NAME}")
-
-  # Use relative paths for the executable to link to its libraries
-#  set_target_properties(avogadro-app PROPERTIES
-#    CMAKE_INSTALL_NAME_DIR "@executable_path/../lib")
-
-  # Do not install the bundle into the prefix - just everything else
-#  set(QSM_INSTALL_DESTINATIONS_ARGS
-#    BUNDLE DESTINATION "${CMAKE_BUNDLE_LOCATION}")
-#  install(FILES "mac/avogadro.icns" DESTINATION Resources)
-#else()
-#  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}")
-#  set(CMAKE_SKIP_BUILD_RPATH FALSE)
-#  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-#  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-#endif()
 
 #install(TARGETS QStudioMetrics RUNTIME DESTINATION bin ${QSM_INSTALL_DESTINATIONS_ARGS})
 install(TARGETS QStudioMetrics DESTINATION bin COMPONENT ApplicationData)
@@ -303,16 +256,9 @@ if(cmake_build_type_tolower STREQUAL "debug")
   add_executable(testimportpcamodel testimportpcamodel.cpp DATAIO.cpp)
   add_executable(qsmprojectcompressor qsmprojectcompressor.cpp dircompressor.cpp)
 
-  if(WIN32)
-    target_link_libraries(testimportdvector ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a)
-    target_link_libraries(testimportmatrix ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a)
-    target_link_libraries(testimportarray ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a)
-    target_link_libraries(testimportpcamodel ${SCIENTIFIC_LIB_DIR}/libscientific.dll.a)
-  else()
-    target_link_libraries(testimportdvector scientific)
-    target_link_libraries(testimportmatrix scientific)
-    target_link_libraries(testimportarray scientific)
-    target_link_libraries(testimportpcamodel scientific)
-    target_link_libraries(qsmprojectcompressor ${QT5_LIBRARIES})
-  endif()
+  target_link_libraries(testimportdvector ${LIBSCIENTIFIC_LIBRARY})
+  target_link_libraries(testimportmatrix ${LIBSCIENTIFIC_LIBRARY})
+  target_link_libraries(testimportarray ${LIBSCIENTIFIC_LIBRARY})
+  target_link_libraries(testimportpcamodel ${LIBSCIENTIFIC_LIBRARY})
+  target_link_libraries(qsmprojectcompressor ${QT5_LIBRARIES})
 endif()

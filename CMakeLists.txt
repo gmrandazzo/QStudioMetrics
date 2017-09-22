@@ -33,9 +33,11 @@ foreach(_component ${_components})
   list(APPEND QT5_LIBRARIES ${Qt5${_component}_LIBRARIES})
 endforeach()
 
-
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE}) # include UseVTK.cmake
+
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules/")
+find_package(Libscientific)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: Debug Release" FORCE)
@@ -77,14 +79,6 @@ endif(WIN32)
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 
 add_definitions(${QT5_DEFINITIONS})
-
-if(NOT SCIENTIFIC_LIB_DIR)
-  message(SEND_ERROR "Please specify the libscientific library path with -DSCIENTIFIC_LIB_DIR=...")
-endif()
-
-if(NOT SCIENTIFIC_INCLUDE_DIR)
-  message(SEND_ERROR "Please specify the libscientific include path with -DSCIENTIFIC_INCLUDE_DIR=...")
-endif()
 
 include_directories(
   ${PROJECT_BINARY_DIR}

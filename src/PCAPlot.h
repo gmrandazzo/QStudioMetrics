@@ -25,11 +25,10 @@ public:
   void ScorePlot3D(ScatterPlot3D **plot3D);
   void ScorePlotPrediction3D(ScatterPlot3D **plot3D);
   void LoadingsPlot3D(ScatterPlot3D **plot3D);
-  
+
 private:
   PROJECTS *projects;
   int pid, mid, predid;
   LABELS g;
 };
 #endif
-

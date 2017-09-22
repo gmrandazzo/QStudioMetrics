@@ -8,7 +8,7 @@
 #include <QStringList>
 #include <scientific.h>
 
-#include "QChart/qchart.h"
+#include "Chart/chart.h"
 
 #include "ui_ScatterPlot2D.h"
 #include "data.h"
@@ -120,7 +120,7 @@ signals:
 private:
   Ui::ScatterPlot2D ui;
   QVBoxLayout *plotLayout;
-  QChart *qchart;
+  Chart *chart;
 
   FindCorrelationWidget *cwidget;
   QList <POINT> p;

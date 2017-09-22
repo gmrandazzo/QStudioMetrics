@@ -1,5 +1,6 @@
 #include "SimpleScatterPlot3D.h"
 #include <scientific.h>
+#include <QApplication>
 #include <QStringListModel>
 #include <QColorDialog>
 #include <QFileDialog>
@@ -46,7 +47,7 @@ void SimpleScatterPlot3D::SetSymbolSize()
 void SimpleScatterPlot3D::SavePlotImage()
 {
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save Plot to Image"), "", tr("JPEG (*.jpg);;PNG (*.png);;All Files (*)"));
-  
+
   if(!fileName.isEmpty()){
     vtkWindowToImageFilter *filter = vtkWindowToImageFilter::New();
     filter->SetInput(ui.qvtkWidget->GetRenderWindow());
@@ -69,7 +70,7 @@ void SimpleScatterPlot3D::SavePlotImage()
 }
 
 void SimpleScatterPlot3D::PlotUpdate()
-{  
+{
   setScalingFactor();
   p.Update();
   outline->Modified();
@@ -77,33 +78,33 @@ void SimpleScatterPlot3D::PlotUpdate()
   outlineMapper->Modified();
   outlineMapper->Update();
   cubeAxesActor->SetBounds(outlineMapper->GetBounds());
-  cubeAxesActor->Modified(); 
+  cubeAxesActor->Modified();
   renderer->Modified();
-  
+
   ui.qvtkWidget->update();
   ui.qvtkWidget->repaint();
 }
 
 void SimpleScatterPlot3D::setScalingFactor()
 {
-  double xmin, 
-         xmax, 
-         ymin, 
-         ymax, 
-         zmin, 
-         zmax, 
+  double xmin,
+         xmax,
+         ymin,
+         ymax,
+         zmin,
+         zmax,
          xext,
          yext,
          zext;
-  
+
   MatrixColumnMinMax(m, 0, &xmin, &xmax);
   MatrixColumnMinMax(m, 1, &ymin, &ymax);
   MatrixColumnMinMax(m, 2, &zmin, &zmax);
-  
+
   xext = sqrt(square(xmax - xmin));
   yext = sqrt(square(ymax - ymin));
   zext = sqrt(square(zmax - zmin));
-  
+
   if(xext < yext){
     if(xext < zext){
       scaling = xext / 500;
@@ -122,7 +123,7 @@ void SimpleScatterPlot3D::setScalingFactor()
   }
 }
 
-void SimpleScatterPlot3D::slotExit() 
+void SimpleScatterPlot3D::slotExit()
 {
   qApp->exit();
 }
@@ -131,17 +132,17 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QString windowtitle, QStrin
 {
   ui.setupUi(this);
   pid = -1;
-  
+
   xname = xname_;
   yname = yname_;
   zname = zname_;
-  
+
   outline = vtkSmartPointer<vtkOutlineFilter>::New();
   outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   outlineActor = vtkSmartPointer<vtkActor>::New();
   cubeAxesActor = vtkSmartPointer<vtkCubeAxesActor>::New();
-  renderer = vtkSmartPointer<vtkRenderer>::New(); 
-  
+  renderer = vtkSmartPointer<vtkRenderer>::New();
+
   setWindowTitle(windowtitle);
 
   // deep copy
@@ -154,7 +155,7 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QString windowtitle, QStrin
   for(uint i = 0; i < m->row; i++){
     p.points()->SetPoint(i, m->data[i][0], m->data[i][1], m->data[i][2]);
   }
-  
+
   // Set Object Colors
   QList<int> QtColours;
   QtColours.append(3);  // 0 Qt::white  3       White (#ffffff)
@@ -186,10 +187,10 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QString windowtitle, QStrin
   for(uint i = 0; i < m->row; i++){
     p.colors()->InsertNextTupleValue(c);
   }
-  
+
   p.polydata()->SetPoints(p.points()); // add to polydata the points
   p.polydata()->GetPointData()->SetScalars(p.colors()); // bound points to polydata and set colors
-  
+
   // Set Symbol size
   p.sphereSource()->SetRadius(ui.actionSymbolSize->value() * scaling);
   p.glyph3D()->SetSourceConnection(p.sphereSource()->GetOutputPort());
@@ -198,45 +199,45 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QString windowtitle, QStrin
   p.glyph3D()->SetColorModeToColorByScalar();
   p.glyph3D()->ScalingOff();
   p.glyph3D()->Update();
-  
+
   // Create a mapper and actor
   p.mapper()->SetInputConnection(p.glyph3D()->GetOutputPort());
   p.actor()->SetMapper(p.mapper());
-  
+
   // Creating outline box with mapper and actor
   outline->SetInputData(p.polydata());
   outlineMapper->SetInputConnection(outline->GetOutputPort());
   outlineActor->SetMapper(outlineMapper);
   outlinecolor = QColor((Qt::GlobalColor)QtColours[0]);
   outlineActor->GetProperty()->SetColor(outlinecolor.redF(),outlinecolor.greenF(),outlinecolor.blueF());
-  
+
   cubeAxesActor->SetBounds(outlineMapper->GetBounds());
   cubeAxesActor->SetCamera(renderer->GetActiveCamera());
 
   cubeAxesActor->XAxisMinorTickVisibilityOff();
   cubeAxesActor->YAxisMinorTickVisibilityOff();
   cubeAxesActor->ZAxisMinorTickVisibilityOff();
-  
+
   cubeAxesActor->DrawXGridlinesOn();
   cubeAxesActor->DrawYGridlinesOn();
   cubeAxesActor->DrawZGridlinesOn();
 #if VTK_MAJOR_VERSION > 5
   cubeAxesActor->SetGridLineLocation(vtkCubeAxesActor::vtkCubeAxesActor::VTK_GRID_LINES_FURTHEST);
 #endif
-  
+
   cubeAxesActor->SetXTitle(QString("%1").arg(xname).toUtf8().constData());
   cubeAxesActor->SetYTitle(QString("%1").arg(yname).toUtf8().constData());
   cubeAxesActor->SetZTitle(QString("%1").arg(zname).toUtf8().constData());
-  
+
   renderer->AddActor(p.actor());
   renderer->AddActor(cubeAxesActor);
   renderer->AddActor(outlineActor);
-  
+
   backgroundcolor = QColor(Qt::black);
   renderer->SetBackground(backgroundcolor.redF(), backgroundcolor.greenF(), backgroundcolor.blueF());
-  
+
   renderer->ResetCamera();
-  
+
   ui.qvtkWidget->GetRenderWindow()->AddRenderer(renderer);
 
   connect(ui.actionSymbolSize, SIGNAL(valueChanged(double)), SLOT(SetSymbolSize()));
@@ -249,17 +250,17 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QList<double> colorvalue, Q
 {
   ui.setupUi(this);
   pid = -1;
-  
+
   xname = xname_;
   yname = yname_;
   zname = zname_;
-  
+
   outline = vtkSmartPointer<vtkOutlineFilter>::New();
   outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   outlineActor = vtkSmartPointer<vtkActor>::New();
   cubeAxesActor = vtkSmartPointer<vtkCubeAxesActor>::New();
-  renderer = vtkSmartPointer<vtkRenderer>::New(); 
-  
+  renderer = vtkSmartPointer<vtkRenderer>::New();
+
   setWindowTitle(windowtitle);
 
   // deep copy
@@ -272,7 +273,7 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QList<double> colorvalue, Q
   for(uint i = 0; i < m->row; i++){
     p.points()->SetPoint(i, m->data[i][0], m->data[i][1], m->data[i][2]);
   }
-  
+
   // Set Object Colors
   QList<int> QtColours;
   QtColours.append(3);  // 0 Qt::white  3       White (#ffffff)
@@ -304,16 +305,16 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QList<double> colorvalue, Q
   for(uint i = 0; i < m->row; i++){
     p.colors()->InsertNextTupleValue(c);
   }
-  
+
   double min, max;
   min = max = colorvalue[0];
   for(int i = 1; i < colorvalue.size(); i++){
     if(colorvalue[i] < min)
       min = colorvalue[i];
-    
+
     if(colorvalue[i] > max)
       max = colorvalue[i];
-    
+
   }
 
   QColor mincolor = QColor((Qt::GlobalColor)QtColours[3]);
@@ -325,10 +326,10 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QList<double> colorvalue, Q
       c[2] = (unsigned char)color.blue();
       p.colors()->SetTupleValue(i, c);
   }
-  
+
   p.polydata()->SetPoints(p.points()); // add to polydata the points
   p.polydata()->GetPointData()->SetScalars(p.colors()); // bound points to polydata and set colors
-  
+
   // Set Symbol size
   p.sphereSource()->SetRadius(ui.actionSymbolSize->value() * scaling);
   p.glyph3D()->SetSourceConnection(p.sphereSource()->GetOutputPort());
@@ -337,32 +338,32 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QList<double> colorvalue, Q
   p.glyph3D()->SetColorModeToColorByScalar();
   p.glyph3D()->ScalingOff();
   p.glyph3D()->Update();
-  
+
   // Create a mapper and actor
   p.mapper()->SetInputConnection(p.glyph3D()->GetOutputPort());
   p.actor()->SetMapper(p.mapper());
-  
+
   // Creating outline box with mapper and actor
   outline->SetInputData(p.polydata());
   outlineMapper->SetInputConnection(outline->GetOutputPort());
   outlineActor->SetMapper(outlineMapper);
   outlinecolor = QColor((Qt::GlobalColor)QtColours[0]);
   outlineActor->GetProperty()->SetColor(outlinecolor.redF(),outlinecolor.greenF(),outlinecolor.blueF());
-  
+
   cubeAxesActor->SetBounds(outlineMapper->GetBounds());
   cubeAxesActor->SetCamera(renderer->GetActiveCamera());
 
   cubeAxesActor->SetXTitle(QString("%1").arg(xname).toUtf8().constData());
   cubeAxesActor->SetYTitle(QString("%1").arg(yname).toUtf8().constData());
   cubeAxesActor->SetZTitle(QString("%1").arg(zname).toUtf8().constData());
-  
+
   cubeAxesActor->DrawXGridlinesOn();
   cubeAxesActor->DrawYGridlinesOn();
   cubeAxesActor->DrawZGridlinesOn();
 #if VTK_MAJOR_VERSION > 5
   cubeAxesActor->SetGridLineLocation(vtkCubeAxesActor::VTK_GRID_LINES_FURTHEST);
 #endif
-  
+
   cubeAxesActor->XAxisMinorTickVisibilityOff();
   cubeAxesActor->YAxisMinorTickVisibilityOff();
   cubeAxesActor->ZAxisMinorTickVisibilityOff();
@@ -370,12 +371,12 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QList<double> colorvalue, Q
   renderer->AddActor(p.actor());
   renderer->AddActor(cubeAxesActor);
   renderer->AddActor(outlineActor);
-  
+
   backgroundcolor = QColor(Qt::black);
   renderer->SetBackground(backgroundcolor.redF(), backgroundcolor.greenF(), backgroundcolor.blueF());
-  
+
   renderer->ResetCamera();
-  
+
   ui.qvtkWidget->GetRenderWindow()->AddRenderer(renderer);
 
   connect(ui.actionSymbolSize, SIGNAL(valueChanged(double)), SLOT(SetSymbolSize()));
@@ -386,4 +387,4 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QList<double> colorvalue, Q
 SimpleScatterPlot3D::~SimpleScatterPlot3D()
 {
   DelMatrix(&m);
-} 
+}

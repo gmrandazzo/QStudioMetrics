@@ -6862,6 +6862,7 @@ void MainWindow::DoPLSVariableSelection()
         }
         QApplication::processEvents();
       }
+
       /*
       int ii = 0;
       for(int i = 0; i < projects->value(pid)->getMatrix(did)->getObjName().size(); i++){

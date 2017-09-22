@@ -1,5 +1,6 @@
 #include "ScatterPlot3D.h"
 #include <scientific.h>
+#include <QApplication>
 #include <QStringListModel>
 #include <QColorDialog>
 #include <QFileDialog>
@@ -20,7 +21,7 @@
 #include <QMessageBox>
 #include <QDebug>
 
-// Define interaction style 
+// Define interaction style
 vtkStandardNewMacro(MouseInteractorStylePP);
 
 // For compatibility with new VTK generic data arrays
@@ -113,7 +114,7 @@ void ScatterPlot3D::UpdateSelectionLabel()
   if(picked >= 0){
     /*qDebug() << QString("Point Picked: %1       x: %2  y: %3  z: %4").arg(picked).arg(QString::number(style->getPicked()[0])).arg(QString::number(style->getPicked()[1])).arg(QString::number(style->getPicked()[2]));*/
     double rsquared = square(p.sphereSource()->GetRadius());
-    
+
     for(int i = 0; i < p.NumberOfPoints(); i++){
       double a = square(p.points()->GetPoint(i)[0] - style->getPicked()[0]) + square(p.points()->GetPoint(i)[1] - style->getPicked()[1]) + square(p.points()->GetPoint(i)[2] - style->getPicked()[2]);
       double epsilon = 1e-6;
@@ -127,13 +128,13 @@ void ScatterPlot3D::UpdateSelectionLabel()
       }
     }
   }
-  
+
   ui.listView->selectionModel()->clear();
   if(selectedobject > -1 && selectedobject < ui.listView->model()->rowCount()){
     ui.listView->selectionModel()->select(ui.listView->model()->index(selectedobject, 0), QItemSelectionModel::Select);
     ui.listView->scrollTo(ui.listView->model()->index(selectedobject, 0));
   }
-  
+
   /*
   if(selectedobjname.size() > 0){
     for(int i = 0; i < ui.listView->model()->rowCount(); i++){
@@ -147,13 +148,13 @@ void ScatterPlot3D::UpdateSelectionLabel()
       }
     }
   }*/
-  
+
   ui.SelectedObjectLine->setText(selectedobjname);
-  
+
   spimgsign.pid = pid;
   spimgsign.imgname.append(selectedobjname);
   emit ScatterPlot3DImageSignalChanged(spimgsign);
-  
+
   EnableDisableButton();
 }
 
@@ -178,7 +179,7 @@ void ScatterPlot3D::EnableDisableButton()
 void ScatterPlot3D::SavePlotImage()
 {
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save Plot to Image"), "", tr("JPEG (*.jpg);;PNG (*.png);;All Files (*)"));
-  
+
   if(!fileName.isEmpty()){
     vtkWindowToImageFilter *filter = vtkWindowToImageFilter::New();
     filter->SetInput(ui.qvtkWidget->GetRenderWindow());
@@ -212,7 +213,7 @@ void ScatterPlot3D::setSelectionObjLabel()
     Q_FOREACH(current, indexes){
       selectedobj.append(ui.listView->model()->index(current.row(), 0).data(Qt::DisplayRole).toString());
     }
-    
+
     LabelDialog ldialog(objlabels, selectedobj, LabelDialog::OBJLABELS);
     ldialog.exec();
   }
@@ -230,7 +231,7 @@ void ScatterPlot3D::setSelectionVarLabel()
     Q_FOREACH(current, indexes){
       selectedobj.append(ui.listView->model()->index(current.row(), 0).data(Qt::DisplayRole).toString());
     }
-    
+
     LabelDialog ldialog(varlabels, selectedobj, LabelDialog::VARLABELS);
     ldialog.exec();
   }
@@ -239,7 +240,7 @@ void ScatterPlot3D::setSelectionVarLabel()
 void ScatterPlot3D::setSelectionStyle()
 {
   QList< int > vtkselectedID;
-  
+
   for(int i = 0; i < ui.listView->model()->rowCount(); i++){
     if(ui.listView->selectionModel()->isSelected(ui.listView->model()->index(i, 0)) == true){
       vtkselectedID.append(i);
@@ -250,7 +251,7 @@ void ScatterPlot3D::setSelectionStyle()
   }
 
 //   qDebug() << vtkselectedID;
-  
+
   if(typedata == -1){
     SelectionStyleColor obj;
     if(obj.exec() == QDialog::Accepted){
@@ -265,7 +266,7 @@ void ScatterPlot3D::setSelectionStyle()
         }
         else{
           // Error!! Object number out of range
-          continue; 
+          continue;
         }
       }
     }
@@ -285,14 +286,14 @@ void ScatterPlot3D::setSelectionStyle()
           }
           else{
             // Error!! Object number out of range
-            continue; 
+            continue;
           }
         }
       }
     }
     else{
       QList< int > xid, yid;
-      
+
       for(int i = 0; i < xhash.size(); i++){
         int xid_ = GetIDinmxlst(xhash[i]);
         if(xid_ != -1){
@@ -302,7 +303,7 @@ void ScatterPlot3D::setSelectionStyle()
           continue;
         }
       }
-      
+
       for(int i = 0; i < yhash.size(); i++){
         int yid_ = GetIDinmxlst(yhash[i]);
         if(yid_ != -1){
@@ -312,29 +313,29 @@ void ScatterPlot3D::setSelectionStyle()
           continue;
         }
       }
-      
+
       QStringList xvarname, yvarname;
       if(xid.size() > 0){
         xvarname.append((*mxlst)[xid[0]]->getVarName()); // we assume that all x variable are the same. So we get the first variable name
         xvarname.removeAll("Labels");
       }
-      
+
       if(yid.size() > 0){
         yvarname.append((*mxlst)[yid[0]]->getVarName()); // we assume that all y variable are the same. So we get the first variable name
         yvarname.removeAll("Labels");
       }
-      
+
       SelectionStyleColor obj(xvarname, yvarname);
       if(obj.exec() == QDialog::Accepted){
         int changecolor = obj.ChangeColorType();
-        
+
         if(changecolor == 0){ // solid
           QColor color = obj.getSolidSymbolColor();
           unsigned char c[3];
           c[0] = (unsigned char)color.red();
           c[1] = (unsigned char)color.green();
           c[2] = (unsigned char)color.blue();
-          
+
           for(int i = 0; i < vtkselectedID.size(); i++){
             if(vtkselectedID[i] < p.NumberOfPoints()){
               p.colors()->SetTupleValue(vtkselectedID[i], c);
@@ -349,21 +350,21 @@ void ScatterPlot3D::setSelectionStyle()
           int col = obj.getVariableSymbolColor();
           int vartype = obj.getVariableTypeSymbolColor(); // 0 x; 1 y
           unsigned char c[3];
-          
+
           if((*mxlst).size() > 0 && xid.size() > 0 && vartype == 0){
             double min, max;
             QStringList objnameselected;
             matrix *m;
             NewMatrix(&m, vtkselectedID.size(), (*mxlst)[xid[0]]->Matrix()->col+2); //+2 id sel obj, and value
-            
+
             if(col > (int)m->col-2){
               return;
             }
-            
+
             for(int i = 0; i < vtkselectedID.size(); i++){
               objnameselected.append(p.labels()[p.pointid()[vtkselectedID[i]].id]);
             }
-            
+
             uint l = 0;
             for(int k = 0; k < xid.size(); k++){
               for(uint i = 0; i < (*mxlst)[xid[k]]->Matrix()->row; i++){
@@ -381,9 +382,9 @@ void ScatterPlot3D::setSelectionStyle()
                 }
               }
             }
-            
+
             MatrixColumnMinMax(m, col, &min, &max);
-            
+
             for(uint i = 0; i < m->row; i++){
                 double val = getMatrixValue(m, i, m->col-1);
                 QColor color = makeColor(val, min, max, obj.getMinSymbolColor(), obj.getMaxSymbolColor());
@@ -399,15 +400,15 @@ void ScatterPlot3D::setSelectionStyle()
             QStringList objnameselected;
             matrix *m;
             NewMatrix(&m, vtkselectedID.size(), (*mxlst)[xid[0]]->Matrix()->col+2); //+2 id sel obj, and value
-            
+
             if(col > (int)m->col-2){
               return;
             }
-            
+
             for(int i = 0; i < vtkselectedID.size(); i++){
               objnameselected.append(p.labels()[p.pointid()[vtkselectedID[i]].id]);
             }
-            
+
             uint l = 0;
             for(int k = 0; k < xid.size(); k++){
               for(uint i = 0; i < (*mxlst)[xid[k]]->Matrix()->row; i++){
@@ -425,9 +426,9 @@ void ScatterPlot3D::setSelectionStyle()
                 }
               }
             }
-            
+
             MatrixColumnMinMax(m, col, &min, &max);
-            
+
             for(uint i = 0; i < m->row; i++){
                 double val = getMatrixValue(m, i, m->col-1);
                 QColor color = makeColor(val, min, max, obj.getMinSymbolColor(), obj.getMaxSymbolColor());
@@ -458,7 +459,7 @@ void ScatterPlot3D::setSelectionStyle()
           }
           else{
             // Error!! Object number out of range
-            continue; 
+            continue;
           }
         }
       }
@@ -467,7 +468,7 @@ void ScatterPlot3D::setSelectionStyle()
       QList< int > xid, yid;
       int xlevels = 0, ylevels = 0;
       QStringList xvarname, yvarname;
-      
+
       for(int i = 0; i < xhash.size(); i++){
         int xid_ = GetIDinarlst(xhash[i]);
         if(xid_ != -1){
@@ -477,7 +478,7 @@ void ScatterPlot3D::setSelectionStyle()
           continue;
         }
       }
-      
+
       for(int i = 0; i < yhash.size(); i++){
         int yid_ = GetIDinarlst(yhash[i]);
         if(yid_ != -1){
@@ -487,19 +488,19 @@ void ScatterPlot3D::setSelectionStyle()
           continue;
         }
       }
-      
+
       if(xid.size() > 0){
         xvarname.append((*arlst)[xid[0]]->getVarName()); // we assume that all x variable are the same. So we get the first variable name
         xvarname.removeAll("Labels");
         xlevels = (*arlst)[xid[0]]->Array()->order;
       }
-      
+
       if(yid.size() > 0){
         yvarname.append((*arlst)[yid[0]]->getVarName()); // we assume that all y variable are the same. So we get the first variable name
         yvarname.removeAll("Labels");
         ylevels = (*arlst)[yid[0]]->Array()->order;
       }
-      
+
       SelectionStyleColor obj(xvarname, yvarname, xlevels, ylevels);
       if(obj.exec() == QDialog::Accepted){
         int changecolor = obj.ChangeColorType();
@@ -524,13 +525,13 @@ void ScatterPlot3D::setSelectionStyle()
           int vartype = obj.getVariableTypeSymbolColor(); // 0 x; 1 y
           int level = obj.getVariableLevelSymbolColor();
           unsigned char c[3];
-          
+
           if((*arlst).size() > 0 && xid.size() > 0 && vartype == 0){
             double min, max;
             if(col < (int)(*arlst)[xid[0]]->Array()->m[level]->col){
               MatrixColumnMinMax((*arlst)[xid[0]]->Array()->m[level], col, &min, &max);
             }
-            
+
             for(int i = 1; i < xid.size(); i++){
               if(col < (int)(*arlst)[xid[i]]->Array()->m[level]->col){
                 double t_min, t_max;
@@ -538,14 +539,14 @@ void ScatterPlot3D::setSelectionStyle()
                 if(t_min < min){
                   min = t_min;
                 }
-                
+
                 if(t_max > max){
                   max = t_max;
                 }
               }
             }
-            
-            
+
+
             for(int i = 0; i < vtkselectedID.size(); i++){
               if(vtkselectedID[i] < p.NumberOfPoints()){
                 int mxid = -1;
@@ -560,7 +561,7 @@ void ScatterPlot3D::setSelectionStyle()
                 else{
                   continue;
                 }
-                
+
                 if(mxid != -1){
                   double val = getArrayValue((*arlst)[mxid]->Array(), level, p.pointid()[vtkselectedID[i]].id, col);
                   QColor color = makeColor(val, min, max, obj.getMinSymbolColor(), obj.getMaxSymbolColor());
@@ -572,7 +573,7 @@ void ScatterPlot3D::setSelectionStyle()
               }
               else{
                 // Error!! Object number out of range
-                continue; 
+                continue;
               }
             }
           }
@@ -581,7 +582,7 @@ void ScatterPlot3D::setSelectionStyle()
             if(col < (int)(*arlst)[yid[0]]->Array()->m[level]->col){
               MatrixColumnMinMax((*arlst)[yid[0]]->Array()->m[level], col, &min, &max);
             }
-            
+
             for(int i = 1; i < yid.size(); i++){
               if(col < (int)(*arlst)[yid[i]]->Array()->m[level]->col){
                 double t_min, t_max;
@@ -589,13 +590,13 @@ void ScatterPlot3D::setSelectionStyle()
                 if(t_min < min){
                   min = t_min;
                 }
-                
+
                 if(t_max > max){
                   max = t_max;
                 }
               }
             }
-            
+
             for(int i = 0; i < vtkselectedID.size(); i++){
               if(vtkselectedID[i] < p.NumberOfPoints()){
                 int myid = -1;
@@ -610,7 +611,7 @@ void ScatterPlot3D::setSelectionStyle()
                 else{
                   continue;
                 }
-                
+
                 if(myid != -1){
                   double val = getArrayValue((*arlst)[myid]->Array(), level, p.pointid()[vtkselectedID[i]].id, col);
                   QColor color = makeColor(val, min, max, obj.getMinSymbolColor(), obj.getMaxSymbolColor());
@@ -635,15 +636,15 @@ void ScatterPlot3D::setSelectionStyle()
 
 void ScatterPlot3D::selectByVarLabels()
 {
-  
+
   if(typedata == MATRIXDATA){
     QList< int > xid;
     for(int i = 0; i < xhash.size(); i++){
       xid.append(GetIDinmxlst(xhash[i]));
     }
-    
+
     VariableSelectorDialog vseldialog(objnames, (*mxlst)[xid[0]]->getVarName(), (*mxlst), xid, varlabels);
-        
+
     if(vseldialog.exec() == QDialog::Accepted){
       QStringList varselected = vseldialog.getSelectedVariables();
       for(int i = 0; i < ui.listView->model()->rowCount(); i++){
@@ -661,7 +662,7 @@ void ScatterPlot3D::selectByVarLabels()
   }
   else if(typedata == ARRAYDATA){
     VariableSelectorDialog vseldialog((*arlst)[GetIDinarlst(xhash[0])]->getVarName(), varlabels);
-    
+
     if(vseldialog.exec() == QDialog::Accepted){
       QStringList varselected = vseldialog.getSelectedVariables();
       for(int i = 0; i < ui.listView->model()->rowCount(); i++){
@@ -677,7 +678,7 @@ void ScatterPlot3D::selectByVarLabels()
       return;
     }
   }
-  
+
   EnableDisableButton();
 }
 
@@ -688,23 +689,23 @@ void ScatterPlot3D::selectByObjLabels()
 }
 
 void ScatterPlot3D::DoClusterAnalysis()
-{ 
+{
   DoClusterAnalysisDialog docluster(mxlst, arlst, DoClusterAnalysisDialog::PlotSelection);
   if(docluster.exec() == QDialog::Accepted){
- 
+
     uivector *clusterids;
     initUIVector(&clusterids);
-    
+
     if(docluster.getDataType() == 0){
       matrix *coordinates;
       uint row = 0;
-      
+
       for(int i = 0; i < m.size(); i++){
         row += m[i]->row;
       }
-  
+
       NewMatrix(&coordinates, row, 3);
-      
+
       row = 0;
       for(int i = 0; i < m.size(); i++){
         for(uint j = 0; j < m[i]->row; j++){
@@ -714,15 +715,15 @@ void ScatterPlot3D::DoClusterAnalysis()
           row++;
         }
       }
-      
-      
+
+
       int ncluster = 2;
       if(docluster.ValidateCluster() == true){
         RUN obj2;
-        
+
         dvector *toplot;
         initDVector(&toplot);
-        
+
         obj2.setMatrix(coordinates);
         obj2.setDVector(toplot);
         obj2.setValidationType(docluster.getVaidationType());
@@ -732,7 +733,7 @@ void ScatterPlot3D::DoClusterAnalysis()
 
         StartRun();
         QFuture<void> future = obj2.RunClusterValidation();
-        
+
         while(!future.isFinished()){
           if(abort == true){
             obj2.AbortRun();
@@ -742,11 +743,11 @@ void ScatterPlot3D::DoClusterAnalysis()
             QApplication::processEvents();
           }
         }
-        
+
         StopRun();
-        
+
         if(toplot->size > 0){
-          
+
           QString yaxestitle;
           if(docluster.getVaidationType() == JUMPMETHOD){
             yaxestitle = "Jumps";
@@ -754,7 +755,7 @@ void ScatterPlot3D::DoClusterAnalysis()
           else{
             yaxestitle = "K-Means Distance Minimization";
           }
-          
+
           ValidationClusterPlot vclusterplot(toplot, yaxestitle);
           if(vclusterplot.exec() == QDialog::Accepted){
             qDebug() << "NCLUSTERS: " <<  vclusterplot.getNClusters();
@@ -774,19 +775,19 @@ void ScatterPlot3D::DoClusterAnalysis()
       else{
         ncluster = docluster.getNumberOfClusters();
       }
-      
+
       RUN obj;
-      
+
       obj.setMatrix(coordinates);
       obj.setUIVector(clusterids);
       obj.setClusteringAlgorithm(docluster.getAlgorithmType());
       obj.setNumberOfCluster(ncluster);
       obj.setObjectSelectionType(docluster.getExtractObjects());
       obj.setNMaxObjects(docluster.getNMaxObjects());
-      
+
       StartRun();
       QFuture<void> future = obj.RunClustering();
-      
+
       while(!future.isFinished()){
         if(abort == true){
           obj.AbortRun();
@@ -796,9 +797,9 @@ void ScatterPlot3D::DoClusterAnalysis()
           QApplication::processEvents();
         }
       }
-      
+
       DelMatrix(&coordinates);
-      
+
       QList<int> QtColours;
       QtColours.append(7);  // 1 Qt::red 7       Red (#ff0000)
       QtColours.append(9);  // 2 Qt::blue        9       Blue (#0000ff)
@@ -815,7 +816,7 @@ void ScatterPlot3D::DoClusterAnalysis()
       QtColours.append(13); // 13 Qt:darkRed     13      Dark red (#800000)
       QtColours.append(14); // 14 Qt::darkGreen   14      Dark green (#008000)
       QtColours.append(15); // 15 Qt::darkBlue    15      Dark blue (#000080)
-      
+
       QList<QColor> colors;
       if(QtColours.size() < ncluster){
         for(int i = QtColours.size(); i < ncluster; i++){
@@ -824,8 +825,8 @@ void ScatterPlot3D::DoClusterAnalysis()
           colors.append(_color_);
         }
       }
-      
-      
+
+
       for(int i = 0; i < p.NumberOfPoints(); i++){
         int id = getUIVectorValue(clusterids, i)-1;
         if(id > -1){
@@ -837,19 +838,19 @@ void ScatterPlot3D::DoClusterAnalysis()
           else{
             color = colors[id-QtColours.size()];
           }
-          
+
           c[0] = (unsigned char)color.red();
           c[1] = (unsigned char)color.green();
           c[2] = (unsigned char)color.blue();
           p.colors()->SetTupleValue(i, c);
-          
-          
+
+
         }
         else{
           continue;
         }
       }
-      
+
       if(docluster.SaveClusterLabels() == true){
         // Set Labels
         LABELS clusterobjlabels;
@@ -860,22 +861,22 @@ void ScatterPlot3D::DoClusterAnalysis()
         for(int i = 0; i < p.NumberOfPoints(); i++){
           int id = getUIVectorValue(clusterids, i)-1;
           if(id > -1){
-            clusterobjlabels[id].objects.append(objnames[i]);  
+            clusterobjlabels[id].objects.append(objnames[i]);
           }
           else{
             continue;
           }
-        }  
+        }
         objlabels->append(clusterobjlabels);
       }
-      
+
       StopRun();
     }
     else{
       matrix *m;
       int dataid = GetIDinmxlst(docluster.getDataHash());
       bool ismatrix = false;
-      
+
       if(dataid == -1){
         dataid = GetIDinarlst(docluster.getDataHash());
         if(dataid != -1){
@@ -890,15 +891,15 @@ void ScatterPlot3D::DoClusterAnalysis()
         m = (*mxlst)[dataid]->Matrix();
         ismatrix = true;
       }
-      
-      
+
+
       int ncluster = 2;
       if(docluster.ValidateCluster() == true){
         RUN obj2;
-        
+
         dvector *toplot;
         initDVector(&toplot);
-        
+
         obj2.setMatrix(m);
         obj2.setDVector(toplot);
         obj2.setValidationType(docluster.getVaidationType());
@@ -908,7 +909,7 @@ void ScatterPlot3D::DoClusterAnalysis()
 
         StartRun();
         QFuture<void> future = obj2.RunClusterValidation();
-        
+
         while(!future.isFinished()){
           if(abort == true){
             obj2.AbortRun();
@@ -918,11 +919,11 @@ void ScatterPlot3D::DoClusterAnalysis()
             QApplication::processEvents();
           }
         }
-        
+
         StopRun();
-        
+
         if(toplot->size > 0){
-          
+
           QString yaxestitle;
           if(docluster.getVaidationType() == JUMPMETHOD){
             yaxestitle = "Jumps";
@@ -930,7 +931,7 @@ void ScatterPlot3D::DoClusterAnalysis()
           else{
             yaxestitle = "K-Means Distance Minimization";
           }
-          
+
           ValidationClusterPlot vclusterplot(toplot, yaxestitle);
           if(vclusterplot.exec() == QDialog::Accepted){
             ncluster = vclusterplot.getNClusters();
@@ -948,9 +949,9 @@ void ScatterPlot3D::DoClusterAnalysis()
       }
       else{
         ncluster = docluster.getNumberOfClusters();
-      }   
-      
-      
+      }
+
+
       RUN obj;
       obj.setMatrix(m);
       obj.setUIVector(clusterids);
@@ -958,10 +959,10 @@ void ScatterPlot3D::DoClusterAnalysis()
       obj.setNumberOfCluster(ncluster);
       obj.setObjectSelectionType(docluster.getExtractObjects());
       obj.setNMaxObjects(docluster.getNMaxObjects());
-      
+
       StartRun();
       QFuture<void> future = obj.RunClustering();
-      
+
       while(!future.isFinished()){
         if(abort == true){
           obj.AbortRun();
@@ -971,7 +972,7 @@ void ScatterPlot3D::DoClusterAnalysis()
           QApplication::processEvents();
         }
       }
-         
+
       QList<int> QtColours;
       QtColours.append(7);  // 1 Qt::red 7       Red (#ff0000)
       QtColours.append(9);  // 2 Qt::blue        9       Blue (#0000ff)
@@ -988,7 +989,7 @@ void ScatterPlot3D::DoClusterAnalysis()
       QtColours.append(13); // 13 Qt:darkRed     13      Dark red (#800000)
       QtColours.append(14); // 14 Qt::darkGreen   14      Dark green (#008000)
       QtColours.append(15); // 15 Qt::darkBlue    15      Dark blue (#000080)
-      
+
       QList<QColor> colors;
       if(QtColours.size() < ncluster){
         for(int i = QtColours.size(); i < ncluster; i++){
@@ -997,7 +998,7 @@ void ScatterPlot3D::DoClusterAnalysis()
           colors.append(_color_);
         }
       }
-      
+
       // Set Labels
       LABELS clusterobjlabels;
       if(docluster.SaveClusterLabels() == true){
@@ -1006,7 +1007,7 @@ void ScatterPlot3D::DoClusterAnalysis()
           clusterobjlabels.last().name = QString("%1 - %2").arg(docluster.getClusterLabelSufix()).arg(QString::number(i+1));
         }
       }
-      
+
       if(ismatrix == true){
         for(uint i = 0; i < clusterids->size; i++){
           int objid = -1;
@@ -1019,7 +1020,7 @@ void ScatterPlot3D::DoClusterAnalysis()
               continue;
             }
           }
-          
+
           if(objid > -1){
             int id = getUIVectorValue(clusterids, i)-1;
             if(id > -1){
@@ -1031,17 +1032,17 @@ void ScatterPlot3D::DoClusterAnalysis()
               else{
                 color = colors[id-QtColours.size()];
               }
-              
+
               c[0] = (unsigned char)color.red();
               c[1] = (unsigned char)color.green();
               c[2] = (unsigned char)color.blue();
-              
+
               p.colors()->SetTupleValue(objid, c);
-              
+
               if(docluster.SaveClusterLabels() == true){
-                clusterobjlabels[id].objects.append(objnames[objid]); 
+                clusterobjlabels[id].objects.append(objnames[objid]);
               }
-              
+
             }
             else{
               continue;
@@ -1052,11 +1053,11 @@ void ScatterPlot3D::DoClusterAnalysis()
           }
         }
       }
-      
+
       if(docluster.SaveClusterLabels() == true){
         objlabels->append(clusterobjlabels);
       }
-      
+
       StopRun();
     }
     DelUIVector(&clusterids);
@@ -1074,13 +1075,13 @@ void ScatterPlot3D::selectBy()
 {
   matrix *coordinates;
   uint row = 0;
-  
+
   for(int i = 0; i < m.size(); i++){
     row += m[i]->row;
   }
-  
+
   NewMatrix(&coordinates, row, 3);
-  
+
   row = 0;
   for(int i = 0; i < m.size(); i++){
     for(uint j = 0; j < m[i]->row; j++){
@@ -1090,18 +1091,18 @@ void ScatterPlot3D::selectBy()
       row++;
     }
   }
-  
+
   QList< int > selectedobjid;
-  
+
   QStringList labellst;
   for(int i = 0; i < ui.listView->model()->rowCount(); i++){
     labellst.append(ui.listView->model()->index(i, 0).data(Qt::DisplayRole).toString());
   }
-  
-  if(typedata == MATRIXDATA){  
-    
+
+  if(typedata == MATRIXDATA){
+
     QList< int > mxid;
-    
+
     for(int i = 0; i < xhash.size(); i++){
       int id_ = GetIDinmxlst(xhash[i]);
       if(id_ != -1){
@@ -1112,17 +1113,17 @@ void ScatterPlot3D::selectBy()
       }
     }
 
-    
+
     SelectByDialog seldialog(labellst, coordinates, mxlst, mxid, objlabels, varlabels);
     if(seldialog.exec() == QDialog::Accepted){
       selectedobjid = seldialog.GetSelectedObjID();
     }
   }
   else if(typedata == ARRAYDATA){
-    
+
   }
-  
-  
+
+
   QItemSelection selection;
   for (int i = 0; i < selectedobjid.size(); i++) {
     QModelIndex topLeft = ui.listView->model()->index(selectedobjid[i], 0);
@@ -1130,7 +1131,7 @@ void ScatterPlot3D::selectBy()
     selection << QItemSelectionRange(topLeft, bottomRight);
   }
   ui.listView->selectionModel()->select(selection, QItemSelectionModel::Select);
-  
+
   /*
   for(int i = 0; i < selectedobject.size(); i++){
     int index = labellst.indexOf(selectedobject[i]);
@@ -1141,7 +1142,7 @@ void ScatterPlot3D::selectBy()
   */
   PlotUpdate();
   DelMatrix(&coordinates);
-  // Here open qwidget 
+  // Here open qwidget
   EnableDisableButton();
 }
 
@@ -1170,8 +1171,8 @@ void ScatterPlot3D::unselectAll()
 
 // Select all points
 void ScatterPlot3D::selectAll()
-{ 
-  
+{
+
   ui.listView->selectAll();
   /*
   for(int i = 0; i < ui.listView->model()->rowCount(); i++){
@@ -1184,7 +1185,7 @@ void ScatterPlot3D::ResetPlot()
 {
   // Set the default point values
   ui.valXaxis->setValue(ui.valXaxis->minimum());
-  
+
   if(ui.valYaxis->minimum()+1 < ui.valXaxis->maximum()){
     ui.valYaxis->setValue(ui.valYaxis->minimum()+1);
   }
@@ -1204,7 +1205,7 @@ void ScatterPlot3D::ResetPlot()
     }
   }
   setPoints();
-  
+
   // Set the default symbol color
   QColor symbolcolor;
   int k = 0;
@@ -1225,7 +1226,7 @@ void ScatterPlot3D::ResetPlot()
   QtColours.append(13); // 13 Qt:darkRed     13      Dark red (#800000)
   QtColours.append(14); // 14 Qt::darkGreen   14      Dark green (#008000)
   QtColours.append(15); // 15 Qt::darkBlue    15      Dark blue (#000080)
-    
+
   unsigned char c[3] = {255, 255, 255};
   for(int mxid = 0; mxid < m.size(); mxid++){
     if(mxid < QtColours.size()){
@@ -1234,36 +1235,36 @@ void ScatterPlot3D::ResetPlot()
     else{
       symbolcolor.setRgb(randInt(0, 255), randInt(0, 255), randInt(0, 255));
     }
-    
+
     c[0] = symbolcolor.red();
     c[1] = symbolcolor.green();
     c[2] = symbolcolor.blue();
-    
+
     for(uint i = 0; i < m[mxid]->row; i++){
       p.colors()->SetTupleValue(k, c);
       k++;
     }
   }
-  
+
   //Set the default symbol type and size
   ui.actionSymbolSize->setValue(6);
   SetSymbolSize();
-  
+
   // Set default otline color
   outlinecolor = QColor(Qt::white);
   ui.outlineColorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(outlinecolor.red()).arg(outlinecolor.green()).arg(outlinecolor.blue()));
   outlineActor->GetProperty()->SetColor(outlinecolor.redF(),outlinecolor.greenF(),outlinecolor.blueF());
-  
+
   //set default background color
   backgroundcolor = QColor(Qt::black);
   ui.backgroundColorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(backgroundcolor.red()).arg(backgroundcolor.green()).arg(backgroundcolor.blue()));
   renderer->SetBackground(backgroundcolor.redF(), backgroundcolor.greenF(), backgroundcolor.blueF());
-  
+
   PlotUpdate();
 }
 
 void ScatterPlot3D::PlotUpdate()
-{  
+{
   setScalingFactor();
   p.Update();
   outline->Modified();
@@ -1271,33 +1272,33 @@ void ScatterPlot3D::PlotUpdate()
   outlineMapper->Modified();
   outlineMapper->Update();
   cubeAxesActor->SetBounds(outlineMapper->GetBounds());
-  cubeAxesActor->Modified(); 
+  cubeAxesActor->Modified();
   renderer->Modified();
-  
+
   ui.qvtkWidget->update();
   ui.qvtkWidget->repaint();
 }
 
 void ScatterPlot3D::setScalingFactor()
 {
-  double xmin, 
-         xmax, 
-         ymin, 
-         ymax, 
-         zmin, 
-         zmax, 
+  double xmin,
+         xmax,
+         ymin,
+         ymax,
+         zmin,
+         zmax,
          xext,
          yext,
          zext;
-         
+
   xmin = xmax = getMatrixValue(m[0], 0, ui.valXaxis->value()-1);
   ymin = ymax = getMatrixValue(m[0], 0, ui.valYaxis->value()-1);
   zmin = zmax = getMatrixValue(m[0], 0, ui.valZaxis->value()-1);
-  
+
   for(int k = 0; k < m.size(); k++){
     double tmpmin, tmpmax;
     MatrixColumnMinMax(m[k], ui.valXaxis->value()-1, &tmpmin, &tmpmax);
-    
+
     if(k == 0){
       xmin = tmpmin;
       xmax = tmpmax;
@@ -1305,13 +1306,13 @@ void ScatterPlot3D::setScalingFactor()
     else{
       if(tmpmin < xmin)
         xmin = tmpmin;
-      
+
       if(tmpmax > xmax)
         xmax = tmpmax;
     }
-    
+
     MatrixColumnMinMax(m[k], ui.valYaxis->value()-1, &tmpmin, &tmpmax);
-    
+
     if(k == 0){
       ymin = tmpmin;
       ymax = tmpmax;
@@ -1319,13 +1320,13 @@ void ScatterPlot3D::setScalingFactor()
     else{
       if(tmpmin < ymin)
         ymin = tmpmin;
-      
+
       if(tmpmax > ymax)
         ymax = tmpmax;
     }
-    
+
     MatrixColumnMinMax(m[k], ui.valZaxis->value()-1, &tmpmin, &tmpmax);
-    
+
     if(k == 0){
       zmin = tmpmin;
       zmax = tmpmax;
@@ -1333,16 +1334,16 @@ void ScatterPlot3D::setScalingFactor()
     else{
       if(tmpmin < zmin)
         zmin = tmpmin;
-      
+
       if(tmpmax > zmax)
         zmax = tmpmax;
     }
   }
-  
+
   xext = sqrt(square(xmax - xmin));
   yext = sqrt(square(ymax - ymin));
   zext = sqrt(square(zmax - zmin));
-  
+
   if(xext < yext){
     if(xext < zext){
       scaling = xext / 500;
@@ -1373,7 +1374,7 @@ void ScatterPlot3D::SetOutlineColor()
     outlinecolor = QColor(Qt::white);
     ui.outlineColorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(outlinecolor.red()).arg(outlinecolor.green()).arg(outlinecolor.blue()));
   }
-  
+
   outlineActor->GetProperty()->SetColor(outlinecolor.redF(),outlinecolor.greenF(),outlinecolor.blueF());
   PlotUpdate();
 }
@@ -1390,7 +1391,7 @@ void ScatterPlot3D::SetBackgroundColor()
     backgroundcolor = QColor(Qt::black);
     ui.backgroundColorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(backgroundcolor.red()).arg(backgroundcolor.green()).arg(backgroundcolor.blue()));
   }
-  
+
   renderer->SetBackground(backgroundcolor.redF(), backgroundcolor.greenF(), backgroundcolor.blueF());
   PlotUpdate();
 }
@@ -1416,7 +1417,7 @@ void ScatterPlot3D::setPoints()
   PlotUpdate();
 }
 
-void ScatterPlot3D::slotExit() 
+void ScatterPlot3D::slotExit()
 {
   qApp->exit();
 }
@@ -1430,71 +1431,71 @@ ScatterPlot3D::ScatterPlot3D(matrix* m_, QStringList& objname_, QString windowti
   ui.buttonSelectBy->hide();
   ui.progressBar->hide();
   ui.abortButton->hide();
-  
+
   xname = xname_;
   yname = yname_;
   zname = zname_;
-  
+
   ui.valXaxis_name->setText(xname);
   ui.valYaxis_name->setText(yname);
   ui.valZaxis_name->setText(zname);
-  
+
   mxlst = 0;
   arlst = 0;
-  
+
   pointPicker = vtkSmartPointer<vtkPointPicker>::New();
   style = vtkSmartPointer<MouseInteractorStylePP>::New();
   outline = vtkSmartPointer<vtkOutlineFilter>::New();
   outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   outlineActor = vtkSmartPointer<vtkActor>::New();
   cubeAxesActor = vtkSmartPointer<vtkCubeAxesActor>::New();
-  renderer = vtkSmartPointer<vtkRenderer>::New(); 
-  
+  renderer = vtkSmartPointer<vtkRenderer>::New();
+
   setWindowTitle(windowtitle);
-  
+
   objnames.append(objname_);
-  
+
   ui.listView->setModel(new QStringListModel(objnames));
-  
+
   // deep copy
   matrix *_m_;
   m.append(_m_);
   initMatrix(&m.last());
   MatrixCopy(m_, &m.last());
-  
+
   //chek for the max of col that could be plot:
   uint maxcol = m[0]->col;
   uint npoints = m[0]->row;
-  
+
   ui.valXaxis->setMaximum(maxcol);
   ui.valYaxis->setMaximum(maxcol);
   ui.valZaxis->setMaximum(maxcol);
- 
+
   // Set Points and Labels
   p.points()->SetNumberOfPoints(npoints);
-  
+
   setScalingFactor();
   int k = 0;
   for(int i = 0; i < m.size(); i++){
     for(uint j = 0; j < m[i]->row; j++){
       p.points()->SetPoint(k, getMatrixValue(m[i], j, ui.valXaxis->value()-1), getMatrixValue(m[i], j, ui.valYaxis->value()-1), getMatrixValue(m[i], j, ui.valZaxis->value()-1));
-      
+
       p.pointid().append(POINT3DID());
       p.pointid().last().id = j;
       p.pointid().last().xhash = "-";
       p.pointid().last().yhash = "-";
-      
+
       if(k < objnames.size()){
         p.labels().append(objnames[k]);
       }
       else{ // Append Generic name
         p.labels().append(QString("Obj %1").arg(QString::number(k+1)));
       }
-      
+
       k++;
     }
   }
-  
+
   // Set Object Colors
   QList<int> QtColours;
   QtColours.append(3);  // 0 Qt::white  3       White (#ffffff)
@@ -1514,11 +1515,11 @@ ScatterPlot3D::ScatterPlot3D(matrix* m_, QStringList& objname_, QString windowti
   QtColours.append(14); // 14 Qt::darkGreen   14      Dark green (#008000)
   QtColours.append(15); // 15 Qt::darkBlue    15      Dark blue (#000080)
 
-  
+
   p.colors()->SetName("colors");
   p.colors()->SetNumberOfComponents(3); // 3 because is a tuple of red green and blue
 //   p.colors()->SetNumberOfValues(npoints);
-  
+
   QColor symbolcolor;
   unsigned char c[3] = {255, 255, 255};
   for(int mxid = 0; mxid < m.size(); mxid++){
@@ -1528,19 +1529,19 @@ ScatterPlot3D::ScatterPlot3D(matrix* m_, QStringList& objname_, QString windowti
     else{
       symbolcolor.setRgb(randInt(0, 255), randInt(0, 255), randInt(0, 255));
     }
-    
+
     c[0] = symbolcolor.red();
     c[1] = symbolcolor.green();
     c[2] = symbolcolor.blue();
-    
+
     for(uint i = 0; i < m[mxid]->row; i++){
       p.colors()->InsertNextTupleValue(c);
     }
   }
-  
+
   p.polydata()->SetPoints(p.points()); // add to polydata the points
   p.polydata()->GetPointData()->SetScalars(p.colors()); // bound points to polydata and set colors
-  
+
   // Set Symbol size
   p.sphereSource()->SetRadius(ui.actionSymbolSize->value() * scaling);
   p.glyph3D()->SetSourceConnection(p.sphereSource()->GetOutputPort());
@@ -1549,43 +1550,43 @@ ScatterPlot3D::ScatterPlot3D(matrix* m_, QStringList& objname_, QString windowti
   p.glyph3D()->SetColorModeToColorByScalar();
   p.glyph3D()->ScalingOff();
   p.glyph3D()->Update();
-  
+
   // Create a mapper and actor
   p.mapper()->SetInputConnection(p.glyph3D()->GetOutputPort());
   p.actor()->SetMapper(p.mapper());
-  
-  
+
+
   // Creating outline box with mapper and actor
   outline->SetInputData(p.polydata());
   outlineMapper->SetInputConnection(outline->GetOutputPort());
   outlineActor->SetMapper(outlineMapper);
-  
+
   SetOutlineColor();
-  
+
   cubeAxesActor->SetBounds(outlineMapper->GetBounds());
   cubeAxesActor->SetCamera(renderer->GetActiveCamera());
 
   cubeAxesActor->SetXTitle(QString("%1 %2").arg(xname).arg(ui.valXaxis->value()).toUtf8().constData());
   cubeAxesActor->SetYTitle(QString("%1 %2").arg(yname).arg(ui.valYaxis->value()).toUtf8().constData());
   cubeAxesActor->SetZTitle(QString("%1 %2").arg(zname).arg(ui.valZaxis->value()).toUtf8().constData());
-  
+
   renderer->AddActor(p.actor());
   renderer->AddActor(cubeAxesActor);
   renderer->AddActor(outlineActor);
-  
+
   backgroundcolor = QColor(Qt::black);
   ui.backgroundColorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(backgroundcolor.red()).arg(backgroundcolor.green()).arg(backgroundcolor.blue()));
   renderer->SetBackground(backgroundcolor.redF(), backgroundcolor.greenF(), backgroundcolor.blueF());
-  
+
   renderer->ResetCamera();
-  
+
   ui.qvtkWidget->GetRenderWindow()->AddRenderer(renderer);
-  
+
   ui.qvtkWidget->GetInteractor()->SetPicker(pointPicker);
   ui.qvtkWidget->GetInteractor()->SetInteractorStyle(style);
-  
+
   UpdateSelectedObjects();
-  
+
   Connections = vtkSmartPointer<vtkEventQtSlotConnect>::New();
   this->Connections->Connect(this->ui.qvtkWidget->GetRenderWindow()->GetInteractor(), vtkCommand::LeftButtonPressEvent, this, SLOT(UpdateSelectionLabel()));
   connect(ui.listView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButton()));
@@ -1614,35 +1615,35 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   ui.buttonSelectBy->hide();
   ui.progressBar->hide();
   ui.abortButton->hide();
-  
+
   xname = xname_;
   yname = yname_;
   zname = zname_;
-  
+
   ui.valXaxis_name->setText(xname);
   ui.valYaxis_name->setText(yname);
   ui.valZaxis_name->setText(zname);
-  
+
   mxlst = 0;
   arlst = 0;
-  
+
   outline = vtkSmartPointer<vtkOutlineFilter>::New();
   outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   outlineActor = vtkSmartPointer<vtkActor>::New();
   cubeAxesActor = vtkSmartPointer<vtkCubeAxesActor>::New();
-  renderer = vtkSmartPointer<vtkRenderer>::New(); 
-  
+  renderer = vtkSmartPointer<vtkRenderer>::New();
+
   pointPicker = vtkSmartPointer<vtkPointPicker>::New();
   style = vtkSmartPointer<MouseInteractorStylePP>::New();
-  
+
   setWindowTitle(windowtitle);
-  
+
   for(int i = 0; i < objnames_.size(); i++){
     objnames.append(objnames[i]);
   }
-  
+
   ui.listView->setModel(new QStringListModel(objnames));
-  
+
   // deep copy
   for(int i = 0; i < m_.size(); i++){
     matrix *_m_;
@@ -1650,7 +1651,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
     initMatrix(&m.last());
     MatrixCopy(m_[i], &m.last());
   }
-  
+
   //chek for the max of col that could be plot:
   uint maxcol = m[0]->col;
   uint npoints = m[0]->row;
@@ -1663,36 +1664,36 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
       continue;
     }
   }
-  
+
   ui.valXaxis->setMaximum(maxcol);
   ui.valYaxis->setMaximum(maxcol);
   ui.valZaxis->setMaximum(maxcol);
- 
+
   // Set Points and Labels
   p.points()->SetNumberOfPoints(npoints);
-  
+
   setScalingFactor();
   int k = 0;
   for(int i = 0; i < m.size(); i++){
     for(uint j = 0; j < m[i]->row; j++){
       p.points()->SetPoint(k, getMatrixValue(m[i], j, ui.valXaxis->value()-1), getMatrixValue(m[i], j, ui.valYaxis->value()-1), getMatrixValue(m[i], j, ui.valZaxis->value()-1));
-      
+
       p.pointid().append(POINT3DID());
       p.pointid().last().id = j;
       p.pointid().last().xhash = "-";
       p.pointid().last().yhash = "-";
-      
+
       if(k < objnames.size()){
         p.labels().append(objnames[k]);
       }
       else{ // Append Generic name
         p.labels().append(QString("Obj %1").arg(QString::number(k+1)));
       }
-      
+
       k++;
     }
   }
-  
+
   // Set Object Colors
   QList<int> QtColours;
   QtColours.append(3);  // 0 Qt::white  3       White (#ffffff)
@@ -1712,11 +1713,11 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   QtColours.append(14); // 14 Qt::darkGreen   14      Dark green (#008000)
   QtColours.append(15); // 15 Qt::darkBlue    15      Dark blue (#000080)
 
-  
+
   p.colors()->SetName("colors");
   p.colors()->SetNumberOfComponents(3); // 3 because is a tuple of red green and blue
 //   p.colors()->SetNumberOfValues(npoints);
-  
+
   QColor symbolcolor;
   unsigned char c[3] = {255, 255, 255};
   for(int mxid = 0; mxid < m.size(); mxid++){
@@ -1726,19 +1727,19 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
     else{
       symbolcolor.setRgb(randInt(0, 255), randInt(0, 255), randInt(0, 255));
     }
-    
+
     c[0] = symbolcolor.red();
     c[1] = symbolcolor.green();
     c[2] = symbolcolor.blue();
-    
+
     for(uint i = 0; i < m[mxid]->row; i++){
       p.colors()->InsertNextTupleValue(c);
     }
   }
-  
+
   p.polydata()->SetPoints(p.points()); // add to polydata the points
   p.polydata()->GetPointData()->SetScalars(p.colors()); // bound points to polydata and set colors
-  
+
   // Set Symbol size
   p.sphereSource()->SetRadius(ui.actionSymbolSize->value() * scaling);
   p.glyph3D()->SetSourceConnection(p.sphereSource()->GetOutputPort());
@@ -1747,43 +1748,43 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   p.glyph3D()->SetColorModeToColorByScalar();
   p.glyph3D()->ScalingOff();
   p.glyph3D()->Update();
-  
+
   // Create a mapper and actor
   p.mapper()->SetInputConnection(p.glyph3D()->GetOutputPort());
   p.actor()->SetMapper(p.mapper());
-  
-  
+
+
   // Creating outline box with mapper and actor
   outline->SetInputData(p.polydata());
   outlineMapper->SetInputConnection(outline->GetOutputPort());
   outlineActor->SetMapper(outlineMapper);
-  
+
   SetOutlineColor();
-  
+
   cubeAxesActor->SetBounds(outlineMapper->GetBounds());
   cubeAxesActor->SetCamera(renderer->GetActiveCamera());
 
   cubeAxesActor->SetXTitle(QString("%1 %2").arg(xname).arg(ui.valXaxis->value()).toUtf8().constData());
   cubeAxesActor->SetYTitle(QString("%1 %2").arg(yname).arg(ui.valYaxis->value()).toUtf8().constData());
   cubeAxesActor->SetZTitle(QString("%1 %2").arg(zname).arg(ui.valZaxis->value()).toUtf8().constData());
-  
+
   renderer->AddActor(p.actor());
   renderer->AddActor(cubeAxesActor);
   renderer->AddActor(outlineActor);
-  
+
   backgroundcolor = QColor(Qt::black);
   ui.backgroundColorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(backgroundcolor.red()).arg(backgroundcolor.green()).arg(backgroundcolor.blue()));
   renderer->SetBackground(backgroundcolor.redF(), backgroundcolor.greenF(), backgroundcolor.blueF());
-  
+
   renderer->ResetCamera();
-  
+
   ui.qvtkWidget->GetRenderWindow()->AddRenderer(renderer);
-  
+
   ui.qvtkWidget->GetInteractor()->SetPicker(pointPicker);
   ui.qvtkWidget->GetInteractor()->SetInteractorStyle(style);
-  
+
   UpdateSelectedObjects();
-  
+
   Connections = vtkSmartPointer<vtkEventQtSlotConnect>::New();
   this->Connections->Connect(this->ui.qvtkWidget->GetRenderWindow()->GetInteractor(), vtkCommand::LeftButtonPressEvent, this, SLOT(UpdateSelectionLabel()));
   connect(ui.listView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButton()));
@@ -1805,57 +1806,60 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
 
 ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames_, QList<MATRIX*> *mxlst_,QStringList xhash_, QStringList yhash_, LABELS* objlabels_, LABELS *varlabels_, QString windowtitle, QString xname_, QString yname_, QString zname_, int type_): QWidget()
 {
+  qDebug() << " Ciao";
   type = type_;
   typedata = MATRIXDATA;
   pid = -1;
+  qDebug() << " test 1 >>" << qApp << "<<\n";
   ui.setupUi(this);
+  qDebug() << " test 2 >>" << qApp << "<<\n";
   ui.progressBar->hide();
   ui.abortButton->hide();
-  
-  xname = xname_, 
+
+  xname = xname_,
   yname = yname_;
   zname = zname_;
-  
+
   ui.valXaxis_name->setText(xname);
   ui.valYaxis_name->setText(yname);
   ui.valZaxis_name->setText(zname);
-  
+
   if(type == LOADINGS){
     ui.clusterAnalysisButton->hide();
   }
-
+  qDebug() << qApp;
   pointPicker = vtkSmartPointer<vtkPointPicker>::New();
   style = vtkSmartPointer<MouseInteractorStylePP>::New();
-  
+
   outline = vtkSmartPointer<vtkOutlineFilter>::New();
   outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   outlineActor = vtkSmartPointer<vtkActor>::New();
   cubeAxesActor = vtkSmartPointer<vtkCubeAxesActor>::New();
-  renderer = vtkSmartPointer<vtkRenderer>::New(); 
-  
+  renderer = vtkSmartPointer<vtkRenderer>::New();
+
   setWindowTitle(windowtitle);
-  
+
   for(int i = 0; i < objnames_.size(); i++){
     objnames.append(objnames_[i]);
   }
-  
+
   ui.listView->setModel(new QStringListModel(objnames));
-  
-  objlabels = objlabels_; 
+
+  objlabels = objlabels_;
   varlabels = varlabels_;
   mxlst = mxlst_;
   arlst = 0;
   xhash = xhash_;
   yhash = yhash_;
 //   m = m_;
-  
+
   for(int i = 0; i < m_.size(); i++){
     matrix *_m_;
     m.append(_m_);
     initMatrix(&m.last());
     MatrixCopy(m_[i], &m.last());
   }
-  
+
   //chek for the max of col that could be plot:
   uint maxcol = m[0]->col;
   uint npoints = m[0]->row;
@@ -1868,21 +1872,21 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
       continue;
     }
   }
-  
+
   ui.valXaxis->setMaximum(maxcol);
   ui.valYaxis->setMaximum(maxcol);
   ui.valZaxis->setMaximum(maxcol);
- 
+
   // Set Points and Labels
   p.points()->SetNumberOfPoints(npoints);
-  
+
   setScalingFactor();
   int k = 0;
   for(int i = 0; i < m.size(); i++){
     for(uint j = 0; j < m[i]->row; j++){
       p.points()->SetPoint(k, getMatrixValue(m[i], j, ui.valXaxis->value()-1), getMatrixValue(m[i], j, ui.valYaxis->value()-1), getMatrixValue(m[i], j, ui.valZaxis->value()-1));
       p.pointid().append(POINT3DID());
-      
+
       if(xhash.size() > 0 && yhash.size() > 0 && xhash.size() == yhash.size()){
         p.pointid().last().id = j;
         if(i < xhash.size()){
@@ -1891,7 +1895,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
         else{
           p.pointid().last().xhash = "-";
         }
-        
+
         if(i < yhash.size()){
           p.pointid().last().yhash = yhash[i];
         }
@@ -1907,7 +1911,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
         else{
           p.pointid().last().xhash = "-";
         }
-        
+
         if(i < yhash.size()){
           p.pointid().last().yhash = yhash[i];
         }
@@ -1923,13 +1927,13 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
         else{
           p.pointid().last().xhash = "-";
         }
-        
+
         p.pointid().last().yhash = "-";
       }
       else if(xhash.size() == 0 && yhash.size() > 0){
         p.pointid().last().id = j;
         p.pointid().last().xhash = "-";
-        
+
         if(i < yhash.size()){
           p.pointid().last().yhash = yhash[i];
         }
@@ -1942,18 +1946,18 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
         p.pointid().last().xhash = "-";
         p.pointid().last().yhash = "-";
       }
-      
+
       if(k < objnames.size()){
         p.labels().append(objnames[k]);
       }
       else{ // Append Generic name
         p.labels().append(QString("Obj %1").arg(QString::number(k+1)));
       }
-      
+
       k++;
     }
   }
-  
+
   // Set Object Colors
   QList< int > QtColours;
   QtColours.append(3);
@@ -1972,11 +1976,11 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   QtColours.append(13);
   QtColours.append(14);
   QtColours.append(15);
-  
+
   p.colors()->SetName("colors");
   p.colors()->SetNumberOfComponents(3); // 3 because is a tuple of red green and blue
 //   p.colors()->SetNumberOfValues(npoints);
-  
+
   QColor symbolcolor;
   unsigned char c[3] = {255, 255, 255};
   for(int mxid = 0; mxid < m.size(); mxid++){
@@ -1986,22 +1990,22 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
     else{
       symbolcolor.setRgb(randInt(0, 255), randInt(0, 255), randInt(0, 255));
     }
-    
+
     c[0] = symbolcolor.red();
     c[1] = symbolcolor.green();
     c[2] = symbolcolor.blue();
-    
+
     for(uint i = 0; i < m[mxid]->row; i++){
       p.colors()->InsertNextTupleValue(c);
     }
   }
-  
-  
+
+
   p.polydata()->SetPoints(p.points()); // add to polydata the points
   p.polydata()->GetPointData()->SetScalars(p.colors()); // bound points to polydata and set colors
-  
-  
-  
+
+
+
   // Set Symbol size
   p.sphereSource()->SetRadius(ui.actionSymbolSize->value() * scaling);
   p.glyph3D()->SetSourceConnection(p.sphereSource()->GetOutputPort());
@@ -2012,41 +2016,41 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   p.glyph3D()->Update();
   // Create a mapper and actor
   p.mapper()->SetInputConnection(p.glyph3D()->GetOutputPort());
-  
+
   p.actor()->SetMapper(p.mapper());
-  
-  
+
+
   // Creating outline box with mapper and actor
   outline->SetInputData(p.polydata());
   outlineMapper->SetInputConnection(outline->GetOutputPort());
   outlineActor->SetMapper(outlineMapper);
-  
+
   SetOutlineColor();
-  
+
   cubeAxesActor->SetBounds(outlineMapper->GetBounds());
   cubeAxesActor->SetCamera(renderer->GetActiveCamera());
 
   cubeAxesActor->SetXTitle(QString("%1 %2").arg(xname).arg(ui.valXaxis->value()).toUtf8().constData());
   cubeAxesActor->SetYTitle(QString("%1 %2").arg(yname).arg(ui.valYaxis->value()).toUtf8().constData());
   cubeAxesActor->SetZTitle(QString("%1 %2").arg(zname).arg(ui.valZaxis->value()).toUtf8().constData());
-  
+
   renderer->AddActor(p.actor());
   renderer->AddActor(cubeAxesActor);
   renderer->AddActor(outlineActor);
-  
+
   backgroundcolor = QColor(Qt::black);
   ui.backgroundColorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(backgroundcolor.red()).arg(backgroundcolor.green()).arg(backgroundcolor.blue()));
   renderer->SetBackground(backgroundcolor.redF(), backgroundcolor.greenF(), backgroundcolor.blueF());
-  
+
   renderer->ResetCamera();
-  
+
   ui.qvtkWidget->GetRenderWindow()->AddRenderer(renderer);
 
   ui.qvtkWidget->GetInteractor()->SetPicker(pointPicker);
   ui.qvtkWidget->GetInteractor()->SetInteractorStyle(style);
-  
+
   UpdateSelectedObjects();
-  
+
   Connections = vtkSmartPointer<vtkEventQtSlotConnect>::New();
   this->Connections->Connect(this->ui.qvtkWidget->GetRenderWindow()->GetInteractor(), vtkCommand::LeftButtonPressEvent, this, SLOT(UpdateSelectionLabel()));
   connect(ui.listView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButton()));
@@ -2062,7 +2066,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   connect(ui.buttonInvertSelection, SIGNAL(clicked(bool)), SLOT(invertSelection()));
   connect(ui.clusterAnalysisButton, SIGNAL(clicked(bool)), SLOT(DoClusterAnalysis()));
   connect(ui.abortButton, SIGNAL(clicked(bool)), SLOT(AbortRun()));
-  
+
   if(type == SCORES){
     connect(ui.buttonSelectBy, SIGNAL(clicked(bool)), SLOT(selectBy()));
     connect(ui.buttonSetSelectionLabel, SIGNAL(clicked(bool)), SLOT(setSelectionObjLabel()));
@@ -2071,9 +2075,9 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
     connect(ui.buttonSelectBy, SIGNAL(clicked(bool)), SLOT(selectByVarLabels()));
     connect(ui.buttonSetSelectionLabel, SIGNAL(clicked(bool)), SLOT(setSelectionVarLabel()));
   }
-  
+
   connect(ui.buttonSetSelectionStyle, SIGNAL(clicked(bool)), SLOT(setSelectionStyle()));
-  
+
   connect(ui.buttonSavePlotToImage, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
 }
@@ -2088,51 +2092,51 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   ui.setupUi(this);
   ui.progressBar->hide();
   ui.abortButton->hide();
-  
+
   xname = xname_;
   yname = yname_;
   zname = zname_;
-  
+
   ui.valXaxis_name->setText(xname);
   ui.valYaxis_name->setText(yname);
   ui.valZaxis_name->setText(zname);
-  
+
   if(type == LOADINGS){
     ui.clusterAnalysisButton->hide();
   }
-  
+
   pointPicker = vtkSmartPointer<vtkPointPicker>::New();
   style = vtkSmartPointer<MouseInteractorStylePP>::New();
-  
+
   outline = vtkSmartPointer<vtkOutlineFilter>::New();
   outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   outlineActor = vtkSmartPointer<vtkActor>::New();
   cubeAxesActor = vtkSmartPointer<vtkCubeAxesActor>::New();
-  renderer = vtkSmartPointer<vtkRenderer>::New(); 
-  
+  renderer = vtkSmartPointer<vtkRenderer>::New();
+
   setWindowTitle(windowtitle);
-  
+
 
   for(int i = 0; i < objnames_.size(); i++){
     objnames.append( objnames_[i]);
   }
 
   ui.listView->setModel(new QStringListModel(objnames));
-  
+
   objlabels = objlabels_;
   varlabels = varlabels_;
   mxlst = 0;
   arlst = arlst_;
   xhash = xhash_;
   yhash = yhash_;
-  
+
   for(int i = 0; i < m_.size(); i++){
     matrix *_m_;
     m.append(_m_);
     initMatrix(&m.last());
     MatrixCopy(m_[i], &m.last());
   }
-  
+
   //chek for the max of col that could be plot:
   uint maxcol = m[0]->col;
   uint npoints = m[0]->row;
@@ -2145,22 +2149,22 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
       continue;
     }
   }
-  
+
   ui.valXaxis->setMaximum(maxcol);
   ui.valYaxis->setMaximum(maxcol);
   ui.valZaxis->setMaximum(maxcol);
- 
+
   // Set Points and Labels
   p.points()->SetNumberOfPoints(npoints);
-  
+
   setScalingFactor();
   int k = 0;
   for(int i = 0; i < m.size(); i++){
     for(uint j = 0; j < m[i]->row; j++){
       p.points()->SetPoint(k, getMatrixValue(m[i], j, ui.valXaxis->value()-1), getMatrixValue(m[i], j, ui.valYaxis->value()-1), getMatrixValue(m[i], j, ui.valZaxis->value()-1));
-      
+
       p.pointid().append(POINT3DID());
-      
+
       if(xhash.size() > 0 && yhash.size() > 0 && xhash.size() == yhash.size()){
         p.pointid().last().id = j;
         if(i < xhash.size()){
@@ -2169,7 +2173,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
         else{
           p.pointid().last().xhash = "-";
         }
-        
+
         if(i < yhash.size()){
           p.pointid().last().yhash = yhash[i];
         }
@@ -2185,7 +2189,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
         else{
           p.pointid().last().xhash = "-";
         }
-        
+
         if(i < yhash.size()){
           p.pointid().last().yhash = yhash[i];
         }
@@ -2201,13 +2205,13 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
         else{
           p.pointid().last().xhash = "-";
         }
-        
+
         p.pointid().last().yhash = "-";
       }
       else if(xhash.size() == 0 && yhash.size() > 0){
         p.pointid().last().id = j;
         p.pointid().last().xhash = "-";
-        
+
         if(i < yhash.size()){
           p.pointid().last().yhash = yhash[i];
         }
@@ -2220,19 +2224,19 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
         p.pointid().last().xhash = "-";
         p.pointid().last().yhash = "-";
       }
-      
-      
+
+
       if(k < objnames.size()){
         p.labels().append(objnames[k]);
       }
       else{ // Append Generic name
         p.labels().append(QString("Obj %1").arg(QString::number(k+1)));
       }
-      
+
       k++;
     }
   }
-  
+
   // Set Object Colors
   QList< int > QtColours;
   QtColours.append(3);
@@ -2251,10 +2255,10 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   QtColours.append(13);
   QtColours.append(14);
   QtColours.append(15);
-  
+
   p.colors()->SetName("colors");
   p.colors()->SetNumberOfComponents(3); // 3 because is a tuple of red green and blue
-  
+
   QColor symbolcolor;
   unsigned char c[3] = {255, 255, 255};
   for(int mxid = 0; mxid < m.size(); mxid++){
@@ -2264,16 +2268,16 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
     else{
       symbolcolor.setRgb(randInt(0, 255), randInt(0, 255), randInt(0, 255));
     }
-    
+
     c[0] = symbolcolor.red();
     c[1] = symbolcolor.green();
     c[2] = symbolcolor.blue();
-    
+
     for(uint i = 0; i < m[mxid]->row; i++){
       p.colors()->InsertNextTupleValue(c);
     }
   }
-  
+
   p.polydata()->SetPoints(p.points()); // add to polydata the points
   p.polydata()->GetPointData()->SetScalars(p.colors()); // bound points to polydata and set colors
 
@@ -2285,43 +2289,43 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   p.glyph3D()->SetColorModeToColorByScalar();
   p.glyph3D()->ScalingOff();
   p.glyph3D()->Update();
-  
+
   // Create a mapper and actor
   p.mapper()->SetInputConnection(p.glyph3D()->GetOutputPort());
   p.actor()->SetMapper(p.mapper());
-  
-  
+
+
   // Creating outline box with mapper and actor
   outline->SetInputData(p.polydata());
   outlineMapper->SetInputConnection(outline->GetOutputPort());
   outlineActor->SetMapper(outlineMapper);
-  
+
   SetOutlineColor();
-  
+
   cubeAxesActor->SetBounds(outlineMapper->GetBounds());
   cubeAxesActor->SetCamera(renderer->GetActiveCamera());
-  
+
   cubeAxesActor->SetXTitle(QString("%1 %2").arg(xname).arg(ui.valXaxis->value()).toUtf8().constData());
   cubeAxesActor->SetYTitle(QString("%1 %2").arg(yname).arg(ui.valYaxis->value()).toUtf8().constData());
   cubeAxesActor->SetZTitle(QString("%1 %2").arg(zname).arg(ui.valZaxis->value()).toUtf8().constData());
-  
+
   renderer->AddActor(p.actor());
   renderer->AddActor(cubeAxesActor);
   renderer->AddActor(outlineActor);
-  
+
   backgroundcolor = QColor(Qt::black);
   ui.backgroundColorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(backgroundcolor.red()).arg(backgroundcolor.green()).arg(backgroundcolor.blue()));
   renderer->SetBackground(backgroundcolor.redF(), backgroundcolor.greenF(), backgroundcolor.blueF());
-  
+
   renderer->ResetCamera();
-  
+
   ui.qvtkWidget->GetRenderWindow()->AddRenderer(renderer);
-  
+
   ui.qvtkWidget->GetInteractor()->SetPicker(pointPicker);
   ui.qvtkWidget->GetInteractor()->SetInteractorStyle(style);
-  
+
   UpdateSelectedObjects();
-  
+
   Connections = vtkSmartPointer<vtkEventQtSlotConnect>::New();
   this->Connections->Connect(this->ui.qvtkWidget->GetRenderWindow()->GetInteractor(), vtkCommand::LeftButtonPressEvent, this, SLOT(UpdateSelectionLabel()));
   connect(ui.listView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButton()));
@@ -2338,7 +2342,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   connect(ui.buttonSetSelectionStyle, SIGNAL(clicked(bool)), SLOT(setSelectionStyle()));
   connect(ui.clusterAnalysisButton, SIGNAL(clicked(bool)), SLOT(DoClusterAnalysis()));
   connect(ui.abortButton, SIGNAL(clicked(bool)), SLOT(AbortRun()));
-  
+
   if(type == SCORES){
     connect(ui.buttonSelectBy, SIGNAL(clicked(bool)), SLOT(selectBy()));
     connect(ui.buttonSetSelectionLabel, SIGNAL(clicked(bool)), SLOT(setSelectionObjLabel()));
@@ -2347,7 +2351,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
     connect(ui.buttonSelectBy, SIGNAL(clicked(bool)), SLOT(selectByVarLabels()));
     connect(ui.buttonSetSelectionLabel, SIGNAL(clicked(bool)), SLOT(setSelectionVarLabel()));
   }
-  
+
   connect(ui.buttonSavePlotToImage, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
 }
@@ -2358,4 +2362,4 @@ ScatterPlot3D::~ScatterPlot3D()
     DelMatrix(&m[i]);
   }
   m.clear();
-} 
+}
