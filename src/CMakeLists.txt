@@ -172,7 +172,7 @@ set(QSTUDIOMETRICS_UIS
 #     ProgressBarDialog.ui
     MainWindow.ui)
 
-add_subdirectory(Chart)
+#add_subdirectory(Chart)
 
 set(QSTUDIOMETRICS_CMDPCA_SRC DATAIO.cpp qstudiom-pca.cpp)
 set(QSTUDIOMETRICS_CMDPLS_SRC DATAIO.cpp qstudiom-pls.cpp)

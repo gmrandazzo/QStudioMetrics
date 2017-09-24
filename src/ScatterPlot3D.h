@@ -50,7 +50,7 @@ public:
   static MouseInteractorStylePP* New();
   vtkTypeMacro(MouseInteractorStylePP, vtkInteractorStyleTrackballCamera);
 
-  virtual void OnLeftButtonDown(){
+  virtual void OnLeftButtonDown() override final {
     picked[0] = picked[1] = picked[2] = -9999;
 //     qDebug() << "Picking pixel: " << this->Interactor->GetEventPosition()[0] << " " << this->Interactor->GetEventPosition()[1];
     this->Interactor->GetPicker()->Pick(this->Interactor->GetEventPosition()[0],

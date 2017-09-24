@@ -262,7 +262,7 @@ void ScatterPlot3D::setSelectionStyle()
       c[2] = (unsigned char)color.blue();
       for(int i = 0; i < vtkselectedID.size(); i++){
         if(vtkselectedID[i] < p.NumberOfPoints()){
-          p.colors()->SetTupleValue(vtkselectedID[i], c);
+          p.colors()->SetTypedTuple(vtkselectedID[i], c);
         }
         else{
           // Error!! Object number out of range
@@ -282,7 +282,7 @@ void ScatterPlot3D::setSelectionStyle()
         c[2] = (unsigned char)color.blue();
         for(int i = 0; i < vtkselectedID.size(); i++){
           if(vtkselectedID[i] < p.NumberOfPoints()){
-            p.colors()->SetTupleValue(vtkselectedID[i], c);
+            p.colors()->SetTypedTuple(vtkselectedID[i], c);
           }
           else{
             // Error!! Object number out of range
@@ -338,7 +338,7 @@ void ScatterPlot3D::setSelectionStyle()
 
           for(int i = 0; i < vtkselectedID.size(); i++){
             if(vtkselectedID[i] < p.NumberOfPoints()){
-              p.colors()->SetTupleValue(vtkselectedID[i], c);
+              p.colors()->SetTypedTuple(vtkselectedID[i], c);
             }
             else{
               // Error!! Object number out of range
@@ -391,7 +391,7 @@ void ScatterPlot3D::setSelectionStyle()
                 c[0] = (unsigned char)color.red();
                 c[1] = (unsigned char)color.green();
                 c[2] = (unsigned char)color.blue();
-                p.colors()->SetTupleValue(vtkselectedID[i], c);
+                p.colors()->SetTypedTuple(vtkselectedID[i], c);
             }
             DelMatrix(&m);
           }
@@ -435,7 +435,7 @@ void ScatterPlot3D::setSelectionStyle()
                 c[0] = (unsigned char)color.red();
                 c[1] = (unsigned char)color.green();
                 c[2] = (unsigned char)color.blue();
-                p.colors()->SetTupleValue(vtkselectedID[i], c);
+                p.colors()->SetTypedTuple(vtkselectedID[i], c);
             }
             DelMatrix(&m);
           }
@@ -455,7 +455,7 @@ void ScatterPlot3D::setSelectionStyle()
         c[2] = (unsigned char)color.blue();
         for(int i = 0; i < vtkselectedID.size(); i++){
           if(vtkselectedID[i] < p.NumberOfPoints()){
-            p.colors()->SetTupleValue(vtkselectedID[i], c);
+            p.colors()->SetTypedTuple(vtkselectedID[i], c);
           }
           else{
             // Error!! Object number out of range
@@ -512,7 +512,7 @@ void ScatterPlot3D::setSelectionStyle()
           c[2] = (unsigned char)color.blue();
           for(int i = 0; i < vtkselectedID.size(); i++){
             if(vtkselectedID[i] < p.NumberOfPoints()){
-              p.colors()->SetTupleValue(vtkselectedID[i], c);
+              p.colors()->SetTypedTuple(vtkselectedID[i], c);
             }
             else{
               // Error!! Object number out of range
@@ -568,7 +568,7 @@ void ScatterPlot3D::setSelectionStyle()
                   c[0] = (unsigned char)color.red();
                   c[1] = (unsigned char)color.green();
                   c[2] = (unsigned char)color.blue();
-                  p.colors()->SetTupleValue(vtkselectedID[i], c);
+                  p.colors()->SetTypedTuple(vtkselectedID[i], c);
                 }
               }
               else{
@@ -618,7 +618,7 @@ void ScatterPlot3D::setSelectionStyle()
                   c[0] = (unsigned char)color.red();
                   c[1] = (unsigned char)color.green();
                   c[2] = (unsigned char)color.blue();
-                  p.colors()->SetTupleValue(vtkselectedID[i], c);
+                  p.colors()->SetTypedTuple(vtkselectedID[i], c);
                 }
               }
               else{
@@ -842,7 +842,7 @@ void ScatterPlot3D::DoClusterAnalysis()
           c[0] = (unsigned char)color.red();
           c[1] = (unsigned char)color.green();
           c[2] = (unsigned char)color.blue();
-          p.colors()->SetTupleValue(i, c);
+          p.colors()->SetTypedTuple(i, c);
 
 
         }
@@ -1037,7 +1037,7 @@ void ScatterPlot3D::DoClusterAnalysis()
               c[1] = (unsigned char)color.green();
               c[2] = (unsigned char)color.blue();
 
-              p.colors()->SetTupleValue(objid, c);
+              p.colors()->SetTypedTuple(objid, c);
 
               if(docluster.SaveClusterLabels() == true){
                 clusterobjlabels[id].objects.append(objnames[objid]);
@@ -1241,7 +1241,7 @@ void ScatterPlot3D::ResetPlot()
     c[2] = symbolcolor.blue();
 
     for(uint i = 0; i < m[mxid]->row; i++){
-      p.colors()->SetTupleValue(k, c);
+      p.colors()->SetTypedTuple(k, c);
       k++;
     }
   }
@@ -1810,9 +1810,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   type = type_;
   typedata = MATRIXDATA;
   pid = -1;
-  qDebug() << " test 1 >>" << qApp << "<<\n";
   ui.setupUi(this);
-  qDebug() << " test 2 >>" << qApp << "<<\n";
   ui.progressBar->hide();
   ui.abortButton->hide();
 

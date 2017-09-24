@@ -324,7 +324,7 @@ SimpleScatterPlot3D::SimpleScatterPlot3D(matrix* m_, QList<double> colorvalue, Q
       c[0] = (unsigned char)color.red();
       c[1] = (unsigned char)color.green();
       c[2] = (unsigned char)color.blue();
-      p.colors()->SetTupleValue(i, c);
+      p.colors()->SetTypedTuple(i, c);
   }
 
   p.polydata()->SetPoints(p.points()); // add to polydata the points

@@ -3,8 +3,11 @@ cmake_minimum_required(VERSION 2.8)
 set(VERSION "1.9.0")
 set(AUTHOR "Giuseppe Marco Randazzo")
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC OFF)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 
 #set(_components
 #    Core
@@ -83,11 +86,12 @@ add_definitions(${QT5_DEFINITIONS})
 include_directories(
   ${PROJECT_BINARY_DIR}
   ${PROJECT_SOURCE_DIR}/src
-  ${CMAKE_CURRENT_BINARY_DIR} #this is where ui_SimpleViewUI.h is generated
+  ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${SCIENTIFIC_INCLUDE_DIR}
 )
 
 link_directories(${SCIENTIFIC_LIB_DIR})
 
+add_subdirectory(src/Chart)
 add_subdirectory (src)
