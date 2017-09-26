@@ -1806,7 +1806,6 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
 
 ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames_, QList<MATRIX*> *mxlst_,QStringList xhash_, QStringList yhash_, LABELS* objlabels_, LABELS *varlabels_, QString windowtitle, QString xname_, QString yname_, QString zname_, int type_): QWidget()
 {
-  qDebug() << " Ciao";
   type = type_;
   typedata = MATRIXDATA;
   pid = -1;
@@ -1825,7 +1824,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   if(type == LOADINGS){
     ui.clusterAnalysisButton->hide();
   }
-  qDebug() << qApp;
+
   pointPicker = vtkSmartPointer<vtkPointPicker>::New();
   style = vtkSmartPointer<MouseInteractorStylePP>::New();
 
