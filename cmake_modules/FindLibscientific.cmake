@@ -11,25 +11,27 @@ set(LIBSCIENTIFIC_ROOT_DIR "/usr/" "/usr/local/")
 
 find_path(LIBSCIENTIFIC_INCLUDE_DIR
     NAMES scientific.h
-    PATHS ${LIBSCIENTIFIC_ROOT_DIR}/include
+    PATHS ${LIBSCIENTIFIC_ROOT_DIR}
+    PATH_SUFFIXES "include"
     DOC "The LIBSCIENTIFIC include directory"
 )
 
 find_library(LIBSCIENTIFIC_LIBRARY
     NAMES scientific
-    PATHS ${LIBSCIENTIFIC_ROOT_DIR}/lib
+    PATHS ${LIBSCIENTIFIC_ROOT_DIR}
+    PATH_SUFFIXES "lib" "lib32" "lib64"
     DOC "The LIBSCIENTIFIC library"
 )
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LOGGING_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(libscientific (DEFAULT_MSG | "Please set LIBSCIENTIFIC_ROOT_DIR to specify another installation path.") LIBSCIENTIFIC_ROOT_DIR)
+find_package_handle_standard_args(libscientific DEFAULT_MSG LIBSCIENTIFIC_LIBRARY LIBSCIENTIFIC_INCLUDE_DIR)
 
 if (LIBSCIENTIFIC_FOUND)
     set(LIBSCIENTIFIC_LIBRARIES ${LIBSCIENTIFIC_LIBRARY})
     set(LIBSCIENTIFIC_INCLUDE_DIRS ${LIBSCIENTIFIC_INCLUDE_DIR})
-    set(LIBSCIENTIFIC_DEFINITIONS)
+    #set(LIBSCIENTIFIC_DEFINITIONS "-DWIN_SCIENTIFIC")
 endif()
 
 # Tell cmake GUIs to ignore the "local" variables.

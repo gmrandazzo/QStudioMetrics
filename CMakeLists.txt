@@ -88,10 +88,10 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/src
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${SCIENTIFIC_INCLUDE_DIR}
+  ${LIBSCIENTIFIC_INCLUDE_DIRS}
 )
 
-link_directories(${SCIENTIFIC_LIB_DIR})
+link_directories(${LIBSCIENTIFIC_LIBRARIES})
 
 add_subdirectory(src/Chart)
 add_subdirectory (src)
