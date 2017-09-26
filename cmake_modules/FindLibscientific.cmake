@@ -5,7 +5,7 @@
 #  LIBSCIENTIFIC_LIBRARIES - The libraries needed to use LIBSCIENTIFIC
 #  LIBSCIENTIFIC_DEFINITIONS - Compiler switches required for using LIBSCIENTIFIC
 
-set(LIBSCIENTIFIC_ROOT_DIR "/usr/" "/usr/local/")
+set(LIBSCIENTIFIC_ROOT_DIR ${LIBSCIENTIFIC_ROOT_DIR} "/usr/" "/usr/local/")
 # Uncomment the following line to print which directory CMake is looking in.
 #message(status "LIBSCIENTIFIC_ROOT_DIR: " ${LIBSCIENTIFIC_ROOT_DIR})
 
