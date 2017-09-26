@@ -1480,7 +1480,7 @@ ScatterPlot3D::ScatterPlot3D(matrix* m_, QStringList& objname_, QString windowti
     for(uint j = 0; j < m[i]->row; j++){
       p.points()->SetPoint(k, getMatrixValue(m[i], j, ui.valXaxis->value()-1), getMatrixValue(m[i], j, ui.valYaxis->value()-1), getMatrixValue(m[i], j, ui.valZaxis->value()-1));
 
-      p.pointid().append(POINT3DID());
+      p.pointid().append(QSMPOINT3DID());
       p.pointid().last().id = j;
       p.pointid().last().xhash = "-";
       p.pointid().last().yhash = "-";
@@ -1678,7 +1678,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
     for(uint j = 0; j < m[i]->row; j++){
       p.points()->SetPoint(k, getMatrixValue(m[i], j, ui.valXaxis->value()-1), getMatrixValue(m[i], j, ui.valYaxis->value()-1), getMatrixValue(m[i], j, ui.valZaxis->value()-1));
 
-      p.pointid().append(POINT3DID());
+      p.pointid().append(QSMPOINT3DID());
       p.pointid().last().id = j;
       p.pointid().last().xhash = "-";
       p.pointid().last().yhash = "-";
@@ -1882,7 +1882,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
   for(int i = 0; i < m.size(); i++){
     for(uint j = 0; j < m[i]->row; j++){
       p.points()->SetPoint(k, getMatrixValue(m[i], j, ui.valXaxis->value()-1), getMatrixValue(m[i], j, ui.valYaxis->value()-1), getMatrixValue(m[i], j, ui.valZaxis->value()-1));
-      p.pointid().append(POINT3DID());
+      p.pointid().append(QSMPOINT3DID());
 
       if(xhash.size() > 0 && yhash.size() > 0 && xhash.size() == yhash.size()){
         p.pointid().last().id = j;
@@ -2160,7 +2160,7 @@ ScatterPlot3D::ScatterPlot3D(QList< matrix* > m_, QList< QStringList >& objnames
     for(uint j = 0; j < m[i]->row; j++){
       p.points()->SetPoint(k, getMatrixValue(m[i], j, ui.valXaxis->value()-1), getMatrixValue(m[i], j, ui.valYaxis->value()-1), getMatrixValue(m[i], j, ui.valZaxis->value()-1));
 
-      p.pointid().append(POINT3DID());
+      p.pointid().append(QSMPOINT3DID());
 
       if(xhash.size() > 0 && yhash.size() > 0 && xhash.size() == yhash.size()){
         p.pointid().last().id = j;

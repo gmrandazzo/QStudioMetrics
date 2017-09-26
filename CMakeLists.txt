@@ -49,12 +49,14 @@ endif(NOT CMAKE_BUILD_TYPE)
 string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
 
 # Disable some warnings
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++11-long-long -Wno-extra-semi -Wno-c++11-extensions -Wno-extra-semi")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x  -Wno-extra-semi")
 
 if(WIN32)
   message(STATUS "Build Release: WIN32")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall -DRELEASE -static -DWIN32 -Wno-long-long")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-undefined -static-libgcc -static-libstdc++ -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s -Wl,-O1")
+  # add -static if you whant to compile with gcc lib static
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall -DRELEASE -DWIN32 -Wno-long-long")
+  # add to the linker flags the static library -static-libgcc -static-libstdc++
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-undefined -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s -Wl,-O1")
   SET_PROPERTY(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE QT_NO_DEBUG)
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 elseif(APPLE)

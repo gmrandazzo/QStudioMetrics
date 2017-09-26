@@ -386,7 +386,7 @@ void ScatterPlot2D::initPoint(QList<matrix*> mx, QList<matrix*> my, QList<QStrin
     }
 
     for(uint i = 0; i < mx[mxid]->row; i++){
-      p.append(POINT());
+      p.append(QSMPOINT());
 
       for(uint j = 0; j < mx[mxid]->col; j++){
         p.last().coord.append(mx[mxid]->data[i][j]);
@@ -464,7 +464,7 @@ void ScatterPlot2D::initPoint(QList<matrix*> mx, QList<QStringList> name)
     }
 
     for(uint i = 0; i < mx[mxid]->row; i++){
-      p.append(POINT());
+      p.append(QSMPOINT());
       for(uint j = 0; j < mx[mxid]->col; j++){
         p.last().coord.append(mx[mxid]->data[i][j]);
       }

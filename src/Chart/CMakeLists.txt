@@ -38,11 +38,14 @@ endforeach()
 
 
 add_definitions(${QT5_DEFINITIONS})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 if(WIN32)
   message(STATUS "OS: Windows")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pipe -mwindows -pedantic -Wall -static")
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static-libstdc++ -s -Wl,-O1")
+  # add -static if you whant to compile with gcc lib static
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pipe -mwindows -pedantic -Wall")
+  # add to the linker flags the static library -static-libgcc -static-libstdc++
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -s -Wl,-O1")
 elseif(APPLE)
   message(STATUS "Build Release: APPLE")
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall -Wno-long-long -DDEBUG")

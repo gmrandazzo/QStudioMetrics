@@ -16,7 +16,7 @@
 
 #include <QDebug>
 
-struct POINT{
+struct QSMPOINT{
   int radius;
   QList <qreal> coord;
   QColor color;
@@ -123,7 +123,7 @@ private:
   Chart *chart;
 
   FindCorrelationWidget *cwidget;
-  QList <POINT> p;
+  QList <QSMPOINT> p;
 
   QList< matrix * > curves;
   QStringList curvenames;

@@ -70,7 +70,7 @@ private:
   double picked[3];
 };
 
-struct POINT3DID{
+struct QSMPOINT3DID{
   int id; //point number
   QString xhash;
   QString yhash;
@@ -100,7 +100,7 @@ public:
   }
   int NumberOfPoints(){ return pointid_.size(); }
 
-  QList<POINT3DID> &pointid(){ return pointid_; }
+  QList<QSMPOINT3DID> &pointid(){ return pointid_; }
   QStringList &labels(){ return labels_;}
   vtkSmartPointer<vtkPoints> &points(){ return points_; }
   vtkSmartPointer<vtkUnsignedCharArray> &colors(){ return colors_; }
@@ -111,7 +111,7 @@ public:
   vtkSmartPointer<vtkActor> &actor(){ return actor_; }
 
 private:
-  QList<POINT3DID> pointid_;
+  QList<QSMPOINT3DID> pointid_;
   QStringList labels_;
   vtkSmartPointer<vtkPoints> points_;
   vtkSmartPointer<vtkUnsignedCharArray> colors_;
