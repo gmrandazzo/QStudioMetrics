@@ -1,95 +1,40 @@
-project(QStudioMetrics)
-cmake_minimum_required(VERSION 2.8)
-set(VERSION "1.9.0")
-set(AUTHOR "Giuseppe Marco Randazzo")
+cmake_minimum_required(VERSION 3.8.2)
 
-set(CMAKE_AUTOMOC OFF)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
+project(helloworld)
+
+# Find includes in the build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# Turn on automatic invocation of the MOC
+set(CMAKE_AUTOMOC ON)
 
-#set(_components
-#    Core
-#    Gui
-#    DBus
-#    Designer
-#    Declarative
-#    Script
-#    ScriptTools
-#    Network
-#    Test
-#    Xml
-#    Svg
-#    Sql
-#    Widgets
-#    PrintSupport
-#    Concurrent
-#    UiTools
-#    WebKit
-#    WebKitWidgets
-#    OpenGL)
+# There may be a way to tell up front if Qt5 is going to be found, but I haven't found
+# a foolproof way to do it yet, so settle for the default error message for now.
+#if(NOT CMAKE_PREFIX_PATH AND NOT Qt5Widgets_DIR)
+#    message(WARNING "CMAKE_PREFIX_PATH is not defined, so find_package may not work. Set the CMAKE_PREFIX_PATH "
+#            "environment variable to the install prefix of Qt 5, either on the command line as "
+#            "-DCMAKE_PREFIX_PATH=\"path/to/Qt5/lib/cmake\" or with set(CMAKE_PREFIX_PATH path/to/Qt5/lib/cmake)")
+#endif(NOT CMAKE_PREFIX_PATH AND NOT Qt5Widgets_DIR)
 
-set(_components Core Gui Widgets PrintSupport Concurrent)
-foreach(_component ${_components})
-  find_package(Qt5${_component})
-  list(APPEND QT5_LIBRARIES ${Qt5${_component}_LIBRARIES})
-endforeach()
+# Add a compiler flag
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
-find_package(VTK REQUIRED)
-include(${VTK_USE_FILE}) # include UseVTK.cmake
-
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules/")
-find_package(Libscientific)
-
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: Debug Release" FORCE)
-endif(NOT CMAKE_BUILD_TYPE)
-
-string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
-
-# Disable some warnings
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++11-long-long -Wno-extra-semi -Wno-c++11-extensions -Wno-extra-semi")
-
+# Make this a GUI application on Windows
 if(WIN32)
-  message(STATUS "Build Release: WIN32")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall -DRELEASE -static -DWIN32 -Wno-long-long")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-undefined -static-libgcc -static-libstdc++ -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s -Wl,-O1")
-  SET_PROPERTY(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE QT_NO_DEBUG)
-  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-elseif(APPLE)
-  if(cmake_build_type_tolower STREQUAL "debug")
-    message(STATUS "Build Debug: APPLE")
-    set(CMAKE_BUILD_TYPE "Debug")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -Wall -pedantic -g")
-  else()
-  message(STATUS "Build Release: APPLE")
-    set(CMAKE_BUILD_TYPE "Release")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRELEASE -O2 -Wall -Wnewline-eof")
-  endif()
-else()
-  message(STATUS "Build Release: Linux")
-  if(cmake_build_type_tolower STREQUAL "debug")
-    set(CMAKE_BUILD_TYPE "Debug")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -Wall -pedantic -g -Wno-long-long ")
-  else()
-    set(CMAKE_BUILD_TYPE "Release")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRELEASE -O2 -Wall -Wno-long-long ")
-  endif()
-endif(WIN32)
+  set(CMAKE_WIN32_EXECUTABLE ON)
+endif()
 
-message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
+# Find the QtWidgets library
+find_package(Qt5Widgets REQUIRED)
 
-add_definitions(${QT5_DEFINITIONS})
+# Generate code from ui files
+qt5_wrap_ui(UI_HEADERS mainwindow.ui)
 
-include_directories(
-  ${PROJECT_BINARY_DIR}
-  ${PROJECT_SOURCE_DIR}/src
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${LIBSCIENTIFIC_INCLUDE_DIRS}
-)
+# Generate rules for building source files from the resources
+qt5_add_resources(QRCS resources.qrc)
 
+# Tell CMake to create the helloworld executable
+add_executable(helloworld main.cpp mainwindow.cpp ${UI_HEADERS} ${QRCS})
 
-add_subdirectory(src/Chart)
-add_subdirectory (src)
+# Add the Qt5 Widgets for linking
+target_link_libraries(helloworld Qt5::Widgets Qt5::WinMain)

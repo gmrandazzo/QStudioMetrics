@@ -32,13 +32,10 @@ set(CMAKE_MACOSX_RPATH 1)
 
 set(_components Core Gui Widgets PrintSupport)
 foreach(_component ${_components})
-  find_package(Qt5${_component})
+  find_package(Qt5${_component} REQUIRED )
   list(APPEND QT5_LIBRARIES ${Qt5${_component}_LIBRARIES})
 endforeach()
 
-
-#find_package(Qt5 COMPONENTS Core Widgets PrintSupport)
-#set(QT5_LIBRARIES Qt5::Widgets Qt5::PrintSupport Qt5::Core)
 
 add_definitions(${QT5_DEFINITIONS})
 
@@ -85,10 +82,9 @@ set_target_properties(libchart PROPERTIES OUTPUT_NAME "chart")
 
 
 if(WIN32)
-  target_link_libraries(libchart Qt5::Widgets "-mwindows")
+  target_link_libraries(libchart  ${QT5_LIBRARIES} Qt5::WinMain "-mwindows")
 else()
   target_link_libraries(libchart ${QT5_LIBRARIES})
-
   add_executable(test ${CHARTTEST_SRC})
   target_link_libraries(test libchart ${QT5_LIBRARIES})
 endif()

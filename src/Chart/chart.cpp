@@ -1,6 +1,6 @@
 #include <QtGui>
 #include <QToolButton>
-#include <QPrinter>
+#include <QtPrintSupport/QPrinter>
 #include <QMessageBox>
 #include <QStylePainter>
 #include <QStyleOptionFocusRect>
