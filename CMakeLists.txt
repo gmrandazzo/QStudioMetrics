@@ -56,7 +56,6 @@ if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall -DRELEASE -static -DWIN32 -Wno-long-long")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-undefined -static-libgcc -static-libstdc++ -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s -Wl,-O1")
   SET_PROPERTY(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE QT_NO_DEBUG)
-  add_definitions(${QT_DEFINITIONS})
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 elseif(APPLE)
   if(cmake_build_type_tolower STREQUAL "debug")
@@ -91,7 +90,7 @@ include_directories(
   ${LIBSCIENTIFIC_INCLUDE_DIRS}
 )
 
-link_directories(${LIBSCIENTIFIC_LIBRARIES})
+link_directories(${LIBSCIENTIFIC_LIBRARY_DIRS})
 
 add_subdirectory(src/Chart)
 add_subdirectory (src)

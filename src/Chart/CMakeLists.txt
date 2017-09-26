@@ -8,8 +8,38 @@ set(CMAKE_AUTOMOC ON)
 
 set(CMAKE_MACOSX_RPATH 1)
 
-find_package(Qt5 COMPONENTS Core Widgets PrintSupport)
-set(QT5_LIBRARIES Qt5::Widgets Qt5::PrintSupport Qt5::Core)
+
+#set(_components
+#    Core
+#    Gui
+#    DBus
+#    Designer
+#    Declarative
+#    Script
+#    ScriptTools
+#    Network
+#    Test
+#    Xml
+#    Svg
+#    Sql
+#    Widgets
+#    PrintSupport
+#    Concurrent
+#    UiTools
+#    WebKit
+#    WebKitWidgets
+#    OpenGL)
+
+set(_components Core Gui Widgets PrintSupport)
+foreach(_component ${_components})
+  find_package(Qt5${_component})
+  list(APPEND QT5_LIBRARIES ${Qt5${_component}_LIBRARIES})
+endforeach()
+
+
+#find_package(Qt5 COMPONENTS Core Widgets PrintSupport)
+#set(QT5_LIBRARIES Qt5::Widgets Qt5::PrintSupport Qt5::Core)
+
 add_definitions(${QT5_DEFINITIONS})
 
 if(WIN32)
