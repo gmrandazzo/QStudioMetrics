@@ -90,7 +90,6 @@ include_directories(
   ${LIBSCIENTIFIC_INCLUDE_DIRS}
 )
 
-link_directories(${LIBSCIENTIFIC_LIBRARY_DIRS})
 
 add_subdirectory(src/Chart)
 add_subdirectory (src)
