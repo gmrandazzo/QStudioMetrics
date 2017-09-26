@@ -24,14 +24,12 @@ find_library(LIBSCIENTIFIC_LIBRARY
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LOGGING_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(libscientific DEFAULT_MSG LIBSCIENTIFIC_INCLUDE_DIR LIBSCIENTIFIC_LIBRARY)
+find_package_handle_standard_args(libscientific (DEFAULT_MSG | "Please set LIBSCIENTIFIC_ROOT_DIR to specify another installation path.") LIBSCIENTIFIC_ROOT_DIR)
 
 if (LIBSCIENTIFIC_FOUND)
     set(LIBSCIENTIFIC_LIBRARIES ${LIBSCIENTIFIC_LIBRARY})
     set(LIBSCIENTIFIC_INCLUDE_DIRS ${LIBSCIENTIFIC_INCLUDE_DIR})
     set(LIBSCIENTIFIC_DEFINITIONS)
-elseif()
-  message(STATUS 'Libscientific not found in "/usr" or "/usr/local". Please set LIBSCIENTIFIC_ROOT_DIR to specify another installation path.')
 endif()
 
 # Tell cmake GUIs to ignore the "local" variables.
