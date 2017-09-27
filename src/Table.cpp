@@ -10,15 +10,19 @@
 #include <QApplication>
 #include <QTextStream>
 
+#ifdef DEBUG
 #include <QDebug>
+#endif
 
-#include "data.h"
-#include "LabelDialog.h"
-#include "SearchOnTableDialog.h"
-#include "HighlightTableVarDialog.h"
-#include "ObjectSelectorDialog.h"
-#include "ExportTableDialog.h"
+#include "qsmdata.h"
 #include "run.h"
+
+#include "Dialogs/LabelDialog.h"
+#include "Dialogs/SearchOnTableDialog.h"
+#include "Dialogs/HighlightTableVarDialog.h"
+#include "Dialogs/ObjectSelectorDialog.h"
+#include "Dialogs/ExportTableDialog.h"
+
 
 #include <fstream>
 #include <iostream>
@@ -458,7 +462,9 @@ Model::~Model()
 {
   if(isallocatedmatrix == true){
     delMatrix();
-    qDebug()<< "[MATRIXMODEL] Deleting Matrix";
+    #ifdef DEBUG
+    qDebug()<< "~Model() Deleting Matrix";
+    #endif
   }
 }
 
@@ -549,7 +555,9 @@ void Table::addVariableLabel()
       selectevars.append(model_->getHorizontalHeaderLabels()[current.column()]);
     }
 
+    #ifdef DEBUG
     qDebug() << "Selected Variables... " << selectevars;
+    #endif
 
     LabelDialog ldialog(varlabels, selectevars, LabelDialog::VARLABELS);
     ldialog.exec();
@@ -591,8 +599,11 @@ void Table::selectBy()
             col++;
           }
           else{
+            #ifdef DEBUG
             qDebug() << "Error in selection columnindex this variable " << varlist[j] << "seems to be not present.";
-          }
+            #endif
+	    continue;
+	  }
         }
         obj.setMatrix(m);
 
@@ -922,7 +933,10 @@ void Table::resetHighliting()
 
 void Table::SortByColumn(int col)
 {
+
+  #ifdef DEBUG
   qDebug() << "Sort by column " << col;
+  #endif
   if(col == 0){
     matrix *m = model()->Matrix();
 
@@ -1230,6 +1244,8 @@ Table::Table(QList< QStringList > tab, LABELS* objlabels_, LABELS* varlabels_, Q
 
 Table::~Table()
 {
-  qDebug()<<"[TABLE] Delete model_\n";
+  #ifdef DEBUG
+  qDebug()<<"~Table() Delete model_\n";
+  #endif
   delete model_;
 }

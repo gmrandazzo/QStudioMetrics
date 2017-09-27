@@ -38,62 +38,62 @@ int main(int argc, char **argv)
     bool genmodel, makeprediction;
     genmodel = makeprediction = false;
     sep = " \t";
-    
+
     for(int i = 0; i < argc; i++){
       if(strcmp(argv[i], "-model") == 0 || strcmp(argv[i], "-m") == 0){
         genmodel = true;
       }
-      
+
       if(strcmp(argv[i], "-predict") == 0 || strcmp(argv[i], "-p") == 0){
         makeprediction = true;
       }
-      
+
       if(strcmp(argv[i], "-data") == 0 || strcmp(argv[i], "-i") == 0){
         if(i+1 < argc){
           inputdata = argv[i+1];
         }
       }
-      
+
       if(strcmp(argv[i], "-out") == 0 || strcmp(argv[i], "-o") == 0){
         if(i+1 < argc){
           outputfile = argv[i+1];
         }
       }
-      
+
       if(strcmp(argv[i], "-c") == 0){
         if(i+1 < argc)
           npc = atoi(argv[i+1]);
       }
-      
+
       if(strcmp(argv[i], "-data-model") == 0 || strcmp(argv[i], "-dm") == 0){
         if(i+1 < argc)
           datamodel = argv[i+1];
       }
-      
+
       if(strcmp(argv[i], "-a") == 0){
         if(i+1 < argc)
           autoscaling = atoi(argv[i+1]);
       }
-      
+
       if(strcmp(argv[i], "-s") == 0){
         if(i+1 < argc)
           sep = argv[i+1];
       }
 
     }
-    
+
     if(genmodel == true && !inputdata.empty() && !outputfile.empty() && npc > 0){
       array *data;
-      
+
       initArray(&data);
-      
+
       DATAIO::ImportArray(inputdata, sep.c_str(), data);
-      
+
       UPCAMODEL *m;
       NewUPCAModel(&m);
-      
+
       UPCA(data, npc, autoscaling, m);
-      
+
         DATAIO::WriteUPCAModel(outputfile, m);
 
       DelUPCAModel(&m);
@@ -103,27 +103,27 @@ int main(int argc, char **argv)
       array *data;
 
       initArray(&data);
-      
+
       DATAIO::ImportArray(inputdata, sep.c_str(), data);
       PrintArray(data);
-      
+
       UPCAMODEL *m;
       NewUPCAModel(&m);
-      
+
       DATAIO::ImportUPCAModel(datamodel, m);
 
       matrix *predxscores;
       array *predindvar;
-      
+
       initMatrix(&predxscores);
       initArray(&predindvar);
-      
+
       UPCAScorePredictor(data, m, npc, &predxscores);
       UPCAIndVarPredictor(predxscores, m->loadings, m->colaverage, m->colscaling,  npc, &predindvar);
-      
+
       DATAIO::WriteMatrix(datamodel+"/T-Pred-Scores.txt", predxscores);
       DATAIO::WriteArray(datamodel+"/Pred-Ind-Var.txt", predindvar);
-      
+
       DelMatrix(&predxscores);
       DelArray(&predindvar);
       DelUPCAModel(&m);
@@ -134,5 +134,5 @@ int main(int argc, char **argv)
     }
   }
   return 0;
-  
+
 }

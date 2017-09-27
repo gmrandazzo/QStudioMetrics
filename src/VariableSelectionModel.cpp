@@ -1,6 +1,13 @@
 #include "VariableSelectionModel.h"
 #include "DATAIO.h"
-#include "data.h"
+#include "qsmdata.h"
+
+#include <QString>
+#include <QTextStream>
+
+#ifdef DEBUG
+#include <QDebug>
+#endif
 
 void VariableSelectionModel::ImportVarSelModelInfo(QString path)
 {
@@ -90,7 +97,9 @@ VariableSelectionModel::VariableSelectionModel()
 
 VariableSelectionModel::~VariableSelectionModel()
 {
+  #ifdef DEBUG
   qDebug() << "Delete Variable Selection Model";
+  #endif
   DelMatrix(&map);
   DelUIVector(&selectedvariables);
   DelUIVector(&vardistribution);

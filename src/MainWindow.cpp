@@ -18,42 +18,38 @@
 #include <unistd.h>
 
 #include "MainWindow.h"
-#include "AboutDialog.h"
-#include "data.h"
-#include "VariableSelectionDialog.h"
-#include "ExtractDataDialog.h"
-#include "MergeDataDialog.h"
-#include "AdvancedPretreatmentDialog.h"
 #include "run.h"
-#include "ProjectManager.h"
-#include "ModelDialog.h"
-#include "ClassModelDialog.h"
-#include "ValidatorDialog.h"
-#include "DoPredictionDialog.h"
+#include "qsmdata.h"
 
-#include "VariablePlotDialog.h"
-#include "LabelDialog.h"
-#include "PlotDialog.h"
-#include "ClassPlotDialog.h"
-
-#include "SaveDialog.h"
-#include "VariablePlot.h"
-
-#include "ScatterPlot2D.h"
-#include "ScatterPlot3D.h"
-#include "BarPlot.h"
-#include "SimpleLine2DPlot.h"
-#include "SimpleScatterPlot3D.h"
-
-#include "PCAPlot.h"
-#include "PLSPlot.h"
-#include "UPCAPlot.h"
-#include "UPLSPlot.h"
-#include "MLRPlot.h"
-#include "LDAPlot.h"
+#include "Dialogs/AboutDialog.h"
+#include "Dialogs/VariableSelectionDialog.h"
+#include "Dialogs/ExtractDataDialog.h"
+#include "Dialogs/MergeDataDialog.h"
+#include "Dialogs/AdvancedPretreatmentDialog.h"
+#include "Dialogs/ProjectManager.h"
+#include "Dialogs/ModelDialog.h"
+#include "Dialogs/ClassModelDialog.h"
+#include "Dialogs/ValidatorDialog.h"
+#include "Dialogs/DoPredictionDialog.h"
+#include "Dialogs/VariablePlotDialog.h"
+#include "Dialogs/LabelDialog.h"
+#include "Dialogs/PlotDialog.h"
+#include "Dialogs/ClassPlotDialog.h"
+#include "Dialogs/SaveDialog.h"
+#include "Plotlib/VariablePlot.h"
+#include "Plotlib/ScatterPlot2D.h"
+#include "Plotlib/ScatterPlot3D.h"
+#include "Plotlib/BarPlot.h"
+#include "Plotlib/SimpleLine2DPlot.h"
+#include "Plotlib/SimpleScatterPlot3D.h"
+#include "PCA/PCAPlot.h"
+#include "PLS/PLSPlot.h"
+#include "UPCA/UPCAPlot.h"
+#include "UPLS/UPLSPlot.h"
+#include "MLR/MLRPlot.h"
+#include "LDA/LDAPlot.h"
 #include "dircompressor.h"
-// #include "ProgressBarDialog.h"
-#include "GenericProgressDialog.h"
+#include "Dialogs/GenericProgressDialog.h"
 
 void MainWindow::CheckProjects()
 {
@@ -1040,8 +1036,9 @@ bool MainWindow::CurrentIsData()
 
 int MainWindow::getCurrentDataProjectID()
 {
-
-//   qDebug() << " Number of Column: " << ui.treeWidget->currentItem()->columnCount() << " line: " << ui.treeWidget->currentItem()->text(0) << ui.treeWidget->currentItem()->text(1) << ui.treeWidget->currentItem()->text(2) << ui.treeWidget->currentItem()->text(3) << ui.treeWidget->currentItem()->text(4);
+  #ifdef DEBUG
+  qDebug() << "getCurrentDataProjectID() Number of Column: " << ui.treeWidget->currentItem()->columnCount() << " line: " << ui.treeWidget->currentItem()->text(0) << ui.treeWidget->currentItem()->text(1) << ui.treeWidget->currentItem()->text(2) << ui.treeWidget->currentItem()->text(3) << ui.treeWidget->currentItem()->text(4);
+  #endif
 
   if(ui.treeWidget->currentItem()->columnCount() == 5){
     return ui.treeWidget->currentItem()->text(4).toInt();
@@ -1235,7 +1232,9 @@ void MainWindow::StopRun()
 
 void MainWindow::PlotVariableVSVariableBis(vvplotSignal vvs)
 {
-  qDebug() << "MainWindow " << vvs.pid << vvs.mid << vvs.mtype << vvs.vname1 << vvs.vname2;
+  #ifdef DEBUG
+  qDebug() << "PlotVariableVSVariableBis(vvplotSignal vvs) " << vvs.pid << vvs.mid << vvs.mtype << vvs.vname1 << vvs.vname2;
+  #endif
   if(vvs.pid > -1 && vvs.mid > -1){
     QStringList hashlst;
     QStringList objects;
@@ -1281,7 +1280,9 @@ void MainWindow::PlotVariableVSVariableBis(vvplotSignal vvs)
 
 void MainWindow::UpdateImageWindow(ImageSignal is)
 {
-//  qDebug() << QString("UpdateImageWindow pid: %1").arg(is.pid) << "\n" << is.imgname;
+  #ifdef DEBUG
+  qDebug() << QString("UpdateImageWindow pid: %1").arg(is.pid) << "\n" << is.imgname;
+  #endif
 
  while(ui.tabWidget->count() > 0){
    int i = ui.tabWidget->currentIndex();
@@ -1291,7 +1292,9 @@ void MainWindow::UpdateImageWindow(ImageSignal is)
  ui.tabWidget->clear();
 
   if(is.pid > -1){
-//     qDebug() << "IMAGESIZE " <<  projects->value(is.pid)->getImages().size();
+    #ifdef DEBUG
+    qDebug() << "IMAGESIZE " <<  projects->value(is.pid)->getImages().size();
+    #endif
     for(int i = 0; i < projects->value(is.pid)->getImages().size(); i++){
       if(is.imgname.indexOf(projects->value(is.pid)->getImages()[i].name) > -1){
         QLabel *img = new QLabel();
@@ -1877,7 +1880,9 @@ void MainWindow::showMLRCoeff()
     QStringList varnames = projects->value(pid)->getMLRModel(mid)->getXVarName();
     QStringList coeffname;
     coeffname.append("Intercept");
+    #ifdef DEBUG
     qDebug() << varnames.size() << projects->value(pid)->getMLRModel(mid)->Model()->b->row;
+    #endif
     for(uint i = 1; i < projects->value(pid)->getMLRModel(mid)->Model()->b->row; i++){
       coeffname.append(varnames[i-1]);
     }
@@ -3015,7 +3020,9 @@ void MainWindow::showPLSValidation()
     uint row = projects->value(pid)->getPLSModel(mid)->Model()->q2y->row;// the number of components
     uint col = projects->value(pid)->getPLSModel(mid)->Model()->r2y_model->col + projects->value(pid)->getPLSModel(mid)->Model()->q2y->col +  projects->value(pid)->getPLSModel(mid)->Model()->sdep->col + projects->value(pid)->getPLSModel(mid)->Model()->bias->col;
 
+    #ifdef DEBUG
     qDebug() << QString("Create a matrix of %1 %2").arg(row).arg(col);
+    #endif
     child->getTable()->model()->newMatrix(row, col);
 
     QStringList labels;
@@ -3857,7 +3864,9 @@ void MainWindow::addData()
     }
 
     lastpath = pmanager.getLastPath();
-//     qDebug() << QString("last path %1  %2").arg(lastpath).arg(pmanager.getLastPath());
+    #ifdef DEBUG
+    qDebug() << QString("last path %1  %2").arg(lastpath).arg(pmanager.getLastPath());
+    #endif
   }
 }
 
@@ -3867,17 +3876,18 @@ void MainWindow::showData()
     int pid = getCurrentDataProjectID();
     int tabid = getCurrentDataTableID();
     int did = getCurrentDataID();
-
-//     qDebug() << "Project ID " << pid << " Table ID " << tabid << " Data ID " << did;
-
+    #ifdef DEBUG
+    qDebug() << "showData() Project ID " << pid << " Table ID " << tabid << " Data ID " << did;
+    #endif
     QString projectname = projects->value(pid)->getProjectName();
     if(getCurrentDataType().compare("Matrix") == 0){
 
       QString tabname = projectname +"-Matrix-"+ getCurrentDataName();
 
       MDIChild *child = createMdiChild();
-
-//       qDebug() << "pid: " << pid << " did " << did;
+      #ifdef DEBUG
+      qDebug() << "pid: " << pid << " did " << did;
+      #endif
       child->setWindowID(tabid);
       child->newTable(tabname, projects->value(pid)->getMatrix(did)->Matrix(), &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
       child->getTable()->setPID(pid);
@@ -3960,7 +3970,9 @@ void MainWindow::removeProject()
 
     if(removeproject == true){
       updateLog(QString("Removing project: %1").arg(getCurrentProjectName()));
-//       qDebug() << "[MAINWINDOW]  project removed " << getCurrentProjectName();
+      #ifdef DEBUG
+      qDebug() << "removeProject()  project removed " << getCurrentProjectName();
+      #endif
       // Remove data if these are opened; child(0) is the "Data" menu section
       for(int i = 0; i < getDataCount(pid); i++){
         closeMDI(getDataTableID(pid, i));
@@ -3984,11 +3996,14 @@ void MainWindow::removeProject()
 
       delete projects->value(pid);
       projects->remove(pid);
-
-//       qDebug() << "Remains projects:";
+      #ifdef DEBUG
+      qDebug() << "Remaining projects:";
+      #endif
       QMap<int, DATA*>::const_iterator i = projects->constBegin();
       while(i != projects->constEnd()){
-//         qDebug() << i.key() << i.value()->getProjectName();
+        #ifdef DEBUG
+	qDebug() << i.key() << i.value()->getProjectName();
+        #endif
         ++i;
       }
 
@@ -4324,7 +4339,9 @@ void MainWindow::AdvancedPretreatment()
 
 void MainWindow::ShowObjVarList(ListSignal lsig)
 {
-//   qDebug() << "Show Obje Var List " << lsig.pid << " " << lsig.idobjlist;
+  #ifdef DEBUG
+  qDebug() << "ShowObjVarList(ListSignal lsig) " << lsig.pid << " " << lsig.idobjlist;
+  #endif
   if(lsig.pid != -1 && lsig.pid < projects->size()){
     if(lsig.id != -1 && lsig.type == OBJLABELST && lsig.id < projects->value(lsig.pid)->getObjectLabels().size()){
       MDIChild *child = createMdiChild();
@@ -9566,5 +9583,7 @@ MainWindow::~MainWindow()
   }
   // Delete all projects
   delete projects;
+  #ifdef DEBUG
   qDebug() << "Closing MainWindow";
+  #endif
 }

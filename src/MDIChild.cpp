@@ -1,5 +1,4 @@
 #include "MDIChild.h"
-#include <QDebug>
 #include <QProgressDialog>
 #include <QStringListModel>
 #include <QDesktopWidget>
@@ -69,7 +68,9 @@ MDIChild::MDIChild()
 /*
 MDIChild::~MDIChild()
 {
+  #ifdef DEBUG
   qDebug() << "Delete MDIChild with id : " << id;
+  #endif
   if(table != 0)
     delete table;
   

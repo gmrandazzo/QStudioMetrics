@@ -45,11 +45,13 @@ Dependencies
 Install
 =======
 
-To install for all users on Unix/Linux/OSX/Windows:
 
 
-  cmake .. -DCMAKE_PREFIX_PATH=/usr/local/Cellar/qt5/5.7.0/  -DSCIENTIFIC_LIB_DIR=/usr/local/lib -DSCIENTIFIC_INCLUDE_DIR=/usr/local/include/
-  make
+Compile from source
+===================
+
+cmake .. -Wno-dev -DCMAKE_PREFIX_PATH=/usr/local/Cellar/qt5/5.9.1/ -DVTK_DIR=/usr/local/Cellar/vtk/8.0.1/lib/cmake/vtk-8.0 -DLIBSCIENTIFIC_ROOT_DIR=/usr/local/Cellar/libscientific/HEAD-b4a8a4f/
+make
 
 
 You need help? Support?

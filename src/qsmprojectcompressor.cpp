@@ -1,8 +1,8 @@
-#include "dircompressor.h"
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <QString>
+#include "dircompressor.h"
 
 int main(int argc, char **argv)
 {
@@ -32,4 +32,3 @@ int main(int argc, char **argv)
     return 0;
   }
 }
-

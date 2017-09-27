@@ -34,64 +34,64 @@ int main(int argc, char **argv)
           matrixfile = argv[i+1];
         }
       }
-      
+
       if(strcmp(argv[i], "-l") == 0){
         if(i+1 < argc){
           labelfile = argv[i+1];
         }
       }
-      
+
       if(strcmp(argv[i], "-n") == 0){
         if(i+1 < argc){
           n = atoi(argv[i+1]);
         }
       }
-      
+
       if(strcmp(argv[i], "-c") == 0){
         if(i+1 < argc){
           method = atoi(argv[i+1]);
         }
       }
-      
+
       if(strcmp(argv[i], "-m") == 0){
         if(i+1 < argc){
           metric = atoi(argv[i+1]);
         }
       }
     }
-    
+
     if(!matrixfile.empty() && !labelfile.empty()){
       matrix *m;
       uivector *selections;
       strvector *labels;
-      
+
       initStrVector(&labels);
       DATAIO::ImportStrvector(labelfile, &labels);
-    
+
       initMatrix(&m);
       DATAIO::ImportMatrix(matrixfile, " \t", m);
-      
+
       initUIVector(&selections);
-      
+
       if(method == 1){
         MDC(m, n, metric, &selections, 0);
       }
       else{
         MaxMinDis(m, n, metric, &selections, 0);
       }
-      
+
       for(uint i = 0; i < selections->size; i++){
         cout << getStr(labels, getUIVectorValue(selections, i)) << endl;
       }
-      
+
       for(uint i = 0; i < selections->size; i++){
         for(uint j = 0; j < m->col-1; j++){
           cout << getMatrixValue(m, getUIVectorValue(selections, i), j) << "\t";
         }
         cout << getMatrixValue(m, getUIVectorValue(selections, i), m->col-1) << endl;
       }
-      
-      
+
+
       DelStrVector(&labels);
       DelUIVector(&selections);
       DelMatrix(&m);
@@ -100,5 +100,5 @@ int main(int argc, char **argv)
       cout << "No option selected." << endl;
     }
   }
-  return 0;  
+  return 0;
 }

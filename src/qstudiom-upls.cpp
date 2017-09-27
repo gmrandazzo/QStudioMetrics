@@ -39,100 +39,100 @@ int main(int argc, char **argv)
     bool genmodel, makeprediction, makecrossvalidation;
     genmodel = makeprediction = makecrossvalidation = false;
     xsep = ysep = " \t";
-    
+
     for(int i = 0; i < argc; i++){
       if(strcmp(argv[i], "-model") == 0 || strcmp(argv[i], "-m") == 0){
         genmodel = true;
       }
-      
+
       if(strcmp(argv[i], "-predict") == 0 || strcmp(argv[i], "-p") == 0){
         makeprediction = true;
       }
-      
+
       if(strcmp(argv[i], "-cross-validation") == 0 || strcmp(argv[i], "-cv") == 0){
         makecrossvalidation = true;
       }
-      
+
       if(strcmp(argv[i], "-xdata") == 0 || strcmp(argv[i], "-x") == 0){
         if(i+1 < argc){
           xinputdata = argv[i+1];
         }
       }
-      
+
       if(strcmp(argv[i], "-ydata") == 0 || strcmp(argv[i], "-y") == 0){
         if(i+1 < argc){
           yinputdata = argv[i+1];
         }
       }
-      
+
       if(strcmp(argv[i], "-out") == 0 || strcmp(argv[i], "-o") == 0){
         if(i+1 < argc){
           outpath = argv[i+1];
         }
       }
-      
+
       if(strcmp(argv[i], "-c") == 0){
         if(i+1 < argc)
           npc = atoi(argv[i+1]);
       }
-      
+
       if(strcmp(argv[i], "-g") == 0){
         if(i+1 < argc)
           ngroups = atoi(argv[i+1]);
       }
-      
+
       if(strcmp(argv[i], "-i") == 0){
         if(i+1 < argc)
           iterations = atoi(argv[i+1]);
       }
-      
+
       if(strcmp(argv[i], "-data-model") == 0 || strcmp(argv[i], "-dm") == 0){
         if(i+1 < argc)
           pathmodel = argv[i+1];
       }
-      
+
       if(strcmp(argv[i], "-xa") == 0){
         if(i+1 < argc)
           xautoscaling = atoi(argv[i+1]);
       }
-      
+
       if(strcmp(argv[i], "-ya") == 0){
         if(i+1 < argc)
           yautoscaling = atoi(argv[i+1]);
       }
-      
+
       if(strcmp(argv[i], "-sx") == 0){
         if(i+1 < argc)
           xsep = argv[i+1];
       }
-      
+
       if(strcmp(argv[i], "-sy") == 0){
         if(i+1 < argc)
           ysep = argv[i+1];
       }
-      
+
       if(strcmp(argv[i], "-s") == 0){
         if(i+1 < argc)
           xsep = ysep = argv[i+1];
       }
-      
+
     }
-    
+
     if(genmodel == true && !xinputdata.empty() && !yinputdata.empty() && !outpath.empty() && npc > 0){
       array *xdata, *ydata;
-      
+
       initArray(&xdata);
       initArray(&ydata);
-      
+
       DATAIO::ImportArray(xinputdata, xsep.c_str(), xdata);
       DATAIO::ImportArray(yinputdata, ysep.c_str(), ydata);
 
       UPLSMODEL *m;
       NewUPLSModel(&m);
-      
+
       UPLS(xdata, ydata, npc, xautoscaling, yautoscaling, m);
       UPLSRSquared(xdata, ydata, m, npc, &(m->r2x_model), &(m->r2y_model), &(m->sdec));
-      
+
       DATAIO::WriteUPLSModel(outpath, m);
 
       DelUPLSModel(&m);
@@ -143,25 +143,25 @@ int main(int argc, char **argv)
       array *xdata;
 
       initArray(&xdata);
-      
+
       DATAIO::ImportArray(xinputdata, xsep.c_str(), xdata);
 
       UPLSMODEL *m;
       NewUPLSModel(&m);
       DATAIO::ImportUPLSModel(pathmodel, m);
-      
+
       matrix *xscores;
       array *y;
       initMatrix(&xscores);
       initArray(&y);
-      
+
       UPLSScorePredictor(xdata, m,  npc, &xscores);
       UPLSYPredictor(xscores, m, npc, &y);
-      
+
       DATAIO::MakeDir(outpath);
       DATAIO::WriteMatrix(outpath+"/X-Pred-Scores.txt", xscores);
       DATAIO::WriteArray(outpath+"/Y-DipVar-Pred.txt", y);
-      
+
       DelArray(&y);
       DelMatrix(&xscores);
       DelUPLSModel(&m);
@@ -174,33 +174,33 @@ int main(int argc, char **argv)
       array *validated_yloadings;
       array *q2y;
       array *sdep;
-      
+
       initArray(&xdata);
       initArray(&ydata);
-      
+
       DATAIO::ImportArray(xinputdata, xsep.c_str(), xdata);
       DATAIO::ImportArray(yinputdata, ysep.c_str(), ydata);
-      
+
       initDVector(&r2x);
       initDVector(&validated_b);
       initArray(&validated_yloadings);
       initArray(&q2y);
       initArray(&sdep);
 
-      UPLSCrossValidation(xdata, ydata, 
+      UPLSCrossValidation(xdata, ydata,
                         xautoscaling, yautoscaling,
                         npc, ngroups, iterations,
                         &r2x, &q2y, &sdep, &validated_b, &validated_yloadings);
-      
+
       DATAIO::WriteDvector(pathmodel+"/Validated_b-Coefficients.txt",validated_b);
       DATAIO::WriteArray(pathmodel+"/Validated_Y-Q-Loadings.txt", validated_yloadings);
       DATAIO::WriteDvector(pathmodel+"/Validated_r2x.txt", r2x);
       DATAIO::WriteArray(pathmodel+"/Validated_q2y.txt", q2y);
       DATAIO::WriteArray(pathmodel+"/Validated_sdep.txt", sdep);
-      
+
       cout.setf(ios_base::right,ios_base::adjustfield);
       cout.setf(ios::fixed,ios::floatfield);
-      
+
       cout << "Cross Validated R^2" << endl;
       for(uint i = 0; i < r2x->size; i++){
         cout << "PC " << i+1 << ": " << setw(3) << getDVectorValue(r2x, i) << endl;
@@ -208,11 +208,11 @@ int main(int argc, char **argv)
       cout << "Cross Validated Q^2" << endl;
       for(uint k = 0; k < q2y->order; k++){
         cout << ">> PC " << k+1 << endl;
-        
+
         for(uint j = 0; j < q2y->m[k]->col; j++)
             cout << setw(10) << "layer" << j+1;
           cout << endl;
-        
+
         for(uint i = 0; i < q2y->m[k]->row; i++){
           for(uint j = 0; j < q2y->m[k]->col; j++){
             if(j == 0)
@@ -229,11 +229,11 @@ int main(int argc, char **argv)
       cout << "SDEP" << endl;
       for(uint k = 0; k < sdep->order; k++){
         cout << ">> PC " << k+1 << endl;
-        
+
         for(uint j = 0; j < sdep->m[k]->col; j++)
             cout << setw(10) << "layer" << j+1;
           cout << endl;
-        
+
         for(uint i = 0; i < sdep->m[k]->row; i++){
           for(uint j = 0; j < sdep->m[k]->col; j++){
             if(j == 0)
@@ -247,7 +247,7 @@ int main(int argc, char **argv)
         }
         cout << endl;
       }
-      
+
       DelArray(&sdep);
       DelDVector(&r2x);
       DelArray(&q2y);
@@ -259,5 +259,5 @@ int main(int argc, char **argv)
     }
   }
   return 0;
-  
+
 }

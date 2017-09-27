@@ -8,9 +8,9 @@ int main(int argc, char **argv)
   initMatrix(&m);
 
   DATAIO::ImportMatrix(argv[1], " \t,;\n", m);
-  
+
   PrintMatrix(m);
-  
+
   DelMatrix(&m);
   return 0;
 }

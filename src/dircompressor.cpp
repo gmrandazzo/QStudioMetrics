@@ -10,7 +10,10 @@
 #include <QImage>
 #include <QPixmap>
 #include <QBuffer>
+
+#ifdef DEBUG
 #include <QDebug>
+#endif
 
 #include <ctime>
 #include <cstdlib>
@@ -139,8 +142,9 @@ void DirCompressor::ReadFileToString(char *fname, QStringList *filemem)
     
     QFileInfo finfo(fname_);
     QPixmap image(finfo.absoluteFilePath());
-    qDebug() << finfo.absoluteFilePath();
-  
+    #ifdef DEBUG
+    qDebug() << "DirCompressor::ReadFileToString path: " << finfo.absoluteFilePath();
+    #endif 
     QByteArray ba;
     QBuffer buffer(&ba);
     buffer.open(QIODevice::WriteOnly);

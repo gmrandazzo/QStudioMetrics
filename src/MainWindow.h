@@ -9,7 +9,7 @@
 #include "ui_MainWindow.h"
 
 #include "MDIChild.h"
-#include "data.h"
+#include "qsmdata.h"
 
 // Version
 #define major_ 1

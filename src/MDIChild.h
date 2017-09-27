@@ -4,14 +4,14 @@
 #include <QString>
 #include <QStandardItem>
 #include <QMdiSubWindow>
-#include "data.h"
+#include "qsmdata.h"
 #include "Table.h"
 #include "ListView.h"
 #include "ModelInfo.h"
 
 #include <scientific.h>
 
-#include <QDebug>
+
 
 class MDIChild : public QMdiSubWindow
 {

@@ -2,7 +2,7 @@
 #define RUN_H
 
 #include <QFuture>
-#include "data.h"
+#include "qsmdata.h"
 
 #include "scientific.h"
 

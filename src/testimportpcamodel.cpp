@@ -8,7 +8,7 @@ int main(int argc, char **argv)
   NewPCAModel(&m);
 
   DATAIO::ImportPCAModel(argv[1], m);
-  
+
   PrintPCA(m);
   std::cout << "Var EXP" << std::endl;
   PrintDVector(m->varexp);
@@ -16,7 +16,7 @@ int main(int argc, char **argv)
   PrintDVector(m->colaverage);
   std::cout << "Column Scaling" << std::endl;
   PrintDVector(m->colscaling);
-  
+
   DelPCAModel(&m);
   return 0;
 }

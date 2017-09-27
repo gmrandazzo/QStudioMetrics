@@ -12,8 +12,8 @@
 
 #include <QContextMenuEvent>
 
-#include "GenericProgressDialog.h"
-#include "data.h"
+#include "Dialogs/GenericProgressDialog.h"
+#include "qsmdata.h"
 #include "ui_Table.h"
 
 #include <iostream>
