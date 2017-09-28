@@ -9,6 +9,17 @@
 
 int main(int argc, char *argv[])
 {
+  #ifdef RELEASE
+  #ifdef WIN32
+  QDir dir(argv[0]);
+  Q_ASSERT(dir.cdUp());
+  #ifdef OSX
+  Q_ASSERT(dir.cdUp());
+  #endif
+  Q_ASSERT(dir.cd("plugins"));
+  QCoreApplication::setLibraryPaths(QStringList(dir.absolutePath()));
+  #endif
+  #endif
   QApplication app(argc, argv);
   QString path;
   QString k;
