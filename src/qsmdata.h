@@ -271,6 +271,8 @@ public:
   void ImportFileArray(const FILEDATA &f);
   void OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *mid_, QStringList *log);
   QString SaveData(QString savepath); // savepath is the path to save the project
+  void AutoSave(); // To work first SaveData.
+  QString getAutoSaveFile(){ return projectfautosave; }
   void addMatrix();
   void addMatrix(MATRIX *mx);
   void addArray();
@@ -376,7 +378,7 @@ public:
   static void ImportColumns(QString fname, QString separator, QStringList &collst);
   static bool CopyFile(const QString& sourceFile, const QString& destinationDir);
 private:
-  QString projectpath, projectname;
+  QString projectpath, projectname, projectfautosave;
   QList<MATRIX*> matrix_;
   QList<ARRAY*> array_;
   QList<PCAModel*> pcamodel;

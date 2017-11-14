@@ -8,6 +8,11 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: DEBUG or RELEASE" FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
+
+string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
 
 #set(_components
 #    Core
@@ -34,6 +39,9 @@ set(_components Core Gui Widgets PrintSupport Concurrent)
 foreach(_component ${_components})
   find_package(Qt5${_component} REQUIRED)
   list(APPEND QT5_LIBRARIES ${Qt5${_component}_LIBRARIES})
+  if(cmake_build_type_tolower STREQUAL "release")
+    set_target_properties(${Qt5${_component}_LIBRARIES} PROPERTIES MAP_IMPORTED_CONFIG_COVERAGE "RELEASE")
+  endif()
 endforeach()
 
 find_package(VTK REQUIRED)
@@ -42,14 +50,13 @@ include(${VTK_USE_FILE}) # include UseVTK.cmake
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules/")
 find_package(Libscientific)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: Debug Release" FORCE)
-endif(NOT CMAKE_BUILD_TYPE)
-
-string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
-
 # Disable some warnings
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x  -Wno-extra-semi")
+
+# IF RELEASE
+if(cmake_build_type_tolower STREQUAL "release")
+  set(CMAKE_CXX_FLAGS_COVERAGE "${CMAKE_CXX_FLAGS_RELEASE} -fprofile-arcs -ftest-coverage")
+endif()
 
 if(WIN32)
   message(STATUS "Build Release: WIN32")

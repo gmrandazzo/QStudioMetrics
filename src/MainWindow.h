@@ -14,7 +14,7 @@
 // Version
 #define major_ 1
 #define minor_ 9
-#define patch_ 0
+#define patch_ 1
 
 class MainWindow : public QMainWindow
 {
@@ -39,7 +39,7 @@ private slots:
   void OpenRecent2();
   void OpenRecent3();
   void OpenRecent4();
-  void Save();
+  void SaveAs();
   void Quit();
 
   void AddRemoveObjLabel();
@@ -256,7 +256,6 @@ private:
   QString confdir;
   QStringList recents;
   PROJECTS *projects;
-//   QMap<int, DATA*> *projects; // ID and PROJECT
   QString lastpath;
 
   int tabcount_;

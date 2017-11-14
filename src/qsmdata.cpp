@@ -467,7 +467,7 @@ void DATA::OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *m
           #ifdef DEBUG
           qDebug() << "PCA NAME: " << subitem->text(0) << " TABCOUNT " << subitem->text(1) << " Project ID " << subitem->text(2) << " XHASH " << subitem->text(3) << " YHASH" << subitem->text(4) << " XSCALING " << subitem->text(5) <<" YSCALING " << subitem->text(6) << "Number of Components " << subitem->text(7) << " MODEL TYPE " << subitem->text(8) << " MODEL ID " << subitem->text(9);
           #endif
-          
+
 	  QDir pcapred = pca.absolutePath()+"/PREDICTIONS";
           if(pcapred.exists() == true){
             QStringList pcapredlist = pcapred.entryList();
@@ -1048,6 +1048,23 @@ void DATA::OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *m
   }
 }
 
+
+void DATA::AutoSave()
+{
+  QFileInfo check_file(projectfautosave);
+  if(check_file.exists() && check_file.isFile()){
+    GenericProgressDialog pbdialog;
+    pbdialog.setRange(0,5);
+    pbdialog.hideCancel();
+    pbdialog.show();
+    SaveData(check_file.absolutePath());
+    pbdialog.setValue(5);
+    return;
+  }
+  else
+    return;
+}
+
 QString DATA::SaveData(QString savepath)
 {
   GenericProgressDialog pbdialog;
@@ -1267,6 +1284,7 @@ QString DATA::SaveData(QString savepath)
   DATAIO::RemoveDir(savedir.toUtf8().data());
 
   pbdialog.setValue(5);
+  projectfautosave = savefname;
   return savefname;
 }
 
@@ -1904,7 +1922,7 @@ DATA::DATA()
 
 DATA::~DATA()
 {
-  #ifdef DEBUG  
+  #ifdef DEBUG
   qDebug() << "Delete Data";
   #endif
   delMatrix();

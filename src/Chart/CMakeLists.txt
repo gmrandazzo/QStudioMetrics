@@ -9,6 +9,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_MACOSX_RPATH 1)
 
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: DEBUG or RELEASE" FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
+
+string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
+
 #set(_components
 #    Core
 #    Gui
@@ -34,6 +40,9 @@ set(_components Core Gui Widgets PrintSupport)
 foreach(_component ${_components})
   find_package(Qt5${_component} REQUIRED )
   list(APPEND QT5_LIBRARIES ${Qt5${_component}_LIBRARIES})
+  if(cmake_build_type_tolower STREQUAL "release")
+    set_target_properties(${Qt5${_component}_LIBRARIES} PROPERTIES MAP_IMPORTED_CONFIG_COVERAGE "RELEASE")
+  endif()
 endforeach()
 
 

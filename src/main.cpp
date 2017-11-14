@@ -9,17 +9,16 @@
 
 int main(int argc, char *argv[])
 {
-  #ifdef RELEASE
+  /*#ifdef RELEASE
   QFileInfo finfo(argv[0]);
-  QString fpath = finfo.path();
   #ifdef OSX
-  QCoreApplication::setLibraryPaths(QStringList(fpath+"/Plugins"));
+  QCoreApplication::setLibraryPaths(QStringList(finfo.absolutePath()+"/../Plugins"));
   #endif
   #ifdef WIN32
-  QCoreApplication::setLibraryPaths(QStringList(fpath+"/plugins"));
+  QCoreApplication::setLibraryPaths(QStringList(finfo.path()+"/plugins"));
   #endif
   #endif
-  
+*/
   QApplication app(argc, argv);
   QString path;
   QString k;

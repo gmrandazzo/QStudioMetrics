@@ -4253,7 +4253,7 @@ void MainWindow::OpenRecent4()
   ProjectOpen(recents[3]);
 }
 
-void MainWindow::Save()
+void MainWindow::SaveAs()
 {
   if(projects->size() > 0){
     SaveDialog savedialog(projects);
@@ -4269,6 +4269,7 @@ void MainWindow::Save()
     }
   }
 }
+
 
 void MainWindow::ExtractData()
 {
@@ -4409,7 +4410,7 @@ void MainWindow::Quit()
     int ret = msgBox.exec();
     switch (ret) {
       case QMessageBox::Save:
-        Save();
+        SaveAs();
         break;
       case QMessageBox::Discard:
     // Don't Save was clicked
@@ -6679,6 +6680,7 @@ void MainWindow::DoPCAPrediction()
         CalculationMenuEnable();
         StopRun();
         DelMatrix(&x);
+        projects->value(pid)->AutoSave();
       }
     }
   }
@@ -6799,6 +6801,7 @@ void MainWindow::DoPCA()
         CalculationMenuEnable();
         StopRun();
         DelMatrix(&x);
+        projects->value(pid)->AutoSave();
       }
     }
   }
@@ -7115,6 +7118,7 @@ void MainWindow::DoPLSVariableSelection()
       StopRun();
       DelMatrix(&x);
       DelMatrix(&y);
+      projects->value(pid)->AutoSave();
     }
     else{
         QMessageBox::critical(this, tr("PLS Variable Selection Error"),
@@ -7247,6 +7251,7 @@ void MainWindow::DoPLSPrediction()
         StopRun();
         DelMatrix(&x);
         DelMatrix(&y);
+        projects->value(pid)->AutoSave();
       }
     }
   }
@@ -7387,6 +7392,7 @@ void MainWindow::DoPLSValidation()
         TopMenuEnableDisable();
         CalculationMenuEnable();
         StopRun();
+        projects->value(pid)->AutoSave();
       }
       else{
         QMessageBox::critical(this, tr("PLS Validation Error"), "Unable to compute PLS Validation.\nData are lost.", QMessageBox::Ok);
@@ -7628,6 +7634,7 @@ void MainWindow::DoUPCAPrediction()
         CalculationMenuEnable();
         StopRun();
         DelArray(&x);
+        projects->value(pid)->AutoSave();
       }
     }
   }
@@ -7745,6 +7752,7 @@ void MainWindow::DoUPCA()
         CalculationMenuEnable();
         StopRun();
         DelArray(&x);
+        projects->value(pid)->AutoSave();
       }
     }
   }
@@ -8025,6 +8033,7 @@ void MainWindow::DoUPLSVariableSelection()
       StopRun();
       DelArray(&x);
       DelArray(&y);
+      projects->value(pid)->AutoSave();
     }
     else{
       QMessageBox::critical(this, tr("UPLS Variable Selection Error"),
@@ -8189,6 +8198,7 @@ void MainWindow::DoUPLSPrediction()
         StopRun();
         DelArray(&x);
         DelArray(&y);
+        projects->value(pid)->AutoSave();
       }
     }
   }
@@ -8329,6 +8339,7 @@ void MainWindow::DoUPLSValidation()
         StopRun();
         DelArray(&x);
         DelArray(&y);
+        projects->value(pid)->AutoSave();
       }
       else{
         QMessageBox::critical(this, tr("UPLS Validation Error"), "Unable to compute UPLS Validation.\nData are lost.", QMessageBox::Ok);
@@ -8516,6 +8527,7 @@ void MainWindow::DoUPLS()
         StopRun();
         DelArray(&x);
         DelArray(&y);
+        projects->value(pid)->AutoSave();
       }
     }
   }
@@ -8630,6 +8642,7 @@ void MainWindow::DoLDAPrediction()
       CalculationMenuEnable();
       StopRun();
       DelMatrix(&x);
+      projects->value(pid)->AutoSave();
     }
   }
 }
@@ -8732,6 +8745,7 @@ void MainWindow::DoLDAValidation()
         StopRun();
         DelMatrix(&x);
         DelUIVector(&y);
+        projects->value(pid)->AutoSave();
       }
       else{
         QMessageBox::critical(this, tr("LDA Validation Error"), "Unable to compute LDA Validation.\nData are lost.", QMessageBox::Ok);
@@ -8862,6 +8876,7 @@ void MainWindow::DoLDA()
         TopMenuEnableDisable();
         CalculationMenuEnable();
         StopRun();
+        projects->value(pid)->AutoSave();
       }
     }
   }
@@ -8977,6 +8992,7 @@ void MainWindow::DoMLRPrediction()
         StopRun();
         DelMatrix(&x);
         DelMatrix(&y);
+        projects->value(pid)->AutoSave();
       }
     }
   }
@@ -9086,6 +9102,7 @@ void MainWindow::DoMLRValidation()
         StopRun();
         DelMatrix(&x);
         DelMatrix(&y);
+        projects->value(pid)->AutoSave();
       }
       else{
         QMessageBox::critical(this, tr("MLR Validation Error"), "Unable to compute MLR Validation.\nData are lost.", QMessageBox::Ok);
@@ -9203,6 +9220,7 @@ void MainWindow::DoMLR()
         TopMenuEnableDisable();
         CalculationMenuEnable();
         StopRun();
+        projects->value(pid)->AutoSave();
       }
     }
   }
@@ -9412,7 +9430,7 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
 
   connect(ui.actionNewProject, SIGNAL(triggered(bool)), SLOT(NewProject()));
   connect(ui.actionOpenProject, SIGNAL(triggered(bool)), SLOT(OpenProject()));
-  connect(ui.actionSave, SIGNAL(triggered(bool)), SLOT(Save()));
+  connect(ui.actionSaveAs, SIGNAL(triggered(bool)), SLOT(SaveAs()));
   connect(ui.actionQuit, SIGNAL(triggered(bool)), SLOT(Quit()));
 
   connect(ui.actionAdd_Remove_Object_Labels, SIGNAL(triggered(bool)), SLOT(AddRemoveObjLabel()));
@@ -9455,7 +9473,6 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPCA3DScore_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(PCA3DScorePlotPrediction()));
 
 
-
   connect(ui.actionPLS_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DPlot()));
   connect(ui.actionPLS2D_tt_Score_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DTTScorePlot()));
   connect(ui.actionPLS2D_pp_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DPPLoadingsPlot()));
@@ -9486,14 +9503,12 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPLS3D_Q2_Dynamic_Sample_Validator_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DPlotQ2SampleValidator()));
   connect(ui.actionPLS3D_SDEP_Dynamic_Sample_Validator_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DPlotSDEPSampleValidator()));
 
-
   connect(ui.actionUPCA2DScore_Plot, SIGNAL(triggered(bool)), SLOT(UPCA2DScorePlot()));
   connect(ui.actionUPCA2DLoadings_Plot, SIGNAL(triggered(bool)), SLOT(UPCA2DLoadingsPlot()));
   connect(ui.actionUPCA2DScore_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(UPCA2DScorePlotPrediction()));
   connect(ui.actionUPCA3DScore_Plot, SIGNAL(triggered(bool)), SLOT(UPCA3DScorePlot()));
   connect(ui.actionUPCA3DLoadings_Plot, SIGNAL(triggered(bool)), SLOT(UPCA3DLoadingsPlot()));
   connect(ui.actionUPCA3DScore_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(UPCA3DScorePlotPrediction()));
-
 
 
   connect(ui.actionUPLS2D_tt_Score_Plot, SIGNAL(triggered(bool)), SLOT(UPLS2DTTScorePlot()));
