@@ -1,3 +1,4 @@
+#include "qsmdatamanager.h"
 
 QStringList DeserializeQStringList(QString serialized_lst)
 {
@@ -278,4 +279,19 @@ QString DATA::SaveData(QString dbName, QString modname)
 
   pbdialog.setValue(5);
   return savefname;
+}
+
+
+QSMDataManager::QSMDataManager(const QString& path)
+{
+  /*
+  m_db = QSqlDatabase::addDatabase("QSQLITE");
+  m_db.setDatabaseName(path);
+
+  if(!m_db.open()){
+    qDebug() << "Error: connection with database fail";
+  }
+  else{
+    qDebug() << "Database: connection ok";
+  }*/
 }

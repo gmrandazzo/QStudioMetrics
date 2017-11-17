@@ -35,7 +35,7 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
 #    WebKitWidgets
 #    OpenGL)
 
-set(_components Core Gui Widgets PrintSupport Concurrent)
+set(_components Core Gui Widgets Sql PrintSupport Concurrent)
 foreach(_component ${_components})
   find_package(Qt5${_component} REQUIRED)
   list(APPEND QT5_LIBRARIES ${Qt5${_component}_LIBRARIES})

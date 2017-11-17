@@ -271,6 +271,7 @@ public:
   void ImportFileArray(const FILEDATA &f);
   void OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *mid_, QStringList *log);
   QString SaveData(QString savepath); // savepath is the path to save the project
+  QString SaveData(QString dbName, QString modname);
   void AutoSave(); // To work first SaveData.
   QString getAutoSaveFile(){ return projectfautosave; }
   void addMatrix();

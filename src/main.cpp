@@ -9,7 +9,7 @@
 
 int main(int argc, char *argv[])
 {
-  /*#ifdef RELEASE
+  #ifdef BUILDEXEC
   QFileInfo finfo(argv[0]);
   #ifdef OSX
   QCoreApplication::setLibraryPaths(QStringList(finfo.absolutePath()+"/../Plugins"));
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   QCoreApplication::setLibraryPaths(QStringList(finfo.path()+"/plugins"));
   #endif
   #endif
-*/
+
   QApplication app(argc, argv);
   QString path;
   QString k;
