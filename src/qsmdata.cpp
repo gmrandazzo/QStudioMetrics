@@ -1,5 +1,6 @@
 #include "qsmdata.h"
 #include <QFile>
+#include <QFileDevice>
 #include <QFileInfo>
 #include <QDir>
 #include <QIODevice>
@@ -7,7 +8,16 @@
 #include <QSqlQuery>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QBuffer>
+#include <QByteArray>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlRecord>
+#include <QSqlError>
+#include <QVariant>
+#include <QStringList>
 #include <QDebug>
+
 #include "DATAIO.h"
 #include "dircompressor.h"
 #include "MainWindow.h"
@@ -1051,6 +1061,1012 @@ void DATA::OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *m
 }
 
 
+QStringList DeserializeQStringList(QString serialized_lst)
+{
+  return serialized_lst.split(";");
+}
+
+QString SerializeQStringList(QStringList lst)
+{
+  if(lst.size() > 0){
+  QString serialized_lst;
+    for(int i = 0; i < lst.size()-1; i++)
+      serialized_lst += lst[i]+";";
+    serialized_lst += lst.last();
+    return serialized_lst.toUtf8();
+  }
+  else{
+    return QString();
+  }
+}
+
+void DeserializeDVector(QString serialized_dvector, dvector **v)
+{
+  QStringList strvct = serialized_dvector.split(";");
+  DVectorResize(v, strvct.size());
+  for(int i = 0; i < strvct.size(); i++){
+    (*v)->data[i] = strvct[i].toDouble();
+  }
+}
+
+QString SerializeDVector(dvector *v)
+{
+  if(v->size > 0){
+    QString serialized_dvector;
+    for(int i = 0; i < v->size-1; i++)
+      serialized_dvector += QString::number(v->data[i])+";";
+    serialized_dvector += QString::number(v->data[v->size-1]);
+    return serialized_dvector.toUtf8();
+  }
+  else{
+    return QString();
+  }
+}
+
+void DeserializeMatrix(QString serialized_mx, matrix **mx)
+{
+  QList< QList<QString> > _mx_;
+  QStringList row = serialized_mx.split("//");
+  for(int i = 0; i < row.size(); i++){
+    _mx_.append(row[i].split(";"));
+  }
+  ResizeMatrix(mx, _mx_.size(), _mx_[0].size());
+  for(int i = 0; i < _mx_.size(); i++)
+    for(int j = 0; j < _mx_[i].size(); j++)
+      (*mx)->data[i][j] = _mx_[i][j].toDouble();
+}
+
+QString SerializeMatrix(matrix *mx)
+{
+  if(mx->row > 0 && mx->col > 0){
+    QString serialized_mx;
+    for(int i = 0; i < mx->row-1; i++){
+      //start a row and concatenate values
+      for(int j = 0; j < mx->col-1; j++){
+        serialized_mx += QString::number(mx->data[i][j])+";";
+      }
+      serialized_mx += QString::number(mx->data[i][mx->col-1])+"//"; //end row
+    }
+
+    int lrow = mx->row-1;
+    for(int j = 0; j < mx->col-1; j++){
+      serialized_mx += QString::number(mx->data[lrow][j])+";";
+    }
+    serialized_mx += QString::number(mx->data[lrow][mx->col-1]); //end row
+
+    return serialized_mx.toUtf8();
+  }
+  else{
+    return QString();
+  }
+}
+
+void DeserializeArray(QString serialized_ar, array **ar)
+{
+  QList< QList< QList<QString> > > _ar_;
+  QStringList orders = serialized_ar.split("o");
+  for(int k = 0; k < orders.size(); k++){
+    QStringList row = orders[k].split("//");
+    for(int i = 0; i < row.size(); i++){
+      _ar_[k].append(row[i].split(";"));
+    }
+  }
+
+  //NewArray(ar, _ar_.size());
+  for(int k = 0; k < _ar_.size(); k++){
+    AddArrayMatrix(ar, _ar_[k].size(), _ar_[k][0].size());
+    for(int i = 0; i < _ar_[k].size(); i++){
+      for(int j = 0; j < _ar_[k][i].size(); j++){
+        (*ar)->m[k]->data[i][j] = _ar_[k][i][j].toDouble();
+      }
+    }
+  }
+}
+
+QString SerializeArray(array *ar)
+{
+  if(ar->order > 0){
+    if(ar->m[0]->row > 0 && ar->m[0]->col > 0){
+      QString serialized_ar;
+      for(int k = 0; k < ar->order; k++){
+        for(int i = 0; i < ar->m[k]->row-1; i++){
+          //start a row and concatenate values
+          for(int j = 0; j < ar->m[k]->col-1; j++){
+            serialized_ar += QString::number(ar->m[k]->data[i][j])+";";
+          }
+          serialized_ar += QString::number(ar->m[k]->data[i][ar->m[k]->col-1])+"//"; // end row
+        }
+
+        int lrow = ar->m[k]->row-1;
+        for(int j = 0; j < ar->m[k]->col-1; j++){
+          serialized_ar += QString::number(ar->m[k]->data[lrow][j])+";";
+        }
+        serialized_ar += QString::number(ar->m[k]->data[lrow][ar->m[k]->col-1]);
+
+        if( k < ar->order-1)
+          serialized_ar += "o";
+      }
+      return serialized_ar.toUtf8();
+    }
+    else{
+      return QString();
+    }
+  }
+  else{
+    return QString();
+  }
+}
+
+void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_, int *mid_, QStringList *log)
+{
+  /* Warning!! there are some Methods from MainWindow and they works only if the ui is started... */
+  QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+  db.setDatabaseName(sqlfile);
+  db.open();
+  QSqlQuery query = QSqlQuery(db);
+
+  query.exec("SELECT * from matrixTable");
+  while (query.next()){
+    // get the query values
+    QString name = query.value(0).toString();
+    QString s_objname = query.value(1).toString();
+    QString s_varname = query.value(2).toString();
+    QString s_matrix = query.value(3).toString();
+    //add the data matrix
+    addMatrix();
+    getMatrix(MatrixCount()-1)->setName(name);
+    getMatrix(MatrixCount()-1)->getObjName() = DeserializeQStringList(s_objname);
+    getMatrix(MatrixCount()-1)->getVarName() = DeserializeQStringList(s_varname);
+    DeserializeMatrix(s_matrix, &getMatrix(MatrixCount()-1)->Matrix());
+    getMatrix(MatrixCount()-1)->GenHash();
+
+    // Add matrix to the treeview
+    QTreeWidgetItem *subitem = new QTreeWidgetItem;
+    subitem->setText(0, name); /*set the data name from the file*/
+    subitem->setText(1, QString("Matrix")); // Define the type of the data
+    subitem->setText(2, QString::number((*tabcount_))); // Define the tab id number in order to close a specific table
+    subitem->setText(3, QString::number(MatrixCount()-1)); // Define the matrix position id in order to find easly when you need to show data.
+    subitem->setText(4, QString::number(getProjectID())); // pid for get the array with Value
+    (*tabcount_)++;
+    MainWindow::getProjectItem(getProjectID(), treeWidget)->child(0)->addChild(subitem);
+    (*log).append(QString("Matrix %1 imported.\n").arg(name));
+  }
+
+  query.exec("SELECT * from arrayTable");
+  while (query.next()){
+    // get the query values
+    QString name = query.value(0).toString();
+    QString s_objname = query.value(1).toString();
+    QString s_varname = query.value(2).toString();
+    QString s_array = query.value(3).toString();
+    //add the data matrix
+    addArray();
+    getArray(ArrayCount()-1)->setName(name);
+    getArray(ArrayCount()-1)->getObjName() = DeserializeQStringList(s_objname);
+    getArray(ArrayCount()-1)->getVarName() = DeserializeQStringList(s_varname);
+    DeserializeArray(s_array, &getArray(ArrayCount()-1)->Array());
+    getArray(ArrayCount()-1)->GenHash();
+
+    // Add matrix to the treeview
+    QTreeWidgetItem *subitem = new QTreeWidgetItem;
+    subitem->setText(0, name); /*set the data name from the file*/
+    subitem->setText(1, QString("Array")); // Define the type of the data
+    subitem->setText(2, QString::number((*tabcount_))); // Define the tab id number in order to close a specific table
+    subitem->setText(3, QString::number(MatrixCount()-1)); // Define the matrix position id in order to find easly when you need to show data.
+    subitem->setText(4, QString::number(getProjectID())); // pid for get the array with Value
+    (*tabcount_)++;
+    MainWindow::getProjectItem(getProjectID(), treeWidget)->child(0)->addChild(subitem);
+    (*log).append(QString("Array %1 imported.\n").arg(name));
+  }
+
+  query.exec("SELECT * from objlabelTable");
+  while (query.next()){
+    // get the query values
+    //query.exec(QString("CREATE TABLE IF NOT EXISTS objlabelTable (name TEXT, values TEXT)"));
+    QString name = query.value(0).toString();
+    QString s_values = query.value(1).toString();
+    getObjectLabels().append(LABEL());
+    getObjectLabels().last().name = name;
+    getObjectLabels().last().objects = DeserializeQStringList(s_values);
+    (*log).append(QString("Object label %1 imported.\n").arg(name));
+  }
+
+  query.exec("SELECT * from varlabelTable");
+  while (query.next()){
+    // get the query values
+    QString name = query.value(0).toString();
+    QString s_values = query.value(1).toString();
+    getVariableLabels().append(LABEL());
+    getVariableLabels().last().name = name;
+    getVariableLabels().last().objects = DeserializeQStringList(s_values);
+    (*log).append(QString("Variable label %1 imported.\n").arg(name));
+  }
+
+  query.exec("SELECT * from vartablabelTable");
+  while (query.next()){
+    // get the query values
+    QString name = query.value(0).toString();
+    QString s_objname = query.value(1).toString();
+    QString s_varname = query.value(2).toString();
+    QString s_matrix = query.value(3).toString();
+
+    getVariableTabLabels().append(new TABLABEL());
+    getVariableTabLabels().last()->setName(name);
+    getVariableTabLabels().last()->getObjectsName() = DeserializeQStringList(s_objname);
+    getVariableTabLabels().last()->getFeaturesName() = DeserializeQStringList(s_varname);
+    matrix *tmp = getVariableTabLabels().last()->getMatrix();
+    DeserializeMatrix(s_matrix, &tmp);
+
+    (*log).append(QString("Variable table label %1 imported.\n").arg(name));
+  }
+
+  query.exec("SELECT * from imgTable");
+  while (query.next()){
+    QString name = query.value(0).toString();
+    QByteArray outByteArray = query.value(1).toByteArray();
+    getImages().append(IMAGE());
+    getImages().last().name = name;
+    //getImages().last().filepath = fileInfo.absoluteFilePath();
+    getImages().last().image.loadFromData(outByteArray);
+  }
+
+  //query.exec(QString("CREATE TABLE IF NOT EXISTS pcaTable (name TEXT, numcomp INT, scalingtype INT, hashinputmx TEXT, objname TEXT, varname TEXT, scores TEXT, loadings  TEXT, varexp TEXT, colscaling TEXT, colaverage TEXT)"));
+
+  //query.exec(QString("CREATE TABLE IF NOT EXISTS pcapredTable (name TEXT, pcaname TEXT, hashinputmx TEXT, objname TEXT, scores TEXT)"));
+  query.exec("SELECT * from pcapredTable");
+  QList<QStringList> pcapredlist;
+
+  while (query.next()){
+    pcapredlist.append(QStringList());
+    pcapredlist.last().append(query.value(0).toString());
+    pcapredlist.last().append(query.value(1).toString());
+    pcapredlist.last().append(query.value(2).toString());
+    pcapredlist.last().append(query.value(3).toString());
+    pcapredlist.last().append(query.value(4).toString());
+  }
+
+  query.exec("SELECT * from pcaTable");
+  while (query.next()){
+    // get the query values
+    QString name = query.value(0).toString();
+    int npc = query.value(1).toInt();
+    int xscaling = query.value(2).toInt();
+    QString hashinputmx = query.value(3).toString();
+    QString s_objname = query.value(4).toString();
+    QString s_varname = query.value(5).toString();
+    QString s_scores = query.value(6).toString();
+    QString s_loadings = query.value(7).toString();
+    QString s_varexp = query.value(8).toString();
+    QString s_colscaling = query.value(9).toString();
+    QString s_colaverage = query.value(10).toString();
+
+    //add the data matrix
+    addPCAModel();
+    getLastPCAModel()->setModelID((*mid_));
+    getLastPCAModel()->setName(name);
+    getLastPCAModel()->setNPC(npc);
+    getLastPCAModel()->setXScaling(xscaling);
+    getLastPCAModel()->setDataHash(hashinputmx);
+    getLastPCAModel()->getObjName() = DeserializeQStringList(s_objname);
+    getLastPCAModel()->getVarName() = DeserializeQStringList(s_varname);
+    DeserializeMatrix(s_scores, &getLastPCAModel()->Model()->scores);
+    DeserializeMatrix(s_loadings, &getLastPCAModel()->Model()->loadings);
+    DeserializeDVector(s_colscaling, &getLastPCAModel()->Model()->colscaling);
+    DeserializeDVector(s_colaverage, &getLastPCAModel()->Model()->colaverage);
+    DeserializeDVector(s_varexp, &getLastPCAModel()->Model()->varexp);
+    getLastPCAModel()->GenHash();
+
+    // Add matrix to the treeview
+    int xid = -1;
+    for(int j = 0; j < MatrixCount(); j++){
+      if(getMatrix(j)->getHash().compare(hashinputmx) == 0){
+        xid = j;
+        break;
+      }
+    }
+
+    if(xid == -1){
+      (*log).append(QString("Warning on PCA Model %1. Unable to find origin data matrix.").arg(name));
+    }
+
+    getLastPCAModel()->setDID(xid);
+
+    QTreeWidgetItem *subitem = new QTreeWidgetItem;
+    subitem->setText(0, getLastPCAModel()->getName());
+    subitem->setText(1, QString::number((*tabcount_)));
+    subitem->setText(2, QString::number(getProjectID()));
+    subitem->setText(3, getLastPCAModel()->getDataHash());
+    subitem->setText(4, QString("-"));
+    subitem->setText(5, QString::number(getLastPCAModel()->getXScaling()));
+    subitem->setText(6, QString("-"));
+    subitem->setText(7, QString::number(getLastPCAModel()->getNPC()));
+    subitem->setText(8, QString("PCA Model"));
+    subitem->setText(9, QString::number((*mid_)));
+    MainWindow::getProjectItem(getProjectID(), treeWidget)->child(1)->addChild(subitem);
+    (*tabcount_)++;
+    (*log).append(QString("PCA model %1 imported.\n").arg(name));
+
+    QString pcahash = getLastPCAModel()->getHash();
+    int i = 0;
+    while(i < pcapredlist.size()){
+      if(pcapredlist[i][1].compare(pcahash) == 0){
+        getLastPCAModel()->addPCAPrediction();
+        getLastPCAModel()->getLastPCAPrediction()->setPredID(getLastPCAModel()->PCAPredictionCount()-1);
+        getLastPCAModel()->getLastPCAPrediction()->setName(pcapredlist[i][0]);
+        getLastPCAModel()->getLastPCAPrediction()->setDataHash(pcapredlist[i][2]);
+        getLastPCAModel()->getLastPCAPrediction()->getObjName() = DeserializeQStringList(pcapredlist[i][3]);
+        DeserializeMatrix(pcapredlist[i][4], getLastPCAModel()->getLastPCAPrediction()->PredScoresPointer());
+
+        int predid = -1;
+        for(int k = 0; k <  MatrixCount(); k++){
+          if(getMatrix(k)->getHash().compare(getLastPCAModel()->getLastPCAPrediction()->getDataHash()) == 0){
+            predid = k;
+            break;
+          }
+          else{
+            continue;
+          }
+        }
+
+        if(predid == -1){
+          (*log).append(QString("Warning on PCA Prediction %1. Unable to find data matrix.").arg(pcapredlist[i][0]));
+        }
+
+        getLastPCAModel()->getLastPCAPrediction()->setDID(predid);
+        //         ModelPrediction Name - Tab Count - pid_ - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
+        QTreeWidgetItem *subitem = new QTreeWidgetItem;
+        subitem->setText(0, getPCAModel((*mid_))->getLastPCAPrediction()->getName());
+        subitem->setText(1, QString::number((*tabcount_)));
+        subitem->setText(2, QString::number(getProjectID()));
+        subitem->setText(3, QString::number((*mid_)));
+        subitem->setText(4, getLastPCAModel()->getLastPCAPrediction()->getDataHash());
+        subitem->setText(5, "-");
+        subitem->setText(6, QString::number(getPCAModel((*mid_))->getLastPCAPrediction()->getPredID()));
+        subitem->setText(7, QString("PCA Prediction"));
+        (*tabcount_)++;
+        MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)->addChild(subitem);
+      }
+      else{
+        i++;
+      }
+    }
+    (*mid_)++;
+  }
+
+  /*
+  if(modelsdir.exists() == true){
+    QDir pcadir = QDir(modelsdir.absolutePath()+"/PCAMODELS");
+    QDir plsdir = QDir(modelsdir.absolutePath()+"/PLSMODELS");
+    QDir upcadir = QDir(modelsdir.absolutePath()+"/UPCAMODELS");
+    QDir uplsdir = QDir(modelsdir.absolutePath()+"/UPLSMODELS");
+    QDir varseldir = QDir(modelsdir.absolutePath()+"/VARIABLESELECTIONS");
+    QDir mlrdir = QDir(modelsdir.absolutePath()+"/MLRMODELS");
+    QDir ldadir = QDir(modelsdir.absolutePath()+"/LDAMODELS");
+    if(pcadir.exists() == true){
+      QStringList pcalist = pcadir.entryList();
+      pcalist.removeAll(".");
+      pcalist.removeAll("..");
+      for(int i = 0; i < pcalist.size(); i++){
+        QDir pca = QDir(pcadir.absolutePath()+"/"+pcalist[i]);
+        if(pca.exists() == true
+          && QFile::exists(pca.absolutePath()+"/info.txt") == true){
+          (*log).append(QString("Importing PCA Model %1").arg(pcalist[i]));
+          addPCAModel();
+          getLastPCAModel()->ImportPCAModel(pca.absolutePath().toUtf8().data(), QString("PCA - %1").arg(pcalist[i].trimmed().toUtf8().data()).toUtf8().data());
+          getLastPCAModel()->setModelID((*mid_));
+
+          int xid = -1;
+          for(int j = 0; j < MatrixCount(); j++){
+            if(getMatrix(j)->getHash().compare(getLastPCAModel()->getDataHash()) == 0){
+              xid = j;
+              break;
+            }
+          }
+
+          if(xid == -1){
+            (*log).append(QString("Warning on PCA Model %1. Unable to find data matrix.").arg(pcalist[i]));
+          }
+
+          getLastPCAModel()->setDID(xid);
+
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, getLastPCAModel()->getName());
+          subitem->setText(1, QString::number((*tabcount_)));
+          subitem->setText(2, QString::number(getProjectID()));
+          subitem->setText(3, getLastPCAModel()->getDataHash());
+          subitem->setText(4, QString("-"));
+          subitem->setText(5, QString::number(getLastPCAModel()->getXScaling()));
+          subitem->setText(6, QString("-"));
+          subitem->setText(7, QString::number(getLastPCAModel()->getNPC()));
+          subitem->setText(8, QString("PCA Model"));
+          subitem->setText(9, QString::number((*mid_)));
+          MainWindow::getProjectItem(getProjectID(), treeWidget)->child(1)->addChild(subitem);
+          (*tabcount_)++;
+
+          #ifdef DEBUG
+          qDebug() << "PCA NAME: " << subitem->text(0) << " TABCOUNT " << subitem->text(1) << " Project ID " << subitem->text(2) << " XHASH " << subitem->text(3) << " YHASH" << subitem->text(4) << " XSCALING " << subitem->text(5) <<" YSCALING " << subitem->text(6) << "Number of Components " << subitem->text(7) << " MODEL TYPE " << subitem->text(8) << " MODEL ID " << subitem->text(9);
+          #endif
+
+	        QDir pcapred = pca.absolutePath()+"/PREDICTIONS";
+          if(pcapred.exists() == true){
+            QStringList pcapredlist = pcapred.entryList();
+            pcapredlist.removeAll(".");
+            pcapredlist.removeAll("..");
+            for(int j = 0; j < pcapredlist.size(); j++){
+              QDir pcapredpath = QDir(QString::fromUtf8(pcapred.absolutePath().toUtf8()+"/"+pcapredlist[j].toUtf8()));
+              (*log).append(QString("Importing PCA Prediction %1").arg(pcapredlist[j]));
+              if(pcapredpath.exists() == true
+                && QFile::exists(pcapredpath.absolutePath()+"/T-Scores-Pred.txt") == true
+                && QFile::exists(pcapredpath.absolutePath()+"/info.txt") == true){
+                #ifdef DEBUG
+		qDebug() << pcapredpath.absolutePath() << " PCA Prediction - " + pcapredlist[j];
+                #endi
+                getLastPCAModel()->addPCAPrediction();
+                getLastPCAModel()->getLastPCAPrediction()->ImportPCAPrediction(pcapredpath.absolutePath().toUtf8().data(), QString("PCA Prediction - %1").arg(QString::fromUtf8(pcapredlist[j].toUtf8())).toUtf8().data());
+                getLastPCAModel()->getLastPCAPrediction()->setPredID(getLastPCAModel()->PCAPredictionCount()-1);
+
+                int predid = -1;
+                for(int k = 0; k <  MatrixCount(); k++){
+                  if(getMatrix(k)->getHash().compare(getLastPCAModel()->getLastPCAPrediction()->getDataHash()) == 0){
+                    predid = k;
+                    break;
+                  }
+                  else{
+                    continue;
+                  }
+                }
+
+                if(predid == -1){
+                  (*log).append(QString("Warning on PCA Prediction %1. Unable to find data matrix.").arg(pcapredlist[i]));
+                }
+
+                getLastPCAModel()->getLastPCAPrediction()->setDID(predid);
+        //         ModelPrediction Name - Tab Count - pid_ - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
+                QTreeWidgetItem *subitem = new QTreeWidgetItem;
+                subitem->setText(0, getPCAModel((*mid_))->getLastPCAPrediction()->getName());
+                subitem->setText(1, QString::number((*tabcount_)));
+                subitem->setText(2, QString::number(getProjectID()));
+                subitem->setText(3, QString::number((*mid_)));
+                subitem->setText(4, getLastPCAModel()->getLastPCAPrediction()->getDataHash());
+                subitem->setText(5, "-");
+                subitem->setText(6, QString::number(getPCAModel((*mid_))->getLastPCAPrediction()->getPredID()));
+                subitem->setText(7, QString("PCA Prediction"));
+                (*tabcount_)++;
+                MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)->addChild(subitem);
+              }
+            }
+          }
+          (*mid_)++;
+        }
+        else{
+          (*log).append(QString("Error PCA Model %1 Corrupted").arg(pcalist[i]));
+        }
+      }
+    }
+
+    if(plsdir.exists() == true){
+      QStringList plslist = plsdir.entryList();
+      plslist.removeAll(".");
+      plslist.removeAll("..");
+      for(int i = 0; i < plslist.size(); i++){
+        QDir pls = QDir(QString::fromUtf8(plsdir.absolutePath().toUtf8())+"/"+plslist[i]);
+        if(pls.exists() == true
+          && QFile::exists(QString::fromUtf8(pls.absolutePath().toUtf8())+"/info.txt") == true){
+          (*log).append(QString("Importing PLS Model %1").arg(plslist[i]));
+          addPLSModel();
+          getLastPLSModel()->ImportPLSModel(pls.absolutePath().toUtf8().data(), QString("PLS - %2").arg(QString::fromUtf8(plslist[i].toUtf8())).toUtf8().data());
+          getLastPLSModel()->setModelID((*mid_));
+
+          int did = -1;
+          for(int j = 0; j < MatrixCount(); j++){
+            if(getMatrix(j)->getHash().compare(getLastPLSModel()->getDataHash()) == 0){
+              did = j;
+            }
+            else{
+              continue;
+            }
+          }
+
+          if(did == -1){
+            (*log).append(QString("Warning on PLS Model %1. Unable to find data matrix.").arg(plslist[i]));
+          }
+
+          getLastPLSModel()->setDID(did);
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, "PLS - "+plslist[i]);
+          subitem->setText(1, QString::number((*tabcount_)));
+          subitem->setText(2, QString::number(getProjectID()));
+          subitem->setText(3, getLastPLSModel()->getDataHash());
+          subitem->setText(4, getLastPLSModel()->getDataHash());
+          subitem->setText(5, QString::number(getLastPLSModel()->getXScaling()));
+          subitem->setText(6, QString::number(getLastPLSModel()->getYScaling()));
+          subitem->setText(7, QString::number(getLastPLSModel()->getNPC()));
+          subitem->setText(8, QString("PLS Model"));
+          subitem->setText(9, QString::number((*mid_)));
+          MainWindow::getProjectItem(getProjectID(), treeWidget)->child(1)->addChild(subitem);
+          (*tabcount_)++;
+
+          QDir plspred = pls.absolutePath()+"/PREDICTIONS";
+          if(plspred.exists() == true){
+            QStringList plspredlist = plspred.entryList();
+            plspredlist.removeAll(".");
+            plspredlist.removeAll("..");
+            for(int j = 0; j < plspredlist.size(); j++){
+              QDir plspredpath = QDir(QString::fromUtf8(plspred.absolutePath().toUtf8())+"/"+plspredlist[j]);
+              (*log).append(QString("Importing PLS Prediction %1").arg(plspredlist[j]));
+              if(plspredpath.exists()
+                && QFile::exists(QString::fromUtf8(plspredpath.absolutePath().toUtf8())+"/Y-Pred.txt") == true
+                && QFile::exists(QString::fromUtf8(plspredpath.absolutePath().toUtf8())+"/T-Scores-Pred.txt") == true
+                && QFile::exists(QString::fromUtf8(plspredpath.absolutePath().toUtf8())+"/info.txt") == true){
+                getLastPLSModel()->addPLSPrediction();
+                getLastPLSModel()->getLastPLSPrediction()->ImportPLSPrediction(plspredpath.absolutePath().toUtf8().data(), QString::fromUtf8("PLS Prediction - %1").arg(QString::fromUtf8(plspredlist[j].toUtf8())).toUtf8().data());
+                getLastPLSModel()->getLastPLSPrediction()->setPredID(getLastPLSModel()->PLSPredictionCount()-1);
+
+                int xpredid = -1;
+                for(int k = 0; k <  MatrixCount(); k++){
+                  if(getMatrix(k)->getHash().compare(getLastPLSModel()->getLastPLSPrediction()->getDataHash()) == 0){
+                    xpredid = k;
+                    break;
+                  }
+                  else{
+                    continue;
+                  }
+                }
+
+                if(xpredid == -1){
+                  (*log).append(QString("Warning in PLS Prediction %1. Unable to find data matrix. ").arg(plspredlist[j]));
+                }
+
+                getLastPLSModel()->getLastPLSPrediction()->setDID(xpredid);
+
+        //         ModelPrediction Name - Tab Count - pid_ - Model ID - xdata id - ydata id - Data Position - Data Type (PLS Prediction, UPLS Prediction, ...) (8)
+                QTreeWidgetItem *subitem = new QTreeWidgetItem;
+                subitem->setText(0, getPLSModel((*mid_))->getLastPLSPrediction()->getName());
+                subitem->setText(1, QString::number((*tabcount_)));
+                subitem->setText(2, QString::number(getProjectID()));
+                subitem->setText(3, QString::number((*mid_)));
+                subitem->setText(4, getLastPLSModel()->getLastPLSPrediction()->getDataHash());
+                subitem->setText(5, getLastPLSModel()->getLastPLSPrediction()->getDataHash());
+                subitem->setText(6, QString::number(getPLSModel((*mid_))->getLastPLSPrediction()->getPredID()));
+                subitem->setText(7, QString("PLS Prediction"));
+                (*tabcount_)++;
+                MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)->addChild(subitem);
+              }
+            }
+          }
+          (*mid_)++;
+        }
+        else{
+          (*log).append(QString("Error PLS Model %1 Corrupted").arg(plslist[i]));
+        }
+      }
+    }
+
+    if(upcadir.exists() == true){
+      QStringList upcalist = upcadir.entryList();
+      upcalist.removeAll(".");
+      upcalist.removeAll("..");
+      for(int i = 0; i < upcalist.size(); i++){
+        QDir upca = QDir(QString::fromUtf8(upcadir.absolutePath().toUtf8())+"/"+upcalist[i]);
+        if(upca.exists() == true
+          && QFile::exists(upca.absolutePath()+"/info.txt") == true){
+          (*log).append(QString("Importing UPCA Model %1").arg(upcalist[i]));
+          addUPCAModel();
+          getLastUPCAModel()->ImportUPCAModel(upca.absolutePath().toUtf8().data(), QString("UPCA - %1").arg(QString::fromUtf8(upcalist[i].toUtf8())).toUtf8().data());
+          getLastUPCAModel()->setModelID((*mid_));
+
+          int xid = -1;
+          for(int j = 0; j < ArrayCount(); j++){
+            if(getArray(j)->getHash().compare(getLastUPCAModel()->getDataHash()) == 0){
+              xid = j;
+              break;
+            }
+          }
+
+          if(xid == -1){
+            (*log).append(QString("Warning UPCA Model %1. Unable to find data").arg(upcalist[i]));
+          }
+
+          getLastUPCAModel()->setDID(xid);
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, getLastUPCAModel()->getName());
+          subitem->setText(1, QString::number((*tabcount_)));
+          subitem->setText(2, QString::number(getProjectID()));
+          subitem->setText(3, getLastUPCAModel()->getDataHash());
+          subitem->setText(4, QString("-"));
+          subitem->setText(5, QString::number(getLastUPCAModel()->getXScaling()));
+          subitem->setText(6, QString("-"));
+          subitem->setText(7, QString::number(getLastUPCAModel()->getNPC()));
+          subitem->setText(8, QString("UPCA Model"));
+          subitem->setText(9, QString::number((*mid_)));
+          MainWindow::getProjectItem(getProjectID(), treeWidget)->child(1)->addChild(subitem);
+          (*tabcount_)++;
+          QDir upcapred = upca.absolutePath()+"/PREDICTIONS";
+          if(upcapred.exists() == true){
+            QStringList upcapredlist = upcapred.entryList();
+            upcapredlist.removeAll(".");
+            upcapredlist.removeAll("..");
+            for(int j = 0; j < upcapredlist.size(); j++){
+              QDir upcapredpath = QDir(upcapred.absolutePath()+"/"+upcapredlist[j]);
+              (*log).append(QString("Importing UPCA Model %1").arg(upcapredlist[j]));
+              if(upcapredpath.exists()
+                && QFile::exists(QString::fromUtf8(upcapredpath.absolutePath().toUtf8())+"/T-Scores-Pred.txt") == true
+                && QFile::exists(QString::fromUtf8(upcapredpath.absolutePath().toUtf8())+"/info.txt") == true){
+                getLastUPCAModel()->addUPCAPrediction();
+                getLastUPCAModel()->getLastUPCAPrediction()->ImportUPCAPrediction(upcapredpath.absolutePath().toUtf8().data(), QString::fromUtf8("UPCA Prediction - %1").arg(QString::fromUtf8(upcapredlist[j].toUtf8())).toUtf8().data());
+                getLastUPCAModel()->getLastUPCAPrediction()->setPredID(getLastUPCAModel()->UPCAPredictionCount()-1);
+
+                int predid = -1;
+                for(int k = 0; k <  ArrayCount(); k++){
+                  if(getArray(k)->getHash().compare(getLastUPCAModel()->getLastUPCAPrediction()->getDataHash()) == 0){
+                    predid = k;
+                    break;
+                  }
+                  else{
+                    continue;
+                  }
+                }
+
+                if(predid == -1){
+                  (*log).append(QString("Warning UPCA Prediction %1. Unable to find data").arg(upcapredlist[j]));
+                }
+
+                getLastUPCAModel()->getLastUPCAPrediction()->setDID(predid);
+        //         ModelPrediction Name - Tab Count - pid_ - Model ID - xdata id - ydata id - Data Position - Data Type (UPCA Prediction, UUPCA Prediction, ...) (8)
+                QTreeWidgetItem *subitem = new QTreeWidgetItem;
+                subitem->setText(0, getUPCAModel((*mid_))->getLastUPCAPrediction()->getName());
+                subitem->setText(1, QString::number((*tabcount_)));
+                subitem->setText(2, QString::number(getProjectID()));
+                subitem->setText(3, QString::number((*mid_)));
+                subitem->setText(4, getUPCAModel((*mid_))->getLastUPCAPrediction()->getDataHash());
+                subitem->setText(5, "-");
+                subitem->setText(6, QString::number(getUPCAModel((*mid_))->getLastUPCAPrediction()->getPredID()));
+                subitem->setText(7, QString("UPCA Prediction"));
+                (*tabcount_)++;
+                MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)->addChild(subitem);
+              }
+            }
+          }
+          (*mid_)++;
+        }
+        else{
+          (*log).append(QString("Error UPCA Model %1 Corrupted").arg(upcalist[i]));
+        }
+      }
+    }
+
+    if(uplsdir.exists() == true){
+      QStringList uplslist = uplsdir.entryList();
+      uplslist.removeAll(".");
+      uplslist.removeAll("..");
+
+      for(int i = 0; i < uplslist.size(); i++){
+        QDir upls = QDir(QString::fromUtf8(uplsdir.absolutePath().toUtf8())+"/"+QString::fromUtf8(uplslist[i].toUtf8()));
+        if(upls.exists() == true
+          && QFile::exists(QString::fromUtf8(upls.absolutePath().toUtf8())+"/info.txt") == true){
+          (*log).append(QString("Importing UPLS Model %1").arg(uplslist[i]));
+
+          addUPLSModel();
+          getLastUPLSModel()->ImportUPLSModel(upls.absolutePath().toUtf8().data(), QString("UPLS - %1").arg(QString::fromUtf8(uplslist[i].toUtf8())).toUtf8().data());
+          getLastUPLSModel()->setModelID((*mid_));
+
+          int xid = -1, yid = -1;
+          for(int j = 0; j < ArrayCount(); j++){
+            if(getArray(j)->getHash().compare(getLastUPLSModel()->getXHash()) == 0){
+              xid = j;
+            }
+            else if(getArray(j)->getHash().compare(getLastUPLSModel()->getYHash()) == 0){
+              yid = j;
+            }
+            else{
+              continue;
+            }
+          }
+
+          if(xid == -1){
+            (*log).append(QString("Warning in UPLS Model %1. Unable to find data.").arg(uplslist[i]));
+          }
+
+          getLastUPLSModel()->setXID(xid);
+          getLastUPLSModel()->setYID(yid);
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0,  getLastUPLSModel()->getName());
+          subitem->setText(1, QString::number((*tabcount_)));
+          subitem->setText(2, QString::number(getProjectID()));
+          subitem->setText(3, getLastUPLSModel()->getXHash());
+          subitem->setText(4, getLastUPLSModel()->getYHash());
+          subitem->setText(5, QString::number(getLastUPLSModel()->getXScaling()));
+          subitem->setText(6, QString::number(getLastUPLSModel()->getYScaling()));
+          subitem->setText(7, QString::number(getLastUPLSModel()->getNPC()));
+          subitem->setText(8, QString("UPLS Model"));
+          subitem->setText(9, QString::number((*mid_)));
+          MainWindow::getProjectItem(getProjectID(), treeWidget)->child(1)->addChild(subitem);
+          (*tabcount_)++;
+          QDir uplspred = upls.absolutePath()+"/PREDICTIONS";
+          if(uplspred.exists() == true){
+            QStringList uplspredlist = uplspred.entryList();
+            uplspredlist.removeAll(".");
+            uplspredlist.removeAll("..");
+            for(int j = 0; j < uplspredlist.size(); j++){
+              QDir uplspredpath = QDir(uplspred.absolutePath()+"/"+uplspredlist[j]);
+              (*log).append(QString("Importing UPLS Model %1").arg(uplspredlist[j]));
+              if(uplspredpath.exists()
+                && QFile::exists(QString::fromUtf8(uplspredpath.absolutePath().toUtf8())+"/Y-Pred.txt") == true
+                && QFile::exists(QString::fromUtf8(uplspredpath.absolutePath().toUtf8())+"/T-Scores-Pred.txt") == true
+                && QFile::exists(QString::fromUtf8(uplspredpath.absolutePath().toUtf8())+"/info.txt") == true){
+                getLastUPLSModel()->addUPLSPrediction();
+                getLastUPLSModel()->getLastUPLSPrediction()->ImportUPLSPrediction(uplspredpath.absolutePath().toUtf8().data(), QString("UPLS Prediction - %1").arg(QString::fromUtf8(uplspredlist[j].toUtf8())).toUtf8().data());
+                getLastUPLSModel()->getLastUPLSPrediction()->setPredID(getLastUPLSModel()->UPLSPredictionCount()-1);
+
+                int xpredid = -1, ypredid = -1;
+                for(int k = 0; k <  ArrayCount(); k++){
+                  if(getArray(k)->getHash().compare(getLastUPLSModel()->getLastUPLSPrediction()->getXHash()) == 0){
+                    xpredid = k;
+                  }
+                  else if(getArray(k)->getHash().compare(getLastUPLSModel()->getLastUPLSPrediction()->getYHash()) == 0){
+                    ypredid = k;
+                  }
+                  else{
+                    continue;
+                  }
+                }
+
+                if(xpredid == -1){
+                  (*log).append(QString("Warning in UPLS Prediction %1. Unable to find data.").arg(uplspredlist[j]));
+                }
+                getLastUPLSModel()->getLastUPLSPrediction()->setXID(xpredid);
+                getLastUPLSModel()->getLastUPLSPrediction()->setYID(ypredid);
+        //         ModelPrediction Name - Tab Count - pid_ - Model ID - x data id - y data id - Data Position - Data Type (UPLS Prediction, UUPLS Prediction, ...) (8)
+                QTreeWidgetItem *subitem = new QTreeWidgetItem;
+                subitem->setText(0, getUPLSModel((*mid_))->getLastUPLSPrediction()->getName());
+                subitem->setText(1, QString::number((*tabcount_)));
+                subitem->setText(2, QString::number(getProjectID()));
+                subitem->setText(3, QString::number((*mid_)));
+                subitem->setText(4, getLastUPLSModel()->getLastUPLSPrediction()->getXHash());
+                subitem->setText(5, getLastUPLSModel()->getLastUPLSPrediction()->getYHash());
+                subitem->setText(6, QString::number(getUPLSModel((*mid_))->getLastUPLSPrediction()->getPredID()));
+                subitem->setText(7, QString("UPLS Prediction"));
+                (*tabcount_)++;
+                MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)->addChild(subitem);
+              }
+            }
+          }
+          (*mid_)++;
+        }
+        else{
+          (*log).append(QString("Error UPLS Model %1 Corrupted").arg(uplslist[i]));
+        }
+      }
+    }
+
+    if(varseldir.exists() == true){
+      QStringList varsellist = varseldir.entryList();
+      varsellist.removeAll(".");
+      varsellist.removeAll("..");
+      for(int i = 0; i < varsellist.size(); i++){
+        QDir varsel = QDir(varseldir.absolutePath()+"/"+varsellist[i]);
+        if(varsel.exists() == true
+          && QFile::exists(varsel.absolutePath()+"/info.txt") == true){
+          (*log).append(QString("Importing Variable Selection Model %1").arg(varsellist[i]));
+          addVarSelModel();
+          getLastVarSelModel()->ImportVarSelModel(varsel.absolutePath(), "VSEL - "+varsellist[i].trimmed());
+          getLastVarSelModel()->setModelID((*mid_));
+
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, getLastVarSelModel()->getName());
+          subitem->setText(1, QString::number((*tabcount_)));
+          subitem->setText(2, QString::number(getProjectID()));
+          subitem->setText(3, getLastVarSelModel()->getXHash());
+          subitem->setText(4, getLastVarSelModel()->getYHash());
+          subitem->setText(5, QString::number(getLastVarSelModel()->getXScaling()));
+          subitem->setText(6, QString::number(getLastVarSelModel()->getYScaling()));
+          subitem->setText(7, QString::number(getLastVarSelModel()->getNumberOfComponents()));
+          subitem->setText(8, QString("PLS Variable Selection Model"));
+          subitem->setText(9, QString::number((*mid_)));
+          MainWindow::getProjectItem(getProjectID(), treeWidget)->child(1)->addChild(subitem);
+          (*tabcount_)++;
+          (*mid_)++;
+        }
+        else{
+          (*log).append(QString("Error PCA Model %1 Corrupted").arg(varsellist[i]));
+        }
+      }
+    }
+
+    if(mlrdir.exists() == true){
+      QStringList mlrlist = mlrdir.entryList();
+      mlrlist.removeAll(".");
+      mlrlist.removeAll("..");
+      for(int i = 0; i < mlrlist.size(); i++){
+        QDir mlr = QDir(QString::fromUtf8(mlrdir.absolutePath().toUtf8())+"/"+mlrlist[i]);
+        if(mlr.exists() == true
+          && QFile::exists(QString::fromUtf8(mlr.absolutePath().toUtf8())+"/info.txt") == true){
+          (*log).append(QString("Importing MLR Model %1").arg(mlrlist[i]));
+          addMLRModel();
+          getLastMLRModel()->ImportMLRModel(mlr.absolutePath().toUtf8().data(), QString("MLR - %2").arg(QString::fromUtf8(mlrlist[i].toUtf8())).toUtf8().data());
+          getLastMLRModel()->setModelID((*mid_));
+
+          int did = -1;
+          for(int j = 0; j < MatrixCount(); j++){
+            if(getMatrix(j)->getHash().compare(getLastMLRModel()->getDataHash()) == 0){
+              did = j;
+            }
+            else{
+              continue;
+            }
+          }
+
+          if(did == -1){
+            (*log).append(QString("Warning on MLR Model %1. Unable to find data matrix.").arg(mlrlist[i]));
+          }
+
+          getLastMLRModel()->setDID(did);
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, "MLR - "+mlrlist[i]);
+          subitem->setText(1, QString::number((*tabcount_)));
+          subitem->setText(2, QString::number(getProjectID()));
+          subitem->setText(3, getLastMLRModel()->getDataHash());
+          subitem->setText(4, getLastMLRModel()->getDataHash());
+          subitem->setText(5, "-");
+          subitem->setText(6, "-");
+          subitem->setText(7, "-");
+          subitem->setText(8, QString("MLR Model"));
+          subitem->setText(9, QString::number((*mid_)));
+          MainWindow::getProjectItem(getProjectID(), treeWidget)->child(1)->addChild(subitem);
+          (*tabcount_)++;
+
+          QDir mlrpred = mlr.absolutePath()+"/PREDICTIONS";
+          if(mlrpred.exists() == true){
+            QStringList mlrpredlist = mlrpred.entryList();
+            mlrpredlist.removeAll(".");
+            mlrpredlist.removeAll("..");
+            for(int j = 0; j < mlrpredlist.size(); j++){
+              QDir mlrpredpath = QDir(QString::fromUtf8(mlrpred.absolutePath().toUtf8())+"/"+mlrpredlist[j]);
+              (*log).append(QString("Importing MLR Prediction %1").arg(mlrpredlist[j]));
+              if(mlrpredpath.exists()
+                && QFile::exists(QString::fromUtf8(mlrpredpath.absolutePath().toUtf8())+"/Y-Pred.txt") == true
+                && QFile::exists(QString::fromUtf8(mlrpredpath.absolutePath().toUtf8())+"/info.txt") == true){
+                getLastMLRModel()->addMLRPrediction();
+                getLastMLRModel()->getLastMLRPrediction()->ImportMLRPrediction(mlrpredpath.absolutePath().toUtf8().data(), QString::fromUtf8("MLR Prediction - %1").arg(QString::fromUtf8(mlrpredlist[j].toUtf8())).toUtf8().data());
+                getLastMLRModel()->getLastMLRPrediction()->setPredID(getLastMLRModel()->MLRPredictionCount()-1);
+
+                int xpredid = -1;
+                for(int k = 0; k <  MatrixCount(); k++){
+                  if(getMatrix(k)->getHash().compare(getLastMLRModel()->getLastMLRPrediction()->getDataHash()) == 0){
+                    xpredid = k;
+                    break;
+                  }
+                  else{
+                    continue;
+                  }
+                }
+
+                if(xpredid == -1){
+                  (*log).append(QString("Warning in MLR Prediction %1. Unable to find data matrix. ").arg(mlrpredlist[j]));
+                }
+
+                getLastMLRModel()->getLastMLRPrediction()->setDID(xpredid);
+
+        //         ModelPrediction Name - Tab Count - pid_ - Model ID - xdata id - ydata id - Data Position - Data Type (MLR Prediction, UMLR Prediction, ...) (8)
+                QTreeWidgetItem *subitem = new QTreeWidgetItem;
+                subitem->setText(0, getMLRModel((*mid_))->getLastMLRPrediction()->getName());
+                subitem->setText(1, QString::number((*tabcount_)));
+                subitem->setText(2, QString::number(getProjectID()));
+                subitem->setText(3, QString::number((*mid_)));
+                subitem->setText(4, getLastMLRModel()->getLastMLRPrediction()->getDataHash());
+                subitem->setText(5, getLastMLRModel()->getLastMLRPrediction()->getDataHash());
+                subitem->setText(6, QString::number(getMLRModel((*mid_))->getLastMLRPrediction()->getPredID()));
+                subitem->setText(7, QString("MLR Prediction"));
+                (*tabcount_)++;
+                MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)->addChild(subitem);
+              }
+            }
+          }
+          (*mid_)++;
+        }
+        else{
+          (*log).append(QString("Error MLR Model %1 Corrupted").arg(mlrlist[i]));
+        }
+      }
+    }
+
+    if(ldadir.exists() == true){
+      QStringList ldalist = ldadir.entryList();
+      ldalist.removeAll(".");
+      ldalist.removeAll("..");
+      for(int i = 0; i < ldalist.size(); i++){
+        QDir lda = QDir(QString::fromUtf8(ldadir.absolutePath().toUtf8())+"/"+ldalist[i]);
+        if(lda.exists() == true
+          && QFile::exists(QString::fromUtf8(lda.absolutePath().toUtf8())+"/info.txt") == true){
+          (*log).append(QString("Importing LDA Model %1").arg(ldalist[i]));
+          addLDAModel();
+          getLastLDAModel()->ImportLDAModel(lda.absolutePath().toUtf8().data(), QString("LDA - %2").arg(QString::fromUtf8(ldalist[i].toUtf8())).toUtf8().data());
+          getLastLDAModel()->setModelID((*mid_));
+
+          int did = -1;
+          for(int j = 0; j < MatrixCount(); j++){
+            if(getMatrix(j)->getHash().compare(getLastLDAModel()->getDataHash()) == 0){
+              did = j;
+            }
+            else{
+              continue;
+            }
+          }
+
+          if(did == -1){
+            (*log).append(QString("Warning on LDA Model %1. Unable to find data matrix.").arg(ldalist[i]));
+          }
+
+          getLastLDAModel()->setDID(did);
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, "LDA - "+ldalist[i]);
+          subitem->setText(1, QString::number((*tabcount_)));
+          subitem->setText(2, QString::number(getProjectID()));
+          subitem->setText(3, getLastLDAModel()->getDataHash());
+          subitem->setText(4, getLastLDAModel()->getDataHash());
+          subitem->setText(5, "-");
+          subitem->setText(6, "-");
+          subitem->setText(7, "-");
+          subitem->setText(8, QString("LDA Model"));
+          subitem->setText(9, QString::number((*mid_)));
+          MainWindow::getProjectItem(getProjectID(), treeWidget)->child(1)->addChild(subitem);
+          (*tabcount_)++;
+
+          QDir ldapred = lda.absolutePath()+"/PREDICTIONS";
+          if(ldapred.exists() == true){
+            QStringList ldapredlist = ldapred.entryList();
+            ldapredlist.removeAll(".");
+            ldapredlist.removeAll("..");
+            for(int j = 0; j < ldapredlist.size(); j++){
+              QDir ldapredpath = QDir(QString::fromUtf8(ldapred.absolutePath().toUtf8())+"/"+ldapredlist[j]);
+              (*log).append(QString("Importing LDA Prediction %1").arg(ldapredlist[j]));
+              if(ldapredpath.exists() && QFile::exists(QString::fromUtf8(ldapredpath.absolutePath().toUtf8())+"/info.txt") == true){
+                getLastLDAModel()->addLDAPrediction();
+                getLastLDAModel()->getLastLDAPrediction()->ImportLDAPrediction(ldapredpath.absolutePath().toUtf8().data(), QString::fromUtf8("LDA Prediction - %1").arg(QString::fromUtf8(ldapredlist[j].toUtf8())).toUtf8().data());
+                getLastLDAModel()->getLastLDAPrediction()->setPredID(getLastLDAModel()->LDAPredictionCount()-1);
+
+                int xpredid = -1;
+                for(int k = 0; k <  MatrixCount(); k++){
+                  if(getMatrix(k)->getHash().compare(getLastLDAModel()->getLastLDAPrediction()->getDataHash()) == 0){
+                    xpredid = k;
+                    break;
+                  }
+                  else{
+                    continue;
+                  }
+                }
+
+                if(xpredid == -1){
+                  (*log).append(QString("Warning in LDA Prediction %1. Unable to find data matrix. ").arg(ldapredlist[j]));
+                }
+
+                getLastLDAModel()->getLastLDAPrediction()->setDID(xpredid);
+
+        //         ModelPrediction Name - Tab Count - pid_ - Model ID - xdata id - ydata id - Data Position - Data Type (LDA Prediction, ULDA Prediction, ...) (8)
+                QTreeWidgetItem *subitem = new QTreeWidgetItem;
+                subitem->setText(0, getLDAModel((*mid_))->getLastLDAPrediction()->getName());
+                subitem->setText(1, QString::number((*tabcount_)));
+                subitem->setText(2, QString::number(getProjectID()));
+                subitem->setText(3, QString::number((*mid_)));
+                subitem->setText(4, getLastLDAModel()->getLastLDAPrediction()->getDataHash());
+                subitem->setText(5, getLastLDAModel()->getLastLDAPrediction()->getDataHash());
+                subitem->setText(6, QString::number(getLDAModel((*mid_))->getLastLDAPrediction()->getPredID()));
+                subitem->setText(7, QString("LDA Prediction"));
+                (*tabcount_)++;
+                MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)->addChild(subitem);
+              }
+            }
+          }
+          (*mid_)++;
+        }
+        else{
+          (*log).append(QString("Error LDA Model %1 Corrupted").arg(ldalist[i]));
+        }
+      }
+    }
+  }*/
+}
+
 void DATA::AutoSave()
 {
   QFileInfo check_file(projectfautosave);
@@ -1290,190 +2306,185 @@ QString DATA::SaveData(QString savepath)
   return savefname;
 }
 
-
-QStringList DeserializeQStringList(QString serialized_lst)
+QString DATA::SaveSQLData(QString savepath)
 {
-  return serialized_lst.split(";");
-}
-
-QString SerializeQStringList(QStringList lst)
-{
-  QString serialized_lst;
-  for(int i = 0; i < lst.size(); i++)
-    serialized_lst += ";"+lst[i];
-  return serialized_lst;
-}
-
-void DeserializeMatrix(QString serialized_mx, matrix **mx)
-{
-  QList< QList<QString> > _mx_;
-  QStringList row = serialized_mx.split("\n");
-  for(int i = 0; i < row.size(); i++){
-    _mx_.append(row[i].split(";"));
-  }
-  ResizeMatrix(mx, _mx_.size(), _mx_[0].size());
-  for(int i = 0; i < _mx_.size(); i++)
-    for(int j = 0; j < _mx_[i].size(); j++)
-      (*mx)->data[i][j] = _mx_[i][j].toDouble();
-}
-
-QString SerializeMatrix(matrix *mx)
-{
-  QString serialized_mx;
-  for(int i = 0; i < mx->row; i++){
-    //start a row and concatenate values
-    for(int j = 0; j < mx->col; j++){
-      serialized_mx += ";" + QString::number(mx->data[i][j]);
-    }
-    serialized_mx += "\n"; //end row
-  }
-  return serialized_mx;
-}
-
-void DeserializeArray(QString serialized_ar, array **ar)
-{
-  QList< QList< QList<QString> > > _ar_;
-  QStringList orders = serialized_ar.split("o");
-  for(int k = 0; k < orders.size(); k++){
-    QStringList row = orders[k].split("\n");
-    for(int i = 0; i < row.size(); i++){
-      _ar_[k].append(row[i].split(";"));
-    }
-  }
-
-  //NewArray(ar, _ar_.size());
-  for(int k = 0; k < _ar_.size(); k++){
-    AddArrayMatrix(ar, _ar_[k].size(), _ar_[k][0].size());
-    for(int i = 0; i < _ar_[k].size(); i++){
-      for(int j = 0; j < _ar_[k][i].size(); j++){
-        (*ar)->m[k]->data[i][j] = _ar_[k][i][j].toDouble();
-      }
-    }
-  }
-}
-
-QString SerializeArray(array *ar)
-{
-  QString serialized_ar;
-  for(int k = 0; k < ar->order; k++){
-    for(int i = 0; i < ar->m[k]->row; i++){
-      //start a row and concatenate values
-      for(int j = 0; j < ar->m[k]->col; j++){
-        serialized_ar += ";" + QString::number(ar->m[k]->data[i][j]);
-      }
-      serialized_ar += "\n"; //end row
-     }
-     serialized_ar += "o";
-  }
-  return serialized_ar;
-}
-
-QString DATA::SaveData(QString dbName, QString modname)
-{
-  /*GenericProgressDialog pbdialog;
+  GenericProgressDialog pbdialog;
   pbdialog.setRange(0,5);
   pbdialog.hideCancel();
   pbdialog.show();
+  QString dbName = savepath+"/"+getProjectName()+".qsm";
   //QString dbName( "myDatabase.db3" );
   QFile::remove(dbName);
   QSqlDatabase db = QSqlDatabase::addDatabase( "QSQLITE" );
-  db.setDatabaseName( dbName );
+  db.setDatabaseName(dbName);
   db.open();
   QSqlQuery query = QSqlQuery(db);
-  query.exec(QString("CREATE TABLE IF NOT EXISTS %1(modeltype TEXT, name TEXT, objnames TEXT, varnames  TEXT, tables TEXT)").arg(modname));
-
+  /*
+   * The table is subdivided into five column
+   * modeltype: which describe the type of data that is stored
+   * txt1: one field of the data part of modeltype
+   * txt2: second field of the data part of modeltype
+   * txt3: third field of the data part of modeltype
+   * txt4: fourth field of the data part of modeltype
+   *
+   * When you import the table first you read the first column
+   * and then you can process the txt1, txt2...
+   */
+  query.exec(QString("CREATE TABLE IF NOT EXISTS matrixTable (name TEXT, objname TEXT, varname  TEXT, mx TEXT)"));
   if(MatrixCount() > 0){
     for(int i = 0; i < MatrixCount(); i++){
       QString mxname = getMatrix(i)->getName();
-      QString serialized_mx = SerializeMatrix(getMatrix(i)->Matrix());
       QString objname_serialized = SerializeQStringList(getMatrix(i)->getObjName());
       QStringList varname = getMatrix(i)->getVarName();
-      varname.removeFirst();
+      //varname.removeFirst();
       QString varname_serialized = SerializeQStringList(varname);
-      query.exec(QString("INSERT INTO %1 (modeltype, name, objnames,  varnames, tables) VALUES ('matrix', '%2', %3', '%4', '%5', '%6')").arg(modname).arg(mxname).arg(objname_serialized).arg(varname_serialized).arg(serialized_mx));
+      QString serialized_mx = SerializeMatrix(getMatrix(i)->Matrix());
+
+      query.prepare( "INSERT INTO matrixTable (name, objname, varname, mx) VALUES (:name, :objname, :varname, :mx)");
+      query.bindValue( ":name", mxname);
+      query.bindValue( ":objname", objname_serialized);
+      query.bindValue( ":varname", varname_serialized);
+      query.bindValue( ":mx", serialized_mx);
+      query.exec();
     }
   }
 
   pbdialog.setValue(1);
 
+  query.exec(QString("CREATE TABLE IF NOT EXISTS arrayTable (name TEXT, objname TEXT, varname  TEXT, ar TEXT)"));
   if(ArrayCount() > 0){
+    /* txt1 = arname
+     * txt2 = objname_serialized
+     * txt3 = varname_serialized
+     * txt4 = serialized_ar
+     */
     for(int i = 0; i < ArrayCount(); i++){
-      QString arname = getArray(i)->getName().toUtf8();
-      QString serialized_ar = SerializeArray(getArray(i)->Array());
+      QString arname = getArray(i)->getName();
       QString objname_serialized = SerializeQStringList(getArray(i)->getObjName());
       QStringList varname = getArray(i)->getVarName();
-      varname.removeFirst();
+      //varname.removeFirst();
       QString varname_serialized = SerializeQStringList(varname);
-      query.exec(QString("INSERT INTO %1 (modeltype, name, objnames,  varnames, tables) VALUES ('array', '%2', %3', '%4', '%5', '%6')").arg(modname).arg(arname).arg(objname_serialized).arg(varname_serialized).arg(serialized_ar));
+      QString serialized_ar = SerializeArray(getArray(i)->Array());
+
+      query.prepare( "INSERT INTO arrayTable (name, objname, varname, ar) VALUES (:name, :objname, :varname, :ar)");
+      query.bindValue( ":name", arname);
+      query.bindValue( ":objname", objname_serialized);
+      query.bindValue( ":varname", varname_serialized);
+      query.bindValue( ":ar", serialized_ar);
+      query.exec();
     }
   }
 
   pbdialog.setValue(2);
 
+  query.exec(QString("CREATE TABLE IF NOT EXISTS objlabelTable (name TEXT, values TEXT)"));
   if(getObjectLabels().size() > 0){
+    //txt1 = serialized_label
     for(int i = 0; i < getObjectLabels().size(); i++){
       QString labelname = getObjectLabels()[i].name;
       QString serialized_label = SerializeQStringList(getObjectLabels()[i].objects);
-      query.exec(QString("INSERT INTO %1 (modeltype, name, objnames,  varnames, tables) VALUES ('objeclabels', '%2', %3', '%4', '%5', '%6')").arg(modname).arg(arname).arg(objname_serialized).arg(varname_serialized).arg(serialized_ar));
+
+      query.prepare( "INSERT INTO objlabelTable (name, values) VALUES (:name, :values)");
+      query.bindValue( ":name", labelname);
+      query.bindValue( ":values", serialized_label);
+      query.exec();
     }
   }
 
   pbdialog.setValue(3);
 
+  query.exec(QString("CREATE TABLE IF NOT EXISTS varlabelTable (name TEXT, values TEXT)"));
   if(getVariableLabels().size() > 0){
-    QString labelspath = QString::fromUtf8(savedir.toUtf8())+"/VariableLabels/";
     //DATAIO::MakeDir(labelspath.toStdString());
     for(int i = 0; i < getVariableLabels().size(); i++){
-      QString labelname = QString::fromUtf8(labelspath.toUtf8())+QString::fromUtf8(getVariableLabels()[i].name.toUtf8())+".txt";
-      WriteList(getVariableLabels()[i].objects, labelname);
+      QString labelname = getVariableLabels()[i].name;
+      QString serialized_label = SerializeQStringList(getObjectLabels()[i].objects);
+
+      query.prepare( "INSERT INTO varlabelTable (name, values) VALUES (:name, :values)");
+      query.bindValue( ":name", labelname);
+      query.bindValue( ":values", serialized_label);
+      query.exec();
     }
   }
 
+  query.exec(QString("CREATE TABLE IF NOT EXISTS vartablabelTable (name TEXT, objname TEXT, varname  TEXT, mx TEXT)"));
   if(getVariableTabLabels().size() > 0){
-    QString labelspath = QString::fromUtf8(savedir.toUtf8())+"/VariableTabLabels/";
     for(int i = 0; i < getVariableTabLabels().size(); i++){
-      QString mxname = QString::fromUtf8(labelspath.toUtf8())+QString::fromUtf8(getVariableTabLabels()[i]->getName().toUtf8());
-      DATAIO::MakeDir(mxname.toUtf8().data());
-      DATAIO::WriteMatrix(QString(QString::fromUtf8(mxname.toUtf8())+"/data.txt").toUtf8().data(), getVariableTabLabels()[i]->getMatrix());
-      WriteList(getVariableTabLabels()[i]->getObjectsName(), mxname+"/label.txt");
+      QString mxname = getVariableTabLabels()[i]->getName();
+      QString objname_serialized = SerializeQStringList(getVariableTabLabels()[i]->getObjectsName());
       QStringList varname = getVariableTabLabels()[i]->getFeaturesName();
-      qDebug() << varname.first();
-      varname.removeFirst(); // remove the first var name that is automatically inserted during import
-      WriteList(varname, QString::fromUtf8(mxname.toUtf8())+"/varname.txt");
+      //varname.removeFirst(); // remove the first var name that is automatically inserted during import
+      QString varname_serialized = SerializeQStringList(varname);
+      QString serialized_mx = SerializeMatrix(getVariableTabLabels()[i]->getMatrix());
+
+      query.prepare( "INSERT INTO vartablabelTable (name, objname, varname, mx) VALUES (:name, :objname, :varname, :mx)");
+      query.bindValue( ":name", mxname);
+      query.bindValue( ":objname", objname_serialized);
+      query.bindValue( ":varname", varname_serialized);
+      query.bindValue( ":mx", serialized_mx);
+      query.exec();
     }
   }
 
   pbdialog.setValue(4);
 
+  query.exec(QString("CREATE TABLE IF NOT EXISTS imgTable (name TEXT,  imagedata BLOB)"));
   if(getImages().size() > 0){
-    QString destdir = QString::fromUtf8(savedir.toUtf8())+"/Images/";
     for(int i = 0; i < getImages().size(); i++){
-
-      QFile imgfile(QString("%1/%2.jpg").arg(destdir).arg(getImages()[i].name));
-      imgfile.open(QIODevice::WriteOnly);
-      getImages()[i].image.save(&imgfile, "JPG");
-
-//       CopyFile(QString::fromUtf8(getImages()[i].filepath.toUtf8()), destdir);
+      QByteArray inByteArray;
+      QBuffer inBuffer(&inByteArray);
+      inBuffer.open(QIODevice::WriteOnly);
+      getImages()[i].image.save(&inBuffer, "PNG");
+      query.prepare( "INSERT INTO imgTable (name, imagedata) VALUES (:name, :imagedata)" );
+      query.bindValue( ":name", getImages()[i].name);
+      query.bindValue( ":imagedata", inByteArray);
+      query.exec();
     }
   }
 
   // Write MODELS into Models dir  RIMUOVI PCA - da ogni nome
+  query.exec(QString("CREATE TABLE IF NOT EXISTS pcaTable (name TEXT, numcomp INT, scalingtype INT, hashinputmx TEXT, objname TEXT, varname TEXT, scores TEXT, loadings  TEXT, varexp TEXT, colscaling TEXT, colaverage TEXT)"));
+  query.exec(QString("CREATE TABLE IF NOT EXISTS pcapredTable (name TEXT, pcahash TEXT, hashinputmx TEXT, objname TEXT, scores TEXT)"));
   if(PCACount() > 0){
-    DATAIO::MakeDir(QString(QString::fromUtf8(savedir.toUtf8())+"/Models/PCAMODELS").toUtf8().data());
     for(int i = 0; i < PCACount(); i++){
-      QString dirname = getPCAModelAt(i)->getName().remove("PCA - ", Qt::CaseSensitive).trimmed();
-      getPCAModelAt(i)->WritePCAModel(QString("%1/Models/PCAMODELS/").arg(QString::fromUtf8(savedir.toUtf8())).toUtf8().data(), dirname.toUtf8().data());
+      QString modname = getPCAModelAt(i)->getName()/*.remove("PCA - ", Qt::CaseSensitive).trimmed()*/;
+      QString objname_serialized = SerializeQStringList(getPCAModelAt(i)->getObjName());
+      QString varname_serialized = SerializeQStringList(getPCAModelAt(i)->getVarName());
+      QString serialized_scores = SerializeMatrix(getPCAModelAt(i)->Model()->scores);
+      QString serialized_loadings = SerializeMatrix(getPCAModelAt(i)->Model()->loadings);
+      QString serialized_colaverage = SerializeDVector(getPCAModelAt(i)->Model()->colaverage);
+      QString serialized_colscaling = SerializeDVector(getPCAModelAt(i)->Model()->colscaling);
+      QString serialized_varexp = SerializeDVector(getPCAModelAt(i)->Model()->varexp);
+      query.prepare( "INSERT INTO pcaTable (name, numcomp, scalingtype, hashinputmx, objname, varname, scores, loadings, varexp, colscaling, colaverage) VALUES (:name, :numcomp, :scalingtype, :hashinputmx, :objname, :varname, :scores, :loadings, :varexp, :colscaling, :colaverage)");
+      query.bindValue( ":name", modname);
+      query.bindValue( ":numcomp", getPCAModelAt(i)->getNPC());
+      query.bindValue( ":scalingtype", getPCAModelAt(i)->getXScaling());
+      query.bindValue( ":hashinputmx", getPCAModelAt(i)->getDataHash());
+      query.bindValue( ":objname", objname_serialized);
+      query.bindValue( ":varname", varname_serialized);
+      query.bindValue( ":scores", serialized_scores);
+      query.bindValue( ":loadings", serialized_loadings);
+      query.bindValue( ":colscaling", serialized_colaverage);
+      query.bindValue( ":colaverage", serialized_colscaling);
+      query.bindValue( ":varexp", serialized_varexp);
+      query.exec();
 
       if(getPCAModelAt(i)->PCAPredictionCount() > 0){
-        DATAIO::MakeDir(QString(QString::fromUtf8(savedir.toUtf8())+"/Models/PCAMODELS/%1/PREDICTIONS").arg(dirname).toUtf8().data());
         for(int j = 0; j < getPCAModelAt(i)->PCAPredictionCount(); j++){
-          QString dirnamepred = getPCAModelAt(i)->getPCAPrediction(j)->getName().remove("PCA Prediction - ", Qt::CaseSensitive).trimmed();
-          getPCAModelAt(i)->getPCAPrediction(j)->WritePCAPrediction(QString(QString::fromUtf8(savedir.toUtf8())+"/Models/PCAMODELS/%1/PREDICTIONS/").arg(dirname).toUtf8().data(), dirnamepred.toUtf8().data());
+          QString objname_serialized = SerializeQStringList(getPCAModelAt(i)->getPCAPrediction(j)->getObjName());
+          QString serialized_mx = SerializeMatrix(getPCAModelAt(i)->getPCAPrediction(j)->getPredScores());
+          query.prepare( "INSERT INTO pcapredTable (name TEXT, pcahash TEXT, hashinputmx TEXT, objname TEXT, scores TEXT) VALUES (:name, :pcaname, :hashinputmx, :objname, :scores)");
+          query.bindValue( ":name", getPCAModelAt(i)->getPCAPrediction(j)->getName()/*.remove("PCA Prediction - ", Qt::CaseSensitive).trimmed()*/);
+          query.bindValue( ":pcahash", getPCAModelAt(i)->getHash());
+          query.bindValue( ":hashinputmx", getPCAModelAt(i)->getPCAPrediction(j)->getDataHash());
+          query.bindValue( ":objname", objname_serialized);
+          query.bindValue( ":scores", serialized_mx);
+          query.exec();
         }
       }
     }
   }
-
+  /*
   if(PLSCount() > 0){
     DATAIO::MakeDir(QString(QString::fromUtf8(savedir.toUtf8())+"/Models/PLSMODELS").toUtf8().data());
     for(int i = 0; i < PLSCount(); i++){
@@ -1570,10 +2581,11 @@ QString DATA::SaveData(QString dbName, QString modname)
   dc.setOutput(savefname.toUtf8().data());
   dc.compress();
   DATAIO::RemoveDir(savedir.toUtf8().data());
-
+  */
+  db.close();
   pbdialog.setValue(5);
-  return savefname;*/
-  return QString();
+  return dbName;
+  //return savefname;
 }
 
 void DATA::addMatrix()

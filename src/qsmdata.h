@@ -87,7 +87,7 @@ public:
 
   dvector* &DVector(){ return v; }
   void setName(QString name_){ name = name_; }
-  QString getName(){ return name; }
+  QString getName(){ return name.toUtf8(); }
   QStringList& getObjName(){ return objname; }
   void GenHash(){
     if(v->size> 0 && !name.isEmpty()){
@@ -150,7 +150,7 @@ public:
   void MatrixResize(size_t nrow, size_t ncol){ ResizeMatrix(&m, nrow, ncol); }
   matrix* &Matrix(){ return m; } //Access to the matrix
   void setName(QString name_){ name = name_; }
-  QString getName(){ return name; }
+  QString getName(){ return name.toUtf8(); }
   QStringList& getObjName(){ return objname; }
   QStringList& getVarName(){ return varname; }
   void GenHash(){
@@ -223,7 +223,7 @@ public:
 
   array* &Array(){ return a; }
   void setName(QString name_){ name = name_; }
-  QString getName(){ return name; }
+  QString getName(){ return name.toUtf8(); }
   QStringList& getObjName(){ return objname; }
   QStringList& getVarName(){ return varname; }
   void GenHash(){
@@ -270,8 +270,9 @@ public:
   void ImportFileMatrix(const FILEDATA &f);
   void ImportFileArray(const FILEDATA &f);
   void OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *mid_, QStringList *log);
+  void OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_, int *mid_, QStringList *log);
   QString SaveData(QString savepath); // savepath is the path to save the project
-  QString SaveData(QString dbName, QString modname);
+  QString SaveSQLData(QString dbName);
   void AutoSave(); // To work first SaveData.
   QString getAutoSaveFile(){ return projectfautosave; }
   void addMatrix();

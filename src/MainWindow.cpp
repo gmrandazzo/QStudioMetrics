@@ -4147,6 +4147,41 @@ int MainWindow::ProjectOpen(QString fproject)
   pbdialog.setWindowModality(Qt::WindowModal);
   QApplication::processEvents();
 
+  QFileInfo info(fproject);
+  projects->insert(pid_, new DATA());
+  projects->value(pid_)->setProjectID(pid_);
+  projects->value(pid_)->setProjectPath(fproject);
+  QString projectename = info.absoluteFilePath().split("/", QString::SkipEmptyParts).last().remove(".qsm");
+  updateLog(QString("Importing Project: %1\n").arg(projectename));
+  QTreeWidgetItem *item = new QTreeWidgetItem;
+  item->setText(0, projectename);
+  item->setText(1, QString::number(pid_));
+  projects->insert(pid_, new DATA());
+  projects->value(pid_)->setProjectID(pid_);
+  projects->value(pid_)->setProjectName(projectename);
+  QTreeWidgetItem *subitem1 = new QTreeWidgetItem;
+  subitem1->setText(0, "Data");
+  QTreeWidgetItem *subitem2 = new QTreeWidgetItem;
+  subitem2->setText(0, "Models");
+  item->addChild(subitem1); // child 0 is named DATA
+  item->addChild(subitem2); // child 1 is named MODELS
+  ui.treeWidget->addTopLevelItem(item);
+
+  QStringList log;
+  projects->value(pid_)->OpenSQLData(fproject.toUtf8().data(), ui.treeWidget, &tabcount_, &mid_, &log);
+
+  lastpath = info.absolutePath();
+  pbdialog.setValue(3);
+  QApplication::processEvents();
+
+  for(int i = 0; i < log.size(); i++){
+    updateLog(log[i]);
+  }
+
+  pid_++;
+  TopMenuEnableDisable();
+
+/*
   QString dir = QString::fromUtf8(fproject.toUtf8());
   dir.remove(".qsm");
 
@@ -4191,7 +4226,8 @@ int MainWindow::ProjectOpen(QString fproject)
     lastpath = info.absolutePath();
 
     QStringList log;
-    projects->value(pid_)->OpenData(dir, ui.treeWidget, &tabcount_, &mid_, &log);
+    projects->value(pid_)->OpenSQLData(dir, ui.treeWidget, &tabcount_, &mid_, &log);
+    //projects->value(pid_)->OpenSQLData(fproject.toUtf8().data(), ui.treeWidget, &tabcount_, &mid_, &log);
 
     pbdialog.setValue(3);
     QApplication::processEvents();
@@ -4207,7 +4243,7 @@ int MainWindow::ProjectOpen(QString fproject)
     QMessageBox::warning(this, tr("Warning!"), tr("Empty Session!\n"), QMessageBox::Close);
   }
 
-  DATAIO::RemoveDir(dir.toUtf8().data());
+  DATAIO::RemoveDir(dir.toUtf8().data());*/
   pbdialog.setValue(4);
   QApplication::processEvents();
   pbdialog.close();
@@ -4259,7 +4295,7 @@ void MainWindow::SaveAs()
     SaveDialog savedialog(projects);
     savedialog.setPath(lastpath);
     if(savedialog.exec() == QDialog::Accepted){
-      QString fproject = projects->value(savedialog.getProjectID())->SaveData(savedialog.getPathToSave());
+      QString fproject = projects->value(savedialog.getProjectID())->SaveSQLData(savedialog.getPathToSave());
       if(recents.contains(fproject) == false){
         recents[3] = recents[2];
         recents[2] = recents[1];

@@ -76,20 +76,20 @@ public:
   void setDataHash(QString hash_){ hash = hash_; }
   void setModelID(int modelid_){ modelid = modelid_; }
   int getDID(){ return did; }
-  QString &getDataHash(){ return hash; } // used in order to get the identity matrix provenience usefull for pls cross validation 
+  QString &getDataHash(){ return hash; } // used in order to get the identity matrix provenience usefull for pls cross validation
   int getModelID(){ return modelid; }
   void addLDAPrediction(){ prediction.append(new LDAPREDICTION); };
   void delLDAPredictionAt(int id){ delete prediction[id]; prediction.removeAt(id); }
-  void delLDAPredictions(){ 
+  void delLDAPredictions(){
     for(int i = 0; i < prediction.size(); i++){
       delete prediction[i];
     }
-    prediction.clear(); 
+    prediction.clear();
   }
   LDAPREDICTION *getLDAPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
   LDAPREDICTION *getLastLDAPrediction(){ return prediction.last(); }
   int LDAPredictionCount(){ return prediction.size(); }
-  
+
 private:
   LDAMODEL *m;
   QList<LDAPREDICTION*> prediction;

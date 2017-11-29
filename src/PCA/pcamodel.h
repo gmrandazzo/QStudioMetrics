@@ -7,6 +7,7 @@
 #include <QList>
 #include <QString>
 #include <QStringList>
+#include <QCryptographicHash>
 
 class PCAPREDICTION
 {
@@ -17,7 +18,7 @@ public:
   void WritePCAPrediction(char *path, char *dirname);
   void ImportPCAPredictionInfo(char *path);
   void WritePCAPredictionInfo(char *path);
-  
+
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(QStringList &objname_){ objname = objname_; }
@@ -66,16 +67,42 @@ public:
   int getModelID(){ return modelid; }
   void addPCAPrediction(){ prediction.append(new PCAPREDICTION); };
   void delPCAPredictionAt(int id){ delete prediction[id]; prediction.removeAt(id); }
-  void delPCAPredictions(){ 
+  void delPCAPredictions(){
     for(int i = 0; i < prediction.size(); i++){
       delete prediction[i];
     }
-    prediction.clear(); 
+    prediction.clear();
   }
   PCAPREDICTION *getPCAPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
   PCAPREDICTION *getLastPCAPrediction(){ return prediction.last(); }
   int PCAPredictionCount(){ return prediction.size(); }
-  
+
+  void GenHash(){
+    if(m->scores->row > 0 && m->scores->col > 0){
+      hash.clear();
+      QString vectorizedform;
+      vectorizedform.append(QString::number(m->scores->row)); // get the row
+      vectorizedform.append(QString::number(m->scores->col)); // get the col
+      vectorizedform.append(QString::number(npc)); // get the number of principal components
+      vectorizedform.append(QString::number(xscaling)); // get the number of principal components
+
+      for(uint i = 0; i < m->scores->row; i++){
+        for(uint j = 0; j < m->scores->col; j++){
+          vectorizedform.append(QString::number(((int)getMatrixValue(m->scores, i, j)*100)/100.0));
+        }
+      }
+
+      QCryptographicHash hash_(QCryptographicHash::Md5);
+      hash_.addData(vectorizedform.toUtf8());
+      hash = QString(hash_.result().toHex());
+    }
+    else{
+      hash = "Matrix Empty!";
+    }
+  }
+  QString& getHash(){ if(hash.size() > 0){ return hash; }else{ GenHash(); return hash; } }
+
+
 private:
   PCAMODEL *m;
   QList<PCAPREDICTION*> prediction;
