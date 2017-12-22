@@ -14,7 +14,7 @@
 // Version
 #define major_ 1
 #define minor_ 9
-#define patch_ 1
+#define patch_ 9
 
 class MainWindow : public QMainWindow
 {
@@ -55,12 +55,6 @@ private slots:
   void DoPLSValidation();
   void DoPLSPrediction();
   void DoPLSVariableSelection();
-  void DoUPCA();
-  void DoUPCAPrediction();
-  void DoUPLS();
-  void DoUPLSValidation();
-  void DoUPLSPrediction();
-  void DoUPLSVariableSelection();
   void DoMLR();
   void DoMLRValidation();
   void DoMLRPrediction();
@@ -109,34 +103,6 @@ private slots:
   void PLS3DPlotQ2SampleValidator();
   void PLS3DPlotSDEPSampleValidator();
 
-  void UPCA2DScorePlot();
-  void UPCA2DLoadingsPlot();
-  void UPCA2DScorePlotPrediction();
-  void UPCA3DScorePlot();
-  void UPCA3DLoadingsPlot();
-  void UPCA3DScorePlotPrediction();
-
-  void UPLS2DPlot();
-  void UPLS2DTTScorePlot();
-  void UPLS2DPPLoadingsPlot();
-  void UPLS2DWWWeightsPlot();
-  void UPLS2DUUScorePlot();
-  void UPLS2DQQLoadingsPlot();
-  void UPLS2DTTScorePlotPrediction();
-  void UPLSRecalcVSExpPlotPrediction();
-  void UPLSPredVSExpPlotPrediction();
-  void UPLSRecalcVSExpPlot();
-  void UPLSRecalcResidualsVSExpPlot();
-  void UPLSPredVSExpPlot();
-  void UPLSPredResidualsVSExpPlot();
-  void UPLSPlotQ2R2();
-  void UPLSPlotR2R2Predicted();
-  void UPLS3DTTTScorePlot();
-  void UPLS3DPPPLoadingsPlot();
-  void UPLS3DWWWLoadingsPlot();
-  void UPLS3DUUUScorePlot();
-  void UPLS3DQQQLoadingsPlot();
-  void UPLS3DScorePlotPrediction();
 
   void PlotVarSelR2Q2();
   void PlotVarSelFTestNVar();
@@ -198,25 +164,6 @@ private slots:
   void showPLSPredictionRSquared();
   void showPLSVarSelMap();
 
-  void showUPCAScore();
-  void showUPCALoadings();
-  void showUPCAExpVar();
-  void showUPCAPredScore();
-
-  void showUPLSTScores();
-  void showUPLSUSCores();
-  void showUPLSPLoadings();
-  void showUPLSQLoadings();
-  void showUPLSWWeights();
-  void showUPLSRegCoeff();
-  void showUPLSExpVar();
-  void showUPLSValidation();
-  void showUPLSValidatedPrediction();
-  void showUPLSRecalcY();
-  void showUPLSPredScore();
-  void showUPLSPrediction();
-  void showUPLSPredictionRSquared();
-  void showUPLSVarSelMap();
 
   void showMLRCoeff();
   void showMLRRecalcY();
@@ -277,11 +224,6 @@ private:
        haveplsyscrambling,
        haveplsstaticsamplevalidation,
        haveplsdynamicsamplevalidation,
-       haveupca,
-       haveupcapred,
-       haveupls,
-       haveuplspred,
-       haveuplsvalid,
        havemlr,
        havemlrpred,
        havemlrvalid,
@@ -303,11 +245,6 @@ private:
   bool ProjectsHavePLSStaticSampleValidation(){ return haveplsstaticsamplevalidation; }
   bool ProjectsHavePLSDynamicSampleValidation(){ return haveplsdynamicsamplevalidation; }
   bool ProjectsHavePLSPrediction(){ return haveplspred; };
-  bool ProjectsHaveUPCA(){ return haveupca; };
-  bool ProjectsHaveUPCAPrediction(){ return haveupcapred; };
-  bool ProjectsHaveUPLS(){ return haveupls; };
-  bool ProjectsHaveUPLSValidated(){ return haveuplsvalid; };
-  bool ProjectsHaveUPLSPrediction(){ return haveuplspred; };
   bool ProjectsHaveMLR(){ return havemlr; }
   bool ProjectsHaveMLRValidated(){ return havemlrvalid; };
   bool ProjectsHaveMLRPrediction(){ return havemlrpred; };
@@ -332,12 +269,12 @@ private:
  *        |
  *        Name - Tab Count - pid - xhash - yhash - x Scaling type - y Scaling type - number of components - Model Type - Model ID (Model Position)  (10)
  *          |
- *         ModelPrediction Name - Tab Count - pid - Model ID - xhash - yhash - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
+ *         ModelPrediction Name - Tab Count - pid - Model ID - xhash - yhash - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
  *
  * Type could be "Matrix" or "Array"
  * Tab count is an id used to know what tables are opened and to close the deleted table
  * Data Position is used to retrieve the Data Position inside the QList<MATRIX>,  QList<Array> QList<PCAModel> etc...
- * Model Type can be PCA Model, PLS Model, UPCA Model, UPLS Model
+ * Model Type can be PCA Model, PLS Model, LDA Model, MLR Model
  *
  * Each time that implement a model yuou have to add also other routines in:
  * - OpenProject

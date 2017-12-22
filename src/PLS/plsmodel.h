@@ -7,6 +7,7 @@
 #include <QString>
 #include <QStringList>
 
+#include "../qstudiometricsdataoperations.h"
 
 class PLSPREDICTION
 {
@@ -72,35 +73,37 @@ public:
   void setDID(int did_){ did = did_; }
   void setDataHash(QString hash_){ hash = hash_; }
   void setXScaling(int xscaling_){ xscaling = xscaling_; } // used in order to set the identity matrix provenience usefull for pls cross validation
-  void setYScaling(int yscaling_){ yscaling = yscaling_; } // used in order to set the identity matrix provenience usefull for pls cross validation 
+  void setYScaling(int yscaling_){ yscaling = yscaling_; } // used in order to set the identity matrix provenience usefull for pls cross validation
   void setNPC(int npc_){ npc = npc_; }
+  int getNPC(){ return npc; }
   void setModelID(int modelid_){ modelid = modelid_; }
   int getDID(){ return did; }
-  QString &getDataHash(){ return hash; } // used in order to get the identity matrix provenience usefull for pls cross validation 
+  QString &getDataHash(){ return hash; } // used in order to get the identity matrix provenience usefull for pls cross validation
   int getXScaling(){ return xscaling; }
   int getYScaling(){ return yscaling; }
-  int getNPC(){ return npc; }
   int getModelID(){ return modelid; }
   void addPLSPrediction(){ prediction.append(new PLSPREDICTION); };
   void delPLSPredictionAt(int id){ delete prediction[id]; prediction.removeAt(id); }
-  void delPLSPredictions(){ 
+  void delPLSPredictions(){
     for(int i = 0; i < prediction.size(); i++){
       delete prediction[i];
     }
-    prediction.clear(); 
+    prediction.clear();
   }
-  
+
   PLSPREDICTION *getPLSPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
   PLSPREDICTION *getLastPLSPrediction(){ return prediction.last(); }
   int PLSPredictionCount(){ return prediction.size(); }
-  
+
+  QString& getHash(){ if(plshash.size() == 0){ plshash = GenMatrixHash(m->xscores); } return plshash; }
+
 private:
   PLSMODEL *m;
   QList<PLSPREDICTION*> prediction;
   QStringList objname, xvarname, yvarname;
   QString name;
   int did, xscaling, yscaling, npc, modelid, validation;
-  QString hash;
+  QString hash, plshash;
 };
 
 #endif

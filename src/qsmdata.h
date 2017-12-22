@@ -17,11 +17,10 @@
 #endif
 
 #include "qstudiometricstypes.h"
+#include "qstudiometricsdataoperations.h"
 #include "DATAIO.h"
 #include "PCA/pcamodel.h"
 #include "PLS/plsmodel.h"
-#include "UPCA/upcamodel.h"
-#include "UPLS/uplsmodel.h"
 #include "MLR/mlrmodel.h"
 #include "LDA/ldamodel.h"
 
@@ -89,22 +88,7 @@ public:
   void setName(QString name_){ name = name_; }
   QString getName(){ return name.toUtf8(); }
   QStringList& getObjName(){ return objname; }
-  void GenHash(){
-    if(v->size> 0 && !name.isEmpty()){
-      /*SortByName(); */
-      hash.clear();
-      hash.append(QString::number(v->size)); // get the size
-      hash.append(QString::number(ceil(DvectorModule(v)))); // get the vector module
-      hash.append(QString::number(ceil(getDVectorValue(v, 0)))); // get the element 0
-      hash.append(QString::number(ceil(getDVectorValue(v, (size_t)ceil((v->size-1)/2))))); // get the middle element
-      hash.append(QString::number(ceil(getDVectorValue(v, v->size-1)))); // get the last element
-      hash.append(name.toLatin1().toHex()); // get the last element
-    }
-    else{
-      hash = "Vector Empty!";
-    }
-  }
-  QString& getHash(){ return hash; }
+  QString& getHash(){ if(hash.size() == 0){ hash = GenDVectorHash(v); } return hash; }
 
 private:
   dvector *v;
@@ -153,29 +137,7 @@ public:
   QString getName(){ return name.toUtf8(); }
   QStringList& getObjName(){ return objname; }
   QStringList& getVarName(){ return varname; }
-  void GenHash(){
-    if(m->row > 0 && m->col > 0 && objname.size() > 0){
-      /*SortByName(); */
-      hash.clear();
-      QString vectorizedform;
-      vectorizedform.append(QString::number(m->row)); // get the row
-      vectorizedform.append(QString::number(m->col)); // get the col
-
-      for(uint i = 0; i < m->row; i++){
-        for(uint j = 0; j < m->col; j++){
-          vectorizedform.append(QString::number(((int)getMatrixValue(m, i, j)*100)/100.0));
-        }
-      }
-
-      QCryptographicHash hash_(QCryptographicHash::Md5);
-      hash_.addData(vectorizedform.toUtf8());
-      hash = QString(hash_.result().toHex());
-    }
-    else{
-      hash = "Matrix Empty!";
-    }
-  }
-  QString& getHash(){ return hash; }
+  QString& getHash(){ if(hash.size() == 0){ hash = GenMatrixHash(m); } return hash; }
 
 private:
   QStringList objname, varname;
@@ -226,30 +188,7 @@ public:
   QString getName(){ return name.toUtf8(); }
   QStringList& getObjName(){ return objname; }
   QStringList& getVarName(){ return varname; }
-  void GenHash(){
-    if(a->order > 0 && objname.size() > 0){
-      /*SortByName();*/
-      hash.clear();
-      hash.append(QString::number(a->order)); // get the order
-      QString vectorizedform;
-      for(uint k = 0; k < a->order; k++){
-        vectorizedform.append(QString::number(a->m[k]->row)); // get the row
-        vectorizedform.append(QString::number(a->m[k]->col)); // get the col
-        for(uint i = 0; i < a->m[k]->row; i++){
-          for(uint j = 0; j < a->m[k]->col; j++){
-            vectorizedform.append(QString::number(((int)getArrayValue(a, k, i, j)*100)/100.0));
-          }
-        }
-      }
-      QCryptographicHash hash_(QCryptographicHash::Md5);
-      hash_.addData(vectorizedform.toUtf8());
-      hash = QString(hash_.result().toHex());
-    }
-    else{
-      hash = "Array Empty!";
-    }
-  }
-  QString& getHash(){ return hash; }
+  QString& getHash(){ if(hash.size() == 0){ hash = GenArrayHash(a); } return hash; }
 
 private:
   QStringList objname, varname;
@@ -289,20 +228,10 @@ public:
   void delPCAModelAt(int id);
   void delPCAModels();
 
-  void addUPCAModel();
-  void delUPCAModel(int mid);
-  void delUPCAModelAt(int id);
-  void delUPCAModels();
-
   void addPLSModel();
   void delPLSModel(int mid);
   void delPLSModelAt(int id);
   void delPLSModels();
-
-  void addUPLSModel();
-  void delUPLSModel(int mid);
-  void delUPLSModelAt(int id);
-  void delUPLSModels();
 
   void addVarSelModel();
   void delVarSelModel(int mid);
@@ -334,27 +263,22 @@ public:
 
   // return the last model
   PCAModel *getLastPCAModel();
-  UPCAModel *getLastUPCAModel();
   PLSModel *getLastPLSModel();
-  UPLSModel *getLastUPLSModel();
   VariableSelectionModel *getLastVarSelModel();
   MLRModel *getLastMLRModel();
   LDAModel *getLastLDAModel();
 
   // return the model at given position id in list
   PCAModel *getPCAModelAt(int id);
-  UPCAModel *getUPCAModelAt(int id);
   PLSModel *getPLSModelAt(int id);
-  UPLSModel *getUPLSModelAt(int id);
   VariableSelectionModel *getVarSelModelAt(int id);
   MLRModel *getMLRModelAt(int id);
   LDAModel *getLDAModelAt(int id);
 
   // return the model with a special ModelID
   PCAModel *getPCAModel(int mid);
-  UPCAModel *getUPCAModel(int mid);
   PLSModel *getPLSModel(int mid);
-  UPLSModel *getUPLSModel(int mid);
+  PLSModel *getPLSModel(QString hash);
   VariableSelectionModel *getVarSelModel(int mid);
   MLRModel *getMLRModel(int mid);
   LDAModel *getLDAModel(int mid);
@@ -368,8 +292,6 @@ public:
   int ArrayCount();
   int PCACount();
   int PLSCount();
-  int UPCACount();
-  int UPLSCount();
   int VarSelCount();
   int MLRCount();
   int LDACount();
@@ -384,9 +306,7 @@ private:
   QList<MATRIX*> matrix_;
   QList<ARRAY*> array_;
   QList<PCAModel*> pcamodel;
-  QList<UPCAModel*> upcamodel;
   QList<PLSModel*> plsmodel;
-  QList<UPLSModel*> uplsmodel;
   QList<VariableSelectionModel*> varselectionmodel;
   QList<MLRModel*> mlrmodel;
   QList<LDAModel*> ldamodel;

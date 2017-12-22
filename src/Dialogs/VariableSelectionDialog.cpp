@@ -6,7 +6,7 @@ void VariableSelectionDialog::CheckDataCompatibility()
 {
   QStringList xnamlst, ynamlst;
   QByteArray xnamestr, ynamestr;
-  
+
   if(selectedproject_ != -1 && selectedmodel_ != -1 ){
     if(type == PLSVariableSelection){
       xnamlst = projects_->value(selectedproject_)->getMatrix(selectedxdata_)->getObjName();
@@ -16,21 +16,21 @@ void VariableSelectionDialog::CheckDataCompatibility()
       xnamlst = projects_->value(selectedproject_)->getArray(selectedxdata_)->getObjName();
       ynamlst = projects_->value(selectedproject_)->getArray(selectedydata_)->getObjName();
     }
-    
+
     qSort(xnamlst.begin(), xnamlst.end());
     qSort(ynamlst.begin(), ynamlst.end());
-    
+
     for(int i = 0; i < xnamlst.size(); i++){
       xnamestr.append(xnamlst[i]);
     }
-    
+
     for(int i = 0; i < ynamlst.size(); i++){
       ynamestr.append(ynamlst[i]);
     }
-    
+
     QString xhashname = QString(QCryptographicHash::hash(xnamestr,QCryptographicHash::Md5).toHex());
     QString yhashname = QString(QCryptographicHash::hash(ynamestr,QCryptographicHash::Md5).toHex());
-    
+
     if(xhashname.compare(yhashname) == 0){
       ui.okButton->setEnabled(true);
     }
@@ -73,11 +73,11 @@ void VariableSelectionDialog::setModel(QModelIndex current)
 void VariableSelectionDialog::setProject(QModelIndex current)
 {
   if(current.isValid()){
-    // set project 
+    // set project
     selectedproject_ = pids[current.row()];
     // create the value for the second tab
     tab2->clear();
-    
+
     selectedmodel_ = -1;
     mids.clear();
     if(selectedproject_ > -1){
@@ -90,12 +90,7 @@ void VariableSelectionDialog::setProject(QModelIndex current)
         }
       }
       else{
-        for(int i = 0; i < projects_->value(selectedproject_)->UPLSCount(); i++){
-          QList<QStandardItem*> row;
-          row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModelAt(i)->getName()));
-          tab2->appendRow(row);
-          mids.append(projects_->value(selectedproject_)->getUPLSModelAt(i)->getModelID());
-        } 
+        selectedproject_ = -1;
       }
     }
   }
@@ -107,7 +102,7 @@ void VariableSelectionDialog::setProject(QModelIndex current)
 void VariableSelectionDialog::OK()
 {
   if(selectedproject_ > -1 && selectedmodel_ > -1 && !ui.varselname->text().isEmpty()){
-    
+
     varselname = ui.varselname->text();
     /*check and set the validation type*/
     if(ui.leaveoneout->isChecked()){
@@ -117,7 +112,7 @@ void VariableSelectionDialog::OK()
     else{
       validtype = RANDOMGROUP;
     }
-    
+
     if(ui.gaButton->isChecked()){
       varselalgo = GA;
       popsize = ui.GApopulationBox->value();
@@ -135,7 +130,7 @@ void VariableSelectionDialog::OK()
       varselalgo = SPEARMAN;
       threshold = ui.threshold->value();
     }
-    
+
     accept();
   }
   else{
@@ -147,11 +142,11 @@ void VariableSelectionDialog::OK()
 VariableSelectionDialog::VariableSelectionDialog(PROJECTS* projects, int type_): QDialog()
 {
   ui.setupUi(this);
-  
+
   type = type_;
-  
+
   projects_ = projects;
-  
+
   if(type == PLSVariableSelection)
     setWindowTitle("PLS Variable Selection");
   else{
@@ -162,10 +157,10 @@ VariableSelectionDialog::VariableSelectionDialog(PROJECTS* projects, int type_):
   }
 
   selectedproject_ = selectedmodel_ = -1;
-  
+
   validtype = LOO; // leave one out
   ui.leaveoneout->setChecked(true);
-  
+
   niter = ui.iterations->value();
   ngroup = ui.groupnumber->value();
 
@@ -176,17 +171,17 @@ VariableSelectionDialog::VariableSelectionDialog(PROJECTS* projects, int type_):
   UpdateCrossoverType();
   nswappiness = (double)ui.GAcrossowerSwappinesBox->value()/100.f;
   mutationrate = ui.GAmutationBox->value();
-  
+
   randomvar = ui.PSOrandomnesBox->value();
-  
+
   compute_ = false;
-  
-  tab1 = new QStandardItemModel();   
+
+  tab1 = new QStandardItemModel();
   tab2 = new QStandardItemModel();
-  
+
   ui.listView->setModel(tab1);
   ui.listView_2->setModel(tab2);
-   
+
  //Fill the table with data
   QList<QStandardItem*> projectsname;
   for(int i = 0; i < projects_->keys().size(); i++){
@@ -195,17 +190,17 @@ VariableSelectionDialog::VariableSelectionDialog(PROJECTS* projects, int type_):
     pids.append(pid);
   }
   tab1->appendColumn(projectsname);
-  
+
   connect(ui.cancelButton, SIGNAL(clicked()), SLOT(reject()));
   connect(ui.okButton, SIGNAL(clicked()), SLOT(OK()));
-  
+
   ui.okButton->setAutoDefault(true);
   ui.okButton->setDefault(true);
 
   connect(ui.listView->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setProject(QModelIndex)));
   connect(ui.listView_2->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setModel(QModelIndex)));
   connect(ui.GAcrossovertype, SIGNAL(currentIndexChanged(int)), SLOT(UpdateCrossoverType()));
-  
+
 }
 
 VariableSelectionDialog::~VariableSelectionDialog()
@@ -213,4 +208,3 @@ VariableSelectionDialog::~VariableSelectionDialog()
   delete tab1;
   delete tab2;
 }
-

@@ -11,7 +11,7 @@
 
 #ifdef DEBUG
 #include <QDebug>
-#endif 
+#endif
 
 void ClassPlotDialog::CheckPlot()
 {
@@ -71,20 +71,20 @@ void ClassPlotDialog::AddGroup()
       #endif
       g.append(LABEL());
       g.last().name = groupnamedialog.getLabel();
-      
+
       for(int i = 0; i < selected.size(); i++){
 //         QString name = ui.listView_3->selectionModel()->selectedRows()[i].data(Qt::DisplayRole).toString();
         QString obj = selected[i].data(Qt::DisplayRole).toString();
 //         g.last().gname += QString("%1,").arg(obj );
         g.last().objects.append(obj );
       }
-      
+
       // Remove selected index from the view
       QModelIndexList indexes;
-      while((indexes = ui.listView_3->selectionModel()->selectedIndexes()).size()) { 
-        ui.listView_3->model()->removeRow(indexes.first().row()); 
+      while((indexes = ui.listView_3->selectionModel()->selectedIndexes()).size()) {
+        ui.listView_3->model()->removeRow(indexes.first().row());
       }
-      
+
       QList<QStandardItem*> row;
       row.append(new QStandardItem(g.last().name));
       tab4->appendRow(row);
@@ -147,7 +147,7 @@ void ClassPlotDialog::RemoveGroup()
   QModelIndexList indexes = ui.listView_4->selectionModel()->selectedRows();
   if(indexes.size() < 1)
     return;
-  
+
   for(int j = 0; j < indexes.size(); j++){
     int indx = -1;
     for(int i = 0; i < g.size(); i++){
@@ -159,7 +159,7 @@ void ClassPlotDialog::RemoveGroup()
         continue;
       }
     }
-    
+
     if(indx > -1){
       for(int i = 0; i < g[indx].objects.size(); i++){
         QList<QStandardItem*> row;
@@ -196,31 +196,11 @@ void ClassPlotDialog::setModelID(QModelIndex current)
         tab3->appendRow(row);
       }
     }
-    else if(type == UPCALOADINGS){
-      for(int i = 0; i < projects_->value(selectedproject_)->getUPCAModel(modelid)->getVarName().size(); i++){
-        QList<QStandardItem*> row;
-        row.append(new QStandardItem(projects_->value(selectedproject_)->getUPCAModel(modelid)->getVarName()[i]));
-        tab3->appendRow(row);
-      }
-    }
-    else if(type == UPLSLOADINGS){
-      for(int i = 0; i < projects_->value(selectedproject_)->getUPLSModel(modelid)->getXVarName().size(); i++){
-        QList<QStandardItem*> row;
-        row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModel(modelid)->getXVarName()[i]));
-        tab3->appendRow(row);
-      }
-      
-      for(int i = 0; i < projects_->value(selectedproject_)->getUPLSModel(modelid)->getYVarName().size(); i++){
-        QList<QStandardItem*> row;
-        row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModel(modelid)->getYVarName()[i]));
-        tab3->appendRow(row);
-      }
-    }
-    
-    if(type == PCALOADINGS || type == PLSLOADINGS || type == UPCALOADINGS || type == UPLSLOADINGS){
+
+    if(type == PCALOADINGS || type == PLSLOADINGS){
       labels = projects_->value(selectedproject_)->getVariableLabels();
     }
-    
+
     for(int i = 0; i < labels.size(); i++){
       ui.selbycomboBox->addItem(projects_->value(selectedproject_)->getVariableLabels()[i].name);
     }
@@ -239,7 +219,7 @@ void ClassPlotDialog::setProject(QModelIndex current)
     // create the value for the second tab
     tab2->clear();
     mids.clear();
-      
+
     if(type == PCALOADINGS){ // pca
       for(int i = 0; i < projects_->value(selectedproject_)->PCACount(); i++){
         QList<QStandardItem*> row;
@@ -256,31 +236,15 @@ void ClassPlotDialog::setProject(QModelIndex current)
         tab2->appendRow(row);
       }
     }
-    else if(type == UPCALOADINGS){ // upca
-      for(int i = 0; i < projects_->value(selectedproject_)->UPCACount(); i++){
-        QList<QStandardItem*> row;
-        row.append(new QStandardItem(projects_->value(selectedproject_)->getUPCAModelAt(i)->getName()));
-        mids.append(projects_->value(selectedproject_)->getUPCAModelAt(i)->getModelID());
-        tab2->appendRow(row);
-      }
+    else{
+      selectedproject_ = -1;
     }
-    else if(type == UPLSLOADINGS){ // upls
-      for(int i = 0; i < projects_->value(selectedproject_)->UPLSCount(); i++){
-        QList<QStandardItem*> row;
-        row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModelAt(i)->getName()));
-        mids.append(projects_->value(selectedproject_)->getUPLSModelAt(i)->getModelID());
-        tab2->appendRow(row);
-      }
-    }
-  }
-  else{
-    selectedproject_ = -1;
   }
   CheckPlot();
 }
 
 void ClassPlotDialog::actionPlot()
-{  
+{
   if(selectedproject_ == -1 || modelid == -1){
     QMessageBox::warning(this, tr("Warning!"), tr("Please select project and model to plot.\n"), QMessageBox::Close);
     return;
@@ -300,18 +264,18 @@ ClassPlotDialog::ClassPlotDialog(PROJECTS *projects, int type_)
   ui.setupUi(this);
 
   ui.listView->setSelectionBehavior(QAbstractItemView::SelectRows);
-  ui.listView_2->setSelectionBehavior(QAbstractItemView::SelectRows);  
-  
+  ui.listView_2->setSelectionBehavior(QAbstractItemView::SelectRows);
+
   projects_ = projects;
   plot_ = false;
   type = type_;
   selectedproject_ = modelid = -1;
-  
-  tab1 = new QStandardItemModel();   
+
+  tab1 = new QStandardItemModel();
   tab2 = new QStandardItemModel();
   tab3 = new QStandardItemModel();
   tab4 = new QStandardItemModel();
-  
+
   ui.listView->setModel(tab1);
   ui.listView_2->setModel(tab2);
   ui.listView_3->setModel(tab3);
@@ -326,12 +290,6 @@ ClassPlotDialog::ClassPlotDialog(PROJECTS *projects, int type_)
     else if(type == PLSLOADINGS && projects_->value(pid)->PLSCount() > 0){ // PLS
       acquire = true;
     }
-    else if(type == UPCALOADINGS && projects_->value(pid)->UPCACount() > 0){ // UPCA
-      acquire = true;
-    }
-    else if(type == UPLSLOADINGS && projects_->value(pid)->UPLSCount() > 0){ // UPLS
-      acquire = true;
-    }
     else{
       acquire = false;
     }
@@ -344,7 +302,7 @@ ClassPlotDialog::ClassPlotDialog(PROJECTS *projects, int type_)
     }
     else{
       continue;
-    } 
+    }
   }
 
   connect(ui.plotButton, SIGNAL(clicked()), SLOT(actionPlot()));
@@ -355,13 +313,13 @@ ClassPlotDialog::ClassPlotDialog(PROJECTS *projects, int type_)
   connect(ui.findAllButton, SIGNAL(clicked(bool)), SLOT(FindAll()));
   connect(ui.addgroupButton, SIGNAL(clicked(bool)), SLOT(AddGroup()));
   connect(ui.removegroupButton, SIGNAL(clicked(bool)), SLOT(RemoveGroup()));
-  
-  
+
+
   connect(ui.selectButton, SIGNAL(clicked(bool)), SLOT(SelectAll()));
   connect(ui.invertselectionButton, SIGNAL(clicked(bool)), SLOT(InvertSelection()));
   connect(ui.selbycomboBox, SIGNAL(currentIndexChanged(int)), SLOT(SelectBy()));
   connect(ui.unselectButton, SIGNAL(clicked(bool)), SLOT(UnselectAll()));
-  
+
 //   connect(ui.listView_3->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT());
 
   CheckPlot();

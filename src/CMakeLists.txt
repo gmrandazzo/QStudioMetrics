@@ -2,19 +2,16 @@ set(QSTUDIOMETRICS_SRC
     dircompressor.cpp
     PCA/pcamodel.cpp
     PLS/plsmodel.cpp
-    UPCA/upcamodel.cpp
-    UPLS/uplsmodel.cpp
     MLR/mlrmodel.cpp
     LDA/ldamodel.cpp
     VariableSelectionModel.cpp
+    qstudiometricsdataoperations.cpp
     qsmdata.cpp
     DATAIO.cpp
     Dialogs/PlotDialog.cpp
     Dialogs/ClassPlotDialog.cpp
     PCA/PCAPlot.cpp
     PLS/PLSPlot.cpp
-    UPCA/UPCAPlot.cpp
-    UPLS/UPLSPlot.cpp
     MLR/MLRPlot.cpp
     LDA/LDAPlot.cpp
     Dialogs/ImportLabelListDialog.cpp
@@ -64,19 +61,16 @@ set(QSTUDIOMETRICS_SRC
     main.cpp)
 
 set(QSTUDIOMETRICS_H
+    qstudiometricsdataoperations.h
     qsmdata.h
     PCA/pcamodel.h
     PLS/plsmodel.h
-    UPCA/upcamodel.h
-    UPLS/uplsmodel.h
     VariableSelectionModel.h
     DATAIO.h
     Dialogs/PlotDialog.h
     Dialogs/ClassPlotDialog.h
     PCA/PCAPlot.h
     PLS/PLSPlot.h
-    UPCA/UPCAPlot.h
-    UPLS/UPLSPlot.h
     MLR/MLRPlot.h
     LDA/LDAPlot.h
     Dialogs/ImportLabelListDialog.h

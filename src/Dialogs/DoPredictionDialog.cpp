@@ -16,10 +16,6 @@ void DoPredictionDialog::CheckDataForPrediction()
       varsel = projects_->value(selectedproject_)->getPLSModel(selectedmodel_)->getXVarName();
       vardata = projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName();
     }
-    else if(type == UPCA_){
-      varsel = projects_->value(selectedproject_)->getUPCAModel(selectedmodel_)->getVarName();
-      vardata = projects_->value(selectedproject_)->getArray(selecteddata_)->getVarName();
-    }
     else if(type == MLR_){
       varsel = projects_->value(selectedproject_)->getMLRModel(selectedmodel_)->getXVarName();
       vardata = projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName();
@@ -28,12 +24,8 @@ void DoPredictionDialog::CheckDataForPrediction()
       varsel = projects_->value(selectedproject_)->getLDAModel(selectedmodel_)->getVarName();
       vardata = projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName();
     }
-    else{
-      varsel = projects_->value(selectedproject_)->getUPLSModel(selectedmodel_)->getXVarName();
-      vardata = projects_->value(selectedproject_)->getArray(selecteddata_)->getVarName();
-    }
-    
-     int nvarmatch = 0;
+
+    int nvarmatch = 0;
     for(int i = 0; i < varsel.size(); i++){
       if(vardata.indexOf(varsel[i]) > -1){
         nvarmatch++;
@@ -42,12 +34,12 @@ void DoPredictionDialog::CheckDataForPrediction()
         continue;
       }
     }
-    
+
     if(nvarmatch == varsel.size()){
       ui.nextButton->setEnabled(true);
     }
     else{
-      QMessageBox::warning(this, tr("Warnig"), tr("The selected data have different number of descriptors with the selected model. \n\nNo prediction can be calculated."), QMessageBox::Ok); 
+      QMessageBox::warning(this, tr("Warnig"), tr("The selected data have different number of descriptors with the selected model. \n\nNo prediction can be calculated."), QMessageBox::Ok);
       ui.nextButton->setEnabled(false);
     }
   }
@@ -156,7 +148,7 @@ void DoPredictionDialog::ObjSelectAll()
 
 void DoPredictionDialog::EnableOKButton()
 {
-  if(type == PCA_ || type == UPCA_  || type == LDA_){
+  if(type == PCA_ || type == LDA_){
     if(ui.listView_4->selectionModel()->selectedRows(0).size() > 0){
       ui.okButton->setEnabled(true);
     }
@@ -207,27 +199,27 @@ void DoPredictionDialog::setselectedModel(QModelIndex current)
 void DoPredictionDialog::setProject(QModelIndex current)
 {
   if(current.isValid()){
-    // set project 
+    // set project
     selectedproject_ = pids[current.row()];
 
-    
+
     ui.objSelectByLabel->clear();
     ui.objSelectByLabel->addItem("Select by label...");
     for(int i = 0; i < projects_->value(selectedproject_)->getObjectLabels().size(); i++){
       ui.objSelectByLabel->addItem(projects_->value(selectedproject_)->getObjectLabels()[i].name);
     }
-    
+
     ui.yvarSelectByLabel->clear();
     ui.yvarSelectByLabel->addItem("Select by label...");
     for(int i = 0; i < projects_->value(selectedproject_)->getVariableLabels().size(); i++){
       ui.yvarSelectByLabel->addItem(projects_->value(selectedproject_)->getVariableLabels()[i].name);
     }
-    
+
     // create the value for the second tab
     tab2->clear();
     tab3->clear();
     mids.clear();
-    
+
     if(type == PCA_){
       for(int i = 0; i < projects_->value(selectedproject_)->PCACount(); i++){
         QList<QStandardItem*> row;
@@ -235,7 +227,7 @@ void DoPredictionDialog::setProject(QModelIndex current)
         mids.append(projects_->value(selectedproject_)->getPCAModelAt(i)->getModelID());
         tab2->appendRow(row);
       }
-      
+
       for(int i = 0; i < projects_->value(selectedproject_)->MatrixCount(); i++){
         QList<QStandardItem*> row;
         row.append(new QStandardItem(projects_->value(selectedproject_)->getMatrix(i)->getName()));
@@ -249,42 +241,11 @@ void DoPredictionDialog::setProject(QModelIndex current)
         mids.append(projects_->value(selectedproject_)->getPLSModelAt(i)->getModelID());
         tab2->appendRow(row);
       }
-      
+
       for(int i = 0; i < projects_->value(selectedproject_)->MatrixCount(); i++){
         QList<QStandardItem*> row;
         row.append(new QStandardItem(projects_->value(selectedproject_)->getMatrix(i)->getName()));
         tab3->appendRow(row);
-      }
-    }
-    else if(type == UPCA_){
-      for(int i = 0; i < projects_->value(selectedproject_)->UPCACount(); i++){
-        QList<QStandardItem*> row;
-        row.append(new QStandardItem(projects_->value(selectedproject_)->getUPCAModelAt(i)->getName()));
-        mids.append(projects_->value(selectedproject_)->getUPCAModelAt(i)->getModelID());
-        tab2->appendRow(row);
-      }
-      
-      for(int i = 0; i < projects_->value(selectedproject_)->ArrayCount(); i++){
-        QList<QStandardItem*> row;
-        row.append(new QStandardItem(projects_->value(selectedproject_)->getArray(i)->getName()));
-        tab3->appendRow(row);
-      }
-    }
-    else if(type == UPLS_){
-      tab6->clear();
-      for(int i = 0; i < projects_->value(selectedproject_)->UPLSCount(); i++){
-        QList<QStandardItem*> row;
-        row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModelAt(i)->getName()));
-        mids.append(projects_->value(selectedproject_)->getUPLSModelAt(i)->getModelID());
-        tab2->appendRow(row);
-      }
-      
-      for(int i = 0; i < projects_->value(selectedproject_)->ArrayCount(); i++){
-        QList<QStandardItem*> xrow, yrow;
-        xrow.append(new QStandardItem(projects_->value(selectedproject_)->getArray(i)->getName()));
-        yrow.append(new QStandardItem(projects_->value(selectedproject_)->getArray(i)->getName()));
-        tab3->appendRow(xrow);
-        tab6->appendRow(yrow);
       }
     }
     else if(type == MLR_){ // MLR
@@ -294,7 +255,7 @@ void DoPredictionDialog::setProject(QModelIndex current)
         mids.append(projects_->value(selectedproject_)->getMLRModelAt(i)->getModelID());
         tab2->appendRow(row);
       }
-      
+
       for(int i = 0; i < projects_->value(selectedproject_)->MatrixCount(); i++){
         QList<QStandardItem*> row;
         row.append(new QStandardItem(projects_->value(selectedproject_)->getMatrix(i)->getName()));
@@ -308,7 +269,7 @@ void DoPredictionDialog::setProject(QModelIndex current)
         mids.append(projects_->value(selectedproject_)->getLDAModelAt(i)->getModelID());
         tab2->appendRow(row);
       }
-      
+
       for(int i = 0; i < projects_->value(selectedproject_)->MatrixCount(); i++){
         QList<QStandardItem*> row;
         row.append(new QStandardItem(projects_->value(selectedproject_)->getMatrix(i)->getName()));
@@ -324,14 +285,13 @@ void DoPredictionDialog::next()
     state++;
     ui.prevButton->setEnabled(true);
     ui.nextButton->setEnabled(false);
-    
+
     ui.objectGroupBox->show();
     ui.prednameFrame->hide();
     ui.projectGroupBox->hide();
     ui.dataGroupBox->hide();
     ui.modelGroupBox->hide();
-    ui.dataGroupBox_2->hide();
-    
+
     // Generate Object listview and Variable listview
     tab4->clear();
     tab5->clear();
@@ -341,7 +301,7 @@ void DoPredictionDialog::next()
         oname.append(new QStandardItem(projects_->value(selectedproject_)->getMatrix(selecteddata_)->getObjName()[i]));
         tab4->appendRow(oname);
       }
-      
+
       if(type == PLS_ || type == MLR_){
         ui.YvariableGroupBox->show();
         for(int i = 1; i < projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName().size(); i++){
@@ -352,23 +312,7 @@ void DoPredictionDialog::next()
       }
     }
     else{
-      for(int i = 0; i < projects_->value(selectedproject_)->getArray(selecteddata_)->getObjName().size(); i++){
-        QList<QStandardItem*> oname;
-        oname.append(new QStandardItem(projects_->value(selectedproject_)->getArray(selecteddata_)->getObjName()[i]));
-        tab4->appendRow(oname);
-      }
-      
-      if(type == UPLS_ && ui.dataGroupBox_2->isChecked()){
-        ui.YvariableGroupBox->show();
-        for(int i = 1; i < projects_->value(selectedproject_)->getArray(selectedydata_)->getVarName().size(); i++){
-          QList<QStandardItem*> vname;
-          vname.append(new QStandardItem(projects_->value(selectedproject_)->getArray(selectedydata_)->getVarName()[i]));
-          tab5->appendRow(vname);
-        }
-      }
-      else{
-        ui.YvariableGroupBox->hide();
-      }
+      ui.YvariableGroupBox->hide();
     }
     adjustSize();
   }
@@ -391,11 +335,8 @@ void DoPredictionDialog::previous()
     ui.projectGroupBox->show();
     ui.dataGroupBox->show();
     ui.prednameFrame->show();
-    
-    if(type == UPLS_){
-      ui.dataGroupBox_2->show();
-    }
-    
+
+
     adjustSize();
   }
   else{
@@ -405,8 +346,8 @@ void DoPredictionDialog::previous()
 }
 
 void DoPredictionDialog::OK()
-{ 
-  
+{
+
   if(selectedproject_ == -1|| selectedmodel_ == -1 || selecteddata_ == -1 || ui.predname->text().isEmpty()){
     reject();
   }
@@ -419,7 +360,7 @@ void DoPredictionDialog::OK()
         continue;
       }
     }
-    
+
     if(type == PLS_ || type == MLR_){
       if(ui.YvariableGroupBox->isChecked() == true){
         for(int i = 0; i < ui.listView_5->model()->rowCount(); i++){
@@ -432,19 +373,6 @@ void DoPredictionDialog::OK()
         }
       }
     }
-    else if(type == UPLS_){
-      if(selectedydata_ > -1){
-        for(int i = 0; i < ui.listView_6->model()->rowCount(); i++){
-          if(ui.listView_6->selectionModel()->isSelected(ui.listView_6->model()->index(i, 0)) == true){
-            yvarsel.append(ui.listView_6->model()->index(i, 0).data(Qt::DisplayRole).toString());
-          }
-          else{
-            continue;
-          }
-        }
-      }
-    }
-    
     compute_ = true;
     accept();
   }
@@ -453,28 +381,24 @@ void DoPredictionDialog::OK()
 DoPredictionDialog::DoPredictionDialog(PROJECTS *projects, int type_)
 {
   ui.setupUi(this);
-  
+
   type = type_;
-  
+
   projects_ = projects;
 
   state = 0;
-  
-  
+
+
   ui.YvariableGroupBox->hide();
   ui.objectGroupBox->hide();
   ui.prevButton->setEnabled(false);
   ui.okButton->setEnabled(false);
-  ui.dataGroupBox_2->hide();
-  
+
   if(type == PCA_){
     setWindowTitle("Compute PCA Prediction");
   }
   else if(type == PLS_){
     setWindowTitle("Compute PLS Prediction");
-  }
-  else if(type == UPCA_){
-    setWindowTitle("Compute UPCA Prediction");
   }
   else if(type == MLR_){
     setWindowTitle("Compute MLR Prediction");
@@ -487,32 +411,23 @@ DoPredictionDialog::DoPredictionDialog(PROJECTS *projects, int type_)
     ui.yvarSelectByLabel->hide();
     ui.yvarUnselectButton->hide();
   }
-  else{
-    setWindowTitle("Compute UPLS Prediction");
-    ui.dataGroupBox->setTitle("X Data");
-    ui.dataGroupBox_2->setTitle("Y Data");
-    ui.YvariableGroupBox->setCheckable(false);
-    ui.dataGroupBox_2->show();
-  }
-  
+
   selectedmodel_ = selecteddata_ = -1;
-  
+
   compute_ = false;
-  
-  tab1 = new QStandardItemModel();   
+
+  tab1 = new QStandardItemModel();
   tab2 = new QStandardItemModel();
   tab3 = new QStandardItemModel();
   tab4 = new QStandardItemModel();
   tab5 = new QStandardItemModel();
-  tab6 = new QStandardItemModel();
-  
+
   ui.listView->setModel(tab1);
   ui.listView_2->setModel(tab2);
   ui.listView_3->setModel(tab3);
   ui.listView_4->setModel(tab4);
   ui.listView_5->setModel(tab5);
-  ui.listView_6->setModel(tab6);
-  
+
  //Fill the table with data
   QList<QStandardItem*> projectsname;
   for(int i = 0; i < projects_->keys().size(); i++){
@@ -521,22 +436,21 @@ DoPredictionDialog::DoPredictionDialog(PROJECTS *projects, int type_)
     pids.append(pid);
   }
   tab1->appendColumn(projectsname);
-  
+
   connect(ui.nextButton, SIGNAL(clicked(bool)), SLOT(next()));
   connect(ui.prevButton, SIGNAL(clicked(bool)), SLOT(previous()));
   connect(ui.cancelButton, SIGNAL(clicked()), SLOT(reject()));
   connect(ui.okButton, SIGNAL(clicked()), SLOT(OK()));
-  
+
   connect(ui.listView->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setProject(QModelIndex)));
   connect(ui.listView_2->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setselectedModel(QModelIndex)));
   connect(ui.listView_3->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setselectedData(QModelIndex)));
-  connect(ui.listView_6->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setselectedYData(QModelIndex)));
-  
-  
+
+
   connect(ui.listView_4->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableOKButton()));
   connect(ui.listView_5->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableOKButton()));
   connect(ui.YvariableGroupBox, SIGNAL(clicked(bool)), SLOT(EnableOKButton()));
-  
+
   connect(ui.objSelectAllButton, SIGNAL(clicked(bool)), SLOT(ObjSelectAll()));
   connect(ui.objInvertSelectionButton, SIGNAL(clicked(bool)), SLOT(ObjInvertSelection()));
   connect(ui.objUnselectButton, SIGNAL(clicked(bool)), SLOT(ObjUnselectAll()));
@@ -546,8 +460,8 @@ DoPredictionDialog::DoPredictionDialog(PROJECTS *projects, int type_)
   connect(ui.yvarInvertSelectionButton, SIGNAL(clicked(bool)), SLOT(VarInvertSelection()));
   connect(ui.yvarUnselectButton, SIGNAL(clicked(bool)), SLOT(VarUnselectAll()));
   connect(ui.yvarSelectByLabel, SIGNAL(currentIndexChanged(int)), SLOT(VarSelectBy()));
-  
-  
+
+
   adjustSize();
 }
 
@@ -558,6 +472,4 @@ DoPredictionDialog::~DoPredictionDialog()
   delete tab3;
   delete tab4;
   delete tab5;
-  delete tab6;
 }
-

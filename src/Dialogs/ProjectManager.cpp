@@ -146,7 +146,6 @@ void ProjectManager::Add()
     }
 
     data->getMATRIXList().last()->setName(iffd.getMatrix()->getName());
-    data->getMATRIXList().last()->GenHash();
     matrixid.append(data->MatrixCount()-1);
     /*}
     else{
@@ -172,7 +171,6 @@ void ProjectManager::Add()
       }
 
       data->getARRAYList().last()->setName(iffd.getArray()->getName());
-      data->getARRAYList().last()->GenHash();
       arrayid.append(data->ArrayCount()-1);
     }
     */
@@ -270,7 +268,6 @@ void ProjectManager::AddImagesAsRGB()
         }
 
         data->getMATRIXList().last()->setName(dirinfo.fileName());
-        data->getMATRIXList().last()->GenHash();
         matrixid.append(data->MatrixCount()-1);
       }
     }

@@ -51,7 +51,6 @@ void AdvancedPretreatmentDialog::OK()
   }
 
   mx->setName(ui.dataname->text());
-  mx->GenHash();
   DelMatrix(&mx_in);
   accept();
 }
@@ -84,7 +83,7 @@ void AdvancedPretreatmentDialog::OK()
   for(size_t i = 0; i < nrow; i++){
     mx->getObjName().append(projects->value(pid)->getMatrix(mxid)->getObjName()[i]);
   }
-  
+
   matrix *mx_out;
   initMatrix(&mx_out);
   if(ui.logTransform->isChecked()){
@@ -136,7 +135,6 @@ void AdvancedPretreatmentDialog::OK()
   }
 
   mx->setName(ui.dataname->text());
-  mx->GenHash();
   DelMatrix(&mx_in);
   DelMatrix(&mx_out);
   accept();

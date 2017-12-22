@@ -98,7 +98,7 @@ LDAPREDICTION::LDAPREDICTION()
   initUIVector(&pclass);
   initMatrix(&pfeatures);
   initMatrix(&probpred);
-  initMatrix(&mvnpfd);
+  initMatrix(&mnpdf);
 }
 
 LDAPREDICTION::~LDAPREDICTION(){
@@ -108,7 +108,7 @@ LDAPREDICTION::~LDAPREDICTION(){
   DelUIVector(&pclass);
   DelMatrix(&pfeatures);
   DelMatrix(&probpred);
-  DelMatrix(&mvnpfd);
+  DelMatrix(&mnpdf);
 }
 
 void LDAModel::ImportLDAModelInfo(char *path)
@@ -214,7 +214,7 @@ LDAModel::~LDAModel()
 {
   #ifdef DEBUG
   qDebug() << "Delete LDA Model: " << name;
-  #endif  
+  #endif
   delLDAPredictions();
   DelLDAModel(&m);
 }

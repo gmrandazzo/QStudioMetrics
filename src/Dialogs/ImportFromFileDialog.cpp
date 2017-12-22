@@ -321,7 +321,6 @@ void ImportFromFileDialog::BuildArray()
       }
     }
   }
-  a->GenHash();
 }
 
 void ImportFromFileDialog::BuildMatrix()
@@ -562,7 +561,6 @@ void ImportFromFileDialog::BuildMatrix()
       }
     }
   }
-  m->GenHash();
 }
 
 void ImportFromFileDialog::GetColumtoDiscard()

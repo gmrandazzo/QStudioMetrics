@@ -18,14 +18,12 @@ class ClassPlotDialog : public QDialog
 public:
   enum WindowType{
       PCALOADINGS = 0,
-      PLSLOADINGS = 1,
-      UPCALOADINGS = 2,
-      UPLSLOADINGS = 3
+      PLSLOADINGS = 1
   };
-  
+
   ClassPlotDialog (PROJECTS *projects, int type); // 0 = PCA;   1 = PLS; 2 = UPCA;   3 = UPLS; LDA
   ~ClassPlotDialog ();
-  
+
   int selectedProject(){ return selectedproject_; }
   int getModelID(){ return modelid; }
   LABELS getClass(){ return g; }
@@ -43,7 +41,7 @@ private slots:
   void InvertSelection();
   void SelectBy();
   void UnselectAll();
-  
+
 private:
   Ui::ClassPlotDialog  ui;
   PROJECTS *projects_;
@@ -60,4 +58,3 @@ private:
 };
 
 #endif
-

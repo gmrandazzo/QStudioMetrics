@@ -205,154 +205,6 @@ void RUN::DoMLR()
   MLR(x, y, mlrmodel->Model(), &scientifisignal);
 }
 
-void RUN::DoUPLSVariableSelection()
-{
-  int validtype;
-  if(vt == LOO){
-    validtype = 1;
-  }
-  else if(vt == RANDOMGROUP){
-    validtype = 2;
-  }
-  else{
-    validtype = 0;
-  }
-
-  if(vselalgorithm == GA){
-    UPLSGAVariableSelection(ax, ay, NULL, NULL,
-                            xscaling, yscaling, pc, validtype, ngroup, niter,
-                            population_size, fraction_of_population, mutation_rate, crossovertype, nswapping, populationconvergence,
-                            vselmod->SelectedVablesPointer(), vselmod->MapPointer(), vselmod->VariableDistributionPointer(), &scientifisignal);
-  }
-  else{
-    UPSLPSOVariableSelection(ax, ay, NULL, NULL,
-                            xscaling, yscaling, pc, validtype, ngroup, niter,
-                            population_size, randomness,
-                             vselmod->SelectedVablesPointer(), vselmod->MapPointer(), vselmod->VariableDistributionPointer(), &scientifisignal);
-  }
-}
-
-void RUN::DoUPLSPrediction()
-{
-  matrix *m = uplsmod->getLastUPLSPrediction()->getXPredScores();
-
-  UPLSScorePredictor(ax,
-                     uplsmod->Model(),
-                     uplsmod->getNPC(),
-                     &m);
-
-  array *a = uplsmod->getLastUPLSPrediction()->getYDipVar();
-  // we go from 1 because for 0 component no value can be calculated.
-  for(pc = 1; pc <= uplsmod->getNPC(); pc++){
-
-    array *py;
-    initArray(&py);
-    UPLSYPredictor(uplsmod->getLastUPLSPrediction()->getXPredScores(),
-                  uplsmod->Model(),
-                  pc,
-                  &py);
-
-    for(uint k = 0; k < py->order; k++){
-      ArrayAppendMatrix(&a, py->m[k]);
-    }
-
-    DelArray(&py);
-  }
-
-  if(ay != 0 && ay->order > 0 && ay->m[0]->col > 0){
-    array *r2y = uplsmod->getLastUPLSPrediction()->getR2Y();
-    array *sdec = uplsmod->getLastUPLSPrediction()->getSDEC();
-
-    UPLSRSquared(ax, ay,
-                 uplsmod->Model(),
-                 uplsmod->getNPC(),
-                 NULL, &r2y, &sdec);
-  }
-}
-
-void RUN::DoUPLSValidation()
-{
-  DelDVector(&uplsmod->Model()->r2x_validation);
-  DelArray(&uplsmod->Model()->q2y);
-  DelArray(&uplsmod->Model()->sdep);
-  DelArray(&uplsmod->Model()->predicted_y);
-  DelArray(&uplsmod->Model()->q2y_yscrambling);
-  DelArray(&uplsmod->Model()->sdep_yscrambling);
-
-  initDVector(&uplsmod->Model()->r2x_validation);
-  initArray(&uplsmod->Model()->q2y);
-  initArray(&uplsmod->Model()->sdep);
-  initArray(&uplsmod->Model()->predicted_y);
-  initArray(&uplsmod->Model()->q2y_yscrambling);
-  initArray(&uplsmod->Model()->sdep_yscrambling);
-
-  if(vt == LOO){ // Leave One Out
-    UPLSLOOCV(ax, ay,
-                      uplsmod->getXScaling(),
-                      uplsmod->getYScaling(),
-                      uplsmod->getNPC(),
-                      NULL/*&uplsmod->Model()->r2x_validation*/,
-                      &uplsmod->Model()->q2y,
-                      &uplsmod->Model()->sdep,
-                      &uplsmod->Model()->predicted_y,
-                      &uplsmod->Model()->pred_residuals, &scientifisignal);
-  }
-  else if(vt == RANDOMGROUP){ // Cross Validation
-    UPLSRandomGroupsCV(ax, ay,
-                      uplsmod->getXScaling(),
-                      uplsmod->getYScaling(),
-                      uplsmod->getNPC(), ngroup, niter,
-                      NULL/*&uplsmod->Model()->r2x_validation*/,
-                      &uplsmod->Model()->q2y,
-                      &uplsmod->Model()->sdep,
-                      &uplsmod->Model()->predicted_y,
-                      &uplsmod->Model()->pred_residuals, &scientifisignal);
-  }
-
-  if(yscrambling == true){
-    if(vt == LOO){
-      UPLSYScrambling(ax, ay,
-                          uplsmod->getXScaling(),
-                          uplsmod->getYScaling(),
-                          uplsmod->getNPC(), block, 0, 0, 0,
-                          &uplsmod->Model()->q2y_yscrambling,
-                          &uplsmod->Model()->sdep_yscrambling, &scientifisignal);
-    }
-    else{
-      UPLSYScrambling(ax, ay,
-                        uplsmod->getXScaling(),
-                        uplsmod->getYScaling(),
-                        uplsmod->getNPC(), block, 1, ngroup, niter,
-                        &uplsmod->Model()->q2y_yscrambling,
-                        &uplsmod->Model()->sdep_yscrambling, &scientifisignal);
-    }
-  }
-}
-
-void RUN::DoUPLS()
-{
-  UPLS(ax, ay,
-       pc, xscaling, yscaling,
-       uplsmod->Model(), &scientifisignal);
-  UPLSRSquared(ax,
-               ay,
-               uplsmod->Model(), pc,
-               NULL/*&(uplsmod->Model()->r2x_model)*/,
-               &(uplsmod->Model()->r2y_model),
-               &(uplsmod->Model()->sdec));
-}
-
-void RUN::DoUPCAPrediction()
-{
-  matrix *m = upcamod->getLastUPCAPrediction()->getPredScores();
-  UPCAScorePredictor(ax, upcamod->Model(), upcamod->getNPC(), &m);
-}
-
-void RUN::DoUPCA()
-{
-  UPCA(ax, pc, xscaling, upcamod->Model(), &scientifisignal);
-}
-
 void RUN::DoPLSVariableSelection()
 {
   int validtype;
@@ -660,36 +512,6 @@ QFuture< void > RUN::RunMLR()
   return QtConcurrent::run(this, &RUN::DoMLR);
 }
 
-QFuture< void > RUN::RunUPLSVariableSelection()
-{
-  return QtConcurrent::run(this, &RUN::DoUPLSVariableSelection);
-}
-
-QFuture< void > RUN::RunUPLSPrediction()
-{
-  return QtConcurrent::run(this, &RUN::DoUPLSPrediction);
-}
-
-QFuture< void > RUN::RunUPLSValidation()
-{
-  return QtConcurrent::run(this, &RUN::DoUPLSValidation);
-}
-
-QFuture< void > RUN::RunUPLS()
-{
-  return QtConcurrent::run(this, &RUN::DoUPLS);
-}
-
-QFuture< void > RUN::RunUPCAPrediction()
-{
-  return QtConcurrent::run(this, &RUN::DoUPCAPrediction);
-}
-
-QFuture< void > RUN::RunUPCA()
-{
-  return QtConcurrent::run(this, &RUN::DoUPCA);
-}
-
 QFuture< void > RUN::RunPLSVariableSelection()
 {
   return QtConcurrent::run(this, &RUN::DoPLSVariableSelection);
@@ -930,16 +752,6 @@ void RUN::setMLRModel(MLRModel* mlrmodel_)
 void RUN::setVarSel(VariableSelectionModel* vselmod_)
 {
   vselmod = vselmod_;
-}
-
-void RUN::setUPLSModel(UPLSModel* uplsmod_)
-{
-  uplsmod = uplsmod_;
-}
-
-void RUN::setUPCAModel(UPCAModel* upcamod_)
-{
-  upcamod = upcamod_;
 }
 
 void RUN::setPLSModel(PLSModel* plsmod_)

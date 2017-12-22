@@ -10,11 +10,11 @@ void MergeDataDialog::OK()
     objnames.append(projects->value(pid)->getMatrix(mxids[i])->getObjName());
     varnames.append(projects->value(pid)->getMatrix(mxids[i])->getVarName());
   }
-  
+
   objnames.removeDuplicates();
   varnames.removeDuplicates();
   varnames.removeFirst();
-  
+
   if(ui.mergematchcol->isChecked()){
     QStringList matchvarnames;
     for(int i = 0; i < varnames.size(); i++){
@@ -28,7 +28,7 @@ void MergeDataDialog::OK()
           break;
         }
       }
-      
+
       if(add == true){
         matchvarnames.append(varnames[i]);
       }
@@ -62,12 +62,11 @@ void MergeDataDialog::OK()
       }
     }
   }
-  
+
   mx->getVarName().append("Object Names");
   mx->getVarName().append(varnames);
   mx->getObjName().append(objnames);
   mx->setName(ui.dataname->text());
-  mx->GenHash();
   accept();
 }
 
@@ -137,14 +136,14 @@ MergeDataDialog::MergeDataDialog (PROJECTS *projects_)
   tab2 = new QStandardItemModel();
   ui.listView->setModel(tab1);
   ui.listView_2->setModel(tab2);
-  
+
   QList<QStandardItem*> projectsname;
   for(int i = 0; i < projects->keys().size(); i++){
     projectsname.append(new QStandardItem(projects->value(projects->keys()[i])->getProjectName()));
     pids.append(projects->keys()[i]);
   }
   tab1->appendColumn(projectsname);
-  
+
   connect(ui.listView->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setProjectID(QModelIndex)));
   connect(ui.listView_2->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(set_unset_MatrixID(QModelIndex)));
   connect(ui.cancelButton, SIGNAL(clicked()), SLOT(reject()));

@@ -168,14 +168,6 @@
     <addaction name="actionPLS_Prediction"/>
     <addaction name="actionPLSVariableSelection"/>
     <addaction name="separator"/>
-    <addaction name="actionUPCA"/>
-    <addaction name="actionUPCA_Prediction"/>
-    <addaction name="separator"/>
-    <addaction name="actionUPLS"/>
-    <addaction name="actionUPLS_Validator"/>
-    <addaction name="actionUPLS_Prediction"/>
-    <addaction name="actionUPLSVariableSelection"/>
-    <addaction name="separator"/>
     <addaction name="actionMLR"/>
     <addaction name="actionMLR_Validator"/>
     <addaction name="actionMLR_Prediction"/>
@@ -183,36 +175,15 @@
     <addaction name="actionLDA"/>
     <addaction name="actionLDA_Validator"/>
     <addaction name="actionLDA_Prediction"/>
+    <addaction name="separator"/>
+    <addaction name="actionPLS_DA"/>
+    <addaction name="actionPLS_DA_Validator"/>
+    <addaction name="actionPLS_DA_Prediction"/>
    </widget>
    <widget class="QMenu" name="menuGraphs">
     <property name="title">
      <string>&amp;Graphs</string>
     </property>
-    <widget class="QMenu" name="menuPlot_UPCA_Model">
-     <property name="title">
-      <string>Plot UPCA Model</string>
-     </property>
-     <widget class="QMenu" name="menu3D_Space_2">
-      <property name="title">
-       <string>3D Space</string>
-      </property>
-      <addaction name="actionUPCA3DScore_Plot"/>
-      <addaction name="actionUPCA3DLoadings_Plot"/>
-      <addaction name="separator"/>
-      <addaction name="actionUPCA3DScore_Plot_Prediction"/>
-     </widget>
-     <widget class="QMenu" name="menu2D_Space_2">
-      <property name="title">
-       <string>2D Space</string>
-      </property>
-      <addaction name="actionUPCA2DScore_Plot"/>
-      <addaction name="actionUPCA2DLoadings_Plot"/>
-      <addaction name="separator"/>
-      <addaction name="actionUPCA2DScore_Plot_Prediction"/>
-     </widget>
-     <addaction name="menu2D_Space_2"/>
-     <addaction name="menu3D_Space_2"/>
-    </widget>
     <widget class="QMenu" name="menuVariable">
      <property name="title">
       <string>Plot Variable</string>
@@ -232,48 +203,6 @@
      <addaction name="actionVarSel_Ftest_Nvar_Plot"/>
      <addaction name="actionVarSel_Ftest_Q2_Plot"/>
      <addaction name="actionModIncVar_Variables_Plot"/>
-    </widget>
-    <widget class="QMenu" name="menuPlot_UPLS_Model">
-     <property name="title">
-      <string>Plot UPLS Model</string>
-     </property>
-     <widget class="QMenu" name="menu3D_Space_4">
-      <property name="title">
-       <string>3D Space</string>
-      </property>
-      <addaction name="actionUPLS3D_ttt_Score_Plot"/>
-      <addaction name="actionUPLS3D_uuu_Score_Plot"/>
-      <addaction name="actionUPLS3D_ppp_Loadings_Plot"/>
-      <addaction name="actionUPLS3D_qqq_Loadings_Plot"/>
-      <addaction name="actionUPLS3D_www_Weights_Plot"/>
-      <addaction name="separator"/>
-      <addaction name="actionUPLS3D_ttt_Score_Plot_Prediction"/>
-     </widget>
-     <widget class="QMenu" name="menu2D_Space_4">
-      <property name="title">
-       <string>2D Space</string>
-      </property>
-      <addaction name="actionUPLS_Plot"/>
-      <addaction name="actionUPLS2D_tt_Score_Plot"/>
-      <addaction name="actionUPLS2D_uu_Score_Plot"/>
-      <addaction name="actionUPLS2D_pp_Loadings_Plot"/>
-      <addaction name="actionUPLS2D_qq_Loadings_Plot"/>
-      <addaction name="actionUPLS2D_ww_Weights_Plot"/>
-      <addaction name="separator"/>
-      <addaction name="actionUPLSRecalc_vs_Exp"/>
-      <addaction name="actionUPLSRecal_Residuals_vs_Exp"/>
-      <addaction name="separator"/>
-      <addaction name="actionUPLSR2_Q2"/>
-      <addaction name="actionUPLSPred_vs_Exp"/>
-      <addaction name="actionUPLSPred_Residuals_vs_Exp"/>
-      <addaction name="separator"/>
-      <addaction name="actionUPLS2DScore_Plot_Prediction"/>
-      <addaction name="actionUPLSRecalc_vs_Exp_with_Prediction"/>
-      <addaction name="actionUPLSPred_vs_Exp_with_Prediction"/>
-      <addaction name="actionUPLSR2_Prediction"/>
-     </widget>
-     <addaction name="menu2D_Space_4"/>
-     <addaction name="menu3D_Space_4"/>
     </widget>
     <widget class="QMenu" name="menuPlot_MLR">
      <property name="title">
@@ -398,8 +327,6 @@
     <addaction name="menuVariable"/>
     <addaction name="menuPlot_PCA_Model"/>
     <addaction name="menuPlot_PLS_Model"/>
-    <addaction name="menuPlot_UPCA_Model"/>
-    <addaction name="menuPlot_UPLS_Model"/>
     <addaction name="menuPlot_MLR"/>
     <addaction name="menuPlot_LDA"/>
     <addaction name="menuPlot_Variable_Selection"/>
@@ -1413,6 +1340,21 @@
   <action name="actionBetaCoeffDWPlot">
    <property name="text">
     <string>Beta Coefficients Durbin-Watson Plot</string>
+   </property>
+  </action>
+  <action name="actionPLS_DA">
+   <property name="text">
+    <string>PLS-DA</string>
+   </property>
+  </action>
+  <action name="actionPLS_DA_Validator">
+   <property name="text">
+    <string>PLS-DA Validator</string>
+   </property>
+  </action>
+  <action name="actionPLS_DA_Prediction">
+   <property name="text">
+    <string>PLS-DA Prediction</string>
    </property>
   </action>
  </widget>

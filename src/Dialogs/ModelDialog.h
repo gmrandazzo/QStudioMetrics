@@ -14,11 +14,11 @@
 class ModelDialog : public QDialog
 {
   Q_OBJECT
-  
+
 public:
   ModelDialog(PROJECTS *projects, int type_);
   ~ModelDialog();
-  
+
   bool compute(){ return compute_; }
   int getselectedProject(){ return selectedproject_; }
   QString& getModelName(){ return modelname_; }
@@ -30,7 +30,7 @@ public:
   int getXScalingType(){ return xscaling; }
   int getYScalingType(){ return yscaling; }
   int getNumberOfComponent(){ return n_pc; }
-  
+
 private slots:
   void next();
   void previous();
@@ -39,17 +39,17 @@ private slots:
   void setData(QModelIndex current);
   void setYData(QModelIndex current);
   void EnableOKButton();
-  
+
   void ObjSelectAll();
   void ObjInvertSelection();
   void ObjUnselectAll();
   void ObjSelectBy();
-  
+
   void XVarSelectAll();
   void XVarInvertSelection();
   void XVarUnselectAll();
   void XVarSelectBy();
-  
+
   void YVarSelectAll();
   void YVarInvertSelection();
   void YVarUnselectAll();
@@ -57,10 +57,10 @@ private slots:
 private:
   Ui::ModelDialog ui;
   int state;
-  
+
   PROJECTS *projects_;
   QList<int> pids;
-  QStandardItemModel *tab1, *tab2, *tab3, *tab4, *tab5, *tab6;
+  QStandardItemModel *tab1, *tab2, *tab3, *tab4, *tab5;
   QStringList objsel, xvarsel, yvarsel;
   QString modelname_;
   int selectedproject_;

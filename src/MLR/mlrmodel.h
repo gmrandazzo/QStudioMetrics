@@ -8,6 +8,7 @@
 #include <QString>
 #include <QStringList>
 
+#include "../qstudiometricsdataoperations.h"
 
 class MLRPREDICTION
 {
@@ -71,27 +72,28 @@ public:
   void setDataHash(QString hash_){ hash = hash_; }
   void setModelID(int modelid_){ modelid = modelid_; }
   int getDID(){ return did; }
-  QString &getDataHash(){ return hash; } // used in order to get the identity matrix provenience usefull for pls cross validation 
+  QString &getDataHash(){ return hash; } // used in order to get the identity matrix provenience usefull for pls cross validation
   int getModelID(){ return modelid; }
   void addMLRPrediction(){ prediction.append(new MLRPREDICTION); };
   void delMLRPredictionAt(int id){ delete prediction[id]; prediction.removeAt(id); }
-  void delMLRPredictions(){ 
+  void delMLRPredictions(){
     for(int i = 0; i < prediction.size(); i++){
       delete prediction[i];
     }
-    prediction.clear(); 
+    prediction.clear();
   }
   MLRPREDICTION *getMLRPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
   MLRPREDICTION *getLastMLRPrediction(){ return prediction.last(); }
   int MLRPredictionCount(){ return prediction.size(); }
-  
+  QString& getHash(){ if(mlrhash.size() == 0){ mlrhash = GenMatrixHash(m->b); } return mlrhash; }
+
 private:
   MLRMODEL *m;
   QList<MLRPREDICTION*> prediction;
   QStringList objname, xvarname, yvarname;
   QString name;
   int did, modelid, validation;
-  QString hash;
+  QString hash, mlrhash;
 };
 
 #endif

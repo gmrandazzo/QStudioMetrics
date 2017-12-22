@@ -44,8 +44,6 @@
 #include "Plotlib/SimpleScatterPlot3D.h"
 #include "PCA/PCAPlot.h"
 #include "PLS/PLSPlot.h"
-#include "UPCA/UPCAPlot.h"
-#include "UPLS/UPLSPlot.h"
 #include "MLR/MLRPlot.h"
 #include "LDA/LDAPlot.h"
 #include "dircompressor.h"
@@ -53,7 +51,7 @@
 
 void MainWindow::CheckProjects()
 {
-  havepca = havepcapred = havepls = haveplspred = haveplsvalid = haveplsyscrambling = haveplsstaticsamplevalidation = haveplsdynamicsamplevalidation = haveupca = haveupcapred = haveupls = haveuplspred = haveuplsvalid = havemlr = havemlrpred = havemlrvalid = havemlryscrambling = havevarsel = havelda = haveldapred = haveldavalid = false;
+  havepca = havepcapred = havepls = haveplspred = haveplsvalid = haveplsyscrambling = haveplsstaticsamplevalidation = haveplsdynamicsamplevalidation = havemlr = havemlrpred = havemlrvalid = havemlryscrambling = havevarsel = havelda = haveldapred = haveldavalid = false;
 
   QMap<int, DATA*>::const_iterator i = projects->constBegin();
   while(i != projects->constEnd()){
@@ -85,28 +83,6 @@ void MainWindow::CheckProjects()
 
         if(i.value()->getPLSModelAt(j)->Model()->q2_sample_validation_surface->row > 0)
           haveplsdynamicsamplevalidation = true;
-      }
-    }
-
-    if(i.value()->UPCACount() > 0){
-      haveupca = true;
-      for(int j = 0; j < i.value()->UPCACount(); j++){
-        if(i.value()->getUPCAModelAt(j)->UPCAPredictionCount() > 0){
-          haveupcapred = true;
-        }
-      }
-    }
-
-    if(i.value()->UPLSCount() > 0){
-      haveupls = true;
-      for(int j = 0; j < i.value()->UPLSCount(); j++){
-        if(i.value()->getUPLSModelAt(j)->getValidation() > 0){
-          haveuplsvalid = true;
-        }
-
-        if(i.value()->getUPLSModelAt(j)->UPLSPredictionCount() > 0){
-          haveuplspred = true;
-        }
       }
     }
 
@@ -242,63 +218,6 @@ void MainWindow::TopMenuEnableDisable()
     }
   }
 
-
-  if(ProjectsHaveUPCA() == false){
-    ui.menuPlot_UPCA_Model->setEnabled(false);
-  }
-  else{
-    ui.menuPlot_UPCA_Model->setEnabled(true);
-
-    if(ProjectsHaveUPCAPrediction() == false){
-      ui.actionUPCA2DScore_Plot_Prediction->setEnabled(false);
-      ui.actionUPCA3DScore_Plot_Prediction->setEnabled(false);
-    }
-    else{
-      ui.actionUPCA2DScore_Plot_Prediction->setEnabled(true);
-      ui.actionUPCA3DScore_Plot_Prediction->setEnabled(true);
-    }
-  }
-
-  if(ProjectsHaveUPLS() == false){
-    ui.menuPlot_UPLS_Model->setEnabled(false);
-    ui.actionUPLSR2_Q2->setEnabled(false);
-  }
-  else{
-    ui.menuPlot_UPLS_Model->setEnabled(true);
-
-    if(ProjectsHaveUPLSValidated() == false){
-      ui.actionUPLSR2_Q2->setEnabled(false);
-      ui.actionUPLSPred_vs_Exp->setEnabled(false);
-      ui.actionUPLSPred_Residuals_vs_Exp->setEnabled(false);
-    }
-    else{
-      ui.actionUPLSR2_Q2->setEnabled(true);
-      ui.actionUPLSPred_vs_Exp->setEnabled(true);
-      ui.actionUPLSPred_Residuals_vs_Exp->setEnabled(true);
-    }
-
-    if(ProjectsHaveUPLSPrediction() == false){
-      ui.actionUPLS2DScore_Plot_Prediction->setEnabled(false);
-      ui.actionUPLS3D_ttt_Score_Plot_Prediction->setEnabled(false);
-      ui.actionUPLSRecalc_vs_Exp_with_Prediction->setEnabled(false);
-      ui.actionUPLSPred_vs_Exp_with_Prediction->setEnabled(false);
-      ui.actionUPLSR2_Prediction->setEnabled(false);
-    }
-    else{
-      ui.actionUPLS2DScore_Plot_Prediction->setEnabled(true);
-      ui.actionUPLS3D_ttt_Score_Plot_Prediction->setEnabled(true);
-      ui.actionUPLSRecalc_vs_Exp_with_Prediction->setEnabled(true);
-      ui.actionUPLSPred_vs_Exp_with_Prediction->setEnabled(true);
-      ui.actionUPLSR2_Prediction->setEnabled(true);
-    }
-  }
-
-
-#ifdef RELEASE // look in ImportFileDialog.cpp... same exception...
-  ui.menuPlot_UPCA_Model->menuAction()->setVisible(false);
-  ui.menuPlot_UPLS_Model->menuAction()->setVisible(false);
-#endif
-
   if(ProjectsHaveMLR() == false){
     ui.menuPlot_MLR->setEnabled(false);
   }
@@ -387,12 +306,12 @@ void MainWindow::TopMenuEnableDisable()
  *        |
  *        Name - Tab Count - pid - x ID - y ID - x Scaling type - y Scaling type - number of components - Model Type - Data Position  (10)
  *          |
- *         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
+ *         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
  *
  * Type could be "Matrix" or "Array"
  * Tab count is an id used to know what tables are opened and to close the deleted table
  * Data Position is used to retrieve the Data Position inside the QList<MATRIX>,  QList<Array> QList<PCAModel> etc...
- * Model Type can be PCA Model, PLS Model, UPCA Model, UPLS Model
+ * Model Type can be PCA Model, PLS Model, LDA Model, MLR Model
  */
 
 bool MainWindow::IsPredictionAt(int pid, int id, int predid)
@@ -1328,12 +1247,12 @@ void MainWindow::UpdateImageWindow(ImageSignal is)
  *        |
  *        Name - Tab Count - pid - x ID - y ID - x Scaling type - y Scaling type - number of components - Model Type - Data Position  (10)
  *          |
- *         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
+ *         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
  *
  * Type could be "Matrix" or "Array"
  * Tab count is an id used to know what tables are opened and to close the deleted table
  * Data Position is used to retrieve the Data Position inside the QList<MATRIX>,  QList<Array> QList<PCAModel> etc...
- * Model Type can be PCA Model, PLS Model, UPCA Model, UPLS Model
+ * Model Type can be PCA Model, PLS Model, LDA Model, MLR Model
  */
 
 void MainWindow::DowngradePredictionID()
@@ -1357,10 +1276,6 @@ void MainWindow::DowngradePredictionID()
             ui.treeWidget->currentItem()->parent()->child(i)->setText(6, QString::number(childid-1));
             projects->value(pid)->getPLSModel(mid)->getPLSPrediction(childid)->setPredID(childid-1);
           }
-          else if(childmodeltype.compare("UPCA Prediction") == 0 && childid > predid){
-            ui.treeWidget->currentItem()->parent()->child(i)->setText(6, QString::number(childid-1));
-            projects->value(pid)->getUPCAModel(mid)->getUPCAPrediction(childid)->setPredID(childid-1);
-          }
           else if(childmodeltype.compare("MLR Prediction") == 0 && childid > predid){
             ui.treeWidget->currentItem()->parent()->child(i)->setText(6, QString::number(childid-1));
             projects->value(pid)->getMLRModel(mid)->getMLRPrediction(childid)->setPredID(childid-1);
@@ -1368,10 +1283,6 @@ void MainWindow::DowngradePredictionID()
           else if(childmodeltype.compare("LDA Prediction") == 0 && childid > predid){
             ui.treeWidget->currentItem()->parent()->child(i)->setText(6, QString::number(childid-1));
             projects->value(pid)->getLDAModel(mid)->getLDAPrediction(childid)->setPredID(childid-1);
-          }
-          else if(childmodeltype.compare("UPLS Prediction") == 0 && childid > predid){
-            ui.treeWidget->currentItem()->parent()->child(i)->setText(6, QString::number(childid-1));
-            projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(childid)->setPredID(childid-1);
           }
           else{
             continue;
@@ -1420,10 +1331,6 @@ void MainWindow::removePrediction()
           updateLog(QString("Deleting PLS Prediction %1\n").arg(getCurrentPredictionName()));
           projects->value(pid)->getPLSModel(mid)->delPLSPredictionAt(predid);
         }
-        else if(getCurrentPredictionType().compare("UPCA Prediction") == 0){
-          updateLog(QString("Deleting UPCA Prediction %1\n").arg(getCurrentPredictionName()));
-          projects->value(pid)->getUPCAModel(mid)->delUPCAPredictionAt(predid);
-        }
         else if(getCurrentPredictionType().compare("MLR Prediction") == 0){
           updateLog(QString("Deleting MLR Prediction %1\n").arg(getCurrentPredictionName()));
           projects->value(pid)->getMLRModel(mid)->delMLRPredictionAt(predid);
@@ -1431,10 +1338,6 @@ void MainWindow::removePrediction()
         else if(getCurrentPredictionType().compare("LDA Prediction") == 0){
           updateLog(QString("Deleting LDA Prediction %1\n").arg(getCurrentPredictionName()));
           projects->value(pid)->getLDAModel(mid)->delLDAPredictionAt(predid);
-        }
-        else{
-          updateLog(QString("Deleting UPLS Prediction %1\n").arg(getCurrentPredictionName()));
-          projects->value(pid)->getUPLSModel(mid)->delUPLSPredictionAt(predid);
         }
 
         getModelItem(pid, mid)->removeChild(ui.treeWidget->currentItem());
@@ -1458,12 +1361,12 @@ void MainWindow::removePrediction()
  *        |
  *        Name - Tab Count - pid - x ID - y ID - x Scaling type - y Scaling type - number of components - Model Type - Data Position  (10)
  *          |
- *         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
+ *         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
  *
  * Type could be "Matrix" or "Array"
  * Tab count is an id used to know what tables are opened and to close the deleted table
  * Data Position is used to retrieve the Data Position inside the QList<MATRIX>,  QList<Array> QList<PCAModel> etc...
- * Model Type can be PCA Model, PLS Model, UPCA Model, UPLS Model
+ * Model Type can be PCA Model, PLS Model, LDA Model, MLR Model
  */
 
 void MainWindow::DowngradeModelID()
@@ -1485,14 +1388,6 @@ void MainWindow::DowngradeModelID()
           ui.treeWidget->currentItem()->parent()->child(i)->setText(9, QString::number(childid-1));
           projects->value(pid)->getPLSModel(childid)->setModelID(childid-1);
         }
-        else if(childmodeltype.compare("UPCA Model") == 0){
-          ui.treeWidget->currentItem()->parent()->child(i)->setText(9, QString::number(childid-1));
-          projects->value(pid)->getUPCAModel(childid)->setModelID(childid-1);
-        }
-        else if(childmodeltype.compare("UPLS Model") == 0){
-          ui.treeWidget->currentItem()->parent()->child(i)->setText(9, QString::number(childid-1));
-          projects->value(pid)->getUPLSModel(childid)->setModelID(childid-1);
-        }
         else if(childmodeltype.compare("MLR Model") == 0){
           ui.treeWidget->currentItem()->parent()->child(i)->setText(9, QString::number(childid-1));
           projects->value(pid)->getMLRModel(childid)->setModelID(childid-1);
@@ -1501,7 +1396,7 @@ void MainWindow::DowngradeModelID()
           ui.treeWidget->currentItem()->parent()->child(i)->setText(9, QString::number(childid-1));
           projects->value(pid)->getLDAModel(childid)->setModelID(childid-1);
         }
-        else if(childmodeltype.compare("PLS Variable Selection Model") == 0 || childmodeltype.compare("UPLS Variable Selection Model") == 0){
+        else if(childmodeltype.compare("PLS Variable Selection Model") == 0){
           ui.treeWidget->currentItem()->parent()->child(i)->setText(9, QString::number(childid-1));
           projects->value(pid)->getVarSelModel(childid)->setModelID(childid-1);
         }
@@ -1551,15 +1446,6 @@ void MainWindow::removeModel()
       else if(ui.treeWidget->currentItem()->text(8).compare("PLS Model") == 0){
         updateLog(QString("Deleting PLS Model %1\n").arg(getCurrentModelName()));
         projects->value(pid)->delPLSModel(mid);
-      }
-      else if(ui.treeWidget->currentItem()->text(8).compare("UPCA Model") == 0){
-        updateLog(QString("Deleting UPCA Model %1\n").arg(getCurrentModelName()));
-        projects->value(pid)->delUPCAModel(mid);
-      }
-  //     else if(getCurrentModelType().compare("UPLS Model") == 0){
-      else if(ui.treeWidget->currentItem()->text(8).compare("UPLS Model") == 0){
-        updateLog(QString("Deleting UPLS Model %1\n").arg(getCurrentModelName()));
-        projects->value(pid)->delUPLSModel(mid);
       }
       else if(ui.treeWidget->currentItem()->text(8).compare("MLR Model") == 0){
         updateLog(QString("Deleting MLR Model %1\n").arg(getCurrentModelName()));
@@ -2068,750 +1954,6 @@ void MainWindow::showMLRPredictionRSquared()
   }
 }
 
-void MainWindow::showUPLSVarSelMap()
-{
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getVarSelModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - UPLS Variable Selection Scores";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getVarSelModel(mid)->getMap());
-    QStringList modelsname;
-    for(uint i = 0; i < projects->value(pid)->getVarSelModel(mid)->getMap()->row; i++){
-      modelsname << QString("model %1").arg(QString::number(i+1));
-    }
-    child->getTable()->model()->setObjNames(modelsname);
-
-    QStringList headername;
-    headername << "Models Name" << "R2" << "Q2" << "F-Distributuion" << "N. Variables";
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-  }
-}
-
-void MainWindow::showUPLSPredictionRSquared()
-{
-  if(CurrentIsPrediction() == true){
-    int pid = getCurrentPredictionProjectID();
-    int mid = getCurrentPredictionModelID();
-    int predid = getCurrentPredictionID();
-    int tabid = getCurrentPredictionTableID();
-    if(pid > -1 && mid > -1 && predid > -1 && tabid > -1){
-      QString projectname = projects->value(pid)->getProjectName();
-      QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-      QString tabname = projectname + " - " + modelname + " - UPLS Prediction Error";
-      MDIChild *child = createMdiChild();
-      child->setWindowID(tabid);
-      child->newTable(tabname);
-
-      uint row = projects->value(pid)->getUPLSModel(mid)->getNPC();// the number of principal component
-      uint col = (projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getR2Y()->m[0]->row * projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getR2Y()->m[0]->col) + (projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getSDEC()->m[0]->row * projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getSDEC()->m[0]->col);
-
-      child->getTable()->model()->newMatrix(row, col);
-
-      QStringList labels;
-
-      for(uint k = 0; k < row; k++){ // PC
-        labels.append("PC "+QString::number(k+1));
-
-        uint y = projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getR2Y()->m[k]->row;
-        uint order = projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getR2Y()->m[k]->col;
-
-        uint l = 0;
-        for(uint i = 0; i < y; i++){
-          for(uint j = 0; j < order; j++){
-            setMatrixValue(child->getTable()->model()->Matrix(), k, l, getArrayValue(projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getR2Y(), k, i, j));
-            l++;
-            setMatrixValue(child->getTable()->model()->Matrix(), k, l, getArrayValue(projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getSDEC(), k, i, j));
-            l++;
-          }
-        }
-      }
-
-      child->getTable()->model()->setObjNames(labels);
-
-      QStringList header;
-      header << "Principal Component";
-
-      uint y = projects->value(pid)->getUPLSModel(mid)->Model()->q2y->m[0]->row;
-      uint order = projects->value(pid)->getUPLSModel(mid)->Model()->q2y->m[0]->col;
-
-      for(uint i = 0; i < y; i++){
-        for(uint j = 0; j < order; j++){
-          header << QString("R^2 (y %1 order: %2)").arg(QString::number(i+1)).arg(QString::number(j+1)) << QString("SDEC (y %1 order: %2)").arg(QString::number(i+1)).arg(QString::number(j+1));
-        }
-      }
-
-      child->getTable()->model()->setHorizontalHeaderLabels(header);
-      child->getTable()->model()->UpdateModel();
-      child->show();
-    }
-  }
-}
-
-void MainWindow::showUPLSPrediction()
-{
-  if(CurrentIsPrediction() == true){
-    int pid = getCurrentPredictionProjectID();
-    int mid = getCurrentPredictionModelID();
-    int tabid = getCurrentPredictionTableID();
-    if(pid > -1 && mid > -1 && tabid > -1){
-      QString projectname = projects->value(pid)->getProjectName();
-      QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-      int predid = getCurrentPredictionID();
-      QString xhash = getCurrentPredictionXhash();
-
-      uint row = projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getXPredScores()->row; // the number of objects
-      uint ny = projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getYDipVar()->m[0]->col; // total y number
-      uint col = projects->value(pid)->getUPLSModel(mid)->getNPC(); //the number of principal components calculated
-      uint order = projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getYDipVar()->order/col;
-
-      for(uint o = 0; o < order; o++){
-        for(uint y = 0; y < ny; y++){
-
-          QString tabname = projectname + " - " + modelname + QString(" - Y(%1) Layer(%2) UPLS Predicted Dipendent Value").arg(QString::number(y+1)).arg(QString::number(o+1)) + " - " +  ui.treeWidget->currentItem()->text(0);
-          MDIChild *child = createMdiChild();
-          child->setWindowID(tabid);
-          child->newTable(tabname);
-          child->getTable()->model()->newMatrix(row, col);
-          child->getTable()->model()->setObjNames(projects->value(pid)->getArray(xhash)->getObjName());
-
-          QStringList header;
-          header << "Objects Names";
-
-          uint l = o;
-          for(uint pc = 0; pc < col; pc++){
-            header << QString("PC%1 Y(%2) Layer(%3)").arg(QString::number(pc+1)).arg(QString::number(y+1)).arg(QString::number(o+1));
-            for(uint i = 0;  i < row; i++){
-              setMatrixValue(child->getTable()->model()->Matrix(), i, pc, getArrayValue(projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getYDipVar(), l, i, y));
-            }
-            l += order;
-          }
-
-          child->getTable()->model()->setHorizontalHeaderLabels(header);
-          child->getTable()->model()->UpdateModel();
-          child->show();
-          child->getTable()->setPID(pid);
-          connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-        }
-      }
-    }
-  }
-}
-
-void MainWindow::showUPLSPredScore()
-{
-  if(CurrentIsPrediction() == true){
-
-    int pid = getCurrentPredictionProjectID();
-    int mid = getCurrentPredictionModelID();
-    int tabid = getCurrentPredictionTableID();
-    if(pid > -1 && mid > -1 && tabid > -1){
-      QString projectname = projects->value(pid)->getProjectName();
-      QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-      int predid = getCurrentPredictionID();
-      QString xhash = getCurrentPredictionXhash();
-
-      QString tabname = projectname + " - " + modelname + " - UPLS Predicted Scores" + " - " +  ui.treeWidget->currentItem()->text(0);
-      MDIChild *child = createMdiChild();
-      child->setWindowID(tabid);
-      child->newTable(tabname, projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getXPredScores(), &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-      child->getTable()->model()->setObjNames(projects->value(pid)->getArray(xhash)->getObjName());
-      QStringList headername;
-      headername << "Object Names";
-      for(uint c = 0; c <  projects->value(pid)->getUPLSModel(mid)->getUPLSPrediction(predid)->getXPredScores()->col; c++){
-        headername << QString("PC %1").arg(QString::number(c+1));
-      }
-      child->getTable()->model()->setHorizontalHeaderLabels(headername);
-      child->show();
-      child->getTable()->setPID(pid);
-      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-}
-
-void MainWindow::showUPLSRecalcY()
-{
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-    uint row = projects->value(pid)->getUPLSModel(mid)->Model()->recalculated_y->m[0]->row; // the number of objects
-    uint ny = projects->value(pid)->getUPLSModel(mid)->Model()->recalculated_y->m[0]->col; // total y number
-    uint col = projects->value(pid)->getUPLSModel(mid)->getNPC(); //the number of principal components calculated
-    uint order = projects->value(pid)->getUPLSModel(mid)->Model()->recalculated_y->order/col;
-
-    for(uint o = 0; o < order; o++){
-      for(uint y = 0; y < ny; y++){
-        QString tabname = projectname + " - " + modelname + QString(" - Y(%1) Layer(%2) UPLS Predicted Y Value").arg(QString::number(y+1)).arg(QString::number(o+1)) + " - " +  ui.treeWidget->currentItem()->text(0);
-        MDIChild *child = createMdiChild();
-        child->setWindowID(tabid);
-        child->newTable(tabname);
-        child->getTable()->model()->newMatrix(row, col);
-        child->getTable()->model()->setObjNames(projects->value(pid)->getUPLSModel(mid)->getObjName());
-
-        QStringList header;
-        header << "Objects Names";
-
-        uint l = o;
-        for(uint pc = 0; pc < col; pc++){
-          header << QString("PC%1 Y(%2) Layer(%3)").arg(QString::number(pc+1)).arg(QString::number(y+1)).arg(QString::number(o+1));
-          for(uint i = 0;  i < row; i++){
-            setMatrixValue(child->getTable()->model()->Matrix(), i, pc, getArrayValue(projects->value(pid)->getUPLSModel(mid)->Model()->recalculated_y, l, i, y));
-          }
-          l += order;
-        }
-
-        child->getTable()->model()->setHorizontalHeaderLabels(header);
-        child->getTable()->model()->UpdateModel();
-        child->show();
-        child->getTable()->setPID(pid);
-        connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-}
-
-void MainWindow::showUPLSValidatedPrediction()
-{
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-    uint row = projects->value(pid)->getUPLSModel(mid)->Model()->predicted_y->m[0]->row; // the number of objects
-    uint ny = projects->value(pid)->getUPLSModel(mid)->Model()->predicted_y->m[0]->col; // total y number
-    uint col = projects->value(pid)->getUPLSModel(mid)->getNPC(); //the number of principal components calculated
-    uint order = projects->value(pid)->getUPLSModel(mid)->Model()->predicted_y->order/col;
-
-    for(uint o = 0; o < order; o++){
-      for(uint y = 0; y < ny; y++){
-        QString tabname = projectname + " - " + modelname + QString(" - Y(%1) Layer(%2) UPLS Predicted Y Value").arg(QString::number(y+1)).arg(QString::number(o+1)) + " - " +  ui.treeWidget->currentItem()->text(0);
-        MDIChild *child = createMdiChild();
-        child->setWindowID(tabid);
-        child->newTable(tabname);
-        child->getTable()->model()->newMatrix(row, col);
-        child->getTable()->model()->setObjNames(projects->value(pid)->getUPLSModel(mid)->getObjName());
-
-        QStringList header;
-        header << "Objects Names";
-
-        uint l = o;
-        for(uint pc = 0; pc < col; pc++){
-          header << QString("PC%1 Y(%2) Layer(%3)").arg(QString::number(pc+1)).arg(QString::number(y+1)).arg(QString::number(o+1));
-          for(uint i = 0;  i < row; i++){
-            setMatrixValue(child->getTable()->model()->Matrix(), i, pc, getArrayValue(projects->value(pid)->getUPLSModel(mid)->Model()->predicted_y, l, i, y));
-          }
-          l += order;
-        }
-
-        child->getTable()->model()->setHorizontalHeaderLabels(header);
-        child->getTable()->model()->UpdateModel();
-        child->show();
-        child->getTable()->setPID(pid);
-        connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-}
-
-void MainWindow::showUPLSValidation()
-{
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - UPLS Validation";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname);
-
-    uint row = projects->value(pid)->getUPLSModel(mid)->getNPC();// the number of principal component
-    uint col;
-    if(projects->value(pid)->getUPLSModel(mid)->Model()->q2y_yscrambling->order > 0){
-      col = (projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[0]->row * projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[0]->col) + (projects->value(pid)->getUPLSModel(mid)->Model()->q2y->m[0]->row * projects->value(pid)->getUPLSModel(mid)->Model()->q2y->m[0]->col) + (projects->value(pid)->getUPLSModel(mid)->Model()->sdep->m[0]->row * projects->value(pid)->getUPLSModel(mid)->Model()->sdep->m[0]->col) + (projects->value(pid)->getUPLSModel(mid)->Model()->q2y_yscrambling->m[0]->row * projects->value(pid)->getUPLSModel(mid)->Model()->q2y_yscrambling->m[0]->col) + (projects->value(pid)->getUPLSModel(mid)->Model()->sdep_yscrambling->m[0]->row * projects->value(pid)->getUPLSModel(mid)->Model()->sdep_yscrambling->m[0]->col);
-    }
-    else{
-      col = (projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[0]->row * projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[0]->col) + (projects->value(pid)->getUPLSModel(mid)->Model()->q2y->m[0]->row * projects->value(pid)->getUPLSModel(mid)->Model()->q2y->m[0]->col) + (projects->value(pid)->getUPLSModel(mid)->Model()->sdep->m[0]->row * projects->value(pid)->getUPLSModel(mid)->Model()->sdep->m[0]->col);
-    }
-    child->getTable()->model()->newMatrix(row, col);
-
-    QStringList labels;
-
-    for(uint k = 0; k < row; k++){ // PC
-      labels.append("PC "+QString::number(k+1));
-
-      uint y = projects->value(pid)->getUPLSModel(mid)->Model()->q2y->m[k]->row;
-      uint order = projects->value(pid)->getUPLSModel(mid)->Model()->q2y->m[k]->col;
-
-      uint l = 0;
-      for(uint i = 0; i < y; i++){
-        for(uint j = 0; j < order; j++){
-          setMatrixValue(child->getTable()->model()->Matrix(), k, l, getArrayValue(projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model, k, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), k, l, getArrayValue(projects->value(pid)->getUPLSModel(mid)->Model()->q2y, k, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), k, l, getArrayValue(projects->value(pid)->getUPLSModel(mid)->Model()->sdep, k, i, j));
-          l++;
-          if(projects->value(pid)->getUPLSModel(mid)->Model()->q2y_yscrambling->order > 0){
-            setMatrixValue(child->getTable()->model()->Matrix(), k, l, getArrayValue(projects->value(pid)->getUPLSModel(mid)->Model()->q2y_yscrambling, k, i, j));
-            l++;
-            setMatrixValue(child->getTable()->model()->Matrix(), k, l, getArrayValue(projects->value(pid)->getUPLSModel(mid)->Model()->sdep_yscrambling, k, i, j));
-            l++;
-          }
-          else{
-            continue;
-          }
-        }
-      }
-    }
-
-    child->getTable()->model()->setObjNames(labels);
-
-    QStringList header;
-    header << "Principal Component";
-
-    uint y = projects->value(pid)->getUPLSModel(mid)->Model()->q2y->m[0]->row;
-    uint order = projects->value(pid)->getUPLSModel(mid)->Model()->q2y->m[0]->col;
-
-    for(uint i = 0; i < y; i++){
-      for(uint j = 0; j < order; j++){
-        if(projects->value(pid)->getUPLSModel(mid)->Model()->q2y_yscrambling->order > 0){
-          header << QString("R^2 (y %1 order: %2)").arg(QString::number(i+1)).arg(QString::number(j+1)) << QString("Q^2 (y %1 order: %2)").arg(QString::number(i+1)).arg(QString::number(j+1)) << QString("SDEP (y %1 order: %2)").arg(QString::number(i+1)).arg(QString::number(j+1)) << QString("Q^2 Y Scrambling (y %1 order: %2)").arg(QString::number(i+1)).arg(QString::number(j+1)) << QString("SDEP Y Scrambling (y %1 order: %2)").arg(QString::number(i+1)).arg(QString::number(j+1));
-        }
-        else{
-          header << QString("R^2 (y %1 order: %2)").arg(QString::number(i+1)).arg(QString::number(j+1)) << QString("Q^2 (y %1 order: %2)").arg(QString::number(i+1)).arg(QString::number(j+1)) << QString("SDEP (y %1 order: %2)").arg(QString::number(i+1)).arg(QString::number(j+1));
-        }
-      }
-    }
-
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->getTable()->model()->UpdateModel();
-    child->show();
-  }
-}
-
-/*
- * pid - pid  (2)
- *    |
- *    | Data   // child 0
- *    |   |
- *    |   Name - Type - Tab Count - Data Position - pid  (5)
- *    |
- *    | Models  // child 1
- *        |
- *        Name - Tab Count - pid - x ID - y ID - x Scaling type - y Scaling type - number of components - Model Type - Data Position  (10)
- *          |
- *         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
- *
- * Type could be "Matrix" or "Array"
- * Tab count is an id used to know what tables are opened and to close the deleted table
- * Data Position is used to retrieve the Data Position inside the QList<MATRIX>,  QList<Array> QList<PCAModel> etc...
- * Model Type can be PCA Model, PLS Model, UPCA Model, UPLS Model
- */
-
-void MainWindow::showUPLSExpVar()
-{
-//   if(ui.treeWidget->topLevelItemCount() > 0 && ui.treeWidget->currentItem()->columnCount() == 10){
-  if(CurrentIsModel()){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + "-UPLS Explained Variance";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname);
-
-    uint row = projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->order;// the explained variance
-//       uint col = 2 + (projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[0]->row * projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[0]->col); // the sum of explained variance, the r^2 y
-    uint col = 2 + (projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[0]->row * projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[0]->col) + (projects->value(pid)->getUPLSModel(mid)->Model()->sdec->m[0]->row * projects->value(pid)->getUPLSModel(mid)->Model()->sdec->m[0]->col); // the sum of explained variance, the r^2 y  and the sdec for each y
-    child->getTable()->model()->newMatrix(row, col);
-
-    double sumx = 0.f;
-    QStringList labels;
-
-    for(uint k = 0; k < row; k++){ // PC
-      labels.append("PC "+QString::number(k+1));
-      setMatrixValue(child->getTable()->model()->Matrix(), k, 0, getDVectorValue(projects->value(pid)->getUPLSModel(mid)->Model()->xvarexp, k));
-      sumx += getDVectorValue(projects->value(pid)->getUPLSModel(mid)->Model()->xvarexp, k);
-      if(sumx > 100){
-        setMatrixValue(child->getTable()->model()->Matrix(), k, 1, 100);
-      }
-      else{
-        setMatrixValue(child->getTable()->model()->Matrix(), k, 1, sumx);
-      }
-
-      uint l = 2;
-      for(uint i = 0; i < projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[k]->row; i++){
-        for(uint j = 0; j < projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[k]->col; j++){ // the various order
-          setMatrixValue(child->getTable()->model()->Matrix(), k, l, getArrayValue(projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model, k, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), k, l, getArrayValue(projects->value(pid)->getUPLSModel(mid)->Model()->sdec, k, i, j));
-          l++;
-        }
-      }
-    }
-
-    child->getTable()->model()->setObjNames(labels);
-
-    QStringList header;
-    header << "PC" << "X Exp Variance" << "Accum X Exp Variance";
-
-    for(uint i = 0; i < projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[0]->row; i++){
-      for(uint j = 0; j < projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[0]->col; j++){
-        header << QString("r^2(y %1 order: %2)").arg(QString::number(i+1)).arg(QString::number(j+1)) << QString("sdec(y %1 order: %2)").arg(QString::number(i+1)).arg(QString::number(j+1));
-      }
-    }
-
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->getTable()->model()->UpdateModel();
-    child->show();
-  }
-}
-
-void MainWindow::showUPLSRegCoeff()
-{
-//   if(ui.treeWidget->topLevelItemCount() > 0 && ui.treeWidget->currentItem()->columnCount() == 10){
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + "-UPLS Rergression Coefficient";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname);
-
-    child->getTable()->model()->newMatrix(projects->value(pid)->getUPLSModel(mid)->Model()->b->size, 1);
-
-    QStringList labels;
-    for(uint i = 0; i < projects->value(pid)->getUPLSModel(mid)->Model()->xvarexp->size; i++){
-      labels.append("PC "+QString::number(i+1));
-      setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(projects->value(pid)->getUPLSModel(mid)->Model()->b, i));
-    }
-    child->getTable()->model()->setObjNames(labels);
-    QStringList header;
-    header << "Principal Component" << "Regression Coefficient";
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->getTable()->model()->UpdateModel();
-    child->show();
-  }
-}
-
-void MainWindow::showUPLSWWeights()
-{
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-    for(uint i = 0; i < projects->value(pid)->getUPLSModel(mid)->Model()->xweights->order; i++){
-      QString tabname = projectname + " - " + modelname + " - UPLS W Weights - ";
-      tabname.append(ui.treeWidget->currentItem()->text(0)+"-");
-      tabname.append(QString::number(i+1));
-      MDIChild *child = createMdiChild();
-      child->setWindowID(tabid);
-      child->newTable(tabname, projects->value(pid)->getUPLSModel(mid)->Model()->xweights->m[i]);
-      QStringList varname = projects->value(pid)->getUPLSModel(mid)->getXVarName();
-      child->getTable()->model()->setObjNames(varname);
-      QStringList headername;
-      headername << "Variables";
-      for(uint c = 0; c < projects->value(pid)->getUPLSModel(mid)->Model()->xweights->m[i]->col; c++){
-        headername << QString("PC %1").arg(QString::number(c+1));
-      }
-      child->getTable()->model()->setHorizontalHeaderLabels(headername);
-      child->show();
-      child->getTable()->setPID(pid);
-      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-}
-
-void MainWindow::showUPLSQLoadings()
-{
-//   if(ui.treeWidget->topLevelItemCount() > 0 && ui.treeWidget->currentItem()->columnCount() == 10){
-  if(CurrentIsModel()){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-    for(uint i = 0; i < projects->value(pid)->getUPLSModel(mid)->Model()->yloadings->order; i++){
-
-      QString tabname = projectname + " - " + modelname + " - UPLS Q Loadings - ";
-      tabname.append(ui.treeWidget->currentItem()->text(0)+"-");
-      tabname.append(QString::number(i+1));
-      MDIChild *child = createMdiChild();
-      child->setWindowID(tabid);
-      child->newTable(tabname, projects->value(pid)->getUPLSModel(mid)->Model()->yloadings->m[i]);
-      QStringList varname = projects->value(pid)->getUPLSModel(mid)->getYVarName();
-      child->getTable()->model()->setObjNames(varname);
-      QStringList headername;
-      headername << "Variables";
-      for(uint c = 0; c < projects->value(pid)->getUPLSModel(mid)->Model()->yloadings->m[i]->col; c++){
-        headername << QString("PC %1").arg(QString::number(c+1));
-      }
-      child->getTable()->model()->setHorizontalHeaderLabels(headername);
-      child->show();
-      child->getTable()->setPID(pid);
-      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-}
-
-void MainWindow::showUPLSPLoadings()
-{
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-    for(uint i = 0; i < projects->value(pid)->getUPLSModel(mid)->Model()->xloadings->order; i++){
-
-      QString tabname =  projectname + " - " + modelname + " - UPLS P Loadings - ";
-      tabname.append(ui.treeWidget->currentItem()->text(0)+"-");
-      tabname.append(QString::number(i+1));
-      MDIChild *child = createMdiChild();
-      child->setWindowID(tabid);
-      child->newTable(tabname, projects->value(pid)->getUPLSModel(mid)->Model()->xloadings->m[i]);
-      QStringList varname = projects->value(pid)->getUPLSModel(mid)->getXVarName();
-      child->getTable()->model()->setObjNames(varname);
-      QStringList headername;
-      headername << "Variables";
-      for(uint c = 0; c < projects->value(pid)->getUPLSModel(mid)->Model()->xloadings->m[i]->col; c++){
-        headername << QString("PC %1").arg(QString::number(c+1));
-      }
-      child->getTable()->model()->setHorizontalHeaderLabels(headername);
-      child->show();
-      child->getTable()->setPID(pid);
-      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-}
-
-void MainWindow::showUPLSUSCores()
-{
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - UPLS U Scores";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getUPLSModel(mid)->Model()->yscores, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    child->getTable()->model()->setObjNames(projects->value(pid)->getUPLSModel(mid)->getObjName());
-    QStringList headername;
-    headername << "Object Names";
-    for(uint c = 0; c < projects->value(pid)->getUPLSModel(mid)->Model()->yscores->col; c++){
-      headername << QString("PC %1").arg(QString::number(c+1));
-    }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-  }
-}
-
-void MainWindow::showUPLSTScores()
-{
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - UPLS T Scores";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getUPLSModel(mid)->Model()->xscores, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    child->getTable()->model()->setObjNames(projects->value(pid)->getUPLSModel(mid)->getObjName());
-    QStringList headername;
-    headername << "Object Names";
-    for(uint c = 0; c < projects->value(pid)->getUPLSModel(mid)->Model()->xscores->col; c++){
-      headername << QString("PC %1").arg(QString::number(c+1));
-    }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-  }
-}
-
-void MainWindow::showUPCAPredScore()
-{
-  if(CurrentIsPrediction() == true){
-
-    int pid = getCurrentPredictionProjectID();
-    int mid = getCurrentPredictionModelID();
-    int tabid = getCurrentPredictionTableID();
-    if(pid > -1 && mid > -1 && tabid > -1){
-      QString projectname = projects->value(pid)->getProjectName();
-      QString modelname = projects->value(pid)->getUPCAModel(mid)->getName();
-
-      int predid = getCurrentPredictionID();
-      QString xhash = getCurrentPredictionXhash();
-
-      QString tabname = projectname + " - " + modelname + " - UPCA Predicted Scores" + " - " +  ui.treeWidget->currentItem()->text(0);
-      MDIChild *child = createMdiChild();
-      child->setWindowID(tabid);
-      child->newTable(tabname, projects->value(pid)->getUPCAModel(mid)->getUPCAPrediction(predid)->getPredScores(),
-        &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-      child->getTable()->model()->setObjNames(projects->value(pid)->getArray(xhash)->getObjName());
-      QStringList headername;
-      headername << "Object Names";
-      for(uint c = 0; c < projects->value(pid)->getUPCAModel(mid)->getUPCAPrediction(predid)->getPredScores()->col; c++){
-        headername << QString("PC %1").arg(QString::number(c+1));
-      }
-      child->getTable()->model()->setHorizontalHeaderLabels(headername);
-      child->show();
-      child->getTable()->setPID(pid);
-      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-}
-
-void MainWindow::showUPCAExpVar()
-{
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPCAModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - UPCA Explained Variance";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname);
-
-    uint row = projects->value(pid)->getUPCAModel(mid)->Model()->varexp->size;
-    uint col = 2;// the explained variance and the sum of explained variance
-    child->getTable()->model()->newMatrix(row, col);
-
-    double sum = 0.f;
-    QStringList labels;
-    for(uint i = 0; i < row; i++){
-      labels.append("PC "+QString::number(i+1));
-      setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(projects->value(pid)->getUPCAModel(mid)->Model()->varexp, i));
-      sum += getDVectorValue(projects->value(pid)->getUPCAModel(mid)->Model()->varexp, i);
-      if(sum > 100){
-        setMatrixValue(child->getTable()->model()->Matrix(), i, 1, 100);
-      }
-      else{
-        setMatrixValue(child->getTable()->model()->Matrix(), i, 1, sum);
-      }
-    }
-    child->getTable()->model()->setObjNames(labels);
-    QStringList header;
-    header << "Principal Component" << "X Exp Variance" << "Accum X Exp Variance";
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->getTable()->model()->UpdateModel();
-    child->show();
-  }
-}
-
-void MainWindow::showUPCALoadings()
-{
-   if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPCAModel(mid)->getName();
-
-    for(uint i = 0; i < projects->value(pid)->getUPCAModel(mid)->Model()->loadings->order; i++){
-
-      QString tabname = projectname + " - " + modelname + " - UPCA Loadings - ";
-      tabname.append(ui.treeWidget->currentItem()->text(0)+"-");
-      tabname.append(QString::number(i+1));
-      MDIChild *child = createMdiChild();
-      child->setWindowID(tabid);
-      child->newTable(tabname, projects->value(pid)->getUPCAModel(mid)->Model()->loadings->m[i]);
-      QStringList varname = projects->value(pid)->getUPCAModel(mid)->getVarName();
-      child->getTable()->model()->setObjNames(varname);
-      QStringList headername;
-      headername << "Variables";
-      for(uint c = 0; c <  projects->value(pid)->getUPCAModel(mid)->Model()->loadings->m[i]->col; c++){
-        headername << QString("PC %1").arg(QString::number(c+1));
-      }
-      child->getTable()->model()->setHorizontalHeaderLabels(headername);
-      child->show();
-      child->getTable()->setPID(pid);
-      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-}
-
-void MainWindow::showUPCAScore()
-{
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getUPCAModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - UPCA Scores";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getUPCAModel(mid)->Model()->scores, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    child->getTable()->model()->setObjNames(projects->value(pid)->getUPCAModel(mid)->getObjName());
-    QStringList headername;
-    headername << "Object Names";
-    for(uint c = 0; c < projects->value(pid)->getUPCAModel(mid)->Model()->scores->col; c++){
-      headername << QString("PC %1").arg(QString::number(c+1));
-    }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-  }
-}
-
 void MainWindow::showPLSVarSelMap()
 {
   if(CurrentIsModel() == true){
@@ -3317,7 +2459,7 @@ void MainWindow::showPLSTScores()
   }
 }
 
-//          ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
+//          ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
 void MainWindow::showPCAPredScore()
 {
   if(CurrentIsPrediction() == true){
@@ -3454,117 +2596,124 @@ void MainWindow::ModelInfo()
     MDIChild *child = createMdiChild();
     child->setWindowID(tabid);
     child->newModelInfo();
-    child->getModelInfoWindow()->setModelName(getCurrentModelName());
-    child->getModelInfoWindow()->setModelType(getCurrentModelType());
-    child->getModelInfoWindow()->setModelComponentNumber(getCurrentModelNComponents());
+
+    QStringList textlst;
+    textlst.append(QString("Model name: %1").arg(getCurrentModelName()));
+    textlst.append(QString("Model type: %1").arg(getCurrentModelType()));
+    QString xhash = getCurrentModelXhash();
+    int nobj = 0;
+    int nvars = 0;
+    int ntarg = 0;
+    int xscaling = getCurrentModelXScalingType();
+    int yscaling = getCurrentModelYScalingType();
+    int xoid = projects->value(pid)->getMatrixID(xhash);
+    QString moname;
+    int validationtype = -1;
+    QString vselalg;
+    QString vseloptions;
 
     if(getCurrentModelType().compare("PCA Model") == 0){
-      child->getModelInfoWindow()->setNObjects(projects->value(pid)->getPCAModel(mid)->getObjName().size());
-      child->getModelInfoWindow()->setNVariables(projects->value(pid)->getPCAModel(mid)->getVarName().size());
-    }
-    else if(getCurrentModelType().compare("UPCA Model") == 0){
-      child->getModelInfoWindow()->setNObjects(projects->value(pid)->getUPCAModel(mid)->getObjName().size());
-      child->getModelInfoWindow()->setNVariables(projects->value(pid)->getUPCAModel(mid)->getVarName().size());
+      textlst.append(QString("N. PCs: %1").arg(getCurrentModelNComponents()));
+      nobj = projects->value(pid)->getPCAModel(mid)->getObjName().size();
+      nvars = projects->value(pid)->getPCAModel(mid)->getVarName().size();
     }
     else if(getCurrentModelType().compare("PLS Model") == 0){
-      child->getModelInfoWindow()->setNObjects(projects->value(pid)->getPLSModel(mid)->getObjName().size());
-      child->getModelInfoWindow()->setNVariables(projects->value(pid)->getPLSModel(mid)->getXVarName().size());
-      child->getModelInfoWindow()->setNY(projects->value(pid)->getPLSModel(mid)->getYVarName().size());
-    }
-    else if(getCurrentModelType().compare("UPLS Model") == 0){
-      child->getModelInfoWindow()->setNObjects(projects->value(pid)->getUPLSModel(mid)->getObjName().size());
-      child->getModelInfoWindow()->setNVariables(projects->value(pid)->getUPLSModel(mid)->getXVarName().size());
-      child->getModelInfoWindow()->setNY(projects->value(pid)->getUPLSModel(mid)->getYVarName().size());
+      textlst.append(QString("N. LVs: %1").arg(getCurrentModelNComponents()));
+      nobj = projects->value(pid)->getPLSModel(mid)->getObjName().size();
+      nvars = projects->value(pid)->getPLSModel(mid)->getXVarName().size();
+      ntarg = projects->value(pid)->getPLSModel(mid)->getYVarName().size();
+      validationtype = projects->value(pid)->getPLSModel(mid)->getValidation();
     }
     else if(getCurrentModelType().compare("MLR Model") == 0){
-      child->getModelInfoWindow()->setNObjects(projects->value(pid)->getMLRModel(mid)->getObjName().size());
-      child->getModelInfoWindow()->setNVariables(projects->value(pid)->getMLRModel(mid)->getXVarName().size());
-      child->getModelInfoWindow()->setNY(projects->value(pid)->getMLRModel(mid)->getYVarName().size());
+      nobj = projects->value(pid)->getMLRModel(mid)->getObjName().size();
+      nvars = projects->value(pid)->getMLRModel(mid)->getXVarName().size();
+      ntarg = projects->value(pid)->getMLRModel(mid)->getYVarName().size();
+      validationtype = projects->value(pid)->getMLRModel(mid)->getValidation();
     }
     else if(getCurrentModelType().compare("LDA Model") == 0){
-      child->getModelInfoWindow()->setNObjects(projects->value(pid)->getLDAModel(mid)->getObjName().size());
-      child->getModelInfoWindow()->setNVariables(projects->value(pid)->getLDAModel(mid)->getVarName().size());
-      child->getModelInfoWindow()->setNY(projects->value(pid)->getLDAModel(mid)->Model()->nclass);
+      nobj = projects->value(pid)->getLDAModel(mid)->getObjName().size();
+      nvars = projects->value(pid)->getLDAModel(mid)->getVarName().size();
+      ntarg = projects->value(pid)->getLDAModel(mid)->Model()->nclass;
     }
-
-    QString xhash = getCurrentModelXhash();
-    QString yhash = getCurrentModelYhash();
-
-    if(getCurrentModelType().compare("PCA Model") == 0 || getCurrentModelType().compare("PLS Model") == 0 || getCurrentModelType().compare("PLS Variable Selection Model") == 0 || getCurrentModelType().compare("MLR Model") == 0 ){
-
-
+    else if(getCurrentModelType().compare("PLS Variable Selection Model") == 0){
       if(xhash.size() > 0){
-        int xid = projects->value(pid)->getMatrixID(xhash);
-        if(xid != -1){
-          child->getModelInfoWindow()->setXDataOrigin(projects->value(pid)->getMatrix(xid)->getName());
+        PLSModel *mpls = projects->value(pid)->getPLSModel(xhash);
+        if(mpls != 0){
+          moname = mpls->getName();
         }
         else{
-          child->getModelInfoWindow()->setXDataOrigin("Data Matrix Not Found");
+          moname = "Origin model not found";
         }
       }
       else{
-        child->getModelInfoWindow()->setXDataOrigin("Data Matrix Not Found");
+        moname = "Origin model not found";
       }
 
-
-      if(yhash.size() > 0){
-        int yid = projects->value(pid)->getMatrixID(yhash);
-        if(yid != -1){
-          child->getModelInfoWindow()->setYDataOrigin(projects->value(pid)->getMatrix(yid)->getName());
-        }
-        else{
-          child->getModelInfoWindow()->setYDataOrigin("Data Matrix Not Found");
-        }
-      }
-      else{
-        child->getModelInfoWindow()->setYDataOrigin("Data Matrix Not Found");
-      }
+      vselalg = projects->value(pid)->getVarSelModel(mid)->getVariableSelectionAlgorithm();
+      vseloptions = projects->value(pid)->getVarSelModel(mid)->getVariableSelectionAlgorithmOptions();
     }
-    else if(getCurrentModelType().compare("UPCA Model") == 0 || getCurrentModelType().compare("UPLS Model") == 0 || getCurrentModelType().compare("UPLS Variable Selection Model") == 0){
-      if(xhash.size() > 0){
-        int xid = projects->value(pid)->getArrayID(xhash);
-        if(xid != -1){
-          child->getModelInfoWindow()->setXDataOrigin(projects->value(pid)->getArray(xid)->getName());
-        }
-        else{
-          child->getModelInfoWindow()->setXDataOrigin("Data Array Not Found");
-        }
-      }
-      else{
-        child->getModelInfoWindow()->setXDataOrigin("Data Array Not Found");
-      }
 
-      if(yhash.size() > 0){
-        int yid = projects->value(pid)->getArrayID(yhash);
-        if(yid != -1){
-          child->getModelInfoWindow()->setYDataOrigin(projects->value(pid)->getArray(yid)->getName());
-        }
-        else{
-          child->getModelInfoWindow()->setYDataOrigin("Data Array Not Found");
-        }
-      }
-      else{
-        child->getModelInfoWindow()->setYDataOrigin("Data Array Not Found");
+    if(nobj > 0)
+      textlst.append(QString("N. objects: %1").arg(QString::number(nobj)));
+
+    if(nvars > 0)
+      textlst.append(QString("N. variables: %1").arg(QString::number(nvars)));
+
+    if(ntarg > 0)
+      textlst.append(QString("N. targets: %1").arg(QString::number(ntarg)));
+
+    if(xoid > -1)
+      textlst.append(QString("Origin data: %1").arg(projects->value(pid)->getMatrix(xoid)->getName()));
+    else{
+      if(moname.compare("Origin model not found") != 0){
+        textlst.append(QString("Origin model: %1").arg(moname));
       }
     }
 
-    child->getModelInfoWindow()->setModelXScalingType(getCurrentModelXScalingType());
-    child->getModelInfoWindow()->setModelYScalingType(getCurrentModelYScalingType());
+    textlst.append(QString("X and Y centered"));
 
-    if(getCurrentModelType().compare("PLS Model") == 0){
-      child->getModelInfoWindow()->setModelValidationType(projects->value(pid)->getPLSModel(mid)->getValidation());
+    if(xscaling == 0)
+      textlst.append(QString("X not scaled"));
+    else if(xscaling == 1)
+      textlst.append(QString("X scaling type: %1").arg("Standard Deviation"));
+    else if(xscaling == 2)
+      textlst.append(QString("X scaling type: %1").arg("Column root mean square"));
+    else if(xscaling == 3)
+      textlst.append(QString("X scaling type: %1").arg("Pareto"));
+    else if(xscaling == 4)
+      textlst.append(QString("X scaling type: %1").arg("Min-Max range scaling"));
+    else if(xscaling == 5)
+      textlst.append(QString("X scaling type: %1").arg("Level scaling"));
+
+    if(yscaling == 0)
+      textlst.append(QString("Y not scaled"));
+    else if(yscaling == 1)
+      textlst.append(QString("Y scaling type: %1").arg("Standard Deviation"));
+    else if(yscaling == 2)
+      textlst.append(QString("Y scaling type: %1").arg("Column root mean square"));
+    else if(yscaling == 3)
+      textlst.append(QString("Y scaling type: %1").arg("Pareto"));
+    else if(yscaling == 4)
+      textlst.append(QString("Y scaling type: %1").arg("Min-Max range scaling"));
+    else if(yscaling == 5)
+      textlst.append(QString("Y scaling type: %1").arg("Level scaling"));
+
+    if(validationtype == 0){
+      textlst.append(QString("Model Not Validated"));
     }
-    else if(getCurrentModelType().compare("MLR Model") == 0){
-      child->getModelInfoWindow()->setModelValidationType(projects->value(pid)->getMLRModel(mid)->getValidation());
+    else if(validationtype == LOO){
+      textlst.append(QString("Model validation type: %1").arg("Leave One Out"));
     }
-    else if(getCurrentModelType().compare("UPLS Model") == 0){
-      child->getModelInfoWindow()->setModelValidationType(projects->value(pid)->getUPLSModel(mid)->getValidation());
-    }
-    else if(getCurrentModelType().compare("PLS Variable Selection Model") == 0 || getCurrentModelType().compare("UPLS Variable Selection Model") == 0){
-      child->getModelInfoWindow()->setVariableSelectionAlgorithm(projects->value(pid)->getVarSelModel(mid)->getVariableSelectionAlgorithm());
-      child->getModelInfoWindow()->setVariableSelectionOptions(projects->value(pid)->getVarSelModel(mid)->getVariableSelectionAlgorithmOptions());
+    else if(validationtype == RANDOMGROUP){
+      textlst.append(QString("Model validation type: %1").arg("Bootstrap Random Group k-Fold Cross Validation"));
     }
 
+    if(vselalg.size() > 0){
+      textlst.append(vselalg);
+      textlst.append(vseloptions);
+    }
+
+    child->getModelInfoWindow()->setText(textlst);
     child->show();
   }
 }
@@ -3580,12 +2729,12 @@ void MainWindow::ModelInfo()
  *        |
  *        Name - Tab Count - pid - x ID - y ID - x Scaling type - y Scaling type - number of components - Model Type - Data Position  (10)
  *          |
- *         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
+ *         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
  *
  * Type could be "Matrix" or "Array"
  * Tab count is an id used to know what tables are opened and to close the deleted table
  * Data Position is used to retrieve the Data Position inside the QList<MATRIX>,  QList<Array> QList<PCAModel> etc...
- * Model Type can be PCA Model, PLS Model, UPCA Model, UPLS Model
+ * Model Type can be PCA Model, PLS Model, LDA Model, MLR Model
  */
 void MainWindow::ShowContextMenu(const QPoint &pos)
 {
@@ -3637,42 +2786,9 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
         menu.addAction("&Remove Model", this, SLOT(removeModel()));
         menu.exec(globalPos);
       }
-      else if(modeltype.compare("UPCA Model") == 0){
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show T Score", this, SLOT(showUPCAScore()));
-        menu.addAction("&Show P Loadings", this, SLOT(showUPCALoadings()));
-        menu.addAction("&Show Explained Variance", this, SLOT(showUPCAExpVar()));
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
-      }
-      else if(modeltype.compare("UPLS Model") == 0){
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show T Score", this, SLOT(showUPLSTScores()));
-        menu.addAction("&Show U Score", this, SLOT(showUPLSUSCores()));
-        menu.addAction("&Show P Loadings", this, SLOT(showUPLSPLoadings()));
-        menu.addAction("&Show Q Loadings", this, SLOT(showUPLSQLoadings()));
-        menu.addAction("&Show W Weights", this, SLOT(showUPLSWWeights()));
-        menu.addAction("&Show Regression Coefficient", this, SLOT(showUPLSRegCoeff()));
-        menu.addAction("&Show Explained Variance", this, SLOT(showUPLSExpVar()));
-        menu.addAction("&Show Recalculated Y", this, SLOT(showUPLSRecalcY()));
-
-        if(projects->value(pid)->getUPLSModel(mid)->getValidation() > 0){
-          menu.addAction("&Show Validation", this, SLOT(showUPLSValidation()));
-          menu.addAction("&Show Predicted Y", this, SLOT(showUPLSValidatedPrediction()));
-        }
-
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
-      }
       else if(modeltype.compare("PLS Variable Selection Model") == 0){
         menu.addAction("&Model Info", this, SLOT(ModelInfo()));
         menu.addAction("&Show Validation Scores", this, SLOT(showPLSVarSelMap()));
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
-      }
-      else if(modeltype.compare("UPLS Variable Selection Model") == 0){
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show Validation Scores", this, SLOT(showUPLSVarSelMap()));
         menu.addAction("&Remove Model", this, SLOT(removeModel()));
         menu.exec(globalPos);
       }
@@ -3723,20 +2839,6 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
         menu.addAction("&Show Predicted Y", this, SLOT(showPLSPrediction()));
         if(getCurrentPredictionYhash().compare("None") != 0){
           menu.addAction("&Show Prediction Error", this, SLOT(showPLSPredictionRSquared()));
-        }
-        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
-        menu.exec(globalPos);
-      }
-      else if(predictiontype.compare("UPCA Prediction") == 0){
-        menu.addAction("&Show Prediction Score", this, SLOT(showUPCAPredScore()));
-        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
-        menu.exec(globalPos);
-      }
-      else if(predictiontype.compare("UPLS Prediction") == 0){
-        menu.addAction("&Show Prediction Score", this, SLOT(showUPLSPredScore()));
-        menu.addAction("&Show Predicted Y", this, SLOT(showUPLSPrediction()));
-        if(getCurrentPredictionYhash().compare("None") != 0){
-          menu.addAction("&Show Prediction Error", this, SLOT(showUPLSPredictionRSquared()));
         }
         menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
         menu.exec(globalPos);
@@ -3935,7 +3037,7 @@ void MainWindow::showDescrpitiveStatistics()
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       QStringList colname;
-      colname << "Variables"<< "Average" << "Median" << "Armonic average" << "Var Pop." << "Var Sample" << "SD Pop." << "SD Sample" << "CV Pop. %" << "CV Sample %" << "Min value" << "Max value";
+      colname << "Variables"<< "Average" << "Median" << "Armonic average" << "Var Pop." << "Var Sample" << "SD Pop." << "SD Sample" << "CV Pop. %" << "CV Sample %" << "Min value" << "Max value" << "N. zeros";
       child->newTable(tabname, stats);
       child->getTable()->setPID(pid);
       child->getTable()->setObjLabels(&projects->value(pid)->getVariableLabels());
@@ -4522,12 +3624,12 @@ void MainWindow::PlotVariableDistribution()
  *        |
  *        Name - Tab Count - pid - x ID - y ID - x Scaling type - y Scaling type - number of components - Model Type - Data Position  (10)
  *          |
- *         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction .UPCA Prediction,, ...) (8)
+ *         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction PLS Prediction,, ...) (8)
  *
  * Type could be "Matrix" or "Array"
  * Tab count is an id used to know what tables are opened and to close the deleted table
  * Data Position is used to retrieve the Data Position inside the QList<MATRIX>,  QList<Array> QList<PCAModel> etc...
- * Model Type can be PCA Model, PLS Model, UPCA Model, UPLS Model
+ * Model Type can be PCA Model, PLS Model, LDA Model, MLR Model
  */
 
 void MainWindow::PCA2DScorePlot()
@@ -5401,687 +4503,6 @@ void MainWindow::PLS3DPlotSDEPSampleValidator()
   }
 }
 
-void MainWindow::UPCA2DScorePlot()
-{
-  if(ProjectsHaveUPCA() == true){
-    PlotDialog plotdialog(projects, UPCA_);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPCAPlot upcaplot(projects);
-      upcaplot.setPID(plotdialog.selectedProject());
-      upcaplot.setMID(plotdialog.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
-      upcaplot.ScorePlot2D(&plot2D);
-      graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPCA Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPCA2DLoadingsPlot()
-{
-  if(ProjectsHaveUPCA() == true){
-    PlotDialog plotdialog(projects, UPCA_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPCAPlot upcaplot(projects);
-      upcaplot.setPID(plotdialog.selectedProject());
-      upcaplot.setMID(plotdialog.getModelID());
-      QList< ScatterPlot2D* > plot2D;
-      upcaplot.LoadingsPlot2D(&plot2D);
-      for(int i = 0; i < plot2D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D[i], SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPCA Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPCA2DScorePlotPrediction()
-{
-  if(ProjectsHaveUPCA() == true){
-    PlotDialog plotdialog(projects, UPCAPrediction);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPCAPlot upcaplot(projects);
-      upcaplot.setPID(plotdialog.selectedProject());
-      upcaplot.setMID(plotdialog.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
-      upcaplot.ScorePlotPrediction2D(&plot2D);
-      graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPCA Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPCA3DScorePlot()
-{
-  if(ProjectsHaveUPCA() == true){
-    PlotDialog plotdialog(projects, UPCA_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPCAPlot upcaplot(projects);
-      upcaplot.setPID(plotdialog.selectedProject());
-      upcaplot.setMID(plotdialog.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
-      upcaplot.ScorePlot3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPCA Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPCA3DLoadingsPlot()
-{
-  if(ProjectsHaveUPCA() == true){
-    PlotDialog plotdialog(projects, UPCA_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPCAPlot upcaplot(projects);
-      upcaplot.setPID(plotdialog.selectedProject());
-      upcaplot.setMID(plotdialog.getModelID());
-      QList< ScatterPlot3D* > plot3D;
-      upcaplot.LoadingsPlot3D(&plot3D);
-      for(int i = 0; i < plot3D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot3D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot3D[i], SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPCA Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPCA3DScorePlotPrediction()
-{
-  if(ProjectsHaveUPCA() == true){
-    PlotDialog plotdialog(projects, UPCAPrediction);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPCAPlot upcaplot(projects);
-      upcaplot.setPID(plotdialog.selectedProject());
-      upcaplot.setMID(plotdialog.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
-      upcaplot.ScorePlotPrediction3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPCA Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLS2DPlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
-      uplsplot.TU_Plot(&plot2D);
-      graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLS2DTTScorePlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
-      uplsplot.T_ScorePlot2D(&plot2D);
-      graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLS2DPPLoadingsPlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      QList< ScatterPlot2D* > plot2D;
-      uplsplot.P_LoadingsPlot2D(&plot2D);
-      for(int i = 0; i < plot2D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D[i], SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLS2DWWWeightsPlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      QList< ScatterPlot2D* > plot2D;
-      uplsplot.WeightsPlot2D(&plot2D);
-      for(int i = 0; i < plot2D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D[i], SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLS2DUUScorePlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
-      uplsplot.U_ScorePlot2D(&plot2D);
-      graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLS2DQQLoadingsPlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      QList< ScatterPlot2D* > plot2D;
-      uplsplot.Q_LoadingsPlot2D(&plot2D);
-      for(int i = 0; i < plot2D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D[i], SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLS2DTTScorePlotPrediction()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLSPrediction);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
-      uplsplot.T_ScorePlotPrediction2D(&plot2D);
-      graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLSRecalcVSExpPlotPrediction()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLSRecalcVSExperimentalWithPrediction);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      uplsplot.setPREDID(plotdialog.getPredID());
-      uplsplot.setNPrincipalComponent(plotdialog.getNPC());
-      QList< ScatterPlot2D* > plot2D;
-      uplsplot.RecalcVSExperimentalAndPrediction(&plot2D);
-      for(int i = 0; i < plot2D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D[i], SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No uPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLSPredVSExpPlotPrediction()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLSPredictedVSExperimentalWithPrediction);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      uplsplot.setPREDID(plotdialog.getPredID());
-      uplsplot.setNPrincipalComponent(plotdialog.getNPC());
-      QList< ScatterPlot2D* > plot2D;
-      uplsplot.PredictedVSExperimentalAndPrediction(&plot2D);
-      for(int i = 0; i < plot2D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D[i], SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No uPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLSRecalcVSExpPlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLSRecalcVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      uplsplot.setNPrincipalComponent(plotdialog.getNPC());
-      QList< ScatterPlot2D* > plot2D;
-      uplsplot.RecalcVSExperimental(&plot2D);
-      for(int i = 0; i < plot2D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D[i], SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLSRecalcResidualsVSExpPlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLSRecalcVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      uplsplot.setNPrincipalComponent(plotdialog.getNPC());
-      QList< ScatterPlot2D* > plot2D;
-      uplsplot.RecalcResidualsVSExperimental(&plot2D);
-      for(int i = 0; i < plot2D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D[i], SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLSPredVSExpPlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLSPredictedVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      uplsplot.setNPrincipalComponent(plotdialog.getNPC());
-      QList< ScatterPlot2D* > plot2D;
-      uplsplot.PredictedVSExperimental(&plot2D);
-      for(int i = 0; i < plot2D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D[i], SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLSPredResidualsVSExpPlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLSPredictedVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      uplsplot.setNPrincipalComponent(plotdialog.getNPC());
-      QList< ScatterPlot2D* > plot2D;
-      uplsplot.PredictedResidualsVSExperimental(&plot2D);
-      for(int i = 0; i < plot2D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D[i], SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLSPlotQ2R2()
-{
-  if(ProjectsHaveUPLSValidated() == true){
-    PlotDialog plotdialog(projects, UPLSValidation);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      QList< SimpleLine2DPlot* > plot2D;
-      uplsplot.R2Q2(&plot2D);
-      for(int i = 0; i < plot2D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models and Validation Model Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLSPlotR2R2Predicted()
-{
-  if(ProjectsHaveUPLSPrediction() == true){
-    PlotDialog plotdialog(projects, UPLSR2R2Plot);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      uplsplot.setPREDID(plotdialog.getPredID());
-      QList< SimpleLine2DPlot* > plot2D;
-      uplsplot.R2R2Prediction(&plot2D);
-      for(int i = 0; i < plot2D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Prediction Found!\n"), QMessageBox::Close);
-  }
-}
-void MainWindow::UPLS3DTTTScorePlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
-      uplsplot.T_ScorePlot3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLS3DPPPLoadingsPlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      QList< ScatterPlot3D* > plot3D;
-      uplsplot.P_LoadingsPlot3D(&plot3D);
-      for(int i = 0; i < plot3D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot3D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot3D[i], SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLS3DWWWLoadingsPlot()
-{
- if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      QList< ScatterPlot3D* > plot3D;
-      uplsplot.WeightsPlot3D(&plot3D);
-      for(int i = 0; i < plot3D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot3D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot3D[i], SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLS3DUUUScorePlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
-      uplsplot.U_ScorePlot3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLS3DQQQLoadingsPlot()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      QList< ScatterPlot3D* > plot3D;
-      uplsplot.Q_LoadingsPlot3D(&plot3D);
-      for(int i = 0; i < plot3D.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot3D[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot3D[i], SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No UPLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::UPLS3DScorePlotPrediction()
-{
-  if(ProjectsHaveUPLS() == true){
-    PlotDialog plotdialog(projects, UPLSPrediction);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      UPLSPlot uplsplot(projects);
-      uplsplot.setPID(plotdialog.selectedProject());
-      uplsplot.setMID(plotdialog.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
-      uplsplot.T_ScorePlotPrediction3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
 void MainWindow::PlotVarSelR2Q2()
 {
   if(ProjectsHaveVariableSelection() == true ){
@@ -6210,7 +4631,7 @@ void MainWindow::PlotModIncVarVar()
       DVectorAppend(&v, getUIVectorValue(projects->value(pid)->getVarSelModel(mid)->getVariableDistribution(), i));
     }
 
-    QStringList allvarnames = projects->value(pid)->getMatrix(projects->value(pid)->getVarSelModel(mid)->getXHash())->getVarName();
+    QStringList allvarnames = projects->value(pid)->getVarSelModel(mid)->getVariableNames();
     allvarnames.removeFirst();
 
     BarPlot *bplot = new BarPlot(v, allvarnames, QString("Models Including Variable - %1").arg(projects->value(pid)->getVarSelModel(mid)->getName()), "Variable Number", "Models Including Variable", this);
@@ -6872,11 +5293,7 @@ void MainWindow::DoPLSVariableSelection()
       projects->value(pid)->getLastVarSelModel()->setName(vsd.getVariableSelectionName());
       projects->value(pid)->getLastVarSelModel()->setProjectID(pid);
       projects->value(pid)->getLastVarSelModel()->setModelID(mid_);
-      projects->value(pid)->getLastVarSelModel()->setXHash(projects->value(pid)->getPLSModel(mid)->getDataHash());
-      projects->value(pid)->getLastVarSelModel()->setYHash(projects->value(pid)->getPLSModel(mid)->getDataHash());
-      projects->value(pid)->getLastVarSelModel()->setNumberOfComponents(projects->value(pid)->getPLSModel(mid)->getNPC());
-      projects->value(pid)->getLastVarSelModel()->setXScaling(projects->value(pid)->getPLSModel(mid)->getXScaling());
-      projects->value(pid)->getLastVarSelModel()->setYScaling(projects->value(pid)->getPLSModel(mid)->getYScaling());
+      projects->value(pid)->getLastVarSelModel()->setModelHash(projects->value(pid)->getPLSModel(mid)->getHash());
       projects->value(pid)->getLastVarSelModel()->getVariableNames().append(projects->value(pid)->getPLSModel(mid)->getXVarName());
 
       QStringList objsel = projects->value(pid)->getPLSModel(mid)->getObjName();
@@ -7130,7 +5547,6 @@ void MainWindow::DoPLSVariableSelection()
 
         projects->value(pid)->getMatrix(projects->value(pid)->MatrixCount()-1)->setName(vsd.getVariableSelectionName());
         projects->value(pid)->getMatrix(projects->value(pid)->MatrixCount()-1)->getObjName().append(objsel);
-        projects->value(pid)->getMatrix(projects->value(pid)->MatrixCount()-1)->GenHash();
 
         QTreeWidgetItem *subitem2 = new QTreeWidgetItem;
         subitem2->setText(0, vsd.getVariableSelectionName()); /*set the data name from the file*/
@@ -7245,7 +5661,7 @@ void MainWindow::DoPLSPrediction()
           while(!future.isFinished())
             QApplication::processEvents();
 
-  //         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
+  //         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
           QTreeWidgetItem *subitem = new QTreeWidgetItem;
           subitem->setText(0, projects->value(pid)->getPLSModel(mid)->getLastPLSPrediction()->getName());
           subitem->setText(1, QString::number(tabcount_));
@@ -7559,1011 +5975,6 @@ void MainWindow::DoPLS()
         TopMenuEnableDisable();
         CalculationMenuEnable();
         StopRun();
-      }
-    }
-  }
-}
-
-void MainWindow::DoUPCAPrediction()
-{
-  if(!projects->isEmpty()){
-    int nupca = 0;
-    for(int i = 0; i < projects->values().size(); i++){
-        if(projects->values()[i]->UPCACount() > 0)
-          nupca++;
-    }
-
-    if(nupca > 0){
-      DoPredictionDialog p(projects, UPCA_);
-      if(p.exec() == QDialog::Accepted && p.compute() == true){
-
-        int pid = p.getselectedProject();
-        int mid = p.getselectedModel();
-        int did = p.getselectedData();
-        StartRun();
-        CalculationMenuDisable(pid);
-        TopMenuEnableDisable();
-        QStringList objsel = p.getObjectSelected();
-        QString modelname = p.getPredictionName();
-
-         array *x;
-        NewArray(&x, projects->value(pid)->getArray(did)->Array()->order);
-
-        for(uint k = 0; k < projects->value(pid)->getArray(did)->Array()->order; k++){
-          NewArrayMatrix(&x, k, projects->value(pid)->getArray(did)->Array()->m[k]->row, projects->value(pid)->getArray(did)->Array()->m[k]->col);
-        }
-
-        QStringList varsel = projects->value(pid)->getUPCAModel(mid)->getVarName();
-        int ii = 0;
-        for(int i = 0; i < projects->value(pid)->getArray(did)->getObjName().size(); i++){
-          if(objsel.contains(projects->value(pid)->getArray(did)->getObjName()[i]) == true){
-            int jx = 0;
-            for(int j = 1; j < projects->value(pid)->getArray(did)->getVarName().size(); j++){
-              if(varsel.contains(projects->value(pid)->getArray(did)->getVarName()[j]) == true){
-                for(uint k = 0; k < x->order; k++){
-                  setArrayValue(x, k, ii, jx, getArrayValue(projects->value(pid)->getArray(did)->Array(), k, i, j-1));
-                }
-                jx++;
-              }
-              else{
-                continue;
-              }
-            }
-            ii++;
-          }
-          else{
-            continue;
-          }
-          QApplication::processEvents();
-        }
-
-        if(x->m[0]->col == (uint)varsel.size()){
-          QString str = "--------------------\n Computing UPCA Prediction for: ";
-          str.append(QString("%1").arg( projects->value(p.getselectedProject())->getProjectName()));
-          updateLog(str);
-
-          projects->value(pid)->getUPCAModel(mid)->addUPCAPrediction();
-
-          projects->value(pid)->getUPCAModel(mid)->getLastUPCAPrediction()->setName("UPCA Prediction - " + modelname);
-          projects->value(pid)->getUPCAModel(mid)->getLastUPCAPrediction()->setPredID(projects->value(pid)->getUPCAModel(mid)->UPCAPredictionCount()-1);
-          projects->value(pid)->getUPCAModel(mid)->getLastUPCAPrediction()->setDID(did);
-          projects->value(pid)->getUPCAModel(mid)->getLastUPCAPrediction()->setDataHash(projects->value(pid)->getArray(did)->getHash());
-          projects->value(pid)->getUPCAModel(mid)->getLastUPCAPrediction()->setObjName(objsel);
-
-          RUN obj;
-          obj.setXArray(x);
-          obj.setUPCAModel(projects->value(pid)->getUPCAModel(mid));
-
-          QFuture<void> future = obj.RunUPCAPrediction();
-          while(!future.isFinished()){
-            QApplication::processEvents();
-          }
-  //         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, projects->value(pid)->getUPCAModel(mid)->getLastUPCAPrediction()->getName());
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, QString::number(mid));
-          subitem->setText(4, projects->value(pid)->getArray(did)->getHash());
-          subitem->setText(5, QString::number(-1));
-          subitem->setText(6, QString::number(projects->value(pid)->getUPCAModel(mid)->getLastUPCAPrediction()->getPredID()));
-          subitem->setText(7, QString("UPCA Prediction"));
-
-          #ifdef DEBUG
-          qDebug() << "Predicted Scores";
-          PrintMatrix(projects->value(pid)->getUPCAModel(mid)->getLastUPCAPrediction()->getPredScores());
-          qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2) << subitem->text(3) << subitem->text(4) << subitem->text(5);
-          #endif
-
-          tabcount_++;
-
-          getModelItem(pid, mid)->addChild(subitem);
-        }
-        else{
-          QMessageBox::critical(this, tr("UPCA Prediction Error"),
-                    tr("Unable to compute UPCA Prediction.\n"
-                      "The number of variables differ. Please check your data."),
-                      QMessageBox::Ok);
-          updateLog(QString("Error!! Unable to compute UPCA Prediction. The number of variables differ. Please check your data.\n"));
-        }
-        TopMenuEnableDisable();
-        CalculationMenuEnable();
-        StopRun();
-        DelArray(&x);
-        projects->value(pid)->AutoSave();
-      }
-    }
-  }
-}
-
-void MainWindow::DoUPCA()
-{
-  if(!projects->isEmpty()){
-    ModelDialog doupca(projects, UPCA_);
-    if(doupca.exec() == QDialog::Accepted && doupca.compute() == true){
-      int pid = doupca.getselectedProject();
-      int did = doupca.getselectedData();
-      int xscaling = doupca.getXScalingType();
-      int pc = doupca.getNumberOfComponent();
-      QString modelname = "UPCA - "+doupca.getModelName();
-
-      QStringList objsel = doupca.getObjectSelected();
-      QStringList varsel = doupca.getXVarSelected();
-
-      if(did != -1 && pid != -1){
-        StartRun();
-        CalculationMenuDisable(pid);
-        QString str = "--------------------\n Computing UPCA for: ";
-        str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
-        updateLog(str);
-
-        projects->value(pid)->addUPCAModel();
-//         int mid = projects->value(pid)->UPCACount()-1;
-
-        projects->value(pid)->getLastUPCAModel()->setDID(did);
-        projects->value(pid)->getLastUPCAModel()->setDataHash(projects->value(pid)->getArray(did)->getHash());
-        projects->value(pid)->getLastUPCAModel()->setXScaling(xscaling);
-        projects->value(pid)->getLastUPCAModel()->setNPC(pc);
-        projects->value(pid)->getLastUPCAModel()->setModelID(mid_);
-        projects->value(pid)->getLastUPCAModel()->setName(modelname);
-        projects->value(pid)->getLastUPCAModel()->setObjName(objsel);
-        projects->value(pid)->getLastUPCAModel()->setVarName(varsel);
-
-
-        array *x;
-        NewArray(&x, projects->value(pid)->getArray(did)->Array()->order);
-        for(uint k = 0; k < projects->value(pid)->getArray(did)->Array()->order; k++){
-          NewArrayMatrix(&x, k, objsel.size(), varsel.size());
-        }
-
-        int ii = 0;
-        for(int i = 0; i < projects->value(pid)->getArray(did)->getObjName().size(); i++){
-          if(objsel.contains(projects->value(pid)->getArray(did)->getObjName()[i]) == true){
-            int jx = 0;
-            for(int j = 1; j < projects->value(pid)->getArray(did)->getVarName().size(); j++){
-              if(varsel.contains(projects->value(pid)->getArray(did)->getVarName()[j]) == true){
-                for(uint k = 0; k < x->order; k++){
-                  setArrayValue(x, k, ii, jx, getArrayValue(projects->value(pid)->getArray(did)->Array(), k, i, j-1));
-                }
-                jx++;
-              }
-              else{
-                continue;
-              }
-            }
-            ii++;
-          }
-          else{
-            continue;
-          }
-          QApplication::processEvents();
-        }
-
-        RUN obj;
-        obj.setXArray(x);
-        obj.setXScalingType(xscaling);
-        obj.setUPCAModel(projects->value(pid)->getLastUPCAModel());
-        obj.setNumberPC(pc);
-
-        QFuture<void> future = obj.RunUPCA();
-
-        while(!future.isFinished()){
-          if(stoprun == true){
-            obj.AbortRun();
-            QApplication::processEvents();
-          }
-          else{
-            QApplication::processEvents();
-          }
-        }
-
-        if(stoprun == false){
-          WaitRun();
-          #ifdef DEBUG
-          PrintUPCAModel(projects->value(pid)->getUPCAModel(mid_)->Model());
-          #endif
-
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, modelname);
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, projects->value(pid)->getArray(did)->getHash());
-          subitem->setText(4, QString("-"));
-          subitem->setText(5, QString::number(xscaling));
-          subitem->setText(6, QString("-"));
-          subitem->setText(7, QString::number(pc));
-          subitem->setText(8, QString("UPCA Model"));
-          subitem->setText(9, QString::number(mid_));
-
-          tabcount_++;
-          mid_++;
-          getProjectItem(pid)->child(1)->addChild(subitem);
-        }
-        else{
-          int removeid = projects->value(pid)->UPCACount()-1;
-          projects->value(pid)->delUPCAModelAt(removeid);
-        }
-
-        TopMenuEnableDisable();
-        CalculationMenuEnable();
-        StopRun();
-        DelArray(&x);
-        projects->value(pid)->AutoSave();
-      }
-    }
-  }
-}
-
-void MainWindow::DoUPLSVariableSelection()
-{
-  VariableSelectionDialog vsd(projects, UPLSVariableSelection);
-  if(vsd.exec() == QDialog::Accepted){
-    int pid = vsd.getselectedProject();
-    int mid = vsd.getselectedProject();
-    int xid = projects->value(pid)->getArrayID(projects->value(pid)->getUPLSModel(mid)->getXHash());
-    int yid = projects->value(pid)->getArrayID(projects->value(pid)->getUPLSModel(mid)->getYHash());
-
-    if(xid > -1 && yid > -1){
-      StartRun();
-      CalculationMenuDisable(pid);
-
-      QString str = "--------------------\n Computing UPLS Variable Selection for: ";
-      str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
-      updateLog(str);
-
-      projects->value(pid)->addVarSelModel();
-
-      /* store informations in order to save the model*/
-
-      projects->value(pid)->getLastVarSelModel()->setName(vsd.getVariableSelectionName());
-      projects->value(pid)->getLastVarSelModel()->setProjectID(pid);
-      projects->value(pid)->getLastVarSelModel()->setModelID(mid_);
-      projects->value(pid)->getLastVarSelModel()->setXHash(projects->value(pid)->getArray(xid)->getHash());
-      projects->value(pid)->getLastVarSelModel()->setYHash(projects->value(pid)->getArray(yid)->getHash());
-      projects->value(pid)->getLastVarSelModel()->setNumberOfComponents(projects->value(pid)->getUPLSModel(mid)->getNPC());
-      projects->value(pid)->getLastVarSelModel()->setXScaling(projects->value(pid)->getUPLSModel(mid)->getXScaling());
-      projects->value(pid)->getLastVarSelModel()->setYScaling(projects->value(pid)->getUPLSModel(mid)->getYScaling());
-
-
-      QStringList objsel = projects->value(pid)->getUPLSModel(mid)->getObjName();
-      QStringList xvarsel = projects->value(pid)->getUPLSModel(mid)->getXVarName();
-      QStringList yvarsel = projects->value(pid)->getUPLSModel(mid)->getYVarName();
-
-      array *x, *y;
-
-      QList<size_t> xobjid, yobjid;
-      for(int i = 0; i < objsel.size(); i++){
-        int xobjindex =  projects->value(pid)->getArray(xid)->getObjName().indexOf(objsel[i]);
-        int yobjindex =  projects->value(pid)->getArray(yid)->getObjName().indexOf(objsel[i]);
-        if(xobjindex  > -1 && yobjindex > -1){
-          xobjid.append(xobjindex);
-          yobjid.append(yobjindex);
-        }
-        else{
-          continue;
-        }
-      }
-
-      NewArray(&x, projects->value(pid)->getArray(xid)->Array()->order);
-      for(uint k = 0; k < projects->value(pid)->getArray(xid)->Array()->order; k++){
-        NewArrayMatrix(&x, k, xobjid.size(), xvarsel.size());
-      }
-
-      NewArray(&y, projects->value(pid)->getArray(yid)->Array()->order);
-      for(uint k = 0; k < projects->value(pid)->getArray(yid)->Array()->order; k++){
-        NewArrayMatrix(&y, k, yobjid.size(), yvarsel.size());
-      }
-
-      for(int i = 0; i < xobjid.size(); i++){
-        for(int j = 0; j < xvarsel.size(); j++){
-          int varindex = projects->value(pid)->getArray(xid)->getVarName().indexOf(xvarsel[j]);
-          if(varindex > -1){
-            for(uint k = 0; k < x->order; k++){
-              setArrayValue(x, k, i, j, getArrayValue(projects->value(pid)->getArray(xid)->Array(), k, xobjid[i], varindex-1));
-            }
-          }
-          else{
-            continue;
-          }
-          QApplication::processEvents();
-        }
-
-        for(int j = 0; j < yvarsel.size(); j++){
-          int varindex = projects->value(pid)->getArray(yid)->getVarName().indexOf(yvarsel[j]);
-          if(varindex > -1){
-            for(uint k = 0; k < y->order; k++){
-              setArrayValue(y, k, i, j, getArrayValue(projects->value(pid)->getArray(yid)->Array(), k, yobjid[i], varindex-1));
-            }
-          }
-          else{
-            continue;
-          }
-        }
-        QApplication::processEvents();
-      }
-
-      projects->value(pid)->getLastVarSelModel()->getVariableNames().append(xvarsel);
-
-      QString vselconfig;
-
-      int xscaling = projects->value(pid)->getUPLSModel(mid)->getXScaling();
-      int yscaling = projects->value(pid)->getUPLSModel(mid)->getYScaling();
-      int npc = projects->value(pid)->getUPLSModel(mid)->getNPC();
-      int validationtype = vsd.getValidType();
-      int ngroup = vsd.getNumberOfGroup();
-      int niter = vsd.getNumberOfIteration();
-
-      if(validationtype == RANDOMGROUP){
-        vselconfig += QString("Random Group Cross Validation;");
-        vselconfig += QString("Number of random groups: ")+QString::number(ngroup);
-        vselconfig += QString("Number of iterations: ")+QString::number(niter)+";";
-      }
-      else{
-        vselconfig += QString("Leave One Out Cross Validation;");
-      }
-
-      //get variable selectioon algorithm...
-      int varselalgo = vsd.getVarSelectionAlgorithm();
-
-      if(varselalgo == GA){
-        projects->value(pid)->getLastVarSelModel()->setVariableSelectionAlgorithm("Genetic Algorithm");
-      }
-      else{
-        projects->value(pid)->getLastVarSelModel()->setVariableSelectionAlgorithm("Particle Swarm Optimization");
-      }
-
-
-      int population_size = vsd.getPopulationSize();
-      vselconfig += QString("Population Size: %1;").arg(QString::number(population_size));
-
-      double crossoverfrac;
-      int crossovertype;
-      double nswap;
-      double mutationrate;
-      double population_convergence;
-      double randomvars = 0.1;
-
-      if(varselalgo == GA){
-        //genetic algorithm
-        crossoverfrac = vsd.getCrossoverFraction();
-        crossovertype = vsd.getCrossoverType();
-        nswap = vsd.getCrossoverSwappiness();
-        mutationrate = vsd.getMutationRate();
-        population_convergence = vsd.getPopulationConverngence();
-        if(crossovertype == 2){
-          vselconfig += QString("Crossover Type :%1; Crossover Fraction: %2; Crossover Swappiness: %3; Mutation Rate %4; Convergence %5;").arg("Uniform").arg(QString::number(crossoverfrac)).arg(QString::number(nswap)).arg(QString::number(mutationrate)).arg(QString::number(population_convergence));
-        }
-        else if(crossovertype == 1){
-          vselconfig += QString("Crossover Type :%1; Crossover Fraction: %2; Mutation Rate %3; Convergence %4;").arg("Two Point").arg(QString::number(crossoverfrac)).arg(QString::number(mutationrate)).arg(QString::number(population_convergence));
-        }
-        else{
-          vselconfig += QString("Crossover Type :%1; Crossover Fraction: %2; Mutation Rate %3; Convergence %4;").arg("Single Point").arg(QString::number(crossoverfrac)).arg(QString::number(mutationrate)).arg(QString::number(population_convergence));
-        }
-      }
-      else{
-        crossoverfrac = 0;
-        crossovertype = 0;
-        nswap = 0;
-        mutationrate = 0;
-        population_convergence = 0;
-        randomvars = vsd.getRandomVariables();
-        vselconfig += QString("Random varaiblesType :%1;").arg(QString::number(randomvars));
-      }
-
-      projects->value(pid)->getLastVarSelModel()->setVariableSelectionAlgorithmOptions(vselconfig);
-
-      RUN obj;
-      obj.setXArray(x);
-      obj.setXScalingType(xscaling);
-      obj.setYArray(y);
-      obj.setYScalingType(yscaling);
-      obj.setNumberPC(npc);
-      obj.setValidationType(validationtype);
-      obj.setNumberOfGroups(ngroup);
-      obj.setNumberOfIterations(niter);
-
-      obj.setVariableSelectionAlgorithm(varselalgo);
-      obj.setPopulationSize(population_size);
-      obj.setCrossoverFraction(crossoverfrac);
-      obj.setMutationRate(mutationrate);
-      obj.setCrossoverType(crossovertype); // uniform crossover
-      obj.setNumbersOfSwappiness(nswap); // 30 % of variables crossovered..
-      obj.setPopulationConvergence(population_convergence);
-
-      obj.setRandomizedVariables(randomvars);
-
-      obj.Test();
-      QFuture<void> future = obj.RunUPLSVariableSelection();
-      while(!future.isFinished()){
-        if(stoprun == true){
-          obj.AbortRun();
-          QApplication::processEvents();
-        }
-        else{
-          QApplication::processEvents();
-        }
-      }
-
-      if(stoprun == false){
-        WaitRun();
-      /*
-      PrintArray(projects->value(pid)->getLastVarSelModel()->getMap());
-      PrintUIVector(projects->value(pid)->getLastVarSelModel()->getVariableDistribution());
-      PrintUIVector(projects->value(pid)->getLastVarSelModel()->getSelectedVariables());
-      */
-      QTreeWidgetItem *subitem = new QTreeWidgetItem;
-      subitem->setText(0, "VSEL - "+vsd.getVariableSelectionName());
-      subitem->setText(1, QString::number(tabcount_));
-      subitem->setText(2, QString::number(pid));
-      subitem->setText(3, projects->value(pid)->getArray(xid)->getHash());
-      subitem->setText(4, projects->value(pid)->getArray(yid)->getHash());
-      subitem->setText(5, QString::number(xscaling));
-      subitem->setText(6, QString::number(yscaling));
-      subitem->setText(7, QString::number(npc));
-      subitem->setText(8, QString("UPLS Variable Selection Model"));
-      subitem->setText(9, QString::number(mid_));
-      getProjectItem(pid)->child(1)->addChild(subitem);
-
-      tabcount_++;
-
-      projects->value(pid)->addArray();
-      array *ax = projects->value(pid)->getArray(projects->value(pid)->ArrayCount()-1)->Array();
-      matrix *m;
-
-      QStringList varnames;
-      varnames.append("Object Names");
-
-      for(uint k = 0; k < projects->value(pid)->getArray(xid)->Array()->order; k++){
-        initMatrix(&m);
-        for(int i = 0; i < objsel.size(); i++){
-          int i_indx = projects->value(pid)->getArray(xid)->getObjName().indexOf(objsel[i]);
-          if(i_indx > -1){
-            dvector *row;
-            initDVector(&row);
-            for(uint j = 0; j < projects->value(pid)->getLastVarSelModel()->getSelectedVariables()->size; j++){
-              if(getUIVectorValue(projects->value(pid)->getLastVarSelModel()->getSelectedVariables(), j) == 1){
-                if(i == 0){
-                  varnames.append(projects->value(pid)->getArray(xid)->getVarName()[j+1]);
-                }
-                DVectorAppend(&row, getArrayValue(projects->value(pid)->getArray(xid)->Array(), k,  i_indx, j));
-              }
-              else{
-                continue;
-              }
-            }
-            MatrixAppendRow(&m, row);
-            DelDVector(&row);
-          }
-          else{
-            continue;
-          }
-        }
-        ArrayAppendMatrix(&ax, m); /*only with initArray*/
-        DelMatrix(&m);
-      }
-
-      projects->value(pid)->getArray(projects->value(pid)->ArrayCount()-1)->setName(vsd.getVariableSelectionName());
-      projects->value(pid)->getArray(projects->value(pid)->ArrayCount()-1)->getObjName().append(projects->value(pid)->getArray(xid)->getObjName());
-      projects->value(pid)->getArray(projects->value(pid)->ArrayCount()-1)->getVarName().append(varnames);
-      projects->value(pid)->getArray(projects->value(pid)->ArrayCount()-1)->GenHash();
-
-      QTreeWidgetItem *subitem2 = new QTreeWidgetItem;
-      subitem2->setText(0, vsd.getVariableSelectionName()); /*set the data name from the file*/
-      subitem2->setText(1, QString("Array")); // Define the type of the data
-      subitem2->setText(2, QString::number(tabcount_)); // Define the tab id number in order to close a specific table
-      subitem2->setText(3, QString::number(projects->value(pid)->ArrayCount()-1)); // Define the matrix position id in order to find easly when you need to show data.
-      subitem2->setText(4, QString::number(pid)); // pid for get the array with Value
-
-      getProjectItem(pid)->child(0)->addChild(subitem2);
-
-      tabcount_++;
-      mid_++;
-      }
-      else{
-        int removeid = projects->value(pid)->VarSelCount()-1;
-        projects->value(pid)->delVarSelModelAt(removeid);
-      }
-
-      TopMenuEnableDisable();
-      CalculationMenuEnable();
-      StopRun();
-      DelArray(&x);
-      DelArray(&y);
-      projects->value(pid)->AutoSave();
-    }
-    else{
-      QMessageBox::critical(this, tr("UPLS Variable Selection Error"),
-      tr("Unable to compute UPLS Variable Selection.\n"
-      "The data matrix was deleted or lost."),
-      QMessageBox::Ok);
-      updateLog(QString("Error!! Unable to compute UPLS Variable Selection. The data matrix was deleted or lost.\n"));
-    }
-  }
-}
-
-void MainWindow::DoUPLSPrediction()
-{
-  if(!projects->isEmpty()){
-    int nupls = 0;
-    for(int i = 0; i < projects->values().size(); i++){
-        if(projects->values()[i]->UPLSCount() > 0)
-          nupls++;
-    }
-
-    if(nupls > 0){
-      DoPredictionDialog p(projects, UPLS_);
-      if(p.exec() == QDialog::Accepted && p.compute() == true){
-        int pid = p.getselectedProject();
-        int mid = p.getselectedModel();
-        int xid = p.getselectedData();
-        int yid = p.getselectedYData();
-
-        StartRun();
-        CalculationMenuDisable(pid);
-        TopMenuEnableDisable();
-
-        QStringList objsel = p.getObjectSelected();
-        QStringList ysel = p.getYVariableSelected();
-        QString modelname = p.getPredictionName();
-
-        QStringList xvarsel = projects->value(pid)->getUPLSModel(mid)->getXVarName();
-        QStringList yvarsel = projects->value(pid)->getUPLSModel(mid)->getYVarName();
-
-        array *x, *y;
-
-        QList<size_t> xobjid, yobjid;
-        for(int i = 0; i < objsel.size(); i++){
-          int xobjindex =  projects->value(pid)->getArray(xid)->getObjName().indexOf(objsel[i]);
-          int yobjindex =  projects->value(pid)->getArray(yid)->getObjName().indexOf(objsel[i]);
-          if(xobjindex  > -1 && yobjindex > -1){
-            xobjid.append(xobjindex);
-            yobjid.append(yobjindex);
-          }
-          else{
-            continue;
-          }
-        }
-
-        NewArray(&x, projects->value(pid)->getArray(xid)->Array()->order);
-        for(uint k = 0; k < projects->value(pid)->getArray(xid)->Array()->order; k++){
-          NewArrayMatrix(&x, k, xobjid.size(), xvarsel.size());
-        }
-
-        NewArray(&y, projects->value(pid)->getArray(yid)->Array()->order);
-        for(uint k = 0; k < projects->value(pid)->getArray(yid)->Array()->order; k++){
-          NewArrayMatrix(&y, k, yobjid.size(), ysel.size());
-        }
-
-        for(int i = 0; i < xobjid.size(); i++){
-          for(int j = 0; j < xvarsel.size(); j++){
-            int varindex = projects->value(pid)->getArray(xid)->getVarName().indexOf(xvarsel[j]);
-            if(varindex > -1){
-              for(uint k = 0; k < x->order; k++){
-                setArrayValue(x, k, i, j, getArrayValue(projects->value(pid)->getArray(xid)->Array(), k, xobjid[i], varindex-1));
-              }
-            }
-            else{
-              continue;
-            }
-            QApplication::processEvents();
-          }
-
-          for(int j = 0; j < ysel.size(); j++){
-            int varindex = projects->value(pid)->getArray(yid)->getVarName().indexOf(ysel[j]);
-            if(varindex > -1){
-              for(uint k = 0; k < y->order; k++){
-                setArrayValue(y, k, i, j, getArrayValue(projects->value(pid)->getArray(yid)->Array(), k, yobjid[i], varindex-1));
-              }
-            }
-            else{
-              continue;
-            }
-          }
-          QApplication::processEvents();
-        }
-
-        if(x->m[0]->col == (uint)xvarsel.size()){
-          QString str = "--------------------\n Computing UPLS Prediction for: ";
-          str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
-          updateLog(str);
-
-          projects->value(pid)->getUPLSModel(mid)->addUPLSPrediction();
-
-          projects->value(pid)->getUPLSModel(mid)->getLastUPLSPrediction()->setName("UPLS Prediction - " + modelname);
-          projects->value(pid)->getUPLSModel(mid)->getLastUPLSPrediction()->setPredID(projects->value(pid)->getUPLSModel(mid)->UPLSPredictionCount()-1);
-          projects->value(pid)->getUPLSModel(mid)->getLastUPLSPrediction()->setXID(xid);
-          projects->value(pid)->getUPLSModel(mid)->getLastUPLSPrediction()->setYID(yid);
-          projects->value(pid)->getUPLSModel(mid)->getLastUPLSPrediction()->setXHash(projects->value(pid)->getArray(xid)->getHash());
-          projects->value(pid)->getUPLSModel(mid)->getLastUPLSPrediction()->setYHash(projects->value(pid)->getArray(yid)->getHash());
-          projects->value(pid)->getUPLSModel(mid)->getLastUPLSPrediction()->setObjName(objsel);
-
-
-          RUN obj;
-          obj.setXArray(x);
-          if(y->order > 0){
-            if(y->m[0]->col == (uint)yvarsel.size()){
-              obj.setYArray(y);
-            }
-            else{
-              updateLog(QString("Warning!! the number of y selected is not equal to the y of model.\n No Prediction Error could be calculated!"));
-            }
-          }
-          obj.setUPLSModel(projects->value(pid)->getUPLSModel(mid));
-
-          QFuture<void> future = obj.RunUPLSPrediction();
-          while(!future.isFinished()){
-            QApplication::processEvents();
-          }
-  //         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, projects->value(pid)->getUPLSModel(mid)->getLastUPLSPrediction()->getName());
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, QString::number(mid));
-          subitem->setText(4, projects->value(pid)->getArray(xid)->getHash());
-          if(yid > -1){
-            subitem->setText(5, projects->value(pid)->getArray(yid)->getHash());
-          }
-          else{
-            subitem->setText(5, "None");
-          }
-          subitem->setText(6, QString::number(projects->value(pid)->getUPLSModel(mid)->getLastUPLSPrediction()->getPredID()));
-          subitem->setText(7, QString("UPLS Prediction"));
-
-          #ifdef DEBUG
-          qDebug() << "X Predicted Scores";
-          PrintMatrix(projects->value(pid)->getUPLSModel(mid)->getLastUPLSPrediction()->getXPredScores());
-          qDebug() << "Y Dipendent Value Predicted";
-          PrintArray(projects->value(pid)->getUPLSModel(mid)->getLastUPLSPrediction()->getYDipVar());
-          qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2) << subitem->text(3) << subitem->text(4) << subitem->text(5);
-          #endif
-
-          tabcount_++;
-
-          getModelItem(pid, mid)->addChild(subitem);
-        }
-        else{
-          QMessageBox::critical(this, tr("UPLS Prediction Error"),
-                    tr("Unable to compute UPLS Prediction.\n"
-                      "The number of variables differ. Please check your data."),
-                      QMessageBox::Ok);
-          updateLog(QString("Error!! Unable to compute UPLS Prediction. The number of variables differ. Please check your data.\n"));
-        }
-        TopMenuEnableDisable();
-        CalculationMenuEnable();
-        StopRun();
-        DelArray(&x);
-        DelArray(&y);
-        projects->value(pid)->AutoSave();
-      }
-    }
-  }
-}
-
-void MainWindow::DoUPLSValidation()
-{
- if(!projects->isEmpty()){
-    //collect all pls model;
-
-    ValidatorDialog douplsval(projects, UPLSValidation);
-    if(douplsval.exec() == QDialog::Accepted && douplsval.compute() == true){
-
-      int pid = douplsval.getselectedProject();
-      int g = douplsval.getNumberOfGroup();
-      int iter = douplsval.getNumberOfIteration();
-      int mid = douplsval.getModelID();
-      int vt = douplsval.getValidType();
-      bool yscrambling = douplsval.ModelYScrambling();
-      int block = douplsval.getYSCramblingBlock();
-
-      int xid = -1, yid = -1;
-
-      if(pid != -1 && mid != -1){
-        xid = projects->value(pid)->getArrayID(projects->value(pid)->getUPLSModel(mid)->getXHash());
-        yid = projects->value(pid)->getArrayID(projects->value(pid)->getUPLSModel(mid)->getYHash());
-      }
-
-      if(xid != -1 && yid != -1
-        && xid < projects->value(pid)->ArrayCount()
-        && yid < projects->value(pid)->ArrayCount()){
-
-        StartRun();
-
-        CalculationMenuDisable(pid);
-
-        QStringList objsel = projects->value(pid)->getUPLSModel(mid)->getObjName();
-        QStringList xvarsel = projects->value(pid)->getUPLSModel(mid)->getXVarName();
-        QStringList yvarsel = projects->value(pid)->getUPLSModel(mid)->getYVarName();
-
-        array *x, *y;
-
-        QList<size_t> xobjid, yobjid;
-        for(int i = 0; i < objsel.size(); i++){
-          int xobjindex =  projects->value(pid)->getArray(xid)->getObjName().indexOf(objsel[i]);
-          int yobjindex =  projects->value(pid)->getArray(yid)->getObjName().indexOf(objsel[i]);
-          if(xobjindex  > -1 && yobjindex > -1){
-            xobjid.append(xobjindex);
-            yobjid.append(yobjindex);
-          }
-          else{
-            continue;
-          }
-        }
-
-        NewArray(&x, projects->value(pid)->getArray(xid)->Array()->order);
-        for(uint k = 0; k < projects->value(pid)->getArray(xid)->Array()->order; k++){
-          NewArrayMatrix(&x, k, xobjid.size(), xvarsel.size());
-        }
-
-        NewArray(&y, projects->value(pid)->getArray(yid)->Array()->order);
-        for(uint k = 0; k < projects->value(pid)->getArray(yid)->Array()->order; k++){
-          NewArrayMatrix(&y, k, yobjid.size(), yvarsel.size());
-        }
-
-        for(int i = 0; i < xobjid.size(); i++){
-          for(int j = 0; j < xvarsel.size(); j++){
-            int varindex = projects->value(pid)->getArray(xid)->getVarName().indexOf(xvarsel[j]);
-            if(varindex > -1){
-              for(uint k = 0; k < x->order; k++){
-                setArrayValue(x, k, i, j, getArrayValue(projects->value(pid)->getArray(xid)->Array(), k, xobjid[i], varindex-1));
-              }
-            }
-            else{
-              continue;
-            }
-            QApplication::processEvents();
-          }
-
-          for(int j = 0; j < yvarsel.size(); j++){
-            int varindex = projects->value(pid)->getArray(yid)->getVarName().indexOf(yvarsel[j]);
-            if(varindex > -1){
-              for(uint k = 0; k < y->order; k++){
-                setArrayValue(y, k, i, j, getArrayValue(projects->value(pid)->getArray(yid)->Array(), k, yobjid[i], varindex-1));
-              }
-            }
-            else{
-              continue;
-            }
-          }
-          QApplication::processEvents();
-        }
-
-        QString str = "--------------------\n Computing UPLS Validation for: ";
-        str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
-        updateLog(str);
-
-        RUN obj;
-        obj.setXArray(x);
-        obj.setYArray(y);
-        obj.setUPLSModel(projects->value(pid)->getUPLSModel(mid));
-        obj.setValidationType(vt);
-        obj.setModelYScrambling(yscrambling);
-        obj.setModelYScramblingBlock(block);
-
-        if(vt == RANDOMGROUP){
-          obj.setNumberOfGroups(g);
-          obj.setNumberOfIterations(iter);
-        }
-
-        QFuture<void> future = obj.RunUPLSValidation();
-
-        projects->value(pid)->getUPLSModel(mid)->setValidation(0); // Set to 0 because if is a re calculation of a model could be usefull disable this
-        while(!future.isFinished()){
-          if(stoprun == true){
-            obj.AbortRun();
-            QApplication::processEvents();
-          }
-          else{
-            QApplication::processEvents();
-          }
-        }
-
-        if(stoprun == false){
-          #ifdef DEBUG
-          qDebug() << "r2x validation";
-          PrintDVector(projects->value(pid)->getUPLSModel(mid)->Model()->r2x_validation);
-
-          qDebug() << "q2y validation";
-          PrintArray(projects->value(pid)->getUPLSModel(mid)->Model()->q2y);
-          #endif
-
-          projects->value(pid)->getUPLSModel(mid)->setValidation(vt);
-        }
-
-        TopMenuEnableDisable();
-        CalculationMenuEnable();
-        StopRun();
-        DelArray(&x);
-        DelArray(&y);
-        projects->value(pid)->AutoSave();
-      }
-      else{
-        QMessageBox::critical(this, tr("UPLS Validation Error"), "Unable to compute UPLS Validation.\nData are lost.", QMessageBox::Ok);
-        updateLog("Unable to compute UPLS VALIDATION. Data are lost.");
-      }
-    }
-  }
-}
-
-
-void MainWindow::DoUPLS()
-{
- if(!projects->isEmpty()){
-    ModelDialog doupls(projects, UPLS_);
-    if(doupls.exec() == QDialog::Accepted && doupls.compute() == true){
-      int pid = doupls.getselectedProject();
-      int xid = doupls.getselectedData();
-      int yid = doupls.getselectedYData();
-      int xscaling = doupls.getXScalingType();
-      int yscaling = doupls.getYScalingType();
-      int pc = doupls.getNumberOfComponent();
-      QString modelname = "UPLS - "+doupls.getModelName();
-
-      QStringList objsel = doupls.getObjectSelected();
-      QStringList xvarsel = doupls.getXVarSelected();
-      QStringList yvarsel = doupls.getYVarSelected();
-
-      if(xid != -1 && yid!= -1 && pid != -1){
-        /*
-        bool computeupls = false;
-        Check if matrix are aligned and if are compatible...
-        int iter = 0;
-        do{
-          QByteArray xnamestr, ynamestr;
-          for(uint i = 0; i < projects->value(pid)->getArray(xid)->Array()->m[0]->row; i++){
-            xnamestr.append(projects->value(pid)->getArray(xid)->getObjName()[i]);
-            ynamestr.append(projects->value(pid)->getArray(yid)->getObjName()[i]);
-          }
-
-          QString xhashname = QString(QCryptographicHash::hash(xnamestr,QCryptographicHash::Md5).toHex());
-          QString yhashname = QString(QCryptographicHash::hash(ynamestr,QCryptographicHash::Md5).toHex());
-
-          if(xhashname.compare(yhashname) == 0){
-            computeupls = true;
-            break;
-          }
-          else{
-            if(iter == 0 || iter == 1){
-              projects->value(pid)->getArray(xid)->SortByName();
-              projects->value(pid)->getArray(yid)->SortByName();
-            }
-            else{
-              continue;
-            }
-          }
-          iter++;
-        }while(iter < 3);
-        */
-        StartRun();
-        CalculationMenuDisable(pid);
-        QString str = "--------------------\n Computing UPLS for: ";
-        str.append(QString("%1").arg(doupls.getselectedProject()));
-        updateLog(str);
-
-        projects->value(pid)->addUPLSModel();
-//         int mid = projects->value(pid)->UPLSCount()-1;
-        projects->value(pid)->getLastUPLSModel()->setName(modelname);
-        projects->value(pid)->getLastUPLSModel()->setXID(xid); // used in order to get Loadings Column Name and for UPLS VALIDATION
-        projects->value(pid)->getLastUPLSModel()->setYID(yid); // used in order to get Loadings Column Name and for UPLS VALIDATION
-        projects->value(pid)->getLastUPLSModel()->setXHash(projects->value(pid)->getArray(xid)->getHash());
-        projects->value(pid)->getLastUPLSModel()->setYHash(projects->value(pid)->getArray(yid)->getHash());
-        projects->value(pid)->getLastUPLSModel()->setXScaling(xscaling); // used by UPLS Validator
-        projects->value(pid)->getLastUPLSModel()->setYScaling(yscaling); // used by UPLS Validator
-        projects->value(pid)->getLastUPLSModel()->setModelID(mid_);
-        if(pc > xvarsel.size()){
-          projects->value(pid)->getLastUPLSModel()->setNPC(xvarsel.size());
-        }
-        else{
-          projects->value(pid)->getLastUPLSModel()->setNPC(pc);
-        }
-        projects->value(pid)->getLastUPLSModel()->setObjName(objsel);
-        projects->value(pid)->getLastUPLSModel()->setXVarName(xvarsel);
-        projects->value(pid)->getLastUPLSModel()->setYVarName(yvarsel);
-
-
-        array *x, *y;
-
-        QList<size_t> xobjid, yobjid;
-        for(int i = 0; i < objsel.size(); i++){
-          int xobjindex =  projects->value(pid)->getArray(xid)->getObjName().indexOf(objsel[i]);
-          int yobjindex =  projects->value(pid)->getArray(yid)->getObjName().indexOf(objsel[i]);
-          if(xobjindex  > -1 && yobjindex > -1){
-            xobjid.append(xobjindex);
-            yobjid.append(yobjindex);
-          }
-          else{
-            continue;
-          }
-        }
-
-        NewArray(&x, projects->value(pid)->getArray(xid)->Array()->order);
-        for(uint k = 0; k < projects->value(pid)->getArray(xid)->Array()->order; k++){
-          NewArrayMatrix(&x, k, xobjid.size(), xvarsel.size());
-        }
-
-        NewArray(&y, projects->value(pid)->getArray(yid)->Array()->order);
-        for(uint k = 0; k < projects->value(pid)->getArray(yid)->Array()->order; k++){
-          NewArrayMatrix(&y, k, yobjid.size(), yvarsel.size());
-        }
-
-        for(int i = 0; i < xobjid.size(); i++){
-          for(int j = 0; j < xvarsel.size(); j++){
-            int varindex = projects->value(pid)->getArray(xid)->getVarName().indexOf(xvarsel[j]);
-            if(varindex > -1){
-              for(uint k = 0; k < x->order; k++){
-                setArrayValue(x, k, i, j, getArrayValue(projects->value(pid)->getArray(xid)->Array(), k, xobjid[i], varindex-1));
-              }
-            }
-            else{
-              continue;
-            }
-          }
-
-          for(int j = 0; j < yvarsel.size(); j++){
-            int varindex = projects->value(pid)->getArray(yid)->getVarName().indexOf(yvarsel[j]);
-            if(varindex > -1){
-              for(uint k = 0; k < y->order; k++){
-                setArrayValue(y, k, i, j, getArrayValue(projects->value(pid)->getArray(yid)->Array(), k, yobjid[i], varindex-1));
-              }
-            }
-            else{
-              continue;
-            }
-          }
-        }
-
-        RUN obj;
-        obj.setXArray(x);
-        obj.setYArray(y);
-        obj.setUPLSModel(projects->value(pid)->getLastUPLSModel());
-        obj.setXScalingType(xscaling);
-        obj.setYScalingType(yscaling);
-        obj.setNumberPC(pc);
-
-        QFuture<void> future = obj.RunUPLS();
-        while(!future.isFinished()){
-          if(stoprun == true){
-            obj.AbortRun();
-            QApplication::processEvents();
-          }
-          else{
-            QApplication::processEvents();
-          }
-        }
-
-        if(stoprun == false){
-          WaitRun();
-          #ifdef DEBUG
-          PrintUPLSModel(projects->value(pid)->getUPLSModel(mid_)->Model());
-          #endif
-
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, modelname);
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, projects->value(pid)->getArray(xid)->getHash());
-          subitem->setText(4, projects->value(pid)->getArray(yid)->getHash());
-          subitem->setText(5, QString::number(xscaling));
-          subitem->setText(6, QString::number(yscaling));
-          subitem->setText(7, QString::number(pc));
-          subitem->setText(8, QString("UPLS Model"));
-          subitem->setText(9, QString::number(mid_));
-
-          tabcount_++;
-          mid_++;
-          getProjectItem(pid)->child(1)->addChild(subitem);
-        }
-        else{
-          int removeid = projects->value(pid)->UPLSCount()-1;
-          projects->value(pid)->delUPLSModelAt(removeid);
-        }
-
-        TopMenuEnableDisable();
-        CalculationMenuEnable();
-        StopRun();
-        DelArray(&x);
-        DelArray(&y);
-        projects->value(pid)->AutoSave();
       }
     }
   }
@@ -8994,7 +6405,7 @@ void MainWindow::DoMLRPrediction()
           while(!future.isFinished())
             QApplication::processEvents();
 
-  //         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, UPCA Prediction, ...) (8)
+  //         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
           QTreeWidgetItem *subitem = new QTreeWidgetItem;
           subitem->setText(0, projects->value(pid)->getMLRModel(mid)->getLastMLRPrediction()->getName());
           subitem->setText(1, QString::number(tabcount_));
@@ -9342,23 +6753,6 @@ void MainWindow::Test()
     }
 
 
-    qDebug() << QString("%1 UPCA Models").arg(QString::number(i.value()->UPCACount()));
-    for(int j = 0; j < i.value()->UPCACount(); j++){
-      qDebug() << "Mod Name: " <<  i.value()->getUPCAModelAt(j)->getName() << " PC: " << i.value()->getUPCAModelAt(j)->getNPC() << "Model Position: " << i.value()->getUPCAModelAt(j)->getModelID() << " Data Matrix: " << i.value()->getUPCAModelAt(j)->getDataHash();
-       qDebug() << QString("%1 PCA Predictions").arg(QString::number(i.value()->getUPCAModelAt(j)->UPCAPredictionCount()));
-       for(int k = 0; k < i.value()->getUPCAModelAt(j)->UPCAPredictionCount(); k++){
-         qDebug() << "Prediction Name: " <<  i.value()->getUPCAModelAt(j)->getUPCAPrediction(k)->getName() << "Data Position: " << i.value()->getUPCAModelAt(j)->getUPCAPrediction(k)->getPredID();
-       }
-    }
-
-    qDebug() << QString("%1 UPLS Models").arg(QString::number(i.value()->UPLSCount()));
-    for(int j = 0; j < i.value()->UPLSCount(); j++){
-      qDebug() << "Mod Name: " <<  i.value()->getUPLSModelAt(j)->getName() << " PC: " << i.value()->getUPLSModelAt(j)->getNPC() << " Validated: " << i.value()->getUPLSModelAt(j)->getValidation() << "Model Position: " << i.value()->getUPLSModelAt(j)->getModelID() << " X Data Matrix: " << i.value()->getUPLSModelAt(j)->getXHash() << " Y Data Matrix: " << i.value()->getUPLSModelAt(j)->getYHash();
-       qDebug() << QString("%1 PCA Predictions").arg(QString::number(i.value()->getUPLSModelAt(j)->UPLSPredictionCount()));
-       for(int k = 0; k < i.value()->getUPLSModelAt(j)->UPLSPredictionCount(); k++){
-         qDebug() << "Prediction Name: " <<  i.value()->getUPLSModelAt(j)->getUPLSPrediction(k)->getName() << "Data Position: " << i.value()->getUPLSModelAt(j)->getUPLSPrediction(k)->getPredID();
-       }
-    }
 
     qDebug() << QString("%1 Varible Selection Models").arg(QString::number(i.value()->VarSelCount()));
     for(int j = 0; j < i.value()->VarSelCount(); j++){
@@ -9377,15 +6771,6 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
 
 #ifdef RELEASE // look in ImportFileDialog.cpp... same exception...
   ui.actionPCA2DLoadingsMVAND_Plot->setVisible(false);
-  ui.actionUPCA->setVisible(false);
-  ui.actionUPCA_Prediction->setVisible(false);
-  ui.actionUPLS->setVisible(false);
-  ui.actionUPLS_Prediction->setVisible(false);
-  ui.actionUPLS_Validator->setVisible(false);
-  ui.actionUPLSVariableSelection->setVisible(false);
-
-  ui.menuPlot_UPCA_Model->menuAction()->setVisible(false);
-  ui.menuPlot_UPLS_Model->menuAction()->setVisible(false);
 #endif
 
   confdir = confdir_;
@@ -9457,7 +6842,7 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   pid_ = 0; // used for mark all the projects with an unique id instead of the name. More projects can have the same name but different id!
   mid_ = 0; //used for mark all the models with an unique id
 
-  havepca = havepcapred = havepls = haveplspred = haveplsvalid = haveupca = haveupcapred = haveupls = haveuplspred = haveuplsvalid = havemlr = havemlrvalid = havemlrpred = havevarsel = havelda = haveldapred = haveldavalid = false;
+  havepca = havepcapred = havepls = haveplspred = haveplsvalid = havemlr = havemlrvalid = havemlrpred = havevarsel = havelda = haveldapred = haveldavalid = false;
 
   ui.treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(ui.treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));
@@ -9481,13 +6866,7 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPLS_Prediction, SIGNAL(triggered(bool)), SLOT(DoPLSPrediction()));
   connect(ui.actionPLS_Validator, SIGNAL(triggered(bool)), SLOT(DoPLSValidation()));
   connect(ui.actionPLSVariableSelection, SIGNAL(triggered(bool)), SLOT(DoPLSVariableSelection()));
-  connect(ui.actionUPCA, SIGNAL(triggered(bool)), SLOT(DoUPCA()));
 
-  connect(ui.actionUPCA_Prediction, SIGNAL(triggered(bool)), SLOT(DoUPCAPrediction()));
-  connect(ui.actionUPLS, SIGNAL(triggered(bool)), SLOT(DoUPLS()));
-  connect(ui.actionUPLS_Validator, SIGNAL(triggered(bool)), SLOT(DoUPLSValidation()));
-  connect(ui.actionUPLS_Prediction, SIGNAL(triggered(bool)), SLOT(DoUPLSPrediction()));
-  connect(ui.actionUPLSVariableSelection, SIGNAL(triggered(bool)), SLOT(DoUPLSVariableSelection()));
 
   connect(ui.actionMLR, SIGNAL(triggered(bool)), SLOT(DoMLR()));
   connect(ui.actionMLR_Prediction, SIGNAL(triggered(bool)), SLOT(DoMLRPrediction()));
@@ -9539,35 +6918,6 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPLS3D_Q2_Dynamic_Sample_Validator_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DPlotQ2SampleValidator()));
   connect(ui.actionPLS3D_SDEP_Dynamic_Sample_Validator_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DPlotSDEPSampleValidator()));
 
-  connect(ui.actionUPCA2DScore_Plot, SIGNAL(triggered(bool)), SLOT(UPCA2DScorePlot()));
-  connect(ui.actionUPCA2DLoadings_Plot, SIGNAL(triggered(bool)), SLOT(UPCA2DLoadingsPlot()));
-  connect(ui.actionUPCA2DScore_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(UPCA2DScorePlotPrediction()));
-  connect(ui.actionUPCA3DScore_Plot, SIGNAL(triggered(bool)), SLOT(UPCA3DScorePlot()));
-  connect(ui.actionUPCA3DLoadings_Plot, SIGNAL(triggered(bool)), SLOT(UPCA3DLoadingsPlot()));
-  connect(ui.actionUPCA3DScore_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(UPCA3DScorePlotPrediction()));
-
-
-  connect(ui.actionUPLS2D_tt_Score_Plot, SIGNAL(triggered(bool)), SLOT(UPLS2DTTScorePlot()));
-  connect(ui.actionUPLS2D_pp_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(UPLS2DPPLoadingsPlot()));
-  connect(ui.actionUPLS2D_ww_Weights_Plot, SIGNAL(triggered(bool)), SLOT(UPLS2DWWWeightsPlot()));
-  connect(ui.actionUPLS2D_uu_Score_Plot, SIGNAL(triggered(bool)), SLOT(UPLS2DUUScorePlot()));
-  connect(ui.actionUPLS2D_qq_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(UPLS2DQQLoadingsPlot()));
-  connect(ui.actionUPLS2DScore_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(UPLS2DTTScorePlotPrediction()));
-  connect(ui.actionUPLSRecalc_vs_Exp_with_Prediction, SIGNAL(triggered(bool)), SLOT(UPLSRecalcVSExpPlotPrediction()));
-  connect(ui.actionUPLSPred_vs_Exp_with_Prediction, SIGNAL(triggered(bool)), SLOT(UPLSPredVSExpPlotPrediction()));
-  connect(ui.actionUPLSRecalc_vs_Exp, SIGNAL(triggered(bool)), SLOT(UPLSRecalcVSExpPlot()));
-  connect(ui.actionUPLSRecal_Residuals_vs_Exp, SIGNAL(triggered(bool)), SLOT(UPLSRecalcResidualsVSExpPlot()));
-  connect(ui.actionUPLSPred_vs_Exp, SIGNAL(triggered(bool)), SLOT(UPLSPredVSExpPlot()));
-  connect(ui.actionUPLSPred_Residuals_vs_Exp, SIGNAL(triggered(bool)), SLOT(UPLSPredResidualsVSExpPlot()));
-  connect(ui.actionUPLS_Plot, SIGNAL(triggered(bool)), SLOT(UPLS2DPlot()));
-  connect(ui.actionUPLSR2_Q2, SIGNAL(triggered(bool)), SLOT(UPLSPlotQ2R2()));
-  connect(ui.actionUPLSR2_Prediction, SIGNAL(triggered(bool)), SLOT(UPLSPlotR2R2Predicted()));
-  connect(ui.actionUPLS3D_ttt_Score_Plot, SIGNAL(triggered(bool)), SLOT(UPLS3DTTTScorePlot()));
-  connect(ui.actionUPLS3D_ppp_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(UPLS3DPPPLoadingsPlot()));
-  connect(ui.actionUPLS3D_www_Weights_Plot, SIGNAL(triggered(bool)), SLOT(UPLS3DWWWLoadingsPlot()));
-  connect(ui.actionUPLS3D_uuu_Score_Plot, SIGNAL(triggered(bool)), SLOT(UPLS3DUUUScorePlot()));
-  connect(ui.actionUPLS3D_qqq_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(UPLS3DQQQLoadingsPlot()));
-  connect(ui.actionUPLS3D_ttt_Score_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(UPLS3DScorePlotPrediction()));
 
 
   connect(ui.actionVarSel_R2Q2_Plot, SIGNAL(triggered(bool)), SLOT(PlotVarSelR2Q2()));

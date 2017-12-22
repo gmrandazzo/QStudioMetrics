@@ -8,6 +8,8 @@
 #include <QString>
 #include <QStringList>
 #include <QCryptographicHash>
+#include <cmath>
+#include "../qstudiometricsdataoperations.h"
 
 class PCAPREDICTION
 {
@@ -77,30 +79,7 @@ public:
   PCAPREDICTION *getLastPCAPrediction(){ return prediction.last(); }
   int PCAPredictionCount(){ return prediction.size(); }
 
-  void GenHash(){
-    if(m->scores->row > 0 && m->scores->col > 0){
-      hash.clear();
-      QString vectorizedform;
-      vectorizedform.append(QString::number(m->scores->row)); // get the row
-      vectorizedform.append(QString::number(m->scores->col)); // get the col
-      vectorizedform.append(QString::number(npc)); // get the number of principal components
-      vectorizedform.append(QString::number(xscaling)); // get the number of principal components
-
-      for(uint i = 0; i < m->scores->row; i++){
-        for(uint j = 0; j < m->scores->col; j++){
-          vectorizedform.append(QString::number(((int)getMatrixValue(m->scores, i, j)*100)/100.0));
-        }
-      }
-
-      QCryptographicHash hash_(QCryptographicHash::Md5);
-      hash_.addData(vectorizedform.toUtf8());
-      hash = QString(hash_.result().toHex());
-    }
-    else{
-      hash = "Matrix Empty!";
-    }
-  }
-  QString& getHash(){ if(hash.size() > 0){ return hash; }else{ GenHash(); return hash; } }
+  QString& getHash(){ if(pcahash.size() == 0){ pcahash = GenMatrixHash(m->scores); } return pcahash; }
 
 
 private:
@@ -109,7 +88,7 @@ private:
   QStringList objname, varname;
   QString name;
   int did, xscaling, npc, modelid;
-  QString hash;
+  QString hash, pcahash;
 };
 
 #endif

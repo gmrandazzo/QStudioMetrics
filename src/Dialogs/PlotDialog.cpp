@@ -9,18 +9,13 @@ void PlotDialog::CheckPlot()
 {
   if(selectedproject_ != -1){
     if(type == PCA_
-      || type == UPCA_
       || type == PLS_
-      || type == UPLS_
       || type == MLR_
       || type == LDA_
       || type == VarSel
       || type == PLSValidation
-      || type == UPLSValidation
       || type == PLSRecalcVSExperimental
-      || type == UPLSRecalcVSExperimental
       || type == PLSPredictedVSExperimental
-      || type == UPLSPredictedVSExperimental
       || type == MLRRecalcVSExperimental
       || type == MLRPredictedVSExperimental
       || type == PLSYSCRAMBLING
@@ -35,17 +30,12 @@ void PlotDialog::CheckPlot()
       }
     }
     else if(type == PCAPrediction
-      || type == UPCAPrediction
       || type == PLSPrediction
       || type == MLRPrediction
       || type == LDAPrediction_
       || type == PLSR2R2Plot
-      || type == UPLSPrediction
-      || type == UPLSR2R2Plot
       || type == PLSRecalcVSExperimentalWithPrediction
       || type == PLSPredictedVSExperimentalWithPrediction
-      || type == UPLSRecalcVSExperimentalWithPrediction
-      || type == UPLSPredictedVSExperimentalWithPrediction
       || type == MLRRecalcVSExperimentalWithPrediction
       || type == MLRPredictedVSExperimentalWithPrediction){
       if(modelid != -1 && predid != -1){
@@ -121,61 +111,6 @@ void PlotDialog::setModelID(QModelIndex current)
             QList<QStandardItem*> row;
             row.append(new QStandardItem(projects_->value(selectedproject_)->getPLSModel(modelid)->getPLSPrediction(i)->getName()));
             predids.append(projects_->value(selectedproject_)->getPLSModel(modelid)->getPLSPrediction(i)->getPredID());
-            tab3->appendRow(row);
-          }
-          else{
-            continue;
-          }
-        }
-      }
-      else if(type == UPCAPrediction){ // UPCA Prediction
-        for(int i = 0; i < projects_->value(selectedproject_)->getUPCAModel(modelid)->UPCAPredictionCount(); i++){
-          predids.append(projects_->value(selectedproject_)->getUPCAModel(modelid)->getUPCAPrediction(i)->getPredID());
-          QList<QStandardItem*> row;
-          row.append(new QStandardItem(projects_->value(selectedproject_)->getUPCAModel(modelid)->getUPCAPrediction(i)->getName()));
-          tab3->appendRow(row);
-        }
-      }
-      else if(type == UPLSPrediction){ // UPLS Prediction
-        for(int i = 0; i < projects_->value(selectedproject_)->getUPLSModel(modelid)->UPLSPredictionCount(); i++){
-          predids.append(projects_->value(selectedproject_)->getUPLSModel(modelid)->getUPLSPrediction(i)->getPredID());
-          QList<QStandardItem*> row;
-          row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModel(modelid)->getUPLSPrediction(i)->getName()));
-          tab3->appendRow(row);
-        }
-      }
-      else if(type == UPLSR2R2Plot){ // PLS Prediction
-        for(int i = 0; i < projects_->value(selectedproject_)->getUPLSModel(modelid)->UPLSPredictionCount(); i++){
-          if(projects_->value(selectedproject_)->getUPLSModel(modelid)->getUPLSPrediction(i)->getR2Y()->order > 0){
-            predids.append(projects_->value(selectedproject_)->getUPLSModel(modelid)->getUPLSPrediction(i)->getPredID());
-            QList<QStandardItem*> row;
-            row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModel(modelid)->getUPLSPrediction(i)->getName()));
-            tab3->appendRow(row);
-          }
-          else{
-            continue;
-          }
-        }
-      }
-      else if(type == UPLSRecalcVSExperimental){ // UPLS Predicted VS Experimental
-        for(int i = 0; i < projects_->value(selectedproject_)->getUPLSModel(modelid)->UPLSPredictionCount(); i++){
-          if(projects_->value(selectedproject_)->getUPLSModel(modelid)->getUPLSPrediction(i)->getR2Y()->order > 0){
-            QList<QStandardItem*> row;
-            row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModel(modelid)->getUPLSPrediction(i)->getName()));
-            predids.append(projects_->value(selectedproject_)->getUPLSModel(modelid)->getUPLSPrediction(i)->getPredID());
-            tab3->appendRow(row);
-          }
-          else{
-            continue;
-          }
-        }
-      }
-      else if(type == UPLSRecalcVSExperimentalWithPrediction || type == UPLSPredictedVSExperimentalWithPrediction){
-        for(int i = 0; i < projects_->value(selectedproject_)->getUPLSModel(modelid)->UPLSPredictionCount(); i++){
-          if(projects_->value(selectedproject_)->getUPLSModel(modelid)->getUPLSPrediction(i)->getR2Y()->order > 0){
-            QList<QStandardItem*> row;
-            row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModel(modelid)->getUPLSPrediction(i)->getName()));
-            predids.append(projects_->value(selectedproject_)->getUPLSModel(modelid)->getUPLSPrediction(i)->getPredID());
             tab3->appendRow(row);
           }
           else{
@@ -303,50 +238,6 @@ void PlotDialog::setProject(QModelIndex current)
         }
       }
     }
-    else if(type == UPCA_ || type == UPCAPrediction){ // upca
-      for(int i = 0; i < projects_->value(selectedproject_)->UPCACount(); i++){
-        QList<QStandardItem*> row;
-        row.append(new QStandardItem(projects_->value(selectedproject_)->getUPCAModelAt(i)->getName()));
-        mids.append(projects_->value(selectedproject_)->getUPCAModelAt(i)->getModelID());
-        tab2->appendRow(row);
-      }
-    }
-    else if(type == UPLS_ || type == UPLSPrediction){ // upls
-      for(int i = 0; i < projects_->value(selectedproject_)->UPLSCount(); i++){
-        QList<QStandardItem*> row;
-        row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModelAt(i)->getName()));
-        mids.append(projects_->value(selectedproject_)->getUPLSModelAt(i)->getModelID());
-        tab2->appendRow(row);
-      }
-    }
-    else if(type == UPLSRecalcVSExperimental || type == UPLSRecalcVSExperimentalWithPrediction){
-      for(int i = 0; i < projects_->value(selectedproject_)->UPLSCount(); i++){
-        QList<QStandardItem*> row;
-        row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModelAt(i)->getName()));
-        mids.append(projects_->value(selectedproject_)->getUPLSModelAt(i)->getModelID());
-        tab2->appendRow(row);
-      }
-    }
-    else if(type == UPLSPredictedVSExperimental || type == UPLSPredictedVSExperimentalWithPrediction || type == UPLSR2R2Plot){ // UPLS Predicted VS Experimental
-      for(int i = 0; i < projects_->value(selectedproject_)->UPLSCount(); i++){
-        if(projects_->value(selectedproject_)->getUPLSModelAt(i)->getValidation() > 0){
-          QList<QStandardItem*> row;
-          row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModelAt(i)->getName()));
-          mids.append(projects_->value(selectedproject_)->getUPLSModelAt(i)->getModelID());
-          tab2->appendRow(row);
-        }
-      }
-    }
-    else if(type == UPLSValidation){ // upls validation
-      for(int i = 0; i < projects_->value(selectedproject_)->UPLSCount(); i++){
-        if(projects_->value(selectedproject_)->getUPLSModelAt(i)->getValidation() > 0){
-          QList<QStandardItem*> row;
-          row.append(new QStandardItem(projects_->value(selectedproject_)->getUPLSModelAt(i)->getName()));
-          mids.append(projects_->value(selectedproject_)->getUPLSModelAt(i)->getModelID());
-          tab2->appendRow(row);
-        }
-      }
-    }
     else if(type == VarSel){ // Variable Selection Plot
       for(int i = 0; i < projects_->value(selectedproject_)->VarSelCount(); i++){
         QList<QStandardItem*> row;
@@ -402,18 +293,13 @@ void PlotDialog::actionPlot()
 {
   if(type == PCA_ ||
      type == PLS_ ||
-     type == UPCA_ ||
-     type == UPLS_ ||
      type == MLR_ ||
      type == LDA_ ||
      type == PLSValidation ||
-     type == UPLSValidation ||
      type == MLRValidation ||
      type == LDAValidation ||
      type == PLSRecalcVSExperimental ||
-     type == UPLSRecalcVSExperimental ||
      type == PLSPredictedVSExperimental ||
-     type == UPLSPredictedVSExperimental ||
      type == VarSel ||
      type == MLRRecalcVSExperimental ||
      type == MLRPredictedVSExperimental ||
@@ -464,12 +350,9 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
 
   if(type == PCA_ ||
      type == PLS_ ||
-     type == UPCA_ ||
-     type == UPLS_ ||
      type == MLR_ ||
      type == LDA_ ||
      type == PLSValidation ||
-     type == UPLSValidation ||
      type == VarSel ||
      type == MLRRecalcVSExperimental ||
      type == MLRPredictedVSExperimental){
@@ -484,9 +367,6 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
           type == MLRPrediction ||
           type == LDAPrediction_ ||
           type == PLSR2R2Plot ||
-          type == UPCAPrediction ||
-          type == UPLSPrediction ||
-          type == UPLSR2R2Plot ||
           type == MLRRecalcVSExperimentalWithPrediction ||
           type == MLRPredictedVSExperimentalWithPrediction){
 
@@ -496,9 +376,7 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
     ui.listView_3->setModel(tab3);
   }
   else if(type == PLSRecalcVSExperimental ||
-          type == UPLSRecalcVSExperimental ||
-          type == PLSPredictedVSExperimental ||
-          type == UPLSPredictedVSExperimental){
+          type == PLSPredictedVSExperimental){
 
     ui.predictionGroupBox->hide();
     ui.label_4->show();
@@ -586,40 +464,6 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
     else if(type == PLSRecalcVSExperimentalWithPrediction || type == PLSPredictedVSExperimentalWithPrediction){
       for(int j = 0; j < projects_->value(pid)->PLSCount(); j++){ // almost one model must ave a prediction
         if(projects_->value(pid)->getPLSModelAt(j)->PLSPredictionCount() > 0){
-          acquire = true;
-          break;
-        }
-        else{
-          continue;
-        }
-      }
-    }
-    else if((type == UPCA_ || type == UPCAPrediction) && projects_->value(pid)->UPCACount() > 0){ // UPCA
-      acquire = true;
-    }
-    else if((type == UPLS_ ||
-             type == UPLSValidation ||
-             type == UPLSPrediction ||
-             type == UPLSR2R2Plot) && projects_->value(pid)->UPLSCount() > 0){ // UPLS
-      acquire = true;
-    }
-    else if(type == UPLSRecalcVSExperimental && projects_->value(pid)->UPLSCount() > 0){ // UPLS
-      acquire = true;
-    }
-    else if(type == UPLSPredictedVSExperimental && projects_->value(pid)->UPLSCount() > 0){ // UPLS
-      for(int j = 0; j < projects_->value(pid)->UPLSCount(); j++){ // almost one model must be validated!
-        if(projects_->value(pid)->getUPLSModelAt(j)->getValidation() > 0){
-          acquire = true;
-          break;
-        }
-        else{
-          continue;
-        }
-      }
-    }
-    else if(type == UPLSRecalcVSExperimentalWithPrediction || type == UPLSPredictedVSExperimentalWithPrediction){
-      for(int j = 0; j < projects_->value(pid)->UPLSCount(); j++){ // almost one model must ave a prediction!
-        if(projects_->value(pid)->getUPLSModelAt(j)->UPLSPredictionCount() > 0){
           acquire = true;
           break;
         }

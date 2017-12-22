@@ -8,6 +8,8 @@
 #include <QString>
 #include <QStringList>
 
+#include "../qstudiometricsdataoperations.h"
+
 class UPLSPREDICTION
 {
 public:
@@ -70,38 +72,39 @@ public:
   void setXID(int xid_){ xid = xid_; }
   void setYID(int yid_){ yid = yid_; }
   void setXHash(QString xhash_){ xhash = xhash_; }
-  void setYHash(QString yhash_){ yhash = yhash_; } 
+  void setYHash(QString yhash_){ yhash = yhash_; }
   void setXScaling(int xscaling_){ xscaling = xscaling_; }
   void setYScaling(int yscaling_){ yscaling = yscaling_; }
   void setNPC(int npc_){ npc = npc_; }
   void setModelID(int modelid_){ modelid = modelid_; }
   int getXID(){ return xid; }
   int getYID(){ return yid; }
-  QString &getXHash(){ return xhash; } // used in order to get the identity matrix provenience usefull for pls cross validation 
-  QString &getYHash(){ return yhash; } // used in order to get the identity matrix provenience usefull for pls cross validation 
+  QString &getXHash(){ return xhash; } // used in order to get the identity matrix provenience usefull for pls cross validation
+  QString &getYHash(){ return yhash; } // used in order to get the identity matrix provenience usefull for pls cross validation
   int getXScaling(){ return xscaling; }
   int getYScaling(){ return xscaling; }
   int getNPC(){ return npc; }
   int getModelID(){ return modelid; }
   void addUPLSPrediction(){ prediction.append(new UPLSPREDICTION); };
   void delUPLSPredictionAt(int id){ delete prediction[id]; prediction.removeAt(id); }
-  void delUPLSPredictions(){ 
+  void delUPLSPredictions(){
     for(int i = 0; i < prediction.size(); i++){
       delete prediction[i];
     }
-    prediction.clear(); 
+    prediction.clear();
   }
   UPLSPREDICTION *getUPLSPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
   UPLSPREDICTION *getLastUPLSPrediction(){ return prediction.last(); }
   int UPLSPredictionCount(){ return prediction.size(); }
-  
+  QString& getHash(){ if(uplshash.size() == 0){ uplshash = GenMatrixHash(m->xscores); } return uplshash; }
+
 private:
   UPLSMODEL *m;
   QList<UPLSPREDICTION*> prediction;
   QStringList objname, xvarname, yvarname;
   QString name;
   int xid, yid, xscaling, yscaling, npc, modelid, validation;
-  QString xhash, yhash;
+  QString xhash, yhash, uplshash;
 };
 
 #endif

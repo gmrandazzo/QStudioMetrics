@@ -7,6 +7,7 @@
 #include <QList>
 #include <QString>
 #include <QStringList>
+#include "../qstudiometricsdataoperations.h"
 
 
 class LDAPREDICTION
@@ -21,12 +22,15 @@ public:
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(QStringList &objname_){ objname = objname_; }
+  QStringList &getVarName(){ return varname; }
+  void setVarName(QStringList varname_){ varname = varname_; }
   QStringList &getObjName(){ return objname; }
   void setClasses(QList < QStringList >  &classes_){ classes = classes_; }
   void setNameClasses(QStringList nameclasses_){ nameclasses = nameclasses_; }
   QList < QStringList >  &getClasses(){ return classes; }
   QStringList &getNameClasses(){ return nameclasses; }
   uivector *getPredClasses(){ return pclass; }
+  uivector **getPredClassesPointer(){ return &pclass; }
   void setPredID(int id_){ id = id_; }
   int getPredID(){ return id; }
   void setDID(int id){ did = id; }
@@ -34,10 +38,14 @@ public:
   void setDataHash(QString hash_){ hash = hash_; }
   QString &getDataHash(){ return hash; }
   matrix *getPredFeatures(){ return pfeatures; }
+  matrix **getPredFeaturesPointer(){ return &pfeatures; }
   matrix *getProbPred(){ return probpred; }
-  matrix *getMVNProbDistrib(){ return mvnpfd; }
+  matrix **getProbPredPointer(){ return &probpred; }
+  matrix *getMVNProbDistrib(){ return mnpdf; }
+  matrix **getMVNProbDistribPointer(){ return &mnpdf; }
 private:
   QStringList objname;
+  QStringList varname;
   QList < QStringList > classes;
   QStringList nameclasses;
   QString name;
@@ -46,7 +54,7 @@ private:
   int did;
   matrix *pfeatures;
   matrix *probpred;
-  matrix *mvnpfd;
+  matrix *mnpdf;
   uivector *pclass;
 };
 
@@ -89,6 +97,7 @@ public:
   LDAPREDICTION *getLDAPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
   LDAPREDICTION *getLastLDAPrediction(){ return prediction.last(); }
   int LDAPredictionCount(){ return prediction.size(); }
+  QString& getHash(){ if(ldahash.size() == 0){ ldahash = GenMatrixHash(m->evect); } return ldahash; }
 
 private:
   LDAMODEL *m;
@@ -98,7 +107,7 @@ private:
   QStringList nameclasses;
   QString name;
   int did, modelid, validation;
-  QString hash;
+  QString hash, ldahash;
 };
 
 #endif

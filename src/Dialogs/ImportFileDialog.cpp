@@ -482,8 +482,6 @@ void ImportFileDialog::BuildMatrix()
       }
     }
   }
-  // Generate the has matrix
-  m->GenHash();
 }
 
 /*

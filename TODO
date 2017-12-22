@@ -1,6 +1,6 @@
 
 TODO
-- FIX Extract/Merge data
+- ADD PLS-DA
 - ADD Topological analysis
 - ADD confusion matrix and cosine similarity matrix between class for LDA
 - ADD Dendogram plot for hierarchical clustering
