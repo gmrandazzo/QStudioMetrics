@@ -209,6 +209,7 @@ public:
   void ImportFileMatrix(const FILEDATA &f);
   void ImportFileArray(const FILEDATA &f);
   void OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *mid_, QStringList *log);
+  bool isSQLDatabase(QString sqlfile);
   void OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_, int *mid_, QStringList *log);
   QString SaveData(QString savepath); // savepath is the path to save the project
   QString SaveSQLData(QString dbName);

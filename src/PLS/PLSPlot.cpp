@@ -148,6 +148,26 @@ void PLSPlot::Q_LoadingsPlot2D(ScatterPlot2D **plot2D)
   (*plot2D)->setModelType(PLS_);
 }
 
+void PLSPlot::PQ_LoadingsPlot2D(ScatterPlot2D **plot2D)
+{
+  QString projectname = projects->value(pid)->getProjectName();
+  QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+  QList<matrix*> mxlst;
+  mxlst.append(projects->value(pid)->getPLSModel(mid)->Model()->xloadings);
+  mxlst.append(projects->value(pid)->getPLSModel(mid)->Model()->yloadings);
+  QList<QStringList> objnamelst;
+  QStringList pvarname = projects->value(pid)->getPLSModel(mid)->getXVarName();
+  QStringList qvarname = projects->value(pid)->getPLSModel(mid)->getYVarName();
+  objnamelst.append(pvarname);
+  objnamelst.append(qvarname);
+  QStringList xhash, yhash;
+  xhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
+  yhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
+  (*plot2D) = new ScatterPlot2D(mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "p/q", "p/q", QString("%1 - %2 - PLS P/Q Loadings Plot").arg(projectname).arg(modelname), ScatterPlot2D::LOADINGS);
+  (*plot2D)->setPID(pid);
+  (*plot2D)->setMID(mid);
+  (*plot2D)->setModelType(PLS_);
+}
 void PLSPlot::T_ScorePlotPrediction2D(ScatterPlot2D **plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();

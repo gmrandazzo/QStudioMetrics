@@ -3270,7 +3270,38 @@ int MainWindow::ProjectOpen(QString fproject)
   ui.treeWidget->addTopLevelItem(item);
 
   QStringList log;
-  projects->value(pid_)->OpenSQLData(fproject.toUtf8().data(), ui.treeWidget, &tabcount_, &mid_, &log);
+  if(projects->value(pid_)->isSQLDatabase(fproject.toUtf8().data()) == true){
+    projects->value(pid_)->OpenSQLData(fproject.toUtf8().data(), ui.treeWidget, &tabcount_, &mid_, &log);
+  }
+  else{
+    // OLD Version
+    QString dir = QString::fromUtf8(fproject.toUtf8());
+    dir.remove(".qsm");
+
+    if(DATAIO::DirExists(dir.toUtf8().data()) == true){
+      DATAIO::RemoveDir(dir.toUtf8().data());
+      DATAIO::MakeDir(dir.toUtf8().data());
+    }
+    else{
+      DATAIO::MakeDir(dir.toUtf8().data());
+    }
+
+    pbdialog.setValue(1);
+
+    DirCompressor dc;
+    dc.setFile(fproject.toUtf8().data());
+    dc.setExtractPath(dir.toUtf8().data());
+    if(dc.decompress() == 0){
+      pbdialog.setValue(2);
+      QApplication::processEvents();
+      projects->value(pid_)->OpenData(dir.toUtf8().data(), ui.treeWidget, &tabcount_, &mid_, &log);
+    }
+    else{
+      QMessageBox::warning(this, tr("Warning!"), tr("Empty Session!\n"), QMessageBox::Close);
+    }
+
+    DATAIO::RemoveDir(dir.toUtf8().data());
+  }
 
   lastpath = info.absolutePath();
   pbdialog.setValue(3);
@@ -3283,69 +3314,6 @@ int MainWindow::ProjectOpen(QString fproject)
   pid_++;
   TopMenuEnableDisable();
 
-/*
-  QString dir = QString::fromUtf8(fproject.toUtf8());
-  dir.remove(".qsm");
-
-  if(DATAIO::DirExists(dir.toUtf8().data()) == true){
-    DATAIO::RemoveDir(dir.toUtf8().data());
-    DATAIO::MakeDir(dir.toUtf8().data());
-  }
-  else{
-    DATAIO::MakeDir(dir.toUtf8().data());
-  }
-
-  pbdialog.setValue(1);
-
-  DirCompressor dc;
-  dc.setFile(fproject.toUtf8().data());
-  dc.setExtractPath(dir.toUtf8().data());
-  if(dc.decompress() == 0){
-    pbdialog.setValue(2);
-    QApplication::processEvents();
-
-    QFileInfo info(dir);
-    projects->insert(pid_, new DATA());
-    projects->value(pid_)->setProjectID(pid_);
-    projects->value(pid_)->setProjectPath(fproject);
-
-    QString projectename = info.absoluteFilePath().split("/", QString::SkipEmptyParts).last();
-    updateLog(QString("Importing Project: %1\n").arg(projectename));
-    QTreeWidgetItem *item = new QTreeWidgetItem;
-    item->setText(0, projectename);
-    item->setText(1, QString::number(pid_));
-    projects->insert(pid_, new DATA());
-    projects->value(pid_)->setProjectID(pid_);
-    projects->value(pid_)->setProjectName(projectename);
-    QTreeWidgetItem *subitem1 = new QTreeWidgetItem;
-    subitem1->setText(0, "Data");
-    QTreeWidgetItem *subitem2 = new QTreeWidgetItem;
-    subitem2->setText(0, "Models");
-    item->addChild(subitem1); // child 0 is named DATA
-    item->addChild(subitem2); // child 1 is named MODELS
-    ui.treeWidget->addTopLevelItem(item);
-
-    lastpath = info.absolutePath();
-
-    QStringList log;
-    projects->value(pid_)->OpenSQLData(dir, ui.treeWidget, &tabcount_, &mid_, &log);
-    //projects->value(pid_)->OpenSQLData(fproject.toUtf8().data(), ui.treeWidget, &tabcount_, &mid_, &log);
-
-    pbdialog.setValue(3);
-    QApplication::processEvents();
-
-    for(int i = 0; i < log.size(); i++){
-      updateLog(log[i]);
-    }
-
-    pid_++;
-    TopMenuEnableDisable();
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("Empty Session!\n"), QMessageBox::Close);
-  }
-
-  DATAIO::RemoveDir(dir.toUtf8().data());*/
   pbdialog.setValue(4);
   QApplication::processEvents();
   pbdialog.close();
@@ -3949,6 +3917,32 @@ void MainWindow::PLS2DQQLoadingsPlot()
     QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"), QMessageBox::Close);
   }
 }
+
+void MainWindow::PLS2DPQLoadingsPlot()
+{
+  if(ProjectsHavePLS() == true){
+    PlotDialog plotdialog(projects, PLS_);
+
+    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+      PLSPlot plsplot(projects);
+      plsplot.setPID(plotdialog.selectedProject());
+      plsplot.setMID(plotdialog.getModelID());
+      MDIChild *graphchild = createMdiChild();
+      ScatterPlot2D *plot2D;
+      plsplot.PQ_LoadingsPlot2D(&plot2D);
+      graphchild->setWidget(plot2D);
+      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->resize(510, 530);
+      graphchild->show();
+      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlot2DVVPlotSignal(vvplotSignal)), SLOT(PlotVariableVSVariableBis(vvplotSignal)));
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"), QMessageBox::Close);
+  }
+}
+
 
 void MainWindow::PLS2DTTScorePlotPrediction()
 {
@@ -6894,6 +6888,7 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPLS2D_ww_Weights_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DWWWeightsPlot()));
   connect(ui.actionPLS2D_uu_Score_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DUUScorePlot()));
   connect(ui.actionPLS2D_qq_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DQQLoadingsPlot()));
+  connect(ui.actionPLS2D_p_q_p_q_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DPQLoadingsPlot()));
   connect(ui.actionPLS2DScore_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(PLS2DTTScorePlotPrediction()));
   connect(ui.actionPLSRecalc_vs_Exp_with_Prediction, SIGNAL(triggered(bool)), SLOT(PLSRecalcVSExpPlotPrediction()));
   connect(ui.actionPLSPred_vs_Exp_with_Prediction, SIGNAL(triggered(bool)), SLOT(PLSPredictedVSExpAndPredictionPlot()));

@@ -28,6 +28,7 @@ public:
   void T_ScorePlotPrediction2D(ScatterPlot2D **plot2D);
   void P_LoadingsPlot2D(ScatterPlot2D **plot2D);
   void Q_LoadingsPlot2D(ScatterPlot2D **plot2D);
+  void PQ_LoadingsPlot2D(ScatterPlot2D **plot2D);
   void WeightsPlot2D(ScatterPlot2D **plot2D);
   void BetaCoefficients(BarPlot **betas_barplot);
   void BetaCoefficientsDurbinWatson(SimpleLine2DPlot **dw_betas_plot);

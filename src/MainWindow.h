@@ -79,6 +79,7 @@ private slots:
   void PLS2DWWWeightsPlot();
   void PLS2DUUScorePlot();
   void PLS2DQQLoadingsPlot();
+  void PLS2DPQLoadingsPlot();
   void PLS2DTTScorePlotPrediction();
   void PLSPlotBetaCoefficients();
   void PLSPlotBetaCoeffDWPlot();

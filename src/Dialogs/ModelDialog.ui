@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1440</width>
+    <width>1639</width>
     <height>367</height>
    </rect>
   </property>
@@ -158,6 +158,12 @@
    </item>
    <item row="1" column="2">
     <widget class="QGroupBox" name="OptGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="minimumSize">
       <size>
        <width>280</width>
@@ -364,6 +370,12 @@
    </item>
    <item row="1" column="4">
     <widget class="QGroupBox" name="XvariableGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string>X Variables</string>
      </property>
@@ -588,6 +600,12 @@
    </item>
    <item row="1" column="1">
     <widget class="QGroupBox" name="dataGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string>Data</string>
      </property>
@@ -622,6 +640,12 @@
    </item>
    <item row="1" column="0">
     <widget class="QGroupBox" name="projectsGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string>Projects</string>
      </property>
@@ -656,6 +680,12 @@
    </item>
    <item row="1" column="3">
     <widget class="QGroupBox" name="objectGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string>Objects</string>
      </property>

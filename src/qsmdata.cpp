@@ -860,6 +860,31 @@ void DATA::OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *m
   }
 }
 
+bool DATA::isSQLDatabase(QString sqlfile)
+{
+  QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+  db.setDatabaseName(sqlfile);
+  if(db.open() == true){
+    QSqlQuery query = QSqlQuery(db);
+    query.exec("PRAGMA table_info(pcaTable)");
+    int i = 0;
+    while(query.next()) {
+      //fields << query.value(1).toString();
+      i++;
+    }
+
+    if(i > 0){
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+  else{
+    qDebug() << "FALSE";
+    return false;
+  }
+}
 void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_, int *mid_, QStringList *log)
 {
   /* Warning!! there are some Methods from MainWindow and they works only if the ui is started... */

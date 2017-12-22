@@ -175,10 +175,6 @@
     <addaction name="actionLDA"/>
     <addaction name="actionLDA_Validator"/>
     <addaction name="actionLDA_Prediction"/>
-    <addaction name="separator"/>
-    <addaction name="actionPLS_DA"/>
-    <addaction name="actionPLS_DA_Validator"/>
-    <addaction name="actionPLS_DA_Prediction"/>
    </widget>
    <widget class="QMenu" name="menuGraphs">
     <property name="title">
@@ -255,6 +251,7 @@
       <addaction name="actionPLS2D_uu_Score_Plot"/>
       <addaction name="actionPLS2D_pp_Loadings_Plot"/>
       <addaction name="actionPLS2D_qq_Loadings_Plot"/>
+      <addaction name="actionPLS2D_p_q_p_q_Loadings_Plot"/>
       <addaction name="actionPLS2D_ww_Weights_Plot"/>
       <addaction name="actionPLSBeta_Coefficients"/>
       <addaction name="actionBetaCoeffDWPlot"/>
@@ -367,11 +364,11 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
-   <addaction name="menuModels"/>
    <addaction name="menuGraphs"/>
    <addaction name="menuWindow"/>
    <addaction name="menuExtensions"/>
    <addaction name="menuHelp"/>
+   <addaction name="menuModels"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidget">
@@ -1355,6 +1352,16 @@
   <action name="actionPLS_DA_Prediction">
    <property name="text">
     <string>PLS-DA Prediction</string>
+   </property>
+  </action>
+  <action name="actionPLS2D_p_q_p_q_Loadings_Plot">
+   <property name="text">
+    <string>p-q/p-q Loadings Plot</string>
+   </property>
+  </action>
+  <action name="actionOpenProject_OLD_VERSION">
+   <property name="text">
+    <string>Open Project OLD VERSION</string>
    </property>
   </action>
  </widget>
