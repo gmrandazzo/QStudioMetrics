@@ -365,10 +365,10 @@
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
    <addaction name="menuGraphs"/>
-   <addaction name="menuWindow"/>
-   <addaction name="menuExtensions"/>
-   <addaction name="menuHelp"/>
    <addaction name="menuModels"/>
+   <addaction name="menuExtensions"/>
+   <addaction name="menuWindow"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidget">

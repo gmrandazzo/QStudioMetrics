@@ -1919,7 +1919,7 @@ QString DATA::SaveSQLData(QString savepath)
     //DATAIO::MakeDir(labelspath.toStdString());
     for(int i = 0; i < getVariableLabels().size(); i++){
       QString labelname = getVariableLabels()[i].name;
-      QString serialized_label = SerializeQStringList(getObjectLabels()[i].objects);
+      QString serialized_label = SerializeQStringList(getVariableLabels()[i].objects);
 
       query.prepare("INSERT INTO varlabelTable (name, values) VALUES (:name, :values)");
       query.bindValue(":name", labelname);
