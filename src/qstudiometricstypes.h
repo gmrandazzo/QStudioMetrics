@@ -57,8 +57,8 @@ enum{
   VarSel = 35,
 
   // Variables Types
-  LOO = 36,
-  RANDOMGROUP = 37,
+  LOO_ = 36,
+  BOOTSTRAPRGCV_ = 37,
   EXTERNALTESTSET = 38,
   GA = 39,
   PSO = 40,

@@ -17,7 +17,7 @@ using namespace std;
 void help(char **argv)
 {
   std::cout << "Usage" << endl;
-  std::cout << "Make a model: " << argv[0] <<" -model -x <xinput file>  -y <yinput file>" << " -o <output file> -c <N° of LV> -xa(autoscaling for x matrix) -ya(autoscaling for y matrix)\n"  <<std::endl;
+  std::cout << "Make a model: " << argv[0] <<" -(r/d)model -x <xinput file>  -y <yinput file>" << " -o <output file> -c <N° of LV> -xa(autoscaling for x matrix) -ya(autoscaling for y matrix)\n"  <<std::endl;
   std::cout << "Make a prediction: " << argv[0] <<" -predict -dm <input model> -x <xinput file> -o <output file> -c <N° of LV>\n" << std::endl;
   std::cout << "Make the cross validation: " << argv[0] <<" -cv -x  <xinput file>  -y <yinput file> -dm <input path model> -g <N° of groups> -i <N° iterations> -c <N° of LV> -nth <N° threads>\n" << std::endl;
 
@@ -43,18 +43,20 @@ int main(int argc, char **argv)
   else{
     size_t npc = 0, ngroups = 0, iterations = 20, xautoscaling = 0 , yautoscaling = 0, nthreads = 1;
     string xinputdata, yinputdata, pathmodel, outputfile, xsep, ysep;
-    bool genmodel, genbetas, makeprediction, makecrossvalidation;
-    genmodel = genbetas = makeprediction = makecrossvalidation = false;
+    bool r_genmodel, d_genmodel, genbetas, makeprediction, makecrossvalidation;
+    r_genmodel = d_genmodel = genbetas = makeprediction = makecrossvalidation = false;
     xsep = ysep = ";";
 
     for(int i = 0; i < argc; i++){
-      if(strcmp(argv[i], "-model") == 0 || strcmp(argv[i], "-m") == 0){
-        genmodel = true;
+      if(strcmp(argv[i], "-rmodel") == 0 || strcmp(argv[i], "-m") == 0){
+        r_genmodel = true;
+      }
+      if(strcmp(argv[i], "-dmodel") == 0 || strcmp(argv[i], "-m") == 0){
+        d_genmodel = true;
       }
       if(strcmp(argv[i], "-betas") == 0 || strcmp(argv[i], "-m") == 0){
         genbetas = true;
       }
-
       if(strcmp(argv[i], "-predict") == 0 || strcmp(argv[i], "-p") == 0){
         makeprediction = true;
       }
@@ -132,7 +134,7 @@ int main(int argc, char **argv)
       }
     }
 
-    if(genmodel == true && !xinputdata.empty() && !yinputdata.empty() && !outputfile.empty() && npc > 0){
+    if((r_genmodel == true || d_genmodel == true) && !xinputdata.empty() && !yinputdata.empty() && !outputfile.empty() && npc > 0){
       matrix *xdata, *ydata;
 
       initMatrix(&xdata);
@@ -145,7 +147,10 @@ int main(int argc, char **argv)
       NewPLSModel(&m);
 
       PLS(xdata, ydata, npc, xautoscaling, yautoscaling, m, NULL);
-      PLSRSquared(xdata, ydata, m, npc, &(m->r2y_model), &(m->sdec));
+      if(r_genmodel == true)
+        PLSRegressionStatistics(ydata, m->recalculated_y, &(m->r2y_model), &(m->sdec), NULL);
+      else
+        PLSDiscriminantAnalysisStatistics(ydata, m->recalculated_y, NULL, &(m->r2y_model), NULL, &(m->sdec));
 
       DATAIO::WritePLSModel((char*)outputfile.c_str(), m);
 
@@ -233,15 +238,16 @@ int main(int argc, char **argv)
       initMatrix(&sdep_consistency);
       initMatrix(&bias_consistency);
 
-//       PrintMatrix(xdata);
-//       PrintMatrix(ydata);
+      MODELINPUT minpt;
+      minpt.mx = &xdata;
+      minpt.my = &ydata;
+      minpt.nlv = npc;
+      minpt.xautoscaling = xautoscaling;
+      minpt.yautoscaling = yautoscaling;
 
-      PLSRandomGroupsCV(xdata, ydata, xautoscaling, yautoscaling,
-                         npc, ngroups, iterations,
-                        &q2y, &sdep, &bias, &pred, &predresiduals, nthreads, NULL);
-
-      //PLSYScrambling(xdata, ydata, xautoscaling, yautoscaling, npc, iterations, &q2y_consistency, &sdep_consistency, nthreads, NULL);
-
+      BootstrapRandomGroupsCV(&minpt, ngroups, iterations, _PLS_, &pred, &predresiduals, 4, NULL, 0);
+//      LeaveOneOut(&minpt, _PLS_, &m->predicted_y, &m->pred_residuals, 4, NULL, 0);
+      PLSRegressionStatistics(ydata, pred, &q2y, &sdep, &bias);
 
       if(!pathmodel.empty()){
         string q2yfile = pathmodel+"/Validated_q2y.txt";

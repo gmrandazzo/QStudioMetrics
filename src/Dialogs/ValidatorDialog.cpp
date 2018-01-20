@@ -134,10 +134,10 @@ void ValidatorDialog::setNGroup()
 void ValidatorDialog::setValidationType()
 {
   if(ui.leaveoneout->isChecked()){
-    validtype = LOO; // cross validation
+    validtype = LOO_; // cross validation
   }
   else{
-    validtype = RANDOMGROUP; // cross validation
+    validtype = BOOTSTRAPRGCV_; // cross validation
   }
 }
 

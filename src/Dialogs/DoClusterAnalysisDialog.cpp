@@ -26,7 +26,7 @@ int DoClusterAnalysisDialog::getVaidationType()
     return JUMPMETHOD;
   }
   else{
-    return RANDOMGROUP;
+    return BOOTSTRAPRGCV_;
   }
 }
 
@@ -150,7 +150,7 @@ void DoClusterAnalysisDialog::GenLayerList()
       }
     }
   }
-  
+
   if(id != -1){
     for(uint i = 0; i < (*arlst)[id]->Array()->order; i++){
       ui.layerlist->addItem(QString::number(i+1));
@@ -175,29 +175,29 @@ DoClusterAnalysisDialog::DoClusterAnalysisDialog(QList< MATRIX* > *mxlst_, QList
 {
   ui.setupUi(this);
   windowtype = windowtype_;
-  
+
   ui.jumpMethodButton->setEnabled(false);
   mxlst = mxlst_;
   arlst = arlst_;
-  
+
   QStringList model;
-  
+
   if(mxlst != 0){
     for(int i = 0; i < (*mxlst).size(); i++){
       hash.append((*mxlst)[i]->getHash());
       model.append((*mxlst)[i]->getName());
     }
   }
-  
+
   if(arlst != 0){
     for(int i = 0; i < (*arlst).size(); i++){
       hash.append((*arlst)[i]->getHash());
       model.append((*arlst)[i]->getName());
     }
   }
-  
+
   ui.listView->setModel(new QStringListModel(model));
-  
+
   EnableDisable();
   connect(ui.listView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(GenLayerList()));
   connect(ui.plotcoordinatesButton, SIGNAL(clicked(bool)), SLOT(EnableDisable()));

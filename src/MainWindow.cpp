@@ -51,7 +51,7 @@
 
 void MainWindow::CheckProjects()
 {
-  havepca = havepcapred = havepls = haveplspred = haveplsvalid = haveplsyscrambling = haveplsstaticsamplevalidation = haveplsdynamicsamplevalidation = havemlr = havemlrpred = havemlrvalid = havemlryscrambling = havevarsel = havelda = haveldapred = haveldavalid = false;
+  havepca = havepcapred = havepls = haveplspred = haveplsvalid = haveplsyscrambling = haveplsstaticsamplevalidation = haveplsdynamicsamplevalidation = havemlr = havemlrpred = havemlrvalid = havemlryscrambling = havelda = haveldapred = haveldavalid = false;
 
   QMap<int, DATA*>::const_iterator i = projects->constBegin();
   while(i != projects->constEnd()){
@@ -86,9 +86,6 @@ void MainWindow::CheckProjects()
       }
     }
 
-    if(i.value()->VarSelCount() > 0){
-      havevarsel = true;
-    }
 
     if(i.value()->MLRCount() > 0){
       havemlr = true;
@@ -274,8 +271,6 @@ void MainWindow::TopMenuEnableDisable()
       ui.actionProbability_Distribution_Plot_and_Predictions->setEnabled(true);
     }
   }
-
-  ui.menuPlot_Variable_Selection->setEnabled(ProjectsHaveVariableSelection());
 
 
   /*
@@ -1954,38 +1949,6 @@ void MainWindow::showMLRPredictionRSquared()
   }
 }
 
-void MainWindow::showPLSVarSelMap()
-{
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getVarSelModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - PLS Variable Selection Scores";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getVarSelModel(mid)->getMap());
-    QStringList modelsname;
-    for(uint i = 0; i < projects->value(pid)->getVarSelModel(mid)->getMap()->row; i++){
-      modelsname << QString("model %1").arg(QString::number(i+1));
-    }
-    child->getTable()->model()->setObjNames(modelsname);
-
-    QStringList headername;
-    if(projects->value(pid)->getVarSelModel(mid)->getVariableSelectionAlgorithm().compare("Spearman's Selection") == 0){
-      headername << "Models Name" << "R2" << "Q2" << "Threshold" << "N. Variables";
-    }
-    else{
-      headername << "Models Name" << "R2" << "Q2" << "F-Distributuion" << "N. Variables";
-    }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-  }
-}
-
 void MainWindow::showPLSPredictionRSquared()
 {
   if(CurrentIsPrediction() == true){
@@ -2609,8 +2572,6 @@ void MainWindow::ModelInfo()
     int xoid = projects->value(pid)->getMatrixID(xhash);
     QString moname;
     int validationtype = -1;
-    QString vselalg;
-    QString vseloptions;
 
     if(getCurrentModelType().compare("PCA Model") == 0){
       textlst.append(QString("N. PCs: %1").arg(getCurrentModelNComponents()));
@@ -2648,9 +2609,6 @@ void MainWindow::ModelInfo()
       else{
         moname = "Origin model not found";
       }
-
-      vselalg = projects->value(pid)->getVarSelModel(mid)->getVariableSelectionAlgorithm();
-      vseloptions = projects->value(pid)->getVarSelModel(mid)->getVariableSelectionAlgorithmOptions();
     }
 
     if(nobj > 0)
@@ -2701,16 +2659,11 @@ void MainWindow::ModelInfo()
     if(validationtype == 0){
       textlst.append(QString("Model Not Validated"));
     }
-    else if(validationtype == LOO){
+    else if(validationtype == LOO_){
       textlst.append(QString("Model validation type: %1").arg("Leave One Out"));
     }
-    else if(validationtype == RANDOMGROUP){
+    else if(validationtype == BOOTSTRAPRGCV_){
       textlst.append(QString("Model validation type: %1").arg("Bootstrap Random Group k-Fold Cross Validation"));
-    }
-
-    if(vselalg.size() > 0){
-      textlst.append(vselalg);
-      textlst.append(vseloptions);
     }
 
     child->getModelInfoWindow()->setText(textlst);
@@ -2783,12 +2736,6 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
           menu.addAction("&Show Validation", this, SLOT(showPLSValidation()));
         }
 
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
-      }
-      else if(modeltype.compare("PLS Variable Selection Model") == 0){
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show Validation Scores", this, SLOT(showPLSVarSelMap()));
         menu.addAction("&Remove Model", this, SLOT(removeModel()));
         menu.exec(globalPos);
       }
@@ -4497,147 +4444,6 @@ void MainWindow::PLS3DPlotSDEPSampleValidator()
   }
 }
 
-void MainWindow::PlotVarSelR2Q2()
-{
-  if(ProjectsHaveVariableSelection() == true ){
-    PlotDialog plotdialog(projects, VarSel);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      int pid = plotdialog.selectedProject();
-      int mid = plotdialog.getModelID();
-
-      QString projectname = projects->value(plotdialog.selectedProject())->getProjectName();
-      QString modelname = projects->value(pid)->getVarSelModel(mid)->getName();
-
-      QList<matrix*> mxlst;
-      mxlst.append(new matrix);
-      initMatrix(&mxlst.last());
-      MatrixAppendCol(&mxlst.last(), getMatrixColumn(projects->value(pid)->getVarSelModel(mid)->getMap(), 0)); // R2
-      MatrixAppendCol(&mxlst.last(), getMatrixColumn(projects->value(pid)->getVarSelModel(mid)->getMap(), 1)); // Q2
-      QList<QStringList> objnamelst;
-
-      QStringList modelsname;
-      for(uint i = 0; i < projects->value(pid)->getVarSelModel(mid)->getMap()->row; i++){
-        modelsname << QString("model %1").arg(QString::number(i+1));
-      }
-      objnamelst.append(modelsname);
-      ScatterPlot2D *plt2D = new ScatterPlot2D(mxlst, objnamelst, "R2", "Q2", projectname + modelname + " - PLS Variable Selectiont Plot");
-      MDIChild *graphchild = createMdiChild();
-      plt2D->SetAutoNameAxes(false);
-      graphchild->setWidget(plt2D);
-      graphchild->setWindowID(getModelTableID(pid, mid));
-      graphchild->resize(510, 530);
-      graphchild->show();
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Variable Selection Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PlotVarSelFTestQ2()
-{
-  if(ProjectsHaveVariableSelection() == true ){
-    PlotDialog plotdialog(projects, VarSel);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      int pid = plotdialog.selectedProject();
-      int mid = plotdialog.getModelID();
-
-      QString projectname = projects->value(plotdialog.selectedProject())->getProjectName();
-      QString modelname = projects->value(pid)->getVarSelModel(mid)->getName();
-
-      QList<matrix*> mxlst;
-      mxlst.append(new matrix);
-      initMatrix(&mxlst.last());
-      MatrixAppendCol(&mxlst.last(), getMatrixColumn(projects->value(pid)->getVarSelModel(mid)->getMap(), 2)); // FDistribution test
-      MatrixAppendCol(&mxlst.last(), getMatrixColumn(projects->value(pid)->getVarSelModel(mid)->getMap(), 1)); // Q2
-      QList<QStringList> objnamelst;
-
-      QStringList modelsname;
-      for(uint i = 0; i < projects->value(pid)->getVarSelModel(mid)->getMap()->row; i++){
-        modelsname << QString("model %1").arg(QString::number(i+1));
-      }
-      objnamelst.append(modelsname);
-      ScatterPlot2D *plt2D = new ScatterPlot2D(mxlst, objnamelst, "F Distributuion", "Q2", projectname + modelname + " - PLS Variable Selectiont Plot");
-      MDIChild *graphchild = createMdiChild();
-      plt2D->SetAutoNameAxes(false);
-      graphchild->setWidget(plt2D);
-      graphchild->setWindowID(getModelTableID(pid, mid));
-      graphchild->resize(510, 530);
-      graphchild->show();
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Variable Selection Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PlotVarSelFTestNVar()
-{
-  if(ProjectsHaveVariableSelection() == true ){
-    PlotDialog plotdialog(projects, VarSel);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      int pid = plotdialog.selectedProject();
-      int mid = plotdialog.getModelID();
-
-      QString projectname = projects->value(plotdialog.selectedProject())->getProjectName();
-      QString modelname = projects->value(pid)->getVarSelModel(mid)->getName();
-
-      QList<matrix*> mxlst;
-      mxlst.append(new matrix);
-      initMatrix(&mxlst.last());
-      MatrixAppendCol(&mxlst.last(), getMatrixColumn(projects->value(pid)->getVarSelModel(mid)->getMap(), 2)); // FDistribution test
-      MatrixAppendCol(&mxlst.last(), getMatrixColumn(projects->value(pid)->getVarSelModel(mid)->getMap(), 3)); // Number of Variable selected
-      QList<QStringList> objnamelst;
-
-      QStringList modelsname;
-      for(uint i = 0; i < projects->value(pid)->getVarSelModel(mid)->getMap()->row; i++){
-        modelsname << QString("model %1").arg(QString::number(i+1));
-      }
-      objnamelst.append(modelsname);
-      ScatterPlot2D *plt2D = new ScatterPlot2D(mxlst, objnamelst, "F Distributuion", "N. of Variables", projectname + modelname + " - PLS Variable Selectiont Plot");
-      MDIChild *graphchild = createMdiChild();
-      plt2D->SetAutoNameAxes(false);
-      graphchild->setWidget(plt2D);
-      graphchild->setWindowID(getModelTableID(pid, mid));
-      graphchild->resize(510, 530);
-      graphchild->show();
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Variable Selection Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PlotModIncVarVar()
-{
-  PlotDialog plot(projects, VarSel);
-  if(plot.exec() == QDialog::Accepted){
-
-    int pid = plot.selectedProject();
-    int mid = plot.getModelID();
-
-    dvector *v;
-    initDVector(&v);
-    for(uint i = 0; i < projects->value(pid)->getVarSelModel(mid)->getVariableDistribution()->size; i++){
-      DVectorAppend(&v, getUIVectorValue(projects->value(pid)->getVarSelModel(mid)->getVariableDistribution(), i));
-    }
-
-    QStringList allvarnames = projects->value(pid)->getVarSelModel(mid)->getVariableNames();
-    allvarnames.removeFirst();
-
-    BarPlot *bplot = new BarPlot(v, allvarnames, QString("Models Including Variable - %1").arg(projects->value(pid)->getVarSelModel(mid)->getName()), "Variable Number", "Models Including Variable", this);
-    MDIChild *graphchild = createMdiChild();
-    graphchild->setWidget(bplot);
-    graphchild->setWindowID(pid);
-    graphchild->resize(510, 530);
-    graphchild->show();
-    DelDVector(&v);
-  }
-}
-
 void MainWindow::MLRRecalcVSExpPlot()
 {
   if(ProjectsHaveMLR() == true){
@@ -5258,324 +5064,6 @@ void MainWindow::DoPCA()
   }
 }
 
-/*
- * *        Name - Tab Count - pid - x ID - y ID - x Scaling type - y Scaling type - number of components - Model Type - Model ID (Model Position)  (10)
- *
- */
-
-void MainWindow::DoPLSVariableSelection()
-{
-  VariableSelectionDialog vsd(projects, PLSVariableSelection);
-  if(vsd.exec() == QDialog::Accepted){
-    StartRun();
-
-    int pid = vsd.getselectedProject();
-    int mid = vsd.getselectedModel();
-    int did = projects->value(pid)->getMatrixID(projects->value(pid)->getPLSModel(mid)->getDataHash());
-
-    if(did > -1){
-      CalculationMenuDisable(pid);
-
-      QString str = "--------------------\n Computing PLS Variable Selection for: ";
-      str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
-      updateLog(str);
-
-      projects->value(pid)->addVarSelModel();
-
-      /* store informations in order to save the model*/
-
-      projects->value(pid)->getLastVarSelModel()->setName(vsd.getVariableSelectionName());
-      projects->value(pid)->getLastVarSelModel()->setProjectID(pid);
-      projects->value(pid)->getLastVarSelModel()->setModelID(mid_);
-      projects->value(pid)->getLastVarSelModel()->setModelHash(projects->value(pid)->getPLSModel(mid)->getHash());
-      projects->value(pid)->getLastVarSelModel()->getVariableNames().append(projects->value(pid)->getPLSModel(mid)->getXVarName());
-
-      QStringList objsel = projects->value(pid)->getPLSModel(mid)->getObjName();
-      QStringList xvarsel = projects->value(pid)->getPLSModel(mid)->getXVarName();
-      QStringList yvarsel = projects->value(pid)->getPLSModel(mid)->getYVarName();
-
-      updateLog(str);
-
-      matrix *x, *y;
-      NewMatrix(&x, objsel.size(), xvarsel.size());
-      NewMatrix(&y, objsel.size(), yvarsel.size());
-
-      for(int i = 0; i < objsel.size(); i++){
-        int i_index = projects->value(pid)->getMatrix(did)->getObjName().indexOf(objsel[i]);
-        if(i_index > -1){
-          for(int j = 0; j < xvarsel.size(); j++){
-            int jx_index = projects->value(pid)->getMatrix(did)->getVarName().indexOf(xvarsel[j])-1;
-            if(jx_index > -1){
-              setMatrixValue(x, i, j, getMatrixValue(projects->value(pid)->getMatrix(did)->Matrix(), i_index, jx_index));
-            }
-            else{
-              continue;
-            }
-          }
-
-          for(int j = 0; j < yvarsel.size(); j++){
-            int jy_index = projects->value(pid)->getMatrix(did)->getVarName().indexOf(yvarsel[j])-1;
-            if(jy_index > -1){
-              setMatrixValue(y, i, j, getMatrixValue(projects->value(pid)->getMatrix(did)->Matrix(), i_index, jy_index));
-            }
-            else{
-              continue;
-            }
-          }
-
-        }
-        else{
-          continue;
-        }
-        QApplication::processEvents();
-      }
-
-      /*
-      int ii = 0;
-      for(int i = 0; i < projects->value(pid)->getMatrix(did)->getObjName().size(); i++){
-        if(objsel.contains(projects->value(pid)->getMatrix(did)->getObjName()[i]) == true){
-          int jx = 0, jy= 0;
-          for(int j = 1; j < projects->value(pid)->getMatrix(did)->getVarName().size(); j++){
-            if(xvarsel.contains(projects->value(pid)->getMatrix(did)->getVarName()[j]) == true){
-              x->data[ii][jx] = projects->value(pid)->getMatrix(did)->Matrix()->data[i][j-1];
-              jx++;
-            }
-            else if(yvarsel.contains(projects->value(pid)->getMatrix(did)->getVarName()[j]) == true){
-              y->data[ii][jy] = projects->value(pid)->getMatrix(did)->Matrix()->data[i][j-1];
-              jy++;
-            }
-            else{
-              continue;
-            }
-          }
-          ii++;
-        }
-        else{
-          continue;
-        }
-      }
-      */
-
-      QString vselconfig;
-
-      int xscaling = projects->value(pid)->getPLSModel(mid)->getXScaling();
-      int yscaling = projects->value(pid)->getPLSModel(mid)->getYScaling();
-
-      int npc = projects->value(pid)->getPLSModel(mid)->getNPC();
-
-      int validationtype = vsd.getValidType();
-      int ngroup = vsd.getNumberOfGroup();
-      int niter = vsd.getNumberOfIteration();
-
-      if(validationtype == RANDOMGROUP){
-        vselconfig += QString("Random Group Cross Validation;");
-        vselconfig += QString("Number of random groups: ")+QString::number(ngroup);
-        vselconfig += QString("Number of iterations: ")+QString::number(niter)+";";
-      }
-      else{
-        vselconfig += QString("Leave One Out Cross Validation;");
-      }
-
-      //get variable selectioon algorithm...
-      int varselalgo = vsd.getVarSelectionAlgorithm();
-      int population_size = 50;
-      double crossoverfrac;
-      int crossovertype;
-      double nswap;
-      double mutationrate;
-      double population_convergence;
-      double randomvars = 0.1;
-      double threshold = 0.1;
-
-      if(varselalgo == GA){
-        projects->value(pid)->getLastVarSelModel()->setVariableSelectionAlgorithm("Genetic Algorithm");
-        population_size = vsd.getPopulationSize();
-        vselconfig += QString("Population Size: %1;").arg(QString::number(population_size));
-        crossoverfrac = vsd.getCrossoverFraction();
-        crossovertype = vsd.getCrossoverType();
-        nswap = vsd.getCrossoverSwappiness();
-        mutationrate = vsd.getMutationRate();
-        population_convergence = vsd.getPopulationConverngence();
-        if(crossovertype == 2){
-          vselconfig += QString("Crossover Type :%1; Crossover Fraction: %2; Crossover Swappiness: %3; Mutation Rate %4; Convergence %5;").arg("Uniform").arg(QString::number(crossoverfrac)).arg(QString::number(nswap)).arg(QString::number(mutationrate)).arg(QString::number(population_convergence));
-        }
-        else if(crossovertype == 1){
-          vselconfig += QString("Crossover Type :%1; Crossover Fraction: %2; Mutation Rate %3; Convergence %4;").arg("Two Point").arg(QString::number(crossoverfrac)).arg(QString::number(mutationrate)).arg(QString::number(population_convergence));
-        }
-        else{
-          vselconfig += QString("Crossover Type :%1; Crossover Fraction: %2; Mutation Rate %3; Convergence %4;").arg("Single Point").arg(QString::number(crossoverfrac)).arg(QString::number(mutationrate)).arg(QString::number(population_convergence));
-        }
-      }
-      else if(varselalgo == PSO){
-        projects->value(pid)->getLastVarSelModel()->setVariableSelectionAlgorithm("Particle Swarm Optimization");
-        population_size = vsd.getPopulationSize();
-        vselconfig += QString("Population Size: %1;").arg(QString::number(population_size));
-        crossoverfrac = 0;
-        crossovertype = 0;
-        nswap = 0;
-        mutationrate = 0;
-        population_convergence = 0;
-        randomvars = vsd.getRandomVariables();
-        vselconfig += QString("Random varaiblesType :%1;").arg(QString::number(randomvars));
-      }
-      else{
-        projects->value(pid)->getLastVarSelModel()->setVariableSelectionAlgorithm("Spearman's Selection");
-        crossoverfrac = 0;
-        crossovertype = 0;
-        nswap = 0;
-        mutationrate = 0;
-        population_convergence = 0;
-        randomvars = 0;
-        threshold = vsd.getThreshold();
-        vselconfig += QString("Threshold: %1;").arg(QString::number(threshold));
-      }
-
-      projects->value(pid)->getLastVarSelModel()->setVariableSelectionAlgorithmOptions(vselconfig);
-
-      RUN obj;
-      obj.setXMatrix(x);
-      obj.setXScalingType(xscaling);
-      obj.setYMatrix(y);
-      obj.setYScalingType(yscaling);
-      obj.setNumberPC(npc);
-      obj.setValidationType(validationtype);
-      obj.setNumberOfGroups(ngroup);
-      obj.setNumberOfIterations(niter);
-
-      obj.setVariableSelectionAlgorithm(varselalgo);
-      obj.setPopulationSize(population_size);
-      obj.setCrossoverFraction(crossoverfrac);
-      obj.setMutationRate(mutationrate);
-      obj.setCrossoverType(crossovertype); // uniform crossover
-      obj.setNumbersOfSwappiness(nswap); // 30 % of variables crossovered..
-      obj.setPopulationConvergence(population_convergence);
-
-      obj.setRandomizedVariables(randomvars);
-
-      obj.setThreshold(threshold);
-
-      obj.setVarSel(projects->value(pid)->getLastVarSelModel());
-
-      QFuture<void> future = obj.RunPLSVariableSelection();
-      while(!future.isFinished()){
-        if(stoprun == true){
-          obj.AbortRun();
-          QApplication::processEvents();
-        }
-        else{
-          QApplication::processEvents();
-          continue;
-        }
-      }
-
-      if(stoprun == false){
-        WaitRun();
-        /*
-        PrintMatrix(projects->value(pid)->getLastVarSelModel()->getMap());
-        PrintUIVector(projects->value(pid)->getLastVarSelModel()->getVariableDistribution());
-        PrintUIVector(projects->value(pid)->getLastVarSelModel()->getSelectedVariables());
-        */
-        QTreeWidgetItem *subitem = new QTreeWidgetItem;
-        subitem->setText(0, "VSEL - "+vsd.getVariableSelectionName());
-        subitem->setText(1, QString::number(tabcount_));
-        subitem->setText(2, QString::number(pid));
-        subitem->setText(3, projects->value(pid)->getPLSModel(mid)->getDataHash());
-        subitem->setText(4, projects->value(pid)->getPLSModel(mid)->getDataHash());
-        subitem->setText(5, QString::number(xscaling));
-        subitem->setText(6, QString::number(yscaling));
-        subitem->setText(7, QString::number(npc));
-        subitem->setText(8, QString("PLS Variable Selection Model"));
-        subitem->setText(9, QString::number(mid_));
-        getProjectItem(pid)->child(1)->addChild(subitem);
-
-        tabcount_++;
-
-        projects->value(pid)->addMatrix();
-        matrix *mx = projects->value(pid)->getMatrix(projects->value(pid)->MatrixCount()-1)->Matrix();
-
-        projects->value(pid)->getMatrix(projects->value(pid)->MatrixCount()-1)->getVarName().append("Object Names");
-
-        for(int i = 0; i < objsel.size(); i++){
-          int i_indx = projects->value(pid)->getMatrix(did)->getObjName().indexOf(objsel[i]);
-          if(i_indx > -1){
-            dvector *row;
-            initDVector(&row);
-
-            for(uint j = 0; j < projects->value(pid)->getLastVarSelModel()->getSelectedVariables()->size; j++){
-              if(getUIVectorValue(projects->value(pid)->getLastVarSelModel()->getSelectedVariables(), j) == 1){
-                int jx_index = projects->value(pid)->getMatrix(did)->getVarName().indexOf(xvarsel[j])-1;
-                if(jx_index > -1){
-                  if(i == 0){
-                    projects->value(pid)->getMatrix(projects->value(pid)->MatrixCount()-1)->getVarName().append(xvarsel[j]);
-                  }
-                  DVectorAppend(&row, getMatrixValue(projects->value(pid)->getMatrix(did)->Matrix(), i_indx, jx_index));
-                }
-                else{
-                  continue;
-                }
-              }
-              else{
-                continue;
-              }
-            }
-
-            for(int j = 0; j < yvarsel.size(); j++){
-              int j_indx = projects->value(pid)->getMatrix(did)->getVarName().indexOf(yvarsel[j])-1;
-              if(j_indx > -1){
-                if(i == 0){
-                  projects->value(pid)->getMatrix(projects->value(pid)->MatrixCount()-1)->getVarName().append(yvarsel[j]);
-                }
-                DVectorAppend(&row, getMatrixValue(projects->value(pid)->getMatrix(did)->Matrix(), i_indx, j_indx));
-              }
-              else{
-                continue;
-              }
-            }
-            MatrixAppendRow(&mx, row);
-            DelDVector(&row);
-          }
-          else{
-            continue;
-          }
-        }
-
-        projects->value(pid)->getMatrix(projects->value(pid)->MatrixCount()-1)->setName(vsd.getVariableSelectionName());
-        projects->value(pid)->getMatrix(projects->value(pid)->MatrixCount()-1)->getObjName().append(objsel);
-
-        QTreeWidgetItem *subitem2 = new QTreeWidgetItem;
-        subitem2->setText(0, vsd.getVariableSelectionName()); /*set the data name from the file*/
-        subitem2->setText(1, QString("Matrix")); // Define the type of the data
-        subitem2->setText(2, QString::number(tabcount_)); // Define the tab id number in order to close a specific table
-        subitem2->setText(3, QString::number(projects->value(pid)->MatrixCount()-1)); // Define the matrix position id in order to find easly when you need to show data.
-        subitem2->setText(4, QString::number(pid)); // pid for get the array with Value
-
-        getProjectItem(pid)->child(0)->addChild(subitem2);
-
-        tabcount_++;
-        mid_++;
-      }
-      else{
-        int removeid = projects->value(pid)->VarSelCount()-1;
-        projects->value(pid)->delVarSelModelAt(removeid);
-      }
-
-      TopMenuEnableDisable();
-      CalculationMenuEnable();
-      StopRun();
-      DelMatrix(&x);
-      DelMatrix(&y);
-      projects->value(pid)->AutoSave();
-    }
-    else{
-        QMessageBox::critical(this, tr("PLS Variable Selection Error"),
-        tr("Unable to compute PLS Variable Selection.\n"
-        "The data matrix was deleted or lost."),
-        QMessageBox::Ok);
-        updateLog(QString("Error!! Unable to compute PLS Variable Selection. The data matrix was deleted or lost.\n"));
-    }
-  }
-}
-
 void MainWindow::DoPLSPrediction()
 {
   if(!projects->isEmpty()){
@@ -5792,14 +5280,8 @@ void MainWindow::DoPLSValidation()
         obj.setModelSampleValidatorIncObj(samplevalidator_incobj);
         obj.setModelSampleValidatorMaxObj(samplevalidator_maxobj);
 
-        if(doplsval.saveBestIDObjectLabel()){
-          obj.setModelSampleValidatorBestID(true);
-        }
-        else{
-          obj.setModelSampleValidatorBestID(false);
-        }
 
-        if(vt == RANDOMGROUP){
+        if(vt == BOOTSTRAPRGCV_){
           obj.setNumberOfGroups(ngroup);
           obj.setNumberOfIterations(niter);
         }
@@ -5814,14 +5296,6 @@ void MainWindow::DoPLSValidation()
           else{
             QApplication::processEvents();
           }
-        }
-
-        if(doplsval.saveBestIDObjectLabel()){
-          QList<int> bestid = obj.getModelSampleValidatorBestID();
-          projects->value(pid)->getObjectLabels().append(LABEL());
-          projects->value(pid)->getObjectLabels().last().name = doplsval.getBestIDObjectLabel();
-          for(size_t i = 0; i < bestid.size(); i++)
-            projects->value(pid)->getObjectLabels().last().objects.append(projects->value(pid)->getPLSModel(mid)->getObjName()[bestid[i]]);
         }
 
         if(stoprun == false){
@@ -6161,7 +5635,7 @@ void MainWindow::DoLDAValidation()
         obj.setLDAModel(projects->value(pid)->getLDAModel(mid));
         obj.setValidationType(vt);
 
-        if(vt == RANDOMGROUP){
+        if(vt == BOOTSTRAPRGCV_){
           obj.setNumberOfGroups(ngroup);
           obj.setNumberOfIterations(niter);
         }
@@ -6510,7 +5984,7 @@ void MainWindow::DoMLRValidation()
         obj.setModelYScrambling(yscrambling);
         obj.setModelYScramblingBlock(block);
 
-        if(vt == RANDOMGROUP){
+        if(vt == BOOTSTRAPRGCV_){
           obj.setNumberOfGroups(ngroup);
           obj.setNumberOfIterations(niter);
         }
@@ -6836,7 +6310,7 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   pid_ = 0; // used for mark all the projects with an unique id instead of the name. More projects can have the same name but different id!
   mid_ = 0; //used for mark all the models with an unique id
 
-  havepca = havepcapred = havepls = haveplspred = haveplsvalid = havemlr = havemlrvalid = havemlrpred = havevarsel = havelda = haveldapred = haveldavalid = false;
+  havepca = havepcapred = havepls = haveplspred = haveplsvalid = havemlr = havemlrvalid = havemlrpred = havelda = haveldapred = haveldavalid = false;
 
   ui.treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(ui.treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));

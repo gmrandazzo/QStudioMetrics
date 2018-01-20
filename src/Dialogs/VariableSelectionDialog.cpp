@@ -106,11 +106,11 @@ void VariableSelectionDialog::OK()
     varselname = ui.varselname->text();
     /*check and set the validation type*/
     if(ui.leaveoneout->isChecked()){
-      validtype = LOO;
+      validtype = LOO_;
     }
 //     else if(ui.randomgroup->isChecked()){
     else{
-      validtype = RANDOMGROUP;
+      validtype = BOOTSTRAPRGCV_;
     }
 
     if(ui.gaButton->isChecked()){
@@ -158,7 +158,7 @@ VariableSelectionDialog::VariableSelectionDialog(PROJECTS* projects, int type_):
 
   selectedproject_ = selectedmodel_ = -1;
 
-  validtype = LOO; // leave one out
+  validtype = LOO_; // leave one out
   ui.leaveoneout->setChecked(true);
 
   niter = ui.iterations->value();

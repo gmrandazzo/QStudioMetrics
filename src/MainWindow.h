@@ -54,7 +54,6 @@ private slots:
   void DoPLS();
   void DoPLSValidation();
   void DoPLSPrediction();
-  void DoPLSVariableSelection();
   void DoMLR();
   void DoMLRValidation();
   void DoMLRPrediction();
@@ -104,11 +103,6 @@ private slots:
   void PLS3DPlotQ2SampleValidator();
   void PLS3DPlotSDEPSampleValidator();
 
-
-  void PlotVarSelR2Q2();
-  void PlotVarSelFTestNVar();
-  void PlotVarSelFTestQ2();
-  void PlotModIncVarVar();
 
   void MLRRecalcVSExpPlot();
   void MLRRecalcResidualsVSExpPlot();
@@ -163,7 +157,6 @@ private slots:
   void showPLSPredScore();
   void showPLSPrediction();
   void showPLSPredictionRSquared();
-  void showPLSVarSelMap();
 
 
   void showMLRCoeff();
@@ -229,7 +222,6 @@ private:
        havemlrpred,
        havemlrvalid,
        havemlryscrambling,
-       havevarsel,
        havelda,
        haveldapred,
        haveldavalid;
@@ -250,7 +242,6 @@ private:
   bool ProjectsHaveMLRValidated(){ return havemlrvalid; };
   bool ProjectsHaveMLRPrediction(){ return havemlrpred; };
   bool ProjectsHaveMLRYScrambling(){ return havemlryscrambling; }
-  bool ProjectsHaveVariableSelection(){ return havevarsel; };
   bool ProjectsHaveLDA(){ return havelda; }
   bool ProjectsHaveLDAValidated(){ return haveldavalid; };
   bool ProjectsHaveLDAPrediction(){ return haveldapred; };

@@ -18,7 +18,6 @@ public:
   void setYArray(array *ay_);
   void setPCAModel(PCAModel *pcamod_);
   void setPLSModel(PLSModel *plsmod_);
-  void setVarSel(VariableSelectionModel* vselmod_);
   void setMLRModel(MLRModel *mlrmodel_);
   void setLDAModel(LDAModel *ldamodel_);
 
@@ -39,16 +38,6 @@ public:
   void setModelSampleValidatorIterations(int niters_);
   void setModelSampleValidatorBestID(bool status);
   QList <int> getModelSampleValidatorBestID();
-
-  void setVariableSelectionAlgorithm(int vselalgorithm_);
-  void setPopulationSize(int population_size_);
-  void setCrossoverFraction(double fraction_of_population_);
-  void setMutationRate(double mutation_rate_);
-  void setCrossoverType(int crossovertype_);
-  void setNumbersOfSwappiness(double nswapping_);
-  void setPopulationConvergence(double populationconvergence_);
-
-  void setRandomizedVariables(int randomness_);
 
   void setThreshold(double threshold_);
 
@@ -72,7 +61,6 @@ public:
   QFuture<void> RunPLS();
   QFuture<void> RunPLSValidation();
   QFuture<void> RunPLSPrediction();
-  QFuture<void> RunPLSVariableSelection();
   QFuture<void> RunMLR();
   QFuture<void> RunMLRValidation();
   QFuture<void> RunMLRPrediction();
@@ -95,7 +83,6 @@ private:
 
   PCAModel *pcamod;
   PLSModel *plsmod;
-  VariableSelectionModel* vselmod;
   MLRModel *mlrmodel;
   LDAModel *ldamodel;
 
@@ -114,18 +101,6 @@ private:
   bool yscrambling;
   int samplevalidator;
   int block;
-
-  int vselalgorithm;
-
-  int population_size;
-  double fraction_of_population;
-  double mutation_rate;
-  int crossovertype;
-  double nswapping;
-  double populationconvergence;
-  bool bestsampleid;
-  QList <int> bestid_;
-  double randomness;
 
   double threshold; //used for Spearman's Selection
   //Used for MDC, MaxMinDis, Random Selection
@@ -146,7 +121,6 @@ private:
   void DoPLS();
   void DoPLSValidation();
   void DoPLSPrediction();
-  void DoPLSVariableSelection();
   void DoMLR();
   void DoMLRValidation();
   void DoMLRPrediction();

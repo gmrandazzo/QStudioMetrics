@@ -14,7 +14,7 @@
 
 void RUN::DoClusterValidation()
 {
-  if(vt == RANDOMGROUP){
+  if(vt == BOOTSTRAPRGCV_){
     KMeansRandomGroupsCV(m, nmaxclusters, clusteralgoritm, ngroup, niter, &dv, &scientifisignal);
   }
   else{
@@ -110,7 +110,7 @@ void RUN::DoLDAValidation()
   initDVector(&ldamodel->Model()->npv);
   initDVector(&ldamodel->Model()->acc);
 
-  if(vt == LOO){ // Leave One Out
+  if(vt == LOO_){ // Leave One Out
     LDALOOCV(x, uiv,
                       &ldamodel->Model()->sens,
                       &ldamodel->Model()->spec,
@@ -119,7 +119,7 @@ void RUN::DoLDAValidation()
                       &ldamodel->Model()->acc,
                       QThread::idealThreadCount(), &scientifisignal);
   }
-  else if(vt == RANDOMGROUP){ // Cross Validation
+  else{ // Cross Validation
     LDARandomGroupsCV(x, uiv,
                       ngroup, niter,
                       &ldamodel->Model()->sens,
@@ -168,35 +168,33 @@ void RUN::DoMLRValidation()
   initMatrix(&mlrmodel->Model()->predicted_y);
   initMatrix(&mlrmodel->Model()->r2q2scrambling);
 
-  if(vt == LOO){ // Leave One Out
-    MLRLOOCV(x, y,
-                      &mlrmodel->Model()->q2y,
-                      &mlrmodel->Model()->sdep,
-                      &mlrmodel->Model()->bias,
-                      &mlrmodel->Model()->predicted_y,
-                      &mlrmodel->Model()->pred_residuals, &scientifisignal);
+  MODELINPUT minpt;
+  minpt.mx = &x;
+  minpt.my = &y;
+  minpt.nlv = 0;
+  minpt.xautoscaling = 0;
+  minpt.yautoscaling = 0;
+
+  if(vt == LOO_){ // Leave One Out
+    LeaveOneOut(&minpt, _MLR_, &mlrmodel->Model()->predicted_y, &mlrmodel->Model()->pred_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
   }
-  else if(vt == RANDOMGROUP){ // Cross Validation
-    MLRRandomGroupsCV(x, y,
-                      ngroup, niter,
-                      &mlrmodel->Model()->q2y,
-                      &mlrmodel->Model()->sdep,
-                      &mlrmodel->Model()->bias,
-                      &mlrmodel->Model()->predicted_y,
-                      &mlrmodel->Model()->pred_residuals, &scientifisignal);
+  else{
+    BootstrapRandomGroupsCV(&minpt, ngroup, niter, _MLR_, &mlrmodel->Model()->predicted_y, &mlrmodel->Model()->pred_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
   }
 
+  MLRRegressionStatistics(y, mlrmodel->Model()->predicted_y, &mlrmodel->Model()->q2y, &mlrmodel->Model()->sdep, &mlrmodel->Model()->bias);
+
   if(yscrambling == true){
-    if(vt == LOO){
-      MLRYScrambling(x, y,
-                          block, 0, 0, 0,
-                          &mlrmodel->Model()->r2q2scrambling, &scientifisignal);
+    ValidationArg varg;
+    if(vt == LOO_){
+      varg.vtype = LOO;
     }
     else{
-      MLRYScrambling(x, y,
-                        block, 1, ngroup, niter,
-                        &mlrmodel->Model()->r2q2scrambling, &scientifisignal);
+      varg.vtype = BootstrapRGCV;
+      varg.rgcv_group = ngroup;
+      varg.rgcv_iterations = niter;
     }
+    YScrambling(&minpt, _PLS_, varg, block, &mlrmodel->Model()->r2q2scrambling, QThread::idealThreadCount(), &scientifisignal);
   }
 }
 
@@ -205,68 +203,15 @@ void RUN::DoMLR()
   MLR(x, y, mlrmodel->Model(), &scientifisignal);
 }
 
-void RUN::DoPLSVariableSelection()
-{
-  int validtype;
-  if(vt == LOO){
-    validtype = 1;
-  }
-  else if(vt == RANDOMGROUP){
-    validtype = 2;
-  }
-  else{
-    validtype = 0;
-  }
-
-  if(vselalgorithm == GA){
-    PLSGAVariableSelection(x, y, NULL, NULL,
-                       xscaling, yscaling, pc, validtype, ngroup, niter,
-                       population_size, fraction_of_population, mutation_rate, crossovertype, nswapping, populationconvergence,
-                       vselmod->SelectedVablesPointer(), vselmod->MapPointer(), vselmod->VariableDistributionPointer(), QThread::idealThreadCount(), &scientifisignal);
-  }
-  else if(vselalgorithm == PSO){
-    PSLPSOVariableSelection(x, y, NULL, NULL,
-                            xscaling, yscaling, pc, validtype, ngroup, niter,
-                            population_size, randomness,
-                            vselmod->SelectedVablesPointer(), vselmod->MapPointer(), vselmod->VariableDistributionPointer(), QThread::idealThreadCount(), &scientifisignal);
-  }
-  else{
-    PLSSpearmannVariableSelection(x, y, NULL, NULL,
-                            xscaling, yscaling, pc, validtype, ngroup, niter,
-                            threshold,
-                            vselmod->SelectedVablesPointer(), vselmod->MapPointer(), vselmod->VariableDistributionPointer(), QThread::idealThreadCount(), &scientifisignal);
-  }
-}
 
 void RUN::DoPLSPrediction()
 {
-  PLSScorePredictor(x,
-                    plsmod->Model(),
-                    plsmod->getNPC(),
-                    plsmod->getLastPLSPrediction()->XPredScoresPointer());
-
 
   // we go from 1 because for 0 component no value can be calculated.
-  for(pc = 1; pc <= plsmod->getNPC(); pc++){
-    matrix *y;
-    initMatrix(&y);
-    PLSYPredictor(plsmod->getLastPLSPrediction()->getXPredScores(),
-                  plsmod->Model(),
-                  pc,
-                  &y);
-
-    for(uint col = 0; col < y->col; col++){
-      MatrixAppendCol(plsmod->getLastPLSPrediction()->YDipVarPointer() , getMatrixColumn(y, col));
-    }
-
-    DelMatrix(&y);
-  }
+  PLSYPredictorAllLV(x, plsmod->Model(), plsmod->getLastPLSPrediction()->XPredScoresPointer(),plsmod->getLastPLSPrediction()->YDipVarPointer());
 
   if(y != 0 && y->col > 0){ // calculate the R2 for the prediction
-    PLSRSquared(x, y,
-                plsmod->Model(),
-                plsmod->getNPC(),
-                plsmod->getLastPLSPrediction()->R2YPointer(), plsmod->getLastPLSPrediction()->SDECPointer());
+    PLSRegressionStatistics(y, plsmod->getLastPLSPrediction()->getYDipVar(), plsmod->getLastPLSPrediction()->R2YPointer(), plsmod->getLastPLSPrediction()->SDECPointer(), NULL);
   }
 }
 
@@ -284,164 +229,42 @@ void RUN::DoPLSValidation()
   initMatrix(&plsmod->Model()->predicted_y);
   initMatrix(&plsmod->Model()->pred_residuals);
 
-  if(vt == LOO){ // Leave One Out
-    PLSLOOCV(x, y,
-                       plsmod->getXScaling(), plsmod->getYScaling(),
-                       plsmod->getNPC(),
-                       &plsmod->Model()->q2y,
-                       &plsmod->Model()->sdep,
-                       &plsmod->Model()->bias,
-                       &plsmod->Model()->predicted_y,
-                       &plsmod->Model()->pred_residuals, QThread::idealThreadCount(), &scientifisignal);
+  MODELINPUT minpt;
+  minpt.mx = &x;
+  minpt.my = &y;
+  minpt.nlv = plsmod->getNPC();
+  minpt.xautoscaling = plsmod->getXScaling();
+  minpt.yautoscaling = plsmod->getYScaling();
+
+  if(vt == LOO_){ // Leave One Out
+    LeaveOneOut(&minpt, _PLS_, &plsmod->Model()->predicted_y, &plsmod->Model()->pred_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
   }
-  else if(vt == RANDOMGROUP){ // Cross Validation
-    PLSRandomGroupsCV(x, y,
-                       plsmod->getXScaling(), plsmod->getYScaling(),
-                       plsmod->getNPC(), ngroup, niter,
-                       &plsmod->Model()->q2y,
-                       &plsmod->Model()->sdep,
-                       &plsmod->Model()->bias,
-                       &plsmod->Model()->predicted_y,
-                       &plsmod->Model()->pred_residuals,
-                       QThread::idealThreadCount(),
-                       &scientifisignal);
+  else{
+    BootstrapRandomGroupsCV(&minpt, ngroup, niter, _PLS_, &plsmod->Model()->predicted_y, &plsmod->Model()->pred_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
   }
+
+  PLSRegressionStatistics(y, plsmod->Model()->predicted_y, &plsmod->Model()->q2y, &plsmod->Model()->sdep, &plsmod->Model()->bias);
 
   if(yscrambling == true){
     DelMatrix(&plsmod->Model()->r2q2scrambling);
     initMatrix(&plsmod->Model()->r2q2scrambling);
-    if(vt == LOO){
-      PLSYScrambling(x, y,
-                      plsmod->getXScaling(), plsmod->getYScaling(),
-                      plsmod->getNPC(), block,
-                      0, 0,  0,
-                      &plsmod->Model()->r2q2scrambling, QThread::idealThreadCount(), &scientifisignal);
+    ValidationArg varg;
+    if(vt == LOO_){
+      varg.vtype = LOO;
     }
     else{
-      PLSYScrambling(x, y,
-                      plsmod->getXScaling(), plsmod->getYScaling(),
-                      plsmod->getNPC(), block,
-                      1, ngroup,  niter,
-                      &plsmod->Model()->r2q2scrambling, QThread::idealThreadCount(), &scientifisignal);
+      varg.vtype = BootstrapRGCV;
+      varg.rgcv_group = ngroup;
+      varg.rgcv_iterations = niter;
     }
+    YScrambling(&minpt, _PLS_, varg, block, &plsmod->Model()->r2q2scrambling, QThread::idealThreadCount(), &scientifisignal);
   }
-
-  if(samplevalidator == 1){
-    DelMatrix(&plsmod->Model()->q2_sample_validation);
-    DelMatrix(&plsmod->Model()->sdep_sample_validation);
-    initMatrix(&plsmod->Model()->q2_sample_validation);
-    initMatrix(&plsmod->Model()->sdep_sample_validation);
-
-    if(vt == LOO){
-      if(bestsampleid == true){
-        uivector *bestid;
-        initUIVector(&bestid);
-        PLSStaticSampleValidator(x, y, uiv,
-                          plsmod->getXScaling(), plsmod->getYScaling(),
-                          plsmod->getNPC(), samplevalidator_samplesize, samplevalidator_niters,
-                          0, 0, QThread::idealThreadCount(),
-                          &plsmod->Model()->q2_sample_validation, &plsmod->Model()->sdep_sample_validation, &bestid, &scientifisignal);
-        for(size_t i = 0; i < bestid->size; i++)
-          bestid_.append(bestid->data[i]);
-
-        DelUIVector(&bestid);
-      }
-      else{
-        PLSStaticSampleValidator(x, y, uiv,
-                          plsmod->getXScaling(), plsmod->getYScaling(),
-                          plsmod->getNPC(), samplevalidator_samplesize, samplevalidator_niters,
-                          0, 0, QThread::idealThreadCount(),
-                          &plsmod->Model()->q2_sample_validation, &plsmod->Model()->sdep_sample_validation, NULL, &scientifisignal);
-      }
-    }
-    else{
-      if(bestsampleid == true){
-        uivector *bestid;
-        initUIVector(&bestid);
-        PLSStaticSampleValidator(x, y, uiv,
-                          plsmod->getXScaling(), plsmod->getYScaling(),
-                          plsmod->getNPC(), samplevalidator_samplesize, samplevalidator_niters,
-                          ngroup,  niter, QThread::idealThreadCount(),
-                          &plsmod->Model()->q2_sample_validation, &plsmod->Model()->sdep_sample_validation, &bestid, &scientifisignal);
-        for(size_t i = 0; i < bestid->size; i++)
-          bestid_.append(bestid->data[i]);
-
-        DelUIVector(&bestid);
-      }
-      else{
-        PLSStaticSampleValidator(x, y, uiv,
-                  plsmod->getXScaling(), plsmod->getYScaling(),
-                  plsmod->getNPC(), samplevalidator_samplesize, samplevalidator_niters,
-                  ngroup,  niter, QThread::idealThreadCount(),
-                  &plsmod->Model()->q2_sample_validation, &plsmod->Model()->sdep_sample_validation, NULL, &scientifisignal);
-      }
-    }
-  }
-  else if(samplevalidator == 0){// incremental sample validation
-    DelMatrix(&plsmod->Model()->q2_sample_validation_surface);
-    DelMatrix(&plsmod->Model()->sdep_sample_validation_surface);
-    initMatrix(&plsmod->Model()->q2_sample_validation_surface);
-    initMatrix(&plsmod->Model()->sdep_sample_validation_surface);
-    if(vt == LOO){
-      if(bestsampleid == true){
-        uivector *bestid;
-        initUIVector(&bestid);
-        PLSDynamicSampleValidator(x, y,
-                          plsmod->getXScaling(), plsmod->getYScaling(),
-                          plsmod->getNPC(), samplevalidator_niters,
-                          uiv, samplevalidator_incobj, samplevalidator_maxobj,
-                          0, 0, QThread::idealThreadCount(),
-                          &plsmod->Model()->q2_sample_validation_surface, &plsmod->Model()->sdep_sample_validation_surface, &bestid, &scientifisignal);
-
-        for(size_t i = 0; i < bestid->size; i++)
-          bestid_.append(bestid->data[i]);
-
-        DelUIVector(&bestid);
-      }
-      else{
-        PLSDynamicSampleValidator(x, y,
-                          plsmod->getXScaling(), plsmod->getYScaling(),
-                          plsmod->getNPC(), samplevalidator_niters,
-                          uiv, samplevalidator_incobj, samplevalidator_maxobj,
-                          0, 0, QThread::idealThreadCount(),
-                          &plsmod->Model()->q2_sample_validation_surface, &plsmod->Model()->sdep_sample_validation_surface, NULL, &scientifisignal);
-      }
-    }
-    else{
-      if(bestsampleid == true){
-        uivector *bestid;
-        initUIVector(&bestid);
-        PLSDynamicSampleValidator(x, y,
-                  plsmod->getXScaling(), plsmod->getYScaling(),
-                  plsmod->getNPC(), samplevalidator_niters,
-                  uiv, samplevalidator_incobj, samplevalidator_maxobj,
-                  ngroup, niter, QThread::idealThreadCount(),
-                  &plsmod->Model()->q2_sample_validation_surface, &plsmod->Model()->sdep_sample_validation_surface, &bestid, &scientifisignal);
-        for(size_t i = 0; i < bestid->size; i++)
-          bestid_.append(bestid->data[i]);
-
-        DelUIVector(&bestid);
-      }
-      else{
-        PLSDynamicSampleValidator(x, y,
-                  plsmod->getXScaling(), plsmod->getYScaling(),
-                  plsmod->getNPC(), samplevalidator_niters,
-                  uiv, samplevalidator_incobj, samplevalidator_maxobj,
-                  ngroup, niter, QThread::idealThreadCount(),
-                  &plsmod->Model()->q2_sample_validation_surface, &plsmod->Model()->sdep_sample_validation_surface, NULL, &scientifisignal);
-      }
-    }
-  }
-
 }
 
 void RUN::DoPLS()
 {
   PLS(x, y, pc, xscaling, yscaling, plsmod->Model(), &scientifisignal);
-
-  PLSRSquared(x, y, plsmod->Model(), pc,
-              &(plsmod->Model()->r2y_model),
-              &(plsmod->Model()->sdec));
+  PLSRegressionStatistics(y, plsmod->Model()->recalculated_y, &plsmod->Model()->r2y_model, &plsmod->Model()->sdec, NULL);
 }
 
 void RUN::DoPCAPrediction()
@@ -510,11 +333,6 @@ QFuture< void > RUN::RunMLRValidation()
 QFuture< void > RUN::RunMLR()
 {
   return QtConcurrent::run(this, &RUN::DoMLR);
-}
-
-QFuture< void > RUN::RunPLSVariableSelection()
-{
-  return QtConcurrent::run(this, &RUN::DoPLSVariableSelection);
 }
 
 QFuture< void > RUN::RunPLSPrediction()
@@ -620,45 +438,6 @@ void RUN::setThreshold(double threshold_)
   threshold = threshold_;
 }
 
-void RUN::setRandomizedVariables(int randomness_){
-  randomness = randomness_;
-}
-
-void RUN::setPopulationConvergence(double populationconvergence_)
-{
-  populationconvergence = populationconvergence_;
-}
-
-void RUN::setNumbersOfSwappiness(double nswapping_)
-{
-  nswapping = nswapping_;
-}
-
-void RUN::setCrossoverType(int crossovertype_)
-{
-  crossovertype = crossovertype_;
-}
-
-void RUN::setMutationRate(double mutation_rate_)
-{
-  mutation_rate = mutation_rate_;
-}
-
-void RUN::setCrossoverFraction(double fraction_of_population_)
-{
-  fraction_of_population = fraction_of_population_;
-}
-
-void RUN::setPopulationSize(int population_size_)
-{
-  population_size = population_size_;
-}
-
-void RUN::setVariableSelectionAlgorithm(int vselalgorithm_)
-{
-  vselalgorithm = vselalgorithm_;
-}
-
 void RUN::setModelYScrambling(bool yscrambling_)
 {
   yscrambling = yscrambling_;
@@ -687,16 +466,6 @@ void RUN::setModelSampleValidatorIncObj ( int incobj )
 void RUN::setModelSampleValidatorMaxObj ( int maxobj_ )
 {
   samplevalidator_maxobj = maxobj_;
-}
-
-void RUN::setModelSampleValidatorBestID ( bool status )
-{
-  bestsampleid = status;
-}
-
-QList< int > RUN::getModelSampleValidatorBestID()
-{
-  return bestid_;
 }
 
 void RUN::setModelSampleValidatorIterations ( int niters_ )
@@ -748,11 +517,6 @@ void RUN::setMLRModel(MLRModel* mlrmodel_)
   mlrmodel = mlrmodel_;
 }
 
-
-void RUN::setVarSel(VariableSelectionModel* vselmod_)
-{
-  vselmod = vselmod_;
-}
 
 void RUN::setPLSModel(PLSModel* plsmod_)
 {
@@ -812,6 +576,5 @@ RUN::RUN()
   y = 0;
   ax = 0;
   ay = 0;
-  bestsampleid = false;
   uiv = NULL;
 }
