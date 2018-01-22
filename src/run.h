@@ -30,15 +30,6 @@ public:
   void setModelYScrambling(bool yscrambling_);
   void setModelYScramblingBlock(int block);
 
-  void setModelSampleValidator(int samplevalidator_);
-  void setModelSampleValidatorClasses(uivector *obj_class);
-  void setModelSampleValidatorIncObj(int deltaobj_);
-  void setModelSampleValidatorMaxObj(int maxobj_);
-  void setModelSampleValidatorSampleSize(int sample_size_);
-  void setModelSampleValidatorIterations(int niters_);
-  void setModelSampleValidatorBestID(bool status);
-  QList <int> getModelSampleValidatorBestID();
-
   void setThreshold(double threshold_);
 
   void setMatrix(matrix *m_);
@@ -58,8 +49,8 @@ public:
 
   QFuture<void> RunPCA();
   QFuture<void> RunPCAPrediction();
-  QFuture<void> RunPLS();
-  QFuture<void> RunPLSValidation();
+  QFuture<void> RunPLS(int algtype_);
+  QFuture<void> RunPLSValidation(int algtype_);
   QFuture<void> RunPLSPrediction();
   QFuture<void> RunMLR();
   QFuture<void> RunMLRValidation();
@@ -88,18 +79,14 @@ private:
 
   ssignal scientifisignal;
 
+  int algtype; // PLS_, PLS_DA_, EPLS_, EPLS_DA_
   int xscaling;
   int yscaling;
   int pc;
   int vt;
   int ngroup;
   int niter;
-  int samplevalidator_niters;
-  int samplevalidator_samplesize;
-  int samplevalidator_incobj;
-  int samplevalidator_maxobj;
   bool yscrambling;
-  int samplevalidator;
   int block;
 
   double threshold; //used for Spearman's Selection

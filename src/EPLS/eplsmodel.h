@@ -1,5 +1,5 @@
-#ifndef PLSMODEL_H
-#define PLSMODEL_H
+#ifndef EPLSMODEL_H
+#define EPLSMODEL_H
 #include <scientific.h>
 #include <QFile>
 #include <QString>
@@ -9,15 +9,11 @@
 
 #include "../qstudiometricsdataoperations.h"
 
-class PLSPREDICTION
+class EPLSPrediction
 {
 public:
-  PLSPREDICTION();
-  ~PLSPREDICTION();
-  void ImportPLSPrediction(char *path, char *name_);
-  void WritePLSPrediction(char *path, char *dirname);
-  void ImportPLSPredictionInfo(char *path);
-  void WritePLSPredictionInfo(char *path);
+  EPLSPrediction();
+  ~EPLSPrediction();
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(QStringList &objname_){ objname = objname_; }
@@ -30,8 +26,8 @@ public:
   int getDID(){ return did; }
   void setDataHash(QString hash_){ hash = hash_; }
   QString &getDataHash(){ return hash; }
-  matrix **XPredScoresPointer(){ return &pxscores; }
-  matrix *getXPredScores(){ return pxscores; }
+  array **XPredScoresPointer(){ return &pxscores; }
+  array *getXPredScores(){ return pxscores; }
   matrix **YDipVarPointer(){ return &py; }
   matrix *getYDipVar(){ return py; }
   matrix **R2YPointer(){ return &r2y; }
@@ -44,24 +40,18 @@ private:
   QString hash;
   int id;
   int did;
-  matrix *pxscores;
+  array *pxscores;
   matrix *py;
   matrix *r2y;
   matrix *sdec;
 };
 
-class PLSModel
+class EPLSModel
 {
 public:
-  PLSModel();
-   ~PLSModel();
-  PLSMODEL *Model(){ return m; }
-  void ImportPLSModel(char *path, char *name_);
-  void WritePLSModel(char *path, char *dirname);
-  void ImportPLSModelInfo(char *path);
-  void WritePLSModelInfo(char *path);
-  void setAlgorithm(int algtype_){ algtype = algtype_; }
-  int getAlgorithm(){ return algtype; }
+  EPLSModel();
+   ~EPLSModel();
+  EPLSMODEL *Model(){ return m; }
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(QStringList &objname_){ objname = objname_; }
@@ -70,6 +60,8 @@ public:
   QStringList &getXVarName(){ return xvarname; }
   void setYVarName(QStringList &varname_){ yvarname = varname_; }
   QStringList &getYVarName(){ return yvarname; }
+  void setElearningParm(ELearningParameters eparm_) { eparm = eparm_; }
+  ELearningParameters getElearningParm(){ return eparm; }
   void setValidation(int v){ validation = v; }
   int getValidation(){ return validation; }
   void setDID(int did_){ did = did_; }
@@ -84,28 +76,29 @@ public:
   int getXScaling(){ return xscaling; }
   int getYScaling(){ return yscaling; }
   int getModelID(){ return modelid; }
-  void addPLSPrediction(){ prediction.append(new PLSPREDICTION); };
-  void delPLSPredictionAt(int id){ delete prediction[id]; prediction.removeAt(id); }
-  void delPLSPredictions(){
+  void addEPLSPrediction(){ prediction.append(new EPLSPrediction); };
+  void delEPLSPredictionAt(int id){ delete prediction[id]; prediction.removeAt(id); }
+  void delEPLSPredictions(){
     for(int i = 0; i < prediction.size(); i++){
       delete prediction[i];
     }
     prediction.clear();
   }
 
-  PLSPREDICTION *getPLSPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
-  PLSPREDICTION *getLastPLSPrediction(){ return prediction.last(); }
-  int PLSPredictionCount(){ return prediction.size(); }
+  EPLSPrediction *getEPLSPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
+  EPLSPrediction *getLastEPLSPrediction(){ return prediction.last(); }
+  int EPLSPredictionCount(){ return prediction.size(); }
 
-  QString& getHash(){ if(plshash.size() == 0){ plshash = GenMatrixHash(m->xscores); } return plshash; }
+  QString& getHash(){ if(eplshash.size() == 0){ eplshash = GenMatrixHash(m->models[0]->xscores); } return eplshash; }
 
 private:
-  PLSMODEL *m;
-  QList<PLSPREDICTION*> prediction;
+  EPLSMODEL *m;
+  QList<EPLSPrediction*> prediction;
   QStringList objname, xvarname, yvarname;
   QString name;
-  int did, xscaling, yscaling, npc, modelid, validation, algtype;
-  QString hash, plshash;
+  int did, xscaling, yscaling, npc, modelid, validation;
+  ELearningParameters eparm;
+  QString hash, eplshash;
 };
 
 #endif

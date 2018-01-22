@@ -12,16 +12,13 @@ void PlotDialog::CheckPlot()
       || type == PLS_
       || type == MLR_
       || type == LDA_
-      || type == VarSel
       || type == PLSValidation
       || type == PLSRecalcVSExperimental
       || type == PLSPredictedVSExperimental
       || type == MLRRecalcVSExperimental
       || type == MLRPredictedVSExperimental
       || type == PLSYSCRAMBLING
-      || type == MLRYSCRAMBLING
-      || type == PLSQ2SDEPSTATICSAMPLEVALIDATION
-      || type == PLSQ2SDEPDYNAMICSAMPLEVALIDATION){
+      || type == MLRYSCRAMBLING){
       if(modelid != -1){
         ui.plotButton->setEnabled(true);
       }
@@ -192,27 +189,7 @@ void PlotDialog::setProject(QModelIndex current)
     }
     else if(type == PLSYSCRAMBLING){
       for(int i = 0; i < projects_->value(selectedproject_)->PLSCount(); i++){
-        if(projects_->value(selectedproject_)->getPLSModelAt(i)->Model()->r2q2scrambling->row > 0){
-          QList<QStandardItem*> row;
-          row.append(new QStandardItem(projects_->value(selectedproject_)->getPLSModelAt(i)->getName()));
-          mids.append(projects_->value(selectedproject_)->getPLSModelAt(i)->getModelID());
-          tab2->appendRow(row);
-        }
-      }
-    }
-    else if(type == PLSQ2SDEPSTATICSAMPLEVALIDATION){
-      for(int i = 0; i < projects_->value(selectedproject_)->PLSCount(); i++){
-        if(projects_->value(selectedproject_)->getPLSModelAt(i)->Model()->q2_sample_validation->row > 0){
-          QList<QStandardItem*> row;
-          row.append(new QStandardItem(projects_->value(selectedproject_)->getPLSModelAt(i)->getName()));
-          mids.append(projects_->value(selectedproject_)->getPLSModelAt(i)->getModelID());
-          tab2->appendRow(row);
-        }
-      }
-    }
-    else if(type == PLSQ2SDEPDYNAMICSAMPLEVALIDATION){
-      for(int i = 0; i < projects_->value(selectedproject_)->PLSCount(); i++){
-        if(projects_->value(selectedproject_)->getPLSModelAt(i)->Model()->q2_sample_validation_surface->row > 0){
+        if(projects_->value(selectedproject_)->getPLSModelAt(i)->Model()->yscrambling->row > 0){
           QList<QStandardItem*> row;
           row.append(new QStandardItem(projects_->value(selectedproject_)->getPLSModelAt(i)->getName()));
           mids.append(projects_->value(selectedproject_)->getPLSModelAt(i)->getModelID());
@@ -236,14 +213,6 @@ void PlotDialog::setProject(QModelIndex current)
           mids.append(projects_->value(selectedproject_)->getPLSModelAt(i)->getModelID());
           tab2->appendRow(row);
         }
-      }
-    }
-    else if(type == VarSel){ // Variable Selection Plot
-      for(int i = 0; i < projects_->value(selectedproject_)->VarSelCount(); i++){
-        QList<QStandardItem*> row;
-        row.append(new QStandardItem(projects_->value(selectedproject_)->getVarSelModelAt(i)->getName()));
-        mids.append(projects_->value(selectedproject_)->getVarSelModelAt(i)->getModelID());
-        tab2->appendRow(row);
       }
     }
     else if(type == MLRRecalcVSExperimental || type == MLRRecalcVSExperimentalWithPrediction){
@@ -300,13 +269,10 @@ void PlotDialog::actionPlot()
      type == LDAValidation ||
      type == PLSRecalcVSExperimental ||
      type == PLSPredictedVSExperimental ||
-     type == VarSel ||
      type == MLRRecalcVSExperimental ||
      type == MLRPredictedVSExperimental ||
      type == PLSYSCRAMBLING ||
-     type == MLRYSCRAMBLING ||
-     type == PLSQ2SDEPSTATICSAMPLEVALIDATION ||
-     type == PLSQ2SDEPDYNAMICSAMPLEVALIDATION){
+     type == MLRYSCRAMBLING){
     if(selectedproject_ == -1 || modelid == -1){
       QMessageBox::warning(this, tr("Warning!"), tr("Please select project and model to plot.\n"), QMessageBox::Close);
       return;
@@ -353,7 +319,6 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
      type == MLR_ ||
      type == LDA_ ||
      type == PLSValidation ||
-     type == VarSel ||
      type == MLRRecalcVSExperimental ||
      type == MLRPredictedVSExperimental){
 
@@ -384,9 +349,7 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
     tab3 = 0;
   }
   else if(type == PLSYSCRAMBLING ||
-          type == MLRYSCRAMBLING ||
-          type == PLSQ2SDEPSTATICSAMPLEVALIDATION ||
-          type == PLSQ2SDEPDYNAMICSAMPLEVALIDATION){
+          type == MLRYSCRAMBLING){
     ui.predictionGroupBox->hide();
     ui.label_4->hide();
     ui.numpc->hide();
@@ -407,34 +370,11 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
             type == PLSValidation ||
             type == PLSPrediction ||
             type == PLSR2R2Plot ||
-            type == PLSYSCRAMBLING ||
-            type == PLSQ2SDEPSTATICSAMPLEVALIDATION ||
-            type == PLSQ2SDEPDYNAMICSAMPLEVALIDATION) && projects_->value(pid)->PLSCount() > 0){ // PLS
+            type == PLSYSCRAMBLING)
+            && projects_->value(pid)->PLSCount() > 0){ // PLS
       if(type == PLSYSCRAMBLING){
         for(int i = 0; i < projects_->value(pid)->PLSCount(); i++){
-          if(projects_->value(pid)->getPLSModelAt(i)->Model()->r2q2scrambling->row > 0){
-            acquire = true;
-            break;
-          }
-          else{
-            continue;
-          }
-        }
-      }
-      else if(type == PLSQ2SDEPSTATICSAMPLEVALIDATION){
-        for(int i = 0; i < projects_->value(pid)->PLSCount(); i++){
-          if(projects_->value(pid)->getPLSModelAt(i)->Model()->q2_sample_validation->row > 0){
-            acquire = true;
-            break;
-          }
-          else{
-            continue;
-          }
-        }
-      }
-      else if(type == PLSQ2SDEPDYNAMICSAMPLEVALIDATION){
-        for(int i = 0; i < projects_->value(pid)->PLSCount(); i++){
-          if(projects_->value(pid)->getPLSModelAt(i)->Model()->q2_sample_validation_surface->row > 0){
+          if(projects_->value(pid)->getPLSModelAt(i)->Model()->yscrambling->row > 0){
             acquire = true;
             break;
           }
@@ -471,9 +411,6 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
           continue;
         }
       }
-    }
-    else if(type == VarSel && projects_->value(pid)->VarSelCount() > 0){ // Variable Selection Models
-      acquire = true;
     }
     else if((type == MLR_ ||
              type == MLRValidation ||

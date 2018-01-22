@@ -6,90 +6,6 @@
 
 #include "ClassDialog.h"
 
-void ValidatorDialog::setSampleValidationClasses()
-{
-  if(selectedproject_ > -1 && modelid > -1){
-    ClassDialog cd(projects_->value(selectedproject_)->getPLSModel(modelid)->getObjName(), &svalid_classes);
-    if(cd.exec() == QDialog::Accepted){
-      ui.DynamicSampleMaxObj->setValue(svalid_classes.size());
-      ui.StaticSampleSize->setValue(svalid_classes.size());
-      return;
-    }
-    else
-      return;
-  }
-  else
-    return;
-}
-
-void ValidatorDialog::setSampleValidationType()
-{
-  if(ui.SampleValidationGroupBox->isChecked()){
-    if(ui.IncrementalSampling->isChecked())
-      svalid = 0;
-    else if(ui.StaticSampling->isChecked())
-      svalid = 1;
-    else
-      svalid = -1;
-  }
-  else{
-    svalid = -1;
-  }
-}
-
-QList< int > ValidatorDialog::getSampleValidorClasses()
-{
-  QList <int> classid;
-  if(selectedproject_ > -1 && modelid > -1){
-    QStringList objnames = projects_->value(selectedproject_)->getPLSModel(modelid)->getObjName();
-    for(int i = 0; i < objnames.size(); i++)
-      classid.append(0);
-
-    for(int i = 0; i < svalid_classes.size(); i++){
-      for(int j = 0; j < svalid_classes[i].objlst.size(); j++){
-        classid[objnames.indexOf(svalid_classes[i].objlst[j])] = i;
-      }
-    }
-    return classid;
-  }
-  else
-    return classid;
-}
-
-bool ValidatorDialog::saveBestIDObjectLabel()
-{
-  if(ui.saveBestModelObjLabel->isChecked())
-    return true;
-  else
-    return false;
-}
-
-QString ValidatorDialog::getBestIDObjectLabel()
-{
-  return ui.labelName->text();
-}
-
-
-int ValidatorDialog::getSampleValidorIterations()
-{
-  return ui.SamplingValidationIteration->value();
-}
-
-int ValidatorDialog::getSampleValidorSize()
-{
-  return ui.StaticSampleSize->value();
-}
-
-int ValidatorDialog::getSampleValidatorIncObj()
-{
-  return ui.DynamicSampleObjInc->value();
-}
-
-int ValidatorDialog::getSampleValidatorMaxObj()
-{
-  return ui.DynamicSampleMaxObj->value();
-}
-
 void ValidatorDialog::setYScramblingBlock()
 {
   block = ui.block->value();
@@ -230,7 +146,6 @@ ValidatorDialog::ValidatorDialog(PROJECTS *projects, int type_)
   ngroup = ui.groupnumber->value();
   yscrambling = false;
   block = ui.block->value();
-  svalid = -1;
 
   setValidationType();
   compute_ = false;
@@ -265,11 +180,6 @@ ValidatorDialog::ValidatorDialog(PROJECTS *projects, int type_)
 
   connect(ui.YScramblingGroupBox, SIGNAL(clicked(bool)), SLOT(setYScrambling()));
   connect(ui.block, SIGNAL(valueChanged(int)), SLOT(setYScramblingBlock()));
-
-  connect(ui.defineObjectClassesButton, SIGNAL(clicked(bool)), SLOT(setSampleValidationClasses()));
-  connect(ui.SampleValidationGroupBox, SIGNAL(clicked(bool)), SLOT(setSampleValidationType()));
-  connect(ui.IncrementalSampling, SIGNAL(clicked(bool)), SLOT(setSampleValidationType()));
-  connect(ui.StaticSampling, SIGNAL(clicked(bool)), SLOT(setSampleValidationType()));
 
   adjustSize();
   ui.listView->selectionModel()->clear();

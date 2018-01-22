@@ -429,7 +429,6 @@ void DATA::OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *m
   if(modelsdir.exists() == true){
     QDir pcadir = QDir(modelsdir.absolutePath()+"/PCAMODELS");
     QDir plsdir = QDir(modelsdir.absolutePath()+"/PLSMODELS");
-    QDir varseldir = QDir(modelsdir.absolutePath()+"/VARIABLESELECTIONS");
     QDir mlrdir = QDir(modelsdir.absolutePath()+"/MLRMODELS");
     QDir ldadir = QDir(modelsdir.absolutePath()+"/LDAMODELS");
     if(pcadir.exists() == true){
@@ -628,40 +627,6 @@ void DATA::OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *m
         }
         else{
           (*log).append(QString("Error PLS Model %1 Corrupted").arg(plslist[i]));
-        }
-      }
-    }
-
-    if(varseldir.exists() == true){
-      QStringList varsellist = varseldir.entryList();
-      varsellist.removeAll(".");
-      varsellist.removeAll("..");
-      for(int i = 0; i < varsellist.size(); i++){
-        QDir varsel = QDir(varseldir.absolutePath()+"/"+varsellist[i]);
-        if(varsel.exists() == true
-          && QFile::exists(varsel.absolutePath()+"/info.txt") == true){
-          (*log).append(QString("Importing Variable Selection Model %1").arg(varsellist[i]));
-          addVarSelModel();
-          getLastVarSelModel()->ImportVarSelModel(varsel.absolutePath(), "VSEL - "+varsellist[i].trimmed());
-          getLastVarSelModel()->setModelID((*mid_));
-
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, getLastVarSelModel()->getName());
-          subitem->setText(1, QString::number((*tabcount_)));
-          subitem->setText(2, QString::number(getProjectID()));
-          subitem->setText(3, getLastVarSelModel()->getModelHash());
-          subitem->setText(4, "-");
-          subitem->setText(5, "-");
-          subitem->setText(6, "-");
-          subitem->setText(7, "-");
-          subitem->setText(8, QString("PLS Variable Selection Model"));
-          subitem->setText(9, QString::number((*mid_)));
-          MainWindow::getProjectItem(getProjectID(), treeWidget)->child(1)->addChild(subitem);
-          (*tabcount_)++;
-          (*mid_)++;
-        }
-        else{
-          (*log).append(QString("Error PCA Model %1 Corrupted").arg(varsellist[i]));
         }
       }
     }
@@ -1163,7 +1128,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     QString s_bias = query.value(26).toString();
     QString s_predicted_y = query.value(27).toString();
     QString s_predicted_residuals = query.value(28).toString();
-    QString s_r2q2scrambling  = query.value(29).toString();
+    QString s_yscrambling  = query.value(29).toString();
     QString s_q2_sample_validation = query.value(30).toString();
     QString s_sdep_sample_validation = query.value(31).toString();
     QString s_q2_sample_validation_surface = query.value(32).toString();
@@ -1201,11 +1166,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     DeserializeMatrix(s_bias, &getLastPLSModel()->Model()->bias);
     DeserializeMatrix(s_predicted_y, &getLastPLSModel()->Model()->predicted_y);
     DeserializeMatrix(s_predicted_residuals, &getLastPLSModel()->Model()->pred_residuals);
-    DeserializeMatrix(s_r2q2scrambling, &getLastPLSModel()->Model()->r2q2scrambling);
-    DeserializeMatrix(s_q2_sample_validation, &getLastPLSModel()->Model()->q2_sample_validation);
-    DeserializeMatrix(s_sdep_sample_validation, &getLastPLSModel()->Model()->sdep_sample_validation);
-    DeserializeMatrix(s_q2_sample_validation_surface, &getLastPLSModel()->Model()->q2_sample_validation_surface);
-    DeserializeMatrix(s_sdep_sample_validation_surface, &getLastPLSModel()->Model()->sdep_sample_validation_surface);
+    DeserializeMatrix(s_yscrambling, &getLastPLSModel()->Model()->yscrambling);
 
     int xid = -1;
     for(int j = 0; j < MatrixCount(); j++){
@@ -1282,45 +1243,6 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         continue;
       }
     }
-    (*mid_)++;
-  }
-
-
-  query.exec("SELECT * from varselTable");
-  while (query.next()){
-    // get the query values
-    QString name = query.value(0).toString();
-    QString serialized_info = query.value(1).toString();
-    QString serialized_varnames = query.value(2).toString();
-    QString hashinputmx = query.value(3).toString();
-    QString serialized_varsel = query.value(4).toString();
-    QString serialized_vardist = query.value(5).toString();
-    QString serialized_map = query.value(6).toString();
-
-    addVarSelModel();
-    getLastVarSelModel()->setModelID((*mid_));
-    getLastVarSelModel()->setName(name);
-    getLastVarSelModel()->getVariableNames() = DeserializeQStringList(serialized_varnames);
-    DeserializeUIVector(serialized_varsel, getLastVarSelModel()->SelectedVablesPointer());
-    DeserializeUIVector(serialized_vardist, getLastVarSelModel()->VariableDistributionPointer());
-    DeserializeMatrix(serialized_map, getLastVarSelModel()->MapPointer());
-    QStringList info = DeserializeQStringList(serialized_info);
-    getLastVarSelModel()->setVariableSelectionAlgorithm(info[1]);
-    getLastVarSelModel()->setVariableSelectionAlgorithmOptions(info[2]);
-
-    QTreeWidgetItem *subitem = new QTreeWidgetItem;
-    subitem->setText(0, getLastVarSelModel()->getName());
-    subitem->setText(1, QString::number((*tabcount_)));
-    subitem->setText(2, QString::number(getProjectID()));
-    subitem->setText(3, getLastVarSelModel()->getModelHash());
-    subitem->setText(4, "-");
-    subitem->setText(5, "-");
-    subitem->setText(6, "-");
-    subitem->setText(7, "-");
-    subitem->setText(8, QString("PLS Variable Selection Model"));
-    subitem->setText(9, QString::number((*mid_)));
-    MainWindow::getProjectItem(getProjectID(), treeWidget)->child(1)->addChild(subitem);
-    (*tabcount_)++;
     (*mid_)++;
   }
 
@@ -1774,15 +1696,6 @@ QString DATA::SaveData(QString savepath)
   }
 
 
-  if(VarSelCount() > 0){
-    DATAIO::MakeDir(QString(QString::fromUtf8(savedir.toUtf8())+"/Models/VARIABLESELECTIONS").toUtf8().data());
-    for(int i = 0; i < VarSelCount(); i++){
-      QString dirname = QString(QString::fromUtf8(savedir.toUtf8())+"/Models/VARIABLESELECTIONS/%1").arg(getVarSelModelAt(i)->getName().remove("VSEL - ", Qt::CaseSensitive).trimmed());
-      getVarSelModelAt(i)->WriteVarSelModel(dirname);
-    }
-  }
-
-
   if(MLRCount() > 0){
     DATAIO::MakeDir(QString(QString::fromUtf8(savedir.toUtf8())+"/Models/MLRMODELS").toUtf8().data());
     for(int i = 0; i < MLRCount(); i++){
@@ -2006,7 +1919,7 @@ QString DATA::SaveSQLData(QString savepath)
     }
   }
 
-  query.exec(QString("CREATE TABLE IF NOT EXISTS plsTable (name TEXT, nlvs INT, xscalingtype INT, yscalingtype INT, hashinputmx TEXT, objname TEXT, xvarname TEXT, yvarname TEXT, tscores TEXT, ploadings  TEXT, weights TEXT, xvarexp TEXT, xcolscaling TEXT, xcolaverage TEXT, uscores TEXT, qloadings TEXT, ycolscaling TEXT, ycolaverage TEXT, b TEXT, r2y_model TEXT, sdec TEXT, recalc_y TEXT, recalc_residuals TEXT, validationtype INT, q2y TEXT, sdep TEXT, bias TEXT, predicted_y TEXT, predicted_residuals TEXT, r2q2scrambling TEXT, q2_sample_validation TEXT, sdep_sample_validation TEXT, q2_sample_validation_surface TEXT, sdep_sample_validation_surface TEXT)"));
+  query.exec(QString("CREATE TABLE IF NOT EXISTS plsTable (name TEXT, nlvs INT, xscalingtype INT, yscalingtype INT, hashinputmx TEXT, objname TEXT, xvarname TEXT, yvarname TEXT, tscores TEXT, ploadings  TEXT, weights TEXT, xvarexp TEXT, xcolscaling TEXT, xcolaverage TEXT, uscores TEXT, qloadings TEXT, ycolscaling TEXT, ycolaverage TEXT, b TEXT, r2y_model TEXT, sdec TEXT, recalc_y TEXT, recalc_residuals TEXT, validationtype INT, q2y TEXT, sdep TEXT, bias TEXT, predicted_y TEXT, predicted_residuals TEXT, yscrambling TEXT, q2_sample_validation TEXT, sdep_sample_validation TEXT, q2_sample_validation_surface TEXT, sdep_sample_validation_surface TEXT)"));
   query.exec(QString("CREATE TABLE IF NOT EXISTS plspredTable (name TEXT, plshash TEXT, hashinputmx TEXT, objname TEXT, yvarname TEXT, tscores TEXT, predicted_y TEXT, r2y TEXT, sdec TXT)"));
   if(PLSCount() > 0){
     for(int i = 0; i < PLSCount(); i++){
@@ -2039,14 +1952,10 @@ QString DATA::SaveSQLData(QString savepath)
       QString serialized_predicted_y = SerializeMatrix(getPLSModelAt(i)->Model()->predicted_y);
       QString serialized_pred_residuals = SerializeMatrix(getPLSModelAt(i)->Model()->pred_residuals);
 
-      QString serialized_r2q2scrambling = SerializeMatrix(getPLSModelAt(i)->Model()->r2q2scrambling);
-      QString serialized_q2_sample_validation = SerializeMatrix(getPLSModelAt(i)->Model()->q2_sample_validation);
-      QString serialized_sdep_sample_validation = SerializeMatrix(getPLSModelAt(i)->Model()->sdep_sample_validation);
-      QString serialized_q2_sample_validation_surface = SerializeMatrix(getPLSModelAt(i)->Model()->q2_sample_validation_surface);
-      QString serialized_sdep_sample_validation_surface = SerializeMatrix(getPLSModelAt(i)->Model()->sdep_sample_validation_surface);
+      QString serialized_yscrambling = SerializeMatrix(getPLSModelAt(i)->Model()->yscrambling);
 
 
-      query.prepare("INSERT INTO plsTable (name, nlvs, xscalingtype, yscalingtype, hashinputmx, objname, xvarname, yvarname, tscores, ploadings, weights , xvarexp, xcolscaling, xcolaverage, uscores, qloadings, ycolscaling, ycolaverage, b, r2y_model, sdec, recalc_y, recalc_residuals, validationtype, q2y, sdep, bias, predicted_y, predicted_residuals , r2q2scrambling, q2_sample_validation, sdep_sample_validation, q2_sample_validation_surface, sdep_sample_validation_surface) VALUES (:name, :nlvs, :xscalingtype, :yscalingtype, :hashinputmx, :objname, :xvarname, :yvarname, :tscores, :ploadings, :weights , :xvarexp, :xcolscaling, :xcolaverage, :uscores, :qloadings, :ycolscaling, :ycolaverage, :b, :r2y_model, :sdec, :recalc_y, :recalc_residuals, :validationtype, :q2y, :sdep, :bias, :predicted_y, :predicted_residuals , :r2q2scrambling, :q2_sample_validation, :sdep_sample_validation, :q2_sample_validation_surface, :sdep_sample_validation_surface)");
+      query.prepare("INSERT INTO plsTable (name, nlvs, xscalingtype, yscalingtype, hashinputmx, objname, xvarname, yvarname, tscores, ploadings, weights , xvarexp, xcolscaling, xcolaverage, uscores, qloadings, ycolscaling, ycolaverage, b, r2y_model, sdec, recalc_y, recalc_residuals, validationtype, q2y, sdep, bias, predicted_y, predicted_residuals , yscrambling, q2_sample_validation, sdep_sample_validation, q2_sample_validation_surface, sdep_sample_validation_surface) VALUES (:name, :nlvs, :xscalingtype, :yscalingtype, :hashinputmx, :objname, :xvarname, :yvarname, :tscores, :ploadings, :weights , :xvarexp, :xcolscaling, :xcolaverage, :uscores, :qloadings, :ycolscaling, :ycolaverage, :b, :r2y_model, :sdec, :recalc_y, :recalc_residuals, :validationtype, :q2y, :sdep, :bias, :predicted_y, :predicted_residuals , :yscrambling, :q2_sample_validation, :sdep_sample_validation, :q2_sample_validation_surface, :sdep_sample_validation_surface)");
       query.bindValue(":name", modname);
       query.bindValue(":nlvs", getPLSModelAt(i)->getNPC());
       query.bindValue(":xscalingtype", getPLSModelAt(i)->getXScaling());
@@ -2076,11 +1985,7 @@ QString DATA::SaveSQLData(QString savepath)
       query.bindValue(":bias", serialized_bias);
       query.bindValue(":predicted_y", serialized_predicted_y);
       query.bindValue(":predicted_residuals", serialized_pred_residuals);
-      query.bindValue(":r2q2scrambling", serialized_r2q2scrambling);
-      query.bindValue(":q2_sample_validation", serialized_q2_sample_validation);
-      query.bindValue(":sdep_sample_validation", serialized_sdep_sample_validation);
-      query.bindValue(":q2_sample_validation_surface", serialized_q2_sample_validation_surface);
-      query.bindValue(":sdep_sample_validation_surface", serialized_sdep_sample_validation_surface);
+      query.bindValue(":yscrambling", serialized_yscrambling);
       query.exec();
 
       if(getPLSModelAt(i)->PLSPredictionCount() > 0){
@@ -2108,33 +2013,7 @@ QString DATA::SaveSQLData(QString savepath)
     }
   }
 
-  query.exec(QString("CREATE TABLE IF NOT EXISTS varselTable (name TEXT, info TEXT, varname TEXT, hashinputmx TEXT, idselectedvars TEXT, vardistribution TEXT, map TEXT)"));
-  if(VarSelCount() > 0){
-    for(int i = 0; i < VarSelCount(); i++){
-      QString name = getVarSelModelAt(i)->getName();
-      QString serialized_varnames = SerializeQStringList(getVarSelModelAt(i)->getVariableNames());
-      QString serialized_vsel = SerializeUIVector(getVarSelModelAt(i)->getSelectedVariables());
-      QString serialized_vdist = SerializeUIVector(getVarSelModelAt(i)->getVariableDistribution());
-      QString serialized_map = SerializeMatrix(getVarSelModelAt(i)->getMap());
-
-      QStringList info;
-      info.append(getVarSelModelAt(i)->getVariableSelectionAlgorithm());
-      info.append(getVarSelModelAt(i)->getVariableSelectionAlgorithmOptions());
-      QString serialized_info = SerializeQStringList(info);
-
-      query.prepare("INSERT INTO varselTable (name, info, varname, hashinputmx, idselectedvars, vardistribution, map) VALUES (:name, :info, :varname, :modelhash, :idselectedvars, :vardistribution, :map)");
-      query.bindValue(":name", name);
-      query.bindValue(":info", serialized_info);
-      query.bindValue(":varname", serialized_varnames);
-      query.bindValue(":hashinputmx", getVarSelModelAt(i)->getModelHash());
-      query.bindValue(":idselectedvars", serialized_vsel);
-      query.bindValue(":vardistribution", serialized_vdist);
-      query.bindValue(":map", serialized_map);
-      query.exec();
-    }
-  }
-
-  query.exec(QString("CREATE TABLE IF NOT EXISTS mlrTable (name TEXT, hashinputmx TEXT, objname TEXT, xvarname TEXT, yvarname TEXT, b TEXT, r2y TEXT, sdec TEXT,  recalc_y TEXT, recalc_residuals TEXT, validationtype INT, ymean TEXT, q2y TEXT, sdep TEXT, bias TEXT, predicted_y TEXT, predicted_residuals TEXT, r2q2scrambling TEXT)"));
+  query.exec(QString("CREATE TABLE IF NOT EXISTS mlrTable (name TEXT, hashinputmx TEXT, objname TEXT, xvarname TEXT, yvarname TEXT, b TEXT, r2y TEXT, sdec TEXT,  recalc_y TEXT, recalc_residuals TEXT, validationtype INT, ymean TEXT, q2y TEXT, sdep TEXT, bias TEXT, predicted_y TEXT, predicted_residuals TEXT, yscrambling TEXT)"));
   query.exec(QString("CREATE TABLE IF NOT EXISTS mlrpredTable (name TEXT, mlrhash TEXT, hashinputmx TEXT, objname TEXT, yvarname TEXT, predicted_y TEXT, r2y TEXT, sdec TXT)"));
   if(MLRCount() > 0){
     for(int i = 0; i < MLRCount(); i++){
@@ -2155,7 +2034,7 @@ QString DATA::SaveSQLData(QString savepath)
       QString serialized_pred_residuals = SerializeMatrix(getMLRModelAt(i)->Model()->pred_residuals);
       QString serialized_r2q2scrambling = SerializeMatrix(getMLRModelAt(i)->Model()->r2q2scrambling);
 
-      query.prepare("INSERT INTO mlrTable (name, hashinputmx , objname, xvarname, yvarname, b, r2y, sdec,  recalc_y, recalc_residuals, validationtype, ymean, q2y, sdep, bias, predicted_y, predicted_residuals, r2q2scrambling) VALUES (:name, :hashinputmx , :objname, :xvarname, :yvarname, :b, :r2y, :sdec, :recalc_y, :recalc_residuals, :validationtype, :ymean, :q2y, :sdep, :bias, :predicted_y, :predicted_residuals, :r2q2scrambling)");
+      query.prepare("INSERT INTO mlrTable (name, hashinputmx , objname, xvarname, yvarname, b, r2y, sdec,  recalc_y, recalc_residuals, validationtype, ymean, q2y, sdep, bias, predicted_y, predicted_residuals, yscrambling) VALUES (:name, :hashinputmx , :objname, :xvarname, :yvarname, :b, :r2y, :sdec, :recalc_y, :recalc_residuals, :validationtype, :ymean, :q2y, :sdep, :bias, :predicted_y, :predicted_residuals, :yscrambling)");
       query.bindValue(":name", modname);
       query.bindValue(":hashinputmx", getMLRModelAt(i)->getDataHash());
       query.bindValue(":objname", objname_serialized);
@@ -2458,17 +2337,17 @@ void DATA::delPLSModels()
   plsmodel.clear();
 }
 
-void DATA::addVarSelModel()
+void DATA::addEPLSModel()
 {
-  varselectionmodel.append(new VariableSelectionModel());
+  eplsmodel.append(new EPLSModel());
 }
 
-void DATA::delVarSelModel(int mid)
+void DATA::delEPLSModel(int mid)
 {
-  for(int i = 0; i < varselectionmodel.size(); i++){
-    if(mid == varselectionmodel[i]->getModelID()){
-      delete varselectionmodel[i];
-      varselectionmodel.removeAt(i);
+  for(int i = 0; i < eplsmodel.size(); i++){
+    if(mid == eplsmodel[i]->getModelID()){
+      delete eplsmodel[i];
+      eplsmodel.removeAt(i);
       break;
     }
     else{
@@ -2477,20 +2356,20 @@ void DATA::delVarSelModel(int mid)
   }
 }
 
-void DATA::delVarSelModelAt(int id)
+void DATA::delEPLSModelAt(int id)
 {
-  if(id < varselectionmodel.size()){
-    delete varselectionmodel[id];
-    varselectionmodel.removeAt(id);
+  if(id < eplsmodel.size()){
+    delete eplsmodel[id];
+    eplsmodel.removeAt(id);
   }
 }
 
-void DATA::delVarSelModels()
+void DATA::delEPLSModels()
 {
-  for(int i = 0; i < varselectionmodel.size(); i++){
-    delete varselectionmodel[i];
+  for(int i = 0; i < eplsmodel.size(); i++){
+    delete eplsmodel[i];
   }
-  varselectionmodel.clear();
+  eplsmodel.clear();
 }
 
 
@@ -2651,9 +2530,9 @@ PLSModel* DATA::getLastPLSModel()
   return plsmodel.last();
 }
 
-VariableSelectionModel* DATA::getLastVarSelModel()
+EPLSModel* DATA::getLastEPLSModel()
 {
-  return varselectionmodel.last();
+  return eplsmodel.last();
 }
 
 LDAModel* DATA::getLastLDAModel()
@@ -2678,10 +2557,10 @@ PLSModel* DATA::getPLSModelAt(int id)
   return plsmodel[id];
 }
 
-VariableSelectionModel* DATA::getVarSelModelAt(int id)
+EPLSModel* DATA::getEPLSModelAt(int id)
 {
-  Q_ASSERT(id < varselectionmodel.size());
-  return varselectionmodel[id];
+  Q_ASSERT(id < eplsmodel.size());
+  return eplsmodel[id];
 }
 
 LDAModel* DATA::getLDAModelAt(int id)
@@ -2766,11 +2645,11 @@ MLRModel* DATA::getMLRModel(int mid)
   return 0;
 }
 
-VariableSelectionModel* DATA::getVarSelModel(int mid)
+EPLSModel* DATA::getEPLSModel(int mid)
 {
-  for(int i = 0; i < varselectionmodel.size(); i++){
-    if(mid == varselectionmodel[i]->getModelID()){
-      return varselectionmodel[i];
+  for(int i = 0; i < eplsmodel.size(); i++){
+    if(mid == eplsmodel[i]->getModelID()){
+      return eplsmodel[i];
       break;
     }
     else{
@@ -2800,9 +2679,9 @@ int DATA::PLSCount()
   return plsmodel.size();
 }
 
-int DATA::VarSelCount()
+int DATA::EPLSCount()
 {
-  return varselectionmodel.size();
+  return eplsmodel.size();
 }
 
 int DATA::LDACount()
@@ -2829,6 +2708,6 @@ DATA::~DATA()
   delArray();
   delPCAModels();
   delPLSModels();
-  delVarSelModels();
+  delEPLSModels();
   delMLRModels();
 }

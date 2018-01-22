@@ -1027,8 +1027,8 @@ QList<ScatterPlot2D*> PLSPlot::YScramblingPlot()
   QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
   QList<matrix*> mxlst;
   mxlst.append(new matrix);
-  size_t nobj = projects->value(pid)->getPLSModel(mid)->Model()->r2q2scrambling->row;
-  size_t ndepvar = (projects->value(pid)->getPLSModel(mid)->Model()->r2q2scrambling->col-1)/2;
+  size_t nobj = projects->value(pid)->getPLSModel(mid)->Model()->yscrambling->row;
+  size_t ndepvar = (projects->value(pid)->getPLSModel(mid)->Model()->yscrambling->col-1)/2;
   NewMatrix(&mxlst.last(), nobj, 2); // R2
   mxlst.append(new matrix);
   NewMatrix(&mxlst.last(), nobj, 2); // Q2
@@ -1037,16 +1037,16 @@ QList<ScatterPlot2D*> PLSPlot::YScramblingPlot()
   objnamelst.append(QStringList());
   /*set the X Constant */
   for(size_t i = 0; i < nobj; i++){
-    mxlst[0]->data[i][0] = projects->value(pid)->getPLSModel(mid)->Model()->r2q2scrambling->data[i][0];
-    mxlst[1]->data[i][0] = projects->value(pid)->getPLSModel(mid)->Model()->r2q2scrambling->data[i][0];
+    mxlst[0]->data[i][0] = projects->value(pid)->getPLSModel(mid)->Model()->yscrambling->data[i][0];
+    mxlst[1]->data[i][0] = projects->value(pid)->getPLSModel(mid)->Model()->yscrambling->data[i][0];
     objnamelst[0].append("R2");
     objnamelst[1].append("Q2");
   }
 
   for(size_t j = 0; j < ndepvar; j++){
     for(size_t i = 0; i < nobj; i++){
-      mxlst[0]->data[i][1] = projects->value(pid)->getPLSModel(mid)->Model()->r2q2scrambling->data[i][j+1];
-      mxlst[1]->data[i][1] = projects->value(pid)->getPLSModel(mid)->Model()->r2q2scrambling->data[i][j+1+ndepvar];
+      mxlst[0]->data[i][1] = projects->value(pid)->getPLSModel(mid)->Model()->yscrambling->data[i][j+1];
+      mxlst[1]->data[i][1] = projects->value(pid)->getPLSModel(mid)->Model()->yscrambling->data[i][j+1+ndepvar];
     }
     plots2D.append(new ScatterPlot2D(mxlst, objnamelst, "Correlation with Y Real Vector", "R2/Q2", QString("PLS Y Scrambling Plot")));
     plots2D.last()->setPID(pid);
@@ -1056,157 +1056,6 @@ QList<ScatterPlot2D*> PLSPlot::YScramblingPlot()
   DelMatrix(&mxlst[0]);
   mxlst.clear();
   return plots2D;
-}
-
-
-QList< SimpleLine2DPlot* > PLSPlot::Q2SampleValidator()
-{
-  QList< SimpleLine2DPlot* > plots;
-  QString projectname = projects->value(pid)->getProjectName();
-  QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-  size_t npc = projects->value(pid)->getPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
-  size_t yval = projects->value(pid)->getPLSModel(mid)->Model()->q2y->col;
-  size_t nrandmodels = projects->value(pid)->getPLSModel(mid)->Model()->q2_sample_validation->col/yval;
-  matrix *q2_sample_validation = projects->value(pid)->getPLSModel(mid)->Model()->q2_sample_validation;
-  matrix *m;
-
-  NewMatrix(&m, npc, nrandmodels+1);// First column is the PC
-
-  // set the X assis that is the principal component
-  for(size_t i = 0; i < npc; i++){
-    setMatrixValue(m, i, 0, i);
-  }
-
-   // Q^2 in 0 pc is 0
-  for(size_t i = 0; i < nrandmodels; i++){
-    setMatrixValue(m, 0, i, 0.f);
-  }
-
-
-  for(size_t j = 0; j < yval; j++){
-    QString yname = projects->value(pid)->getPLSModel(mid)->getYVarName()[j];
-    for(size_t i = 0; i < npc-1; i++){
-      m->data[i+1][1] = q2_sample_validation->data[i][j];
-      size_t inc = yval;
-      for(size_t k = 1; k < nrandmodels; k++){
-        m->data[i+1][k+1] = q2_sample_validation->data[i][j+inc];
-        inc += yval;
-      }
-    }
-
-#ifdef DEBUG
-    qDebug() << "Final Matrix";
-    PrintMatrix(m);
-#endif
-    plots.append(new SimpleLine2DPlot(m, "Q2", QString(" %1 - %2 - Q^2 Sample Valiation Plot Y %3").arg(projectname).arg(modelname).arg(yname), "Principal Components", "Q^2"));
-    plots.last()->setLabelDetail(true);
-  }
-  DelMatrix(&m);
-  return plots;
-}
-
-QList< SimpleLine2DPlot* > PLSPlot::SDEPSampleValidator()
-{
-  QList< SimpleLine2DPlot* > plots;
-  QString projectname = projects->value(pid)->getProjectName();
-  QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-  size_t npc = projects->value(pid)->getPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
-  size_t yval = projects->value(pid)->getPLSModel(mid)->Model()->q2y->col;
-  size_t nrandmodels = projects->value(pid)->getPLSModel(mid)->Model()->sdep_sample_validation->col/yval;
-  matrix *sdep_sample_validation = projects->value(pid)->getPLSModel(mid)->Model()->sdep_sample_validation;
-  matrix *m;
-
-  NewMatrix(&m, npc, nrandmodels+1);// First column is the PC
-
-  // set the X assis that is the principal component
-  for(size_t i = 0; i < npc; i++){
-    setMatrixValue(m, i, 0, i);
-  }
-
-   // Q^2 in 0 pc is 0
-  for(size_t i = 0; i < nrandmodels; i++){
-    setMatrixValue(m, 0, i, 0.f);
-  }
-
-
-  for(size_t j = 0; j < yval; j++){
-    QString yname = projects->value(pid)->getPLSModel(mid)->getYVarName()[j];
-    for(size_t i = 0; i < npc-1; i++){
-      m->data[i+1][1] = sdep_sample_validation->data[i][j];
-      size_t inc = yval;
-      for(size_t k = 1; k < nrandmodels; k++){
-        m->data[i+1][k+1] = sdep_sample_validation->data[i][j+inc];
-        inc += yval;
-      }
-    }
-
-#ifdef DEBUG
-    qDebug() << "Final Matrix";
-    PrintMatrix(m);
-#endif
-    plots.append(new SimpleLine2DPlot(m, "SDEP", QString(" %1 - %2 - SDEP Sample Valiation Plot Y %3").arg(projectname).arg(modelname).arg(yname), "Principal Components", "Q^2"));
-    plots.last()->setLabelDetail(true);
-  }
-  DelMatrix(&m);
-  return plots;
-}
-
-QList< SimpleScatterPlot3D* >  PLSPlot::Q2SurfacePlot()
-{
-  QList < SimpleScatterPlot3D * > plots;
-  QString projectname =  projects->value(pid)->getProjectName();
-  QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-  QStringList ynames =  projects->value(pid)->getPLSModel(mid)->getYVarName();
-
-  matrix *q2_sample_validation_surface = projects->value(pid)->getPLSModel(mid)->Model()->q2_sample_validation_surface;
-  matrix *m;
-  NewMatrix(&m, q2_sample_validation_surface->row, 3);
-  for(size_t i = 0; i < q2_sample_validation_surface->row; i++){
-    m->data[i][0] = q2_sample_validation_surface->data[i][0];
-    m->data[i][1] = q2_sample_validation_surface->data[i][1];
-  }
-
-  for(size_t j = 0; j < q2_sample_validation_surface->col-2; j++){
-    QList<double> colorvalue;
-    for(size_t i = 0; i < q2_sample_validation_surface->row; i++){
-      m->data[i][2] = q2_sample_validation_surface->data[i][2+j];
-      colorvalue << q2_sample_validation_surface->data[i][2+j];
-    }
-
-    plots.append(new SimpleScatterPlot3D(m, colorvalue, QString(" %1 - %2 - Q^2 Dynamic Sample Valiation Plot Y %3").arg(projectname).arg(modelname).arg(ynames[j]), "N. Obj", "Latent Variables", "Q^2"));
-    plots.last()->setPID(pid);
-  }
-  DelMatrix(&m);
-  return plots;
-}
-
-QList< SimpleScatterPlot3D* >  PLSPlot::SDEPSurfacePlot()
-{
-  QList < SimpleScatterPlot3D * > plots;
-  QString projectname =  projects->value(pid)->getProjectName();
-  QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-  QStringList ynames =  projects->value(pid)->getPLSModel(mid)->getYVarName();
-
-  matrix *sdep_sample_validation_surface = projects->value(pid)->getPLSModel(mid)->Model()->sdep_sample_validation_surface;
-  matrix *m;
-  NewMatrix(&m, sdep_sample_validation_surface->row, 3);
-  for(size_t i = 0; i < sdep_sample_validation_surface->row; i++){
-    m->data[i][0] = sdep_sample_validation_surface->data[i][0];
-    m->data[i][1] = sdep_sample_validation_surface->data[i][1];
-  }
-
-  for(size_t j = 0; j < sdep_sample_validation_surface->col-2; j++){
-    QList<double> colorvalue;
-    for(size_t i = 0; i < sdep_sample_validation_surface->row; i++){
-      m->data[i][2] = sdep_sample_validation_surface->data[i][2+j];
-      colorvalue << sdep_sample_validation_surface->data[i][2+j];
-    }
-
-    plots.append(new SimpleScatterPlot3D(m, colorvalue, QString(" %1 - %2 - Q^2 Dynamic Sample Valiation Plot Y %3").arg(projectname).arg(modelname).arg(ynames[j]), "N. Obj", "Latent Variables", "SDEP"));
-    plots.last()->setPID(pid);
-  }
-  DelMatrix(&m);
-  return plots;
 }
 
 void PLSPlot::T_ScorePlot3D(ScatterPlot3D **plot3D)

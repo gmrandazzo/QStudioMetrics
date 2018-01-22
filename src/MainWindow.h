@@ -51,9 +51,16 @@ private slots:
 
   void DoPCA();
   void DoPCAPrediction();
-  void DoPLS();
+  void DoPLS(int algtype);
+  void DoPLSRegression();
+  void DoPLSDA();
   void DoPLSValidation();
   void DoPLSPrediction();
+  void DoEPLS(int algtype);
+  void DoEPLSRegression();
+  void DoEPLSDA();
+  void DoEPLSValidation();
+  void DoEPLSPrediction();
   void DoMLR();
   void DoMLRValidation();
   void DoMLRPrediction();
@@ -91,8 +98,6 @@ private slots:
   void PLSPlotQ2R2();
   void PLSPlotR2R2Predicted();
   void PLSPlotYScrambling();
-  void PLSPlotQ2SampleValidator();
-  void PLSPlotSDEPSampleValidator();
 
   void PLS3DTTTScorePlot();
   void PLS3DPPPLoadingsPlot();
@@ -100,8 +105,6 @@ private slots:
   void PLS3DUUUScorePlot();
   void PLS3DQQQLoadingsPlot();
   void PLS3DScorePlotPrediction();
-  void PLS3DPlotQ2SampleValidator();
-  void PLS3DPlotSDEPSampleValidator();
 
 
   void MLRRecalcVSExpPlot();
@@ -216,8 +219,6 @@ private:
        haveplspred,
        haveplsvalid,
        haveplsyscrambling,
-       haveplsstaticsamplevalidation,
-       haveplsdynamicsamplevalidation,
        havemlr,
        havemlrpred,
        havemlrvalid,
@@ -235,8 +236,6 @@ private:
   bool ProjectsHavePLS(){ return havepls; };
   bool ProjectsHavePLSValidated(){ return haveplsvalid; };
   bool ProjectsHavePLSYScrambling(){ return haveplsyscrambling; }
-  bool ProjectsHavePLSStaticSampleValidation(){ return haveplsstaticsamplevalidation; }
-  bool ProjectsHavePLSDynamicSampleValidation(){ return haveplsdynamicsamplevalidation; }
   bool ProjectsHavePLSPrediction(){ return haveplspred; };
   bool ProjectsHaveMLR(){ return havemlr; }
   bool ProjectsHaveMLRValidated(){ return havemlrvalid; };

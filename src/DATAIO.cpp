@@ -454,7 +454,7 @@ void DATAIO::ImportPLSModel(char *path_, PLSMODEL* m)
 {
   char tscore[MAXCHARS], ploadings[MAXCHARS], weights[MAXCHARS], xexpvar[MAXCHARS], xcolumnscaling[MAXCHARS], xcolumnaverage[MAXCHARS],
        uscore[MAXCHARS], qloadings[MAXCHARS], ycolumnscaling[MAXCHARS], ycolumnaverage[MAXCHARS],
-       bcoeff[MAXCHARS], r2y[MAXCHARS], sdec[MAXCHARS], validatedypred[MAXCHARS], validatedq2y[MAXCHARS], validatedsdep[MAXCHARS], validatedbias[MAXCHARS], r2q2scrambling[MAXCHARS], recalc_y[MAXCHARS], recalc_residuals[MAXCHARS], validatedypred_residuals[MAXCHARS], q2_sample_validation[MAXCHARS], sdep_sample_validation[MAXCHARS], q2_sample_validation_surface[MAXCHARS], sdep_sample_validation_surface[MAXCHARS];
+       bcoeff[MAXCHARS], r2y[MAXCHARS], sdec[MAXCHARS], validatedypred[MAXCHARS], validatedq2y[MAXCHARS], validatedsdep[MAXCHARS], validatedbias[MAXCHARS], yscrambling[MAXCHARS], recalc_y[MAXCHARS], recalc_residuals[MAXCHARS], validatedypred_residuals[MAXCHARS];
 
   strcpy(tscore, path_); strcat(tscore, "/X-T-Scores.txt");
   strcpy(ploadings, path_); strcat(ploadings, "/X-P-Loadings.txt");
@@ -480,12 +480,7 @@ void DATAIO::ImportPLSModel(char *path_, PLSMODEL* m)
   strcpy(validatedypred, path_); strcat(validatedypred, "/Validated_Predicted_Y.txt");
   strcpy(validatedypred_residuals, path_); strcat(validatedypred_residuals, "/Validated_Predicted_Residuals.txt");
 
-  strcpy(r2q2scrambling, path_); strcat(r2q2scrambling, "/YScrambling_r2q2y.txt");
-
-  strcpy(q2_sample_validation, path_); strcat(q2_sample_validation, "/Q2_SampleValidation.txt");
-  strcpy(sdep_sample_validation, path_); strcat(sdep_sample_validation, "/SDEP_SampleValidation.txt");
-  strcpy(q2_sample_validation_surface, path_); strcat(q2_sample_validation_surface, "/Q2_SampleValidationSurface.txt");
-  strcpy(sdep_sample_validation_surface, path_); strcat(sdep_sample_validation_surface, "/SDEP_SampleValidationSurface.txt");
+  strcpy(yscrambling, path_); strcat(yscrambling, "/YScrambling_r2q2y.txt");
 
   std::string sep = " \t";
   ImportMatrix(tscore, sep, m->xscores);
@@ -514,12 +509,7 @@ void DATAIO::ImportPLSModel(char *path_, PLSMODEL* m)
   ImportMatrix(validatedypred, sep, m->predicted_y);
   ImportMatrix(validatedypred_residuals, sep, m->pred_residuals);
 
-  ImportMatrix(r2q2scrambling, sep, m->r2q2scrambling);
-
-  ImportMatrix(q2_sample_validation, sep, m->q2_sample_validation);
-  ImportMatrix(sdep_sample_validation, sep, m->sdep_sample_validation);
-  ImportMatrix(q2_sample_validation_surface, sep, m->q2_sample_validation_surface);
-  ImportMatrix(sdep_sample_validation_surface, sep, m->sdep_sample_validation_surface);
+  ImportMatrix(yscrambling, sep, m->yscrambling);
 }
 
 void DATAIO::ImportUPCAModel(char *path_, UPCAMODEL* m)
@@ -816,7 +806,7 @@ void DATAIO::WritePLSModel(char *path_, PLSMODEL* m)
 {
   char tscore[MAXCHARS], ploadings[MAXCHARS], weights[MAXCHARS], xexpvar[MAXCHARS], xcolumnscaling[MAXCHARS], xcolumnaverage[MAXCHARS],
        uscore[MAXCHARS], qloadings[MAXCHARS], ycolumnscaling[MAXCHARS], ycolumnaverage[MAXCHARS],
-       bcoeff[MAXCHARS], r2y[MAXCHARS], sdec[MAXCHARS], validatedypred[MAXCHARS], validatedq2y[MAXCHARS], validatedsdep[MAXCHARS], validatedbias[MAXCHARS], r2q2scrambling[MAXCHARS], recalc_y[MAXCHARS], recalc_residuals[MAXCHARS], validatedypred_residuals[MAXCHARS], q2_sample_validation[MAXCHARS], sdep_sample_validation[MAXCHARS], q2_sample_validation_surface[MAXCHARS], sdep_sample_validation_surface[MAXCHARS];
+       bcoeff[MAXCHARS], r2y[MAXCHARS], sdec[MAXCHARS], validatedypred[MAXCHARS], validatedq2y[MAXCHARS], validatedsdep[MAXCHARS], validatedbias[MAXCHARS], yscrambling[MAXCHARS], recalc_y[MAXCHARS], recalc_residuals[MAXCHARS], validatedypred_residuals[MAXCHARS];
 
   strcpy(tscore, path_); strcat(tscore, "/X-T-Scores.txt");
   strcpy(ploadings, path_); strcat(ploadings, "/X-P-Loadings.txt");
@@ -842,13 +832,7 @@ void DATAIO::WritePLSModel(char *path_, PLSMODEL* m)
   strcpy(validatedypred, path_); strcat(validatedypred, "/Validated_Predicted_Y.txt");
   strcpy(validatedypred_residuals, path_); strcat(validatedypred_residuals, "/Validated_Predicted_Residuals.txt");
 
-  strcpy(r2q2scrambling, path_); strcat(r2q2scrambling, "/YScrambling_r2q2y.txt");
-
-  strcpy(q2_sample_validation, path_); strcat(q2_sample_validation, "/Q2_SampleValidation.txt");
-  strcpy(sdep_sample_validation, path_); strcat(sdep_sample_validation, "/SDEP_SampleValidation.txt");
-
-  strcpy(q2_sample_validation_surface, path_); strcat(q2_sample_validation_surface, "/Q2_SampleValidationSurface.txt");
-  strcpy(sdep_sample_validation_surface, path_); strcat(sdep_sample_validation_surface, "/SDEP_SampleValidationSurface.txt");
+  strcpy(yscrambling, path_); strcat(yscrambling, "/YScrambling_r2q2y.txt");
 
   if(DirExists(path_) == true){
     RemoveDir(path_);
@@ -882,13 +866,7 @@ void DATAIO::WritePLSModel(char *path_, PLSMODEL* m)
   WriteMatrix(validatedypred, m->predicted_y);
   WriteMatrix(validatedypred_residuals, m->pred_residuals);
 
-  WriteMatrix(r2q2scrambling, m->r2q2scrambling);
-
-  WriteMatrix(q2_sample_validation, m->q2_sample_validation);
-  WriteMatrix(sdep_sample_validation, m->sdep_sample_validation);
-
-  WriteMatrix(q2_sample_validation_surface, m->q2_sample_validation_surface);
-  WriteMatrix(sdep_sample_validation_surface, m->sdep_sample_validation_surface);
+  WriteMatrix(yscrambling, m->yscrambling);
 }
 
 void DATAIO::WriteUPCAModel(char *path_, UPCAMODEL* m)

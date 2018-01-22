@@ -22,12 +22,12 @@
 #include "qsmdata.h"
 
 #include "Dialogs/AboutDialog.h"
-#include "Dialogs/VariableSelectionDialog.h"
 #include "Dialogs/ExtractDataDialog.h"
 #include "Dialogs/MergeDataDialog.h"
 #include "Dialogs/AdvancedPretreatmentDialog.h"
 #include "Dialogs/ProjectManager.h"
 #include "Dialogs/ModelDialog.h"
+#include "Dialogs/ModelDialogWizard.h"
 #include "Dialogs/ClassModelDialog.h"
 #include "Dialogs/ValidatorDialog.h"
 #include "Dialogs/DoPredictionDialog.h"
@@ -51,7 +51,7 @@
 
 void MainWindow::CheckProjects()
 {
-  havepca = havepcapred = havepls = haveplspred = haveplsvalid = haveplsyscrambling = haveplsstaticsamplevalidation = haveplsdynamicsamplevalidation = havemlr = havemlrpred = havemlrvalid = havemlryscrambling = havelda = haveldapred = haveldavalid = false;
+  havepca = havepcapred = havepls = haveplspred = haveplsvalid = haveplsyscrambling = havemlr = havemlrpred = havemlrvalid = havemlryscrambling = havelda = haveldapred = haveldavalid = false;
 
   QMap<int, DATA*>::const_iterator i = projects->constBegin();
   while(i != projects->constEnd()){
@@ -75,14 +75,8 @@ void MainWindow::CheckProjects()
           haveplspred = true;
         }
 
-        if(i.value()->getPLSModelAt(j)->Model()->r2q2scrambling->row > 0)
+        if(i.value()->getPLSModelAt(j)->Model()->yscrambling->row > 0)
           haveplsyscrambling = true;
-
-        if(i.value()->getPLSModelAt(j)->Model()->q2_sample_validation->row > 0)
-          haveplsstaticsamplevalidation = true;
-
-        if(i.value()->getPLSModelAt(j)->Model()->q2_sample_validation_surface->row > 0)
-          haveplsdynamicsamplevalidation = true;
       }
     }
 
@@ -176,24 +170,6 @@ void MainWindow::TopMenuEnableDisable()
     }
     else{
       ui.actionPLSYScrambling->setEnabled(true);
-    }
-
-    if(ProjectsHavePLSStaticSampleValidation() == true){
-      ui.actionPLSQ2_Sample_Validator->setEnabled(true);
-      ui.actionPLSSDEP_Sample_Validator_Plot->setEnabled(true);
-    }
-    else{
-      ui.actionPLSQ2_Sample_Validator->setEnabled(false);
-      ui.actionPLSSDEP_Sample_Validator_Plot->setEnabled(false);
-    }
-
-    if(ProjectsHavePLSDynamicSampleValidation() == true){
-      ui.actionPLS3D_Q2_Dynamic_Sample_Validator_Plot->setEnabled(true);
-      ui.actionPLS3D_SDEP_Dynamic_Sample_Validator_Plot->setEnabled(true);
-    }
-    else{
-      ui.actionPLS3D_Q2_Dynamic_Sample_Validator_Plot->setEnabled(false);
-      ui.actionPLS3D_SDEP_Dynamic_Sample_Validator_Plot->setEnabled(false);
     }
 
     if(ProjectsHavePLSPrediction() == false){
@@ -1391,9 +1367,9 @@ void MainWindow::DowngradeModelID()
           ui.treeWidget->currentItem()->parent()->child(i)->setText(9, QString::number(childid-1));
           projects->value(pid)->getLDAModel(childid)->setModelID(childid-1);
         }
-        else if(childmodeltype.compare("PLS Variable Selection Model") == 0){
+        else if(childmodeltype.compare("EPLS Model") == 0){
           ui.treeWidget->currentItem()->parent()->child(i)->setText(9, QString::number(childid-1));
-          projects->value(pid)->getVarSelModel(childid)->setModelID(childid-1);
+          projects->value(pid)->getEPLSModel(childid)->setModelID(childid-1);
         }
         else{
           continue;
@@ -1451,9 +1427,9 @@ void MainWindow::removeModel()
         projects->value(pid)->delLDAModel(mid);
       }
   //     else if(ui.treeWidget->currentItem()->text(8).compare("PLS Variable Selection Model") == 0){
-      else{
-        updateLog(QString("Deleting Variable Selection Model %1\n").arg(getCurrentModelName()));
-        projects->value(pid)->delVarSelModel(mid);
+      else if(ui.treeWidget->currentItem()->text(8).compare("EPLS Model") == 0){
+        updateLog(QString("Deleting EPLS Model %1\n").arg(getCurrentModelName()));
+        projects->value(pid)->delEPLSModel(mid);
       }
 
       getProjectItem(pid)->child(1)->removeChild(ui.treeWidget->currentItem());
@@ -4184,52 +4160,6 @@ void MainWindow::PLSPlotR2R2Predicted()
   }
 }
 
-void MainWindow::PLSPlotQ2SampleValidator()
-{
-  if(ProjectsHavePLSStaticSampleValidation() == true){
-    PlotDialog plotdialog(projects, PLSQ2SDEPSTATICSAMPLEVALIDATION);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      QList< SimpleLine2DPlot* > plots = plsplot.Q2SampleValidator();
-      for(int i = 0; i < plots.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plots[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models and Sample Validation Model Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PLSPlotSDEPSampleValidator()
-{
-  if(ProjectsHavePLSStaticSampleValidation() == true){
-    PlotDialog plotdialog(projects, PLSQ2SDEPSTATICSAMPLEVALIDATION);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      QList< SimpleLine2DPlot* > plots = plsplot.SDEPSampleValidator();
-      for(int i = 0; i < plots.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plots[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models and Sample Validation Model Found!\n"), QMessageBox::Close);
-  }
-}
-
 void MainWindow::PLSPlotYScrambling()
 {
   if(ProjectsHavePLSYScrambling() == true){
@@ -4393,54 +4323,6 @@ void MainWindow::PLS3DScorePlotPrediction()
   }
   else{
     QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PLS3DPlotQ2SampleValidator()
-{
-  if(ProjectsHavePLSDynamicSampleValidation() == true){
-    PlotDialog plotdialog(projects, PLSQ2SDEPDYNAMICSAMPLEVALIDATION);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      plsplot.setPREDID(plotdialog.getPredID());
-      QList< SimpleScatterPlot3D* > plots = plsplot.Q2SurfacePlot();
-      for(int i = 0; i < plots.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plots[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Sample Validation Model Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PLS3DPlotSDEPSampleValidator()
-{
-  if(ProjectsHavePLSDynamicSampleValidation() == true){
-    PlotDialog plotdialog(projects, PLSQ2SDEPDYNAMICSAMPLEVALIDATION);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
-      PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      plsplot.setPREDID(plotdialog.getPredID());
-      QList< SimpleScatterPlot3D* > plots = plsplot.SDEPSurfacePlot();
-      for(int i = 0; i < plots.size(); i++){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plots[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-      }
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Sample Validation Model Found!\n"), QMessageBox::Close);
   }
 }
 
@@ -4947,7 +4829,8 @@ void MainWindow::DoPCA()
 {
   if(!projects->isEmpty()){
 
-    ModelDialog dopca(projects, PCA_);
+    //ModelDialog dopca(projects, PCA_);
+    ModelDialogWizard dopca(projects, PCA_);
     if(dopca.exec() == QDialog::Accepted && dopca.compute() == true){
       StartRun();
 
@@ -5063,6 +4946,12 @@ void MainWindow::DoPCA()
     }
   }
 }
+
+void MainWindow::DoEPLSPrediction(){}
+void MainWindow::DoEPLSValidation(){}
+void MainWindow::DoEPLSDA(){}
+void MainWindow::DoEPLSRegression(){}
+void MainWindow::DoEPLS(int algtype){}
 
 void MainWindow::DoPLSPrediction()
 {
@@ -5206,18 +5095,6 @@ void MainWindow::DoPLSValidation()
       bool yscrambling = doplsval.ModelYScrambling();
       int block = doplsval.getYSCramblingBlock();
 
-      int samplevalidation = doplsval.ModelSampleValidator();
-      int samplevalidator_samplesize = doplsval.getSampleValidorSize();
-      int samplevaldator_niters = doplsval.getSampleValidorIterations();
-      int samplevalidator_incobj = doplsval.getSampleValidatorIncObj();
-      int samplevalidator_maxobj = doplsval.getSampleValidatorMaxObj();
-      QList<int> samplevalidator_classes = doplsval.getSampleValidorClasses();
-
-      uivector *svclass;
-      NewUIVector(&svclass, samplevalidator_classes.size());
-      for(int i = 0; i < samplevalidator_classes.size(); i++)
-        svclass->data[i] = samplevalidator_classes[i];
-
       int did;
       did = -1;
 
@@ -5273,13 +5150,6 @@ void MainWindow::DoPLSValidation()
         obj.setModelYScrambling(yscrambling);
         obj.setModelYScramblingBlock(block);
 
-        obj.setModelSampleValidator(samplevalidation);
-        obj.setModelSampleValidatorClasses(svclass);
-        obj.setModelSampleValidatorIterations(samplevaldator_niters);
-        obj.setModelSampleValidatorSampleSize(samplevalidator_samplesize);
-        obj.setModelSampleValidatorIncObj(samplevalidator_incobj);
-        obj.setModelSampleValidatorMaxObj(samplevalidator_maxobj);
-
 
         if(vt == BOOTSTRAPRGCV_){
           obj.setNumberOfGroups(ngroup);
@@ -5287,7 +5157,7 @@ void MainWindow::DoPLSValidation()
         }
 
         projects->value(pid)->getPLSModel(mid)->setValidation(0);
-        QFuture<void> future = obj.RunPLSValidation();
+        QFuture<void> future = obj.RunPLSValidation(projects->value(pid)->getPLSModel(mid)->getAlgorithm());
         while(!future.isFinished()){
           if(stoprun == true){
             obj.AbortRun();
@@ -5322,10 +5192,20 @@ void MainWindow::DoPLSValidation()
   }
 }
 
-void MainWindow::DoPLS()
+void MainWindow::DoPLSDA()
+{
+  DoPLS(PLS_DA_);
+}
+
+void MainWindow::DoPLSRegression()
+{
+  DoPLS(PLS_);
+}
+
+void MainWindow::DoPLS(int algtype)
 {
   if(!projects->isEmpty()){
-    ModelDialog dopls(projects, PLS_);
+    ModelDialog dopls(projects, algtype);
     if(dopls.exec() == QDialog::Accepted && dopls.compute() == true){
       int pid = dopls.getselectedProject();
       int did = dopls.getselectedData();
@@ -5347,6 +5227,7 @@ void MainWindow::DoPLS()
         projects->value(pid)->addPLSModel();
         updateLog(str);
 
+        projects->value(pid)->getLastPLSModel()->setAlgorithm(algtype);
         projects->value(pid)->getLastPLSModel()->setDID(did);
         projects->value(pid)->getLastPLSModel()->setDataHash(projects->value(pid)->getMatrix(did)->getHash());
         projects->value(pid)->getLastPLSModel()->setXScaling(xscaling);
@@ -5400,7 +5281,7 @@ void MainWindow::DoPLS()
         obj.setYScalingType(yscaling);
         obj.setNumberPC(pc);
 
-        QFuture<void> future = obj.RunPLS();
+        QFuture<void> future = obj.RunPLS(algtype);
         while(!future.isFinished()){
           if(stoprun == true){
             obj.AbortRun();
@@ -6222,12 +6103,12 @@ void MainWindow::Test()
 
 
 
-    qDebug() << QString("%1 Varible Selection Models").arg(QString::number(i.value()->VarSelCount()));
-    for(int j = 0; j < i.value()->VarSelCount(); j++){
-      qDebug() << "Mod Name: " <<  i.value()->getVarSelModelAt(j)->getName() << "Model Position: " << i.value()->getVarSelModelAt(j)->getModelID() << "PID " << i.value()->getVarSelModelAt(j)->getProjectID();
-      PrintMatrix(i.value()->getVarSelModelAt(j)->getMap());
-      PrintUIVector(i.value()->getVarSelModelAt(j)->getSelectedVariables());
-      PrintUIVector(i.value()->getVarSelModelAt(j)->getVariableDistribution());
+    qDebug() << QString("%1 EPLS Models").arg(QString::number(i.value()->EPLSCount()));
+    for(int j = 0; j < i.value()->EPLSCount(); j++){
+      qDebug() << "Mod Name: " <<  i.value()->getEPLSModelAt(j)->getName() << "Model Position: " << i.value()->getEPLSModelAt(j)->getModelID() << "PID " << i.value()->getEPLSModelAt(j)->getProjectID();
+      PrintMatrix(i.value()->getEPLSModelAt(j)->getMap());
+      PrintUIVector(i.value()->getEPLSModelAt(j)->getSelectedVariables());
+      PrintUIVector(i.value()->getEPLSModelAt(j)->getVariableDistribution());
     }
   }
 #endif
@@ -6330,10 +6211,16 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
 
   connect(ui.actionPCA, SIGNAL(triggered(bool)), SLOT(DoPCA()));
   connect(ui.actionPCA_Prediction, SIGNAL(triggered(bool)), SLOT(DoPCAPrediction()));
-  connect(ui.actionPLS, SIGNAL(triggered(bool)), SLOT(DoPLS()));
+
+  connect(ui.actionPLS_Regression, SIGNAL(triggered(bool)), SLOT(DoPLSRegression()));
+  connect(ui.actionPLS_Discriminant_Analysis, SIGNAL(triggered(bool)), SLOT(DoPLSDA()));
   connect(ui.actionPLS_Prediction, SIGNAL(triggered(bool)), SLOT(DoPLSPrediction()));
   connect(ui.actionPLS_Validator, SIGNAL(triggered(bool)), SLOT(DoPLSValidation()));
-  connect(ui.actionPLSVariableSelection, SIGNAL(triggered(bool)), SLOT(DoPLSVariableSelection()));
+
+  connect(ui.actionEPLS_Regression, SIGNAL(triggered(bool)), SLOT(DoEPLS()));
+  connect(ui.actionEPLS_Discriminant_Analysis, SIGNAL(triggered(bool)), SLOT(DoEPLSDA()));
+  connect(ui.actionEPLS_Prediction, SIGNAL(triggered(bool)), SLOT(DoEPLSPrediction()));
+  connect(ui.actionEPLS_Validator, SIGNAL(triggered(bool)), SLOT(DoEPLSValidation()));
 
 
   connect(ui.actionMLR, SIGNAL(triggered(bool)), SLOT(DoMLR()));
@@ -6372,8 +6259,6 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPLSPred_Residuals_vs_Exp, SIGNAL(triggered(bool)), SLOT(PLSPredResidualsVSExpPlot()));
   connect(ui.actionPLSR2_Q2, SIGNAL(triggered(bool)), SLOT(PLSPlotQ2R2()));
   connect(ui.actionPLSYScrambling, SIGNAL(triggered(bool)), SLOT(PLSPlotYScrambling()));
-  connect(ui.actionPLSQ2_Sample_Validator, SIGNAL(triggered(bool)), SLOT(PLSPlotQ2SampleValidator()));
-  connect(ui.actionPLSSDEP_Sample_Validator_Plot, SIGNAL(triggered(bool)), SLOT(PLSPlotSDEPSampleValidator()));
   connect(ui.actionPLSBeta_Coefficients, SIGNAL(triggered(bool)), SLOT(PLSPlotBetaCoefficients()));
   connect(ui.actionBetaCoeffDWPlot, SIGNAL(triggered(bool)), SLOT(PLSPlotBetaCoeffDWPlot()));
 
@@ -6384,16 +6269,6 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPLS3D_uuu_Score_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DUUUScorePlot()));
   connect(ui.actionPLS3D_qqq_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DQQQLoadingsPlot()));
   connect(ui.actionPLS3D_ttt_Score_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(PLS3DScorePlotPrediction()));
-  connect(ui.actionPLS3D_Q2_Dynamic_Sample_Validator_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DPlotQ2SampleValidator()));
-  connect(ui.actionPLS3D_SDEP_Dynamic_Sample_Validator_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DPlotSDEPSampleValidator()));
-
-
-
-  connect(ui.actionVarSel_R2Q2_Plot, SIGNAL(triggered(bool)), SLOT(PlotVarSelR2Q2()));
-  connect(ui.actionVarSel_Ftest_Nvar_Plot, SIGNAL(triggered(bool)), SLOT(PlotVarSelFTestNVar()));
-  connect(ui.actionVarSel_Ftest_Q2_Plot, SIGNAL(triggered(bool)), SLOT(PlotVarSelFTestQ2()));
-  connect(ui.actionModIncVar_Variables_Plot, SIGNAL(triggered(bool)), SLOT(PlotModIncVarVar()));
-
 
   connect(ui.actionMLR_Recal_vs_Exp_and_Prediction, SIGNAL(triggered(bool)), SLOT(MLRRecalcVSExpAndPredictionPlot()));
   connect(ui.actionMLR_Predict_vs_Exp_and_Prediction, SIGNAL(triggered(bool)), SLOT(MLRPredictedVSExpAndPredictionPlot()));

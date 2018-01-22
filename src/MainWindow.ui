@@ -158,15 +158,20 @@
    </widget>
    <widget class="QMenu" name="menuModels">
     <property name="title">
-     <string>&amp;Models</string>
+     <string>&amp;Statistical models</string>
     </property>
     <addaction name="actionPCA"/>
     <addaction name="actionPCA_Prediction"/>
     <addaction name="separator"/>
-    <addaction name="actionPLS"/>
+    <addaction name="actionPLS_Regression"/>
+    <addaction name="actionPLS_Discriminant_Analysis"/>
     <addaction name="actionPLS_Validator"/>
     <addaction name="actionPLS_Prediction"/>
-    <addaction name="actionPLSVariableSelection"/>
+    <addaction name="separator"/>
+    <addaction name="actionEPLS_Regression"/>
+    <addaction name="actionEPLS_Discriminant_Analysis"/>
+    <addaction name="actionEPLS_Validator"/>
+    <addaction name="actionEPLS_Prediction"/>
     <addaction name="separator"/>
     <addaction name="actionMLR"/>
     <addaction name="actionMLR_Validator"/>
@@ -178,11 +183,11 @@
    </widget>
    <widget class="QMenu" name="menuGraphs">
     <property name="title">
-     <string>&amp;Graphs</string>
+     <string>&amp;Plots</string>
     </property>
     <widget class="QMenu" name="menuVariable">
      <property name="title">
-      <string>Plot Variable</string>
+      <string>Variable plots</string>
      </property>
      <property name="icon">
       <iconset resource="icons/icons.qrc">
@@ -191,18 +196,9 @@
      <addaction name="actionVariableDistribution"/>
      <addaction name="actionVariable_vs_Variable"/>
     </widget>
-    <widget class="QMenu" name="menuPlot_Variable_Selection">
-     <property name="title">
-      <string>Plot Variable Selection</string>
-     </property>
-     <addaction name="actionVarSel_R2Q2_Plot"/>
-     <addaction name="actionVarSel_Ftest_Nvar_Plot"/>
-     <addaction name="actionVarSel_Ftest_Q2_Plot"/>
-     <addaction name="actionModIncVar_Variables_Plot"/>
-    </widget>
     <widget class="QMenu" name="menuPlot_MLR">
      <property name="title">
-      <string>Plot MLR</string>
+      <string>MLR plots</string>
      </property>
      <property name="icon">
       <iconset resource="icons/icons.qrc">
@@ -221,7 +217,7 @@
     </widget>
     <widget class="QMenu" name="menuPlot_PLS_Model">
      <property name="title">
-      <string>Plot PLS Model</string>
+      <string>PLS plots</string>
      </property>
      <property name="icon">
       <iconset resource="icons/icons.qrc">
@@ -277,7 +273,7 @@
     </widget>
     <widget class="QMenu" name="menuPlot_LDA">
      <property name="title">
-      <string>Plot LDA</string>
+      <string>LDA plots</string>
      </property>
      <property name="icon">
       <iconset resource="icons/icons.qrc">
@@ -293,7 +289,7 @@
     </widget>
     <widget class="QMenu" name="menuPlot_PCA_Model">
      <property name="title">
-      <string>Plot PCA Model</string>
+      <string>PCA plots</string>
      </property>
      <property name="icon">
       <iconset resource="icons/icons.qrc">
@@ -326,11 +322,10 @@
     <addaction name="menuPlot_PLS_Model"/>
     <addaction name="menuPlot_MLR"/>
     <addaction name="menuPlot_LDA"/>
-    <addaction name="menuPlot_Variable_Selection"/>
    </widget>
    <widget class="QMenu" name="menuData">
     <property name="title">
-     <string>&amp;Data</string>
+     <string>&amp;Data operations</string>
     </property>
     <addaction name="actionAdd_Remove_Object_Labels"/>
     <addaction name="actionAdd_Remove_Variable_Labels"/>
@@ -364,8 +359,8 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
-   <addaction name="menuGraphs"/>
    <addaction name="menuModels"/>
+   <addaction name="menuGraphs"/>
    <addaction name="menuExtensions"/>
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
@@ -594,13 +589,13 @@
     <string>PCA</string>
    </property>
   </action>
-  <action name="actionPLS">
+  <action name="actionPLS_Regression">
    <property name="icon">
     <iconset resource="icons/icons.qrc">
      <normaloff>:/pls.png</normaloff>:/pls.png</iconset>
    </property>
    <property name="text">
-    <string>PLS</string>
+    <string>PLS Regression</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -1362,6 +1357,31 @@
   <action name="actionOpenProject_OLD_VERSION">
    <property name="text">
     <string>Open Project OLD VERSION</string>
+   </property>
+  </action>
+  <action name="actionEPLS_Regression">
+   <property name="text">
+    <string>EPLS Regression</string>
+   </property>
+  </action>
+  <action name="actionPLS_Discriminant_Analysis">
+   <property name="text">
+    <string>PLS Discriminant Analysis</string>
+   </property>
+  </action>
+  <action name="actionEPLS_Discriminant_Analysis">
+   <property name="text">
+    <string>EPLS Discriminant Analysis</string>
+   </property>
+  </action>
+  <action name="actionEPLS_Validator">
+   <property name="text">
+    <string>EPLS Validator</string>
+   </property>
+  </action>
+  <action name="actionEPLS_Prediction">
+   <property name="text">
+    <string>EPLS Prediction</string>
    </property>
   </action>
  </widget>

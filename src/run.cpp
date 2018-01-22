@@ -242,12 +242,14 @@ void RUN::DoPLSValidation()
   else{
     BootstrapRandomGroupsCV(&minpt, ngroup, niter, _PLS_, &plsmod->Model()->predicted_y, &plsmod->Model()->pred_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
   }
-
-  PLSRegressionStatistics(y, plsmod->Model()->predicted_y, &plsmod->Model()->q2y, &plsmod->Model()->sdep, &plsmod->Model()->bias);
+  if(algtype == PLS_)
+    PLSRegressionStatistics(y, plsmod->Model()->predicted_y, &plsmod->Model()->q2y, &plsmod->Model()->sdep, &plsmod->Model()->bias);
+  else
+    PLSDiscriminantAnalysisStatistics(y, plsmod->Model()->predicted_y, &plsmod->Model()->roc_validation, &plsmod->Model()->roc_auc_validation, &plsmod->Model()->precision_recall_validation, &plsmod->Model()->precision_recall_ap_validation);
 
   if(yscrambling == true){
-    DelMatrix(&plsmod->Model()->r2q2scrambling);
-    initMatrix(&plsmod->Model()->r2q2scrambling);
+    DelMatrix(&plsmod->Model()->yscrambling);
+    initMatrix(&plsmod->Model()->yscrambling);
     ValidationArg varg;
     if(vt == LOO_){
       varg.vtype = LOO;
@@ -257,14 +259,17 @@ void RUN::DoPLSValidation()
       varg.rgcv_group = ngroup;
       varg.rgcv_iterations = niter;
     }
-    YScrambling(&minpt, _PLS_, varg, block, &plsmod->Model()->r2q2scrambling, QThread::idealThreadCount(), &scientifisignal);
+    YScrambling(&minpt, _PLS_, varg, block, &plsmod->Model()->yscrambling, QThread::idealThreadCount(), &scientifisignal);
   }
 }
 
 void RUN::DoPLS()
 {
   PLS(x, y, pc, xscaling, yscaling, plsmod->Model(), &scientifisignal);
-  PLSRegressionStatistics(y, plsmod->Model()->recalculated_y, &plsmod->Model()->r2y_model, &plsmod->Model()->sdec, NULL);
+  if(algtype == PLS_)
+    PLSRegressionStatistics(y, plsmod->Model()->recalculated_y, &plsmod->Model()->r2y_model, &plsmod->Model()->sdec, NULL);
+  else
+    PLSDiscriminantAnalysisStatistics(y, plsmod->Model()->recalculated_y, &plsmod->Model()->roc_model, &plsmod->Model()->roc_auc_model, &plsmod->Model()->precision_recall_model, &plsmod->Model()->precision_recall_ap_model);
 }
 
 void RUN::DoPCAPrediction()
@@ -340,13 +345,15 @@ QFuture< void > RUN::RunPLSPrediction()
   return QtConcurrent::run(this, &RUN::DoPLSPrediction);
 }
 
-QFuture< void > RUN::RunPLSValidation()
+QFuture< void > RUN::RunPLSValidation(int algtype_)
 {
+  algtype = algtype_;
   return QtConcurrent::run(this, &RUN::DoPLSValidation);
 }
 
-QFuture< void > RUN::RunPLS()
+QFuture< void > RUN::RunPLS(int algtype_)
 {
+  algtype = algtype_;
   return QtConcurrent::run(this, &RUN::DoPLS);
 }
 
@@ -448,36 +455,6 @@ void RUN::setModelYScramblingBlock(int block_)
   block = block_;
 }
 
-void RUN::setModelSampleValidator(int samplevalidator_)
-{
-  samplevalidator = samplevalidator_;
-}
-
-void RUN::setModelSampleValidatorClasses ( uivector* obj_class )
-{
-  uiv = obj_class;
-}
-
-void RUN::setModelSampleValidatorIncObj ( int incobj )
-{
-  samplevalidator_incobj = incobj;
-}
-
-void RUN::setModelSampleValidatorMaxObj ( int maxobj_ )
-{
-  samplevalidator_maxobj = maxobj_;
-}
-
-void RUN::setModelSampleValidatorIterations ( int niters_ )
-{
-  samplevalidator_niters = niters_;
-}
-
-void RUN::setModelSampleValidatorSampleSize ( int sample_size_ )
-{
-  samplevalidator_samplesize = sample_size_;
-}
-
 void RUN::setNumberOfIterations(int niter_)
 {
   niter = niter_;
@@ -566,10 +543,6 @@ RUN::RUN()
   pc = vt = ngroup = niter = block = nclusters = clusteralgoritm = -1;
   xscaling = yscaling = 0;
   yscrambling = false;
-  samplevalidator = -1;
-  samplevalidator_niters = 0;
-  samplevalidator_samplesize = 0;
-  samplevalidator_incobj = 1;
   m = 0;
   uiv = 0;
   x = 0;

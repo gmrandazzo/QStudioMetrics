@@ -21,10 +21,9 @@
 #include "DATAIO.h"
 #include "PCA/pcamodel.h"
 #include "PLS/plsmodel.h"
+#include "EPLS/eplsmodel.h"
 #include "MLR/mlrmodel.h"
 #include "LDA/ldamodel.h"
-
-#include "VariableSelectionModel.h"
 
 #include <scientific.h>
 
@@ -234,10 +233,10 @@ public:
   void delPLSModelAt(int id);
   void delPLSModels();
 
-  void addVarSelModel();
-  void delVarSelModel(int mid);
-  void delVarSelModelAt(int id);
-  void delVarSelModels();
+  void addEPLSModel();
+  void delEPLSModel(int mid);
+  void delEPLSModelAt(int id);
+  void delEPLSModels();
 
   void addMLRModel();
   void delMLRModel(int mid);
@@ -265,14 +264,14 @@ public:
   // return the last model
   PCAModel *getLastPCAModel();
   PLSModel *getLastPLSModel();
-  VariableSelectionModel *getLastVarSelModel();
+  EPLSModel *getLastEPLSModel();
   MLRModel *getLastMLRModel();
   LDAModel *getLastLDAModel();
 
   // return the model at given position id in list
   PCAModel *getPCAModelAt(int id);
   PLSModel *getPLSModelAt(int id);
-  VariableSelectionModel *getVarSelModelAt(int id);
+  EPLSModel *getEPLSModelAt(int id);
   MLRModel *getMLRModelAt(int id);
   LDAModel *getLDAModelAt(int id);
 
@@ -280,7 +279,8 @@ public:
   PCAModel *getPCAModel(int mid);
   PLSModel *getPLSModel(int mid);
   PLSModel *getPLSModel(QString hash);
-  VariableSelectionModel *getVarSelModel(int mid);
+  EPLSModel *getEPLSModel(int mid);
+  EPLSModel *getEPLSModel(QString hash);
   MLRModel *getMLRModel(int mid);
   LDAModel *getLDAModel(int mid);
 
@@ -293,7 +293,7 @@ public:
   int ArrayCount();
   int PCACount();
   int PLSCount();
-  int VarSelCount();
+  int EPLSCount();
   int MLRCount();
   int LDACount();
 
@@ -308,7 +308,7 @@ private:
   QList<ARRAY*> array_;
   QList<PCAModel*> pcamodel;
   QList<PLSModel*> plsmodel;
-  QList<VariableSelectionModel*> varselectionmodel;
+  QList<EPLSModel*> eplsmodel;
   QList<MLRModel*> mlrmodel;
   QList<LDAModel*> ldamodel;
   LABELS objlabels, varlabels;

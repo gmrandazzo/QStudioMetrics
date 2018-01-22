@@ -2,6 +2,7 @@ set(QSTUDIOMETRICS_SRC
     dircompressor.cpp
     PCA/pcamodel.cpp
     PLS/plsmodel.cpp
+    EPLS/eplsmodel.cpp
     MLR/mlrmodel.cpp
     LDA/ldamodel.cpp
     VariableSelectionModel.cpp
@@ -12,6 +13,7 @@ set(QSTUDIOMETRICS_SRC
     Dialogs/ClassPlotDialog.cpp
     PCA/PCAPlot.cpp
     PLS/PLSPlot.cpp
+    EPLS/EPLSPlot.cpp
     MLR/MLRPlot.cpp
     LDA/LDAPlot.cpp
     Dialogs/ImportLabelListDialog.cpp
@@ -31,6 +33,7 @@ set(QSTUDIOMETRICS_SRC
     Plotlib/ScatterPlot2D.cpp
     Plotlib/SimpleLine2DPlot.cpp
     Dialogs/ModelDialog.cpp
+    Dialogs/ModelDialogWizard.cpp
     Dialogs/ClassModelDialog.cpp
     Dialogs/ValidatorDialog.cpp
     Dialogs/ClassDialog.cpp
@@ -39,7 +42,6 @@ set(QSTUDIOMETRICS_SRC
     Dialogs/ValidationClusterPlot.cpp
     Dialogs/VariablePlotDialog.cpp
     Plotlib/VariablePlot.cpp
-    Dialogs/VariableSelectionDialog.cpp
     Dialogs/ProjectManager.cpp
     Dialogs/addfileDialog.cpp
     Dialogs/ImportFromFileDialog.cpp
@@ -65,12 +67,14 @@ set(QSTUDIOMETRICS_H
     qsmdata.h
     PCA/pcamodel.h
     PLS/plsmodel.h
+    EPLS/eplsmodel.h
     VariableSelectionModel.h
     DATAIO.h
     Dialogs/PlotDialog.h
     Dialogs/ClassPlotDialog.h
     PCA/PCAPlot.h
     PLS/PLSPlot.h
+    EPLS/EPLSPlot.h
     MLR/MLRPlot.h
     LDA/LDAPlot.h
     Dialogs/ImportLabelListDialog.h
@@ -90,6 +94,7 @@ set(QSTUDIOMETRICS_H
     Plotlib/ScatterPlot2D.h
     Plotlib/SimpleLine2DPlot.h
     Dialogs/ModelDialog.h
+    Dialogs/ModelDialogWizard.h
     Dialogs/ClassModelDialog.h
     Dialogs/ValidatorDialog.h
     Dialogs/ClassDialog.h
@@ -98,7 +103,6 @@ set(QSTUDIOMETRICS_H
     Dialogs/ValidationClusterPlot.h
     Dialogs/VariablePlotDialog.h
     Plotlib/VariablePlot.h
-    Dialogs/VariableSelectionDialog.h
     Dialogs/ProjectManager.h
     Dialogs/addfileDialog.h
     Dialogs/ImportFromFileDialog.h
@@ -139,6 +143,7 @@ set(QSTUDIOMETRICS_UIS
     Dialogs/PlotDialog.ui
     Dialogs/ClassPlotDialog.ui
     Dialogs/ModelDialog.ui
+    Dialogs/ModelDialogWizard.ui
     Dialogs/ClassModelDialog.ui
     Dialogs/ValidatorDialog.ui
     Dialogs/ClassDialog.ui
@@ -146,7 +151,6 @@ set(QSTUDIOMETRICS_UIS
     Dialogs/DoClusterAnalysisDialog.ui
     Dialogs/ValidationClusterPlot.ui
     Dialogs/VariablePlotDialog.ui
-    Dialogs/VariableSelectionDialog.ui
     Dialogs/ProjectManager.ui
     Dialogs/addfileDialog.ui
     Dialogs/ImportFromFileDialog.ui
