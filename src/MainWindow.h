@@ -161,6 +161,9 @@ private slots:
   void showPLSPrediction();
   void showPLSPredictionRSquared();
 
+  void showEPLSRecalcY();
+  void showEPLSValidatedPrediction();
+  void showEPLSValidation();
 
   void showMLRCoeff();
   void showMLRRecalcY();
@@ -230,6 +233,8 @@ private:
   void TopMenuEnableDisable();
   void CalculationMenuEnable();
   void CalculationMenuDisable(int calcpid_);
+  void PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix **x, matrix **y);
+  void PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix **x);
 
   bool ProjectsHavePCA(){ return havepca; };
   bool ProjectsHavePCAPrediction(){ return havepcapred; };
@@ -244,8 +249,6 @@ private:
   bool ProjectsHaveLDA(){ return havelda; }
   bool ProjectsHaveLDAValidated(){ return haveldavalid; };
   bool ProjectsHaveLDAPrediction(){ return haveldapred; };
-
-  // Used to interact with lateral menù
 
 
 /* QMAP <int pid, PROJECT()>

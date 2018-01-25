@@ -12,8 +12,12 @@ void DoPredictionDialog::CheckDataForPrediction()
       varsel = projects_->value(selectedproject_)->getPCAModel(selectedmodel_)->getVarName();
       vardata = projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName();
     }
-    else if(type == PLS_){
+    else if(type == PLS_ || type == PLS_DA_){
       varsel = projects_->value(selectedproject_)->getPLSModel(selectedmodel_)->getXVarName();
+      vardata = projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName();
+    }
+    else if(type == EPLS_ || type == EPLS_DA_){
+      varsel = projects_->value(selectedproject_)->getEPLSModel(selectedmodel_)->getXVarName();
       vardata = projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName();
     }
     else if(type == MLR_){
@@ -234,11 +238,25 @@ void DoPredictionDialog::setProject(QModelIndex current)
         tab3->appendRow(row);
       }
     }
-    else if(type == PLS_){ // PLS
+    else if(type == PLS_ || type == PLS_DA_){ // PLS
       for(int i = 0; i < projects_->value(selectedproject_)->PLSCount(); i++){
         QList<QStandardItem*> row;
         row.append(new QStandardItem(projects_->value(selectedproject_)->getPLSModelAt(i)->getName()));
         mids.append(projects_->value(selectedproject_)->getPLSModelAt(i)->getModelID());
+        tab2->appendRow(row);
+      }
+
+      for(int i = 0; i < projects_->value(selectedproject_)->MatrixCount(); i++){
+        QList<QStandardItem*> row;
+        row.append(new QStandardItem(projects_->value(selectedproject_)->getMatrix(i)->getName()));
+        tab3->appendRow(row);
+      }
+    }
+    else if(type == EPLS_ || type == EPLS_DA_){ // PLS
+      for(int i = 0; i < projects_->value(selectedproject_)->EPLSCount(); i++){
+        QList<QStandardItem*> row;
+        row.append(new QStandardItem(projects_->value(selectedproject_)->getEPLSModelAt(i)->getName()));
+        mids.append(projects_->value(selectedproject_)->getEPLSModelAt(i)->getModelID());
         tab2->appendRow(row);
       }
 
@@ -295,7 +313,7 @@ void DoPredictionDialog::next()
     // Generate Object listview and Variable listview
     tab4->clear();
     tab5->clear();
-    if(type == PCA_ || type == PLS_ || type == MLR_ || type == LDA_){
+    if(type == PCA_ || type == PLS_ || type == PLS_DA_ || type == EPLS_ || type == EPLS_DA_ || type == MLR_ || type == LDA_){
       for(int i = 0; i < projects_->value(selectedproject_)->getMatrix(selecteddata_)->getObjName().size(); i++){
         QList<QStandardItem*> oname;
         oname.append(new QStandardItem(projects_->value(selectedproject_)->getMatrix(selecteddata_)->getObjName()[i]));
@@ -397,8 +415,11 @@ DoPredictionDialog::DoPredictionDialog(PROJECTS *projects, int type_)
   if(type == PCA_){
     setWindowTitle("Compute PCA Prediction");
   }
-  else if(type == PLS_){
+  else if(type == PLS_ || type == PLS_DA_){
     setWindowTitle("Compute PLS Prediction");
+  }
+  else if(type == EPLS_ || type == EPLS_DA_){
+    setWindowTitle("Compute EPLS Prediction");
   }
   else if(type == MLR_){
     setWindowTitle("Compute MLR Prediction");

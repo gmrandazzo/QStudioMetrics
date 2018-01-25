@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1122</width>
-    <height>494</height>
+    <width>860</width>
+    <height>370</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -37,7 +37,7 @@
   <property name="modal">
    <bool>true</bool>
   </property>
-  <layout class="QGridLayout" name="gridLayout_11">
+  <layout class="QGridLayout" name="gridLayout_8">
    <item row="0" column="0" rowspan="3">
     <widget class="QGroupBox" name="groupBox_2">
      <property name="minimumSize">
@@ -107,6 +107,32 @@
     </widget>
    </item>
    <item row="0" column="2">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Ensemble Learning Combination Rule</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_7">
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="averageCrule">
+        <property name="text">
+         <string>Average</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QRadioButton" name="medianCrule">
+        <property name="text">
+         <string>Median</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="2">
     <widget class="QGroupBox" name="groupBox_3">
      <property name="title">
       <string>Validation Type </string>
@@ -176,7 +202,7 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="2">
+   <item row="2" column="2">
     <widget class="QGroupBox" name="YScramblingGroupBox">
      <property name="title">
       <string>Y Scrambling</string>
@@ -188,6 +214,22 @@
       <bool>false</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_6">
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="n_yscrambling">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>9999999</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+        <property name="displayIntegerBase">
+         <number>10</number>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="2">
        <spacer name="horizontalSpacer_3">
         <property name="orientation">
@@ -201,23 +243,10 @@
         </property>
        </spacer>
       </item>
-      <item row="0" column="1">
-       <widget class="QSpinBox" name="block">
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>9999999</number>
-        </property>
-        <property name="value">
-         <number>5</number>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Blocks</string>
+         <string>N. models </string>
         </property>
        </widget>
       </item>

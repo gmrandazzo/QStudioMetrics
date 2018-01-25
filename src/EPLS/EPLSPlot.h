@@ -29,7 +29,7 @@ public:
   void PredictedResidualsVSExperimental(ScatterPlot2D **plot2D);
   QList< SimpleLine2DPlot* > R2Q2();
   QList< SimpleLine2DPlot* > R2R2Prediction();
-  QList< ScatterPlot2D *> YScramblingPlot();
+  //QList< ScatterPlot2D *> YScramblingPlot();
 
 private:
   PROJECTS *projects;

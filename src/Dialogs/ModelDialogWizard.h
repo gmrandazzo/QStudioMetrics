@@ -30,6 +30,7 @@ public:
   int getXScalingType(){ return xscaling; }
   int getYScalingType(){ return yscaling; }
   int getNumberOfComponent(){ return n_pc; }
+  ELearningParameters getElearningParm(){ return eparm; }
 
 private slots:
   void next();
@@ -38,6 +39,8 @@ private slots:
   void setData(QModelIndex current);
   void setYData(QModelIndex current);
   void EnableDisableButtons();
+
+  void ELmethodChanged(int);
 
   void ObjSelectAll();
   void ObjInvertSelection();
@@ -56,13 +59,15 @@ private slots:
 private:
   Ui::ModelDialogWizard ui;
   PROJECTS *projects_;
+  ELearningParameters eparm;
   QList<int> pids;
-  QStandardItemModel *tab1, *tab2, *tab3, *tab4, *tab5;
+  QStandardItemModel *tab1, *tab2, *tab3, *tab4, *tab5, *tab6, *tab7;
   QStringList objsel, xvarsel, yvarsel;
   QString modelname_;
   int selectedproject_;
   int selecteddata_, ydata; // ydata for UPLS
   int type; // 0 PLS
+  int elmethod;
   bool compute_;
   int xscaling, yscaling;
   uint n_pc; // Number of Principal Component

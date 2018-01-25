@@ -72,6 +72,28 @@ void ModelDialogWizard::EnableDisableButtons()
   }
 }
 
+void ModelDialogWizard::ELmethodChanged(int indx)
+{
+  if(indx == 0){
+    ui.label_2->hide();
+    ui.nvarsSpinBox->hide();
+    ui.label->show();
+    ui.trainSizeSpinBox->show();
+  }
+  else if(indx == 1){
+    ui.label_2->show();
+    ui.nvarsSpinBox->show();
+    ui.label->hide();
+    ui.trainSizeSpinBox->hide();
+  }
+  else{
+    ui.label_2->show();
+    ui.nvarsSpinBox->show();
+    ui.label->show();
+    ui.trainSizeSpinBox->show();
+  }
+}
+
 void ModelDialogWizard::ObjSelectAll()
 {
   ui.listView_3->selectAll();
@@ -334,7 +356,26 @@ void ModelDialogWizard::OK()
     xscaling = ui.xscalinglist->currentIndex();
     yscaling = ui.yscalinglist->currentIndex();
 
-    // else MLR no other variable to set...
+
+    elmethod = ui.elmethodComboBox->currentIndex();
+
+    eparm.n_models = (int)ui.nmodelsSpinBox->value();
+
+    if(elmethod == 0){
+      eparm.algorithm = Bagging;
+      eparm.trainsize = ui.trainSizeSpinBox->value()/100.;
+      eparm.r_fix = 0;
+    }
+    else if(elmethod == 1){
+      eparm.algorithm = FixedRandomSubspaceMethod;
+      eparm.trainsize = 0;
+      eparm.r_fix = ui.nvarsSpinBox->value();
+    }
+    else{
+      eparm.algorithm = BaggingRandomSubspaceMethod;
+      eparm.trainsize = ui.trainSizeSpinBox->value()/100.;
+      eparm.r_fix = ui.nvarsSpinBox->value();
+    }
 
     for(int i = 0; i < ui.listView_3->model()->rowCount(); i++){
       if(ui.listView_3->selectionModel()->isSelected(ui.listView_3->model()->index(i, 0)) == true){
@@ -392,31 +433,39 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
     ui.yScaling->hide();
     ui.YvariableGroupBox->hide();
     ui.YclassGroupBox->hide();
+    ui.ELearningMethodGroupBox->hide();
   }
   else if(type == PLS_){
     ui.groupBox->setTitle("N. of Latent Variables");
     setWindowTitle("Compute PLS Regression");
     ui.YclassGroupBox->hide();
+    ui.YvariableGroupBox->show();
+    ui.ELearningMethodGroupBox->hide();
   }
   else if(type == PLS_DA_){
     ui.groupBox->setTitle("N. of Latent Variables");
     setWindowTitle("Compute PLS Discriminant Analysis");
+    ui.YclassGroupBox->show();
     ui.YvariableGroupBox->hide();
+    ui.ELearningMethodGroupBox->hide();
   }
   else if(type == EPLS_){
     ui.groupBox->setTitle("N. of Latent Variables");
     setWindowTitle("Compute Ensemble PLS Regression");
     ui.YclassGroupBox->hide();
+    ui.YvariableGroupBox->show();
   }
   else if(type == EPLS_DA_){
     ui.groupBox->setTitle("N. of Latent Variables");
     setWindowTitle("Compute Ensemble PLS Discriminant Analysis");
+    ui.YclassGroupBox->show();
     ui.YvariableGroupBox->hide();
   }
   else if(type == MLR_){
     setWindowTitle("Compute MLR");
     ui.groupBox->hide();
     ui.YclassGroupBox->hide();
+    ui.ELearningMethodGroupBox->hide();
   }
   else if(type == LDA_){
     setWindowTitle("Compute LDA");
@@ -426,11 +475,13 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
     ui.yvarInvertSelectionButton->hide();
     ui.yvarUnselectButton->hide();
     ui.listView_5->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui.ELearningMethodGroupBox->hide();
   }
 
   selecteddata_ = ydata = -1;
   n_pc = ui.NPrincipalComponent->value();
   xscaling = yscaling = 0;
+  elmethod = 0;
 
   compute_ = false;
 
@@ -448,12 +499,16 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
   tab3 = new QStandardItemModel();
   tab4 = new QStandardItemModel();
   tab5 = new QStandardItemModel();
+  tab6 = new QStandardItemModel();
+  tab7 = new QStandardItemModel();
 
   ui.listView_1->setModel(tab1);
   ui.listView_2->setModel(tab2);
   ui.listView_3->setModel(tab3);
   ui.listView_4->setModel(tab4);
   ui.listView_5->setModel(tab5);
+  ui.listView_6->setModel(tab6);
+  ui.listView_7->setModel(tab7);
 
  //Fill the table with data
   QList<QStandardItem*> projectsname;
@@ -463,7 +518,6 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
     pids.append(pid);
   }
   tab1->appendColumn(projectsname);
-
 
 
   connect(ui.listView_1->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(genListView(QModelIndex)));
@@ -491,11 +545,16 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
   connect(ui.listView_4->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButtons()));
   connect(ui.listView_5->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButtons()));
 
+  connect(ui.elmethodComboBox, SIGNAL(currentIndexChanged(int)), SLOT(ELmethodChanged(int)));
+
   connect(this->button(QWizard::NextButton), SIGNAL(clicked()), this, SLOT(next()));
   connect(this->button(QWizard::FinishButton),SIGNAL(clicked()), this, SLOT(OK()));
 
   this->button(QWizard::NextButton)->setEnabled(false);
   this->button(QWizard::FinishButton)->setEnabled(false);
+  ELmethodChanged(0);
+
+  adjustSize();
 }
 
 ModelDialogWizard::~ModelDialogWizard()
@@ -505,4 +564,6 @@ ModelDialogWizard::~ModelDialogWizard()
   delete tab3;
   delete tab4;
   delete tab5;
+  delete tab6;
+  delete tab7;
 }

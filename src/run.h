@@ -18,17 +18,19 @@ public:
   void setYArray(array *ay_);
   void setPCAModel(PCAModel *pcamod_);
   void setPLSModel(PLSModel *plsmod_);
+  void setEPLSModel(EPLSModel *eplsmod_);
   void setMLRModel(MLRModel *mlrmodel_);
   void setLDAModel(LDAModel *ldamodel_);
 
   void setXScalingType(int xscaling_);
   void setYScalingType(int yscaling_);
   void setNumberPC(int pc_);
+  void setElearningParm(ELearningParameters eparm_);
   void setValidationType(int vt_);
   void setNumberOfGroups(int ngroup_);
   void setNumberOfIterations(int niter_);
   void setModelYScrambling(bool yscrambling_);
-  void setModelYScramblingBlock(int block);
+  void setModelYScramblingModels(int n_yscrambling);
 
   void setThreshold(double threshold_);
 
@@ -52,6 +54,9 @@ public:
   QFuture<void> RunPLS(int algtype_);
   QFuture<void> RunPLSValidation(int algtype_);
   QFuture<void> RunPLSPrediction();
+  QFuture<void> RunEPLS(int algtype_);
+  QFuture<void> RunEPLSValidation(int algtype_, CombinationRule crule);
+  QFuture<void> RunEPLSPrediction(CombinationRule crule);
   QFuture<void> RunMLR();
   QFuture<void> RunMLRValidation();
   QFuture<void> RunMLRPrediction();
@@ -74,12 +79,15 @@ private:
 
   PCAModel *pcamod;
   PLSModel *plsmod;
+  EPLSModel *eplsmod;
   MLRModel *mlrmodel;
   LDAModel *ldamodel;
 
   ssignal scientifisignal;
 
   int algtype; // PLS_, PLS_DA_, EPLS_, EPLS_DA_
+  ELearningParameters eparm;
+  CombinationRule crule;
   int xscaling;
   int yscaling;
   int pc;
@@ -87,7 +95,7 @@ private:
   int ngroup;
   int niter;
   bool yscrambling;
-  int block;
+  int n_yscrambling;
 
   double threshold; //used for Spearman's Selection
   //Used for MDC, MaxMinDis, Random Selection
@@ -108,6 +116,11 @@ private:
   void DoPLS();
   void DoPLSValidation();
   void DoPLSPrediction();
+
+  void DoEPLS();
+  void DoEPLSValidation();
+  void DoEPLSPrediction();
+
   void DoMLR();
   void DoMLRValidation();
   void DoMLRPrediction();

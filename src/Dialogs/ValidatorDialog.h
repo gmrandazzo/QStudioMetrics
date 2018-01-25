@@ -28,7 +28,8 @@ public:
   int getModelID(){ return modelid; }
   int getValidType(){ return validtype; }
   bool ModelYScrambling(){ return yscrambling; };
-  int getYSCramblingBlock(){ return block; }
+  int getYSCramblingModels(){ return n_yscrambling; }
+  CombinationRule getCombinationRule(){ return crule; }
 
 private slots:
   void OK();
@@ -38,7 +39,7 @@ private slots:
   void setNIterations();
   void setNGroup();
   void setYScrambling();
-  void setYScramblingBlock();
+  void setYSCramblingModels();
 
 private:
   Ui::ValidatorDialog ui;
@@ -51,7 +52,8 @@ private:
   int type; // 0 PLS, 1 UPLS
   int validtype; // 0 for cross validation 1 for Leave One Out
   bool compute_, yscrambling;
-  int modelid, ngroup, niter, block; // Number of Principal Component
+  int modelid, ngroup, niter, n_yscrambling; // Number of Principal Component
+  CombinationRule crule;
 
 };
 

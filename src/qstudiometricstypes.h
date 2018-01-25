@@ -20,6 +20,7 @@ enum{
   //UPCA_,
   //UPLS_,
   PLSValidation,
+  EPLSValidation,
   //UPLSValidation,
   MLR_,
   MLRValidation,

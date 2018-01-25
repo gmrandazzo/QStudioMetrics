@@ -26,32 +26,53 @@ public:
   int getDID(){ return did; }
   void setDataHash(QString hash_){ hash = hash_; }
   QString &getDataHash(){ return hash; }
-  array **XPredScoresPointer(){ return &pxscores; }
-  array *getXPredScores(){ return pxscores; }
-  matrix **YDipVarPointer(){ return &py; }
-  matrix *getYDipVar(){ return py; }
-  matrix **R2YPointer(){ return &r2y; }
-  matrix *getR2Y(){ return r2y; }
-  matrix **SDECPointer(){ return &sdec; }
-  matrix *getSDEC(){ return sdec; }
+  array *pxscores;
+  matrix *py;
+  matrix *r2;
+  matrix *sdec;
+  matrix *bias;
+  array *roc;
+  matrix *roc_auc;
+  array *precision_recall;
+  matrix *precision_recall_ap;
 private:
   QStringList objname, yvarname;
   QString name;
   QString hash;
   int id;
   int did;
-  array *pxscores;
-  matrix *py;
-  matrix *r2y;
-  matrix *sdec;
 };
 
 class EPLSModel
 {
 public:
   EPLSModel();
-   ~EPLSModel();
+  ~EPLSModel();
   EPLSMODEL *Model(){ return m; }
+
+  /*Regression*/
+  matrix *r2;
+  matrix *sdec;
+  matrix *q2;
+  matrix *sdep;
+  matrix *bias;
+  /*Discriminant Analysis*/
+  array *roc_recalculated;
+  matrix *roc_auc_recalculated;
+  array *precision_recall_recalculated;
+  matrix *precision_recall_ap_recalculated;
+  array *roc_predicted;
+  matrix *roc_auc_predicted;
+  array *precision_recall_predicted;
+  matrix *precision_recall_ap_predicted;
+
+  matrix *yscrambling;
+
+  matrix *y_recalculated;
+  matrix *y_recalculated_residuals;
+  matrix *y_predicted;
+  matrix *y_predicted_residuals;
+
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(QStringList &objname_){ objname = objname_; }
@@ -60,8 +81,12 @@ public:
   QStringList &getXVarName(){ return xvarname; }
   void setYVarName(QStringList &varname_){ yvarname = varname_; }
   QStringList &getYVarName(){ return yvarname; }
+  void setAlgorithm(int algtype_){ algtype = algtype_; };
+  int getAlgorithm(){ return algtype; }
   void setElearningParm(ELearningParameters eparm_) { eparm = eparm_; }
   ELearningParameters getElearningParm(){ return eparm; }
+  void setCombinationRule(CombinationRule crule_) { crule = crule_; }
+  CombinationRule getCombinationRule(){ return crule; }
   void setValidation(int v){ validation = v; }
   int getValidation(){ return validation; }
   void setDID(int did_){ did = did_; }
@@ -93,11 +118,13 @@ public:
 
 private:
   EPLSMODEL *m;
+
   QList<EPLSPrediction*> prediction;
   QStringList objname, xvarname, yvarname;
   QString name;
-  int did, xscaling, yscaling, npc, modelid, validation;
+  int did, xscaling, yscaling, npc, modelid, validation, algtype;
   ELearningParameters eparm;
+  CombinationRule crule;
   QString hash, eplshash;
 };
 

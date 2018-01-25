@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1588</width>
-    <height>516</height>
+    <width>1734</width>
+    <height>580</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -121,52 +121,167 @@
    </layout>
   </widget>
   <widget class="QWizardPage" name="wizardPage2">
-   <layout class="QGridLayout" name="gridLayout_19">
+   <layout class="QGridLayout" name="gridLayout_22">
     <item row="0" column="0">
      <widget class="QSplitter" name="splitter_3">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QGroupBox" name="groupBox">
-       <property name="minimumSize">
-        <size>
-         <width>151</width>
-         <height>76</height>
-        </size>
-       </property>
-       <property name="title">
-        <string>N. principal components</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_11">
+      <widget class="QWidget" name="">
+       <layout class="QGridLayout" name="gridLayout_21">
         <item row="0" column="0">
-         <widget class="QSpinBox" name="NPrincipalComponent">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
+         <widget class="QGroupBox" name="groupBox">
           <property name="minimumSize">
            <size>
-            <width>56</width>
-            <height>27</height>
+            <width>150</width>
+            <height>142</height>
            </size>
           </property>
-          <property name="maximumSize">
+          <property name="title">
+           <string>N. principal components</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_11">
+           <item row="0" column="0">
+            <widget class="QSpinBox" name="NPrincipalComponent">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>56</width>
+               <height>27</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>180</width>
+               <height>27</height>
+              </size>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>500</number>
+             </property>
+             <property name="value">
+              <number>5</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QGroupBox" name="ELearningMethodGroupBox">
+          <property name="minimumSize">
            <size>
-            <width>180</width>
-            <height>27</height>
+            <width>232</width>
+            <height>142</height>
            </size>
           </property>
-          <property name="minimum">
-           <number>1</number>
+          <property name="title">
+           <string>Ensemble Leaning Method</string>
           </property>
-          <property name="maximum">
-           <number>500</number>
-          </property>
-          <property name="value">
-           <number>5</number>
-          </property>
+          <layout class="QGridLayout" name="gridLayout_24">
+           <item row="0" column="0" colspan="2">
+            <widget class="QComboBox" name="elmethodComboBox">
+             <item>
+              <property name="text">
+               <string>Bagging</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Fixed RSM</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Dynamic RSM</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <layout class="QGridLayout" name="gridLayout_20">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>N. models</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QSpinBox" name="nmodelsSpinBox">
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <number>9999</number>
+               </property>
+               <property name="value">
+                <number>100</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="1">
+            <layout class="QGridLayout" name="gridLayout_19">
+             <item row="2" column="0">
+              <widget class="QDoubleSpinBox" name="trainSizeSpinBox">
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="minimum">
+                <double>1.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>10.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>70.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Train size</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="2">
+            <layout class="QGridLayout" name="gridLayout_23">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>N. vars </string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QSpinBox" name="nvarsSpinBox">
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <number>999999999</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -551,7 +666,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QGroupBox" name="YvariableGroupBox">
@@ -690,7 +805,7 @@
                </property>
                <layout class="QGridLayout" name="gridLayout_15">
                 <item row="0" column="0">
-                 <widget class="QListView" name="listView">
+                 <widget class="QListView" name="listView_6">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -767,7 +882,7 @@
                </property>
                <layout class="QGridLayout" name="gridLayout_17">
                 <item row="0" column="0">
-                 <widget class="QListView" name="listView_6">
+                 <widget class="QListView" name="listView_7">
                   <property name="minimumSize">
                    <size>
                     <width>160</width>

@@ -254,19 +254,22 @@
       <addaction name="separator"/>
       <addaction name="actionPLSRecalc_vs_Exp"/>
       <addaction name="actionPLSRecalc_Residuals_vs_Exp"/>
-      <addaction name="separator"/>
-      <addaction name="actionPLSR2_Q2"/>
       <addaction name="actionPLSPred_vs_Exp"/>
       <addaction name="actionPLSPred_Residuals_vs_Exp"/>
+      <addaction name="separator"/>
+      <addaction name="actionPLSR2_Q2"/>
+      <addaction name="actionPLSROC_Curve"/>
+      <addaction name="actionPLSROC_AUC_recalculated_predicted_2"/>
+      <addaction name="actionPLSPrecision_recall_Curve"/>
+      <addaction name="actionPLSPrecision_Recall_AUC_recalculated_predicted_2"/>
       <addaction name="actionPLSYScrambling"/>
-      <addaction name="actionPLSQ2_Sample_Validator"/>
-      <addaction name="actionPLSSDEP_Sample_Validator_Plot"/>
       <addaction name="separator"/>
       <addaction name="actionPLS2DScore_Plot_Prediction"/>
       <addaction name="actionPLSRecalc_vs_Exp_with_Prediction"/>
       <addaction name="actionPLSPred_vs_Exp_with_Prediction"/>
       <addaction name="actionPLSR2_Prediction"/>
-      <addaction name="separator"/>
+      <addaction name="actionROC_AUC_recalculated_and_external_prediction"/>
+      <addaction name="actionPrecision_recall_AUC_recalculated_predicted"/>
      </widget>
      <addaction name="menu2D_Space_3"/>
      <addaction name="menu3D_Space_3"/>
@@ -317,9 +320,23 @@
      <addaction name="menu2D_Space"/>
      <addaction name="menu3D_Space"/>
     </widget>
+    <widget class="QMenu" name="menuEPLS_plots">
+     <property name="title">
+      <string>EPLS plots</string>
+     </property>
+     <addaction name="actionEPLSRecalculated_vs_Experimental"/>
+     <addaction name="actionEPLSPredicted_vs_Experimental"/>
+     <addaction name="separator"/>
+     <addaction name="actionEPLSR2_and_Q2"/>
+     <addaction name="actionEPLSROC_curves"/>
+     <addaction name="actionEPLSROC_AUC_recalculated_predicted"/>
+     <addaction name="actionEPLSPrecision_recall_curves"/>
+     <addaction name="actionEPLSPrecision_Recall_AUC_recalculated_predicted"/>
+    </widget>
     <addaction name="menuVariable"/>
     <addaction name="menuPlot_PCA_Model"/>
     <addaction name="menuPlot_PLS_Model"/>
+    <addaction name="menuEPLS_plots"/>
     <addaction name="menuPlot_MLR"/>
     <addaction name="menuPlot_LDA"/>
    </widget>
@@ -1382,6 +1399,76 @@
   <action name="actionEPLS_Prediction">
    <property name="text">
     <string>EPLS Prediction</string>
+   </property>
+  </action>
+  <action name="actionEPLSRecalculated_vs_Experimental">
+   <property name="text">
+    <string>Recalculated vs Experimental</string>
+   </property>
+  </action>
+  <action name="actionEPLSPredicted_vs_Experimental">
+   <property name="text">
+    <string>Predicted vs Experimental</string>
+   </property>
+  </action>
+  <action name="actionEPLSR2_and_Q2">
+   <property name="text">
+    <string>R2 and Q2</string>
+   </property>
+  </action>
+  <action name="actionAUC_recalculated_and_AUC_predicted">
+   <property name="text">
+    <string>AUC recalculated and AUC predicted</string>
+   </property>
+  </action>
+  <action name="actionEPLSROC_AUC_recalculated_predicted">
+   <property name="text">
+    <string>ROC AUC recalculated/predicted</string>
+   </property>
+  </action>
+  <action name="actionEPLSPrecision_Recall_AUC_recalculated_predicted">
+   <property name="text">
+    <string>Precision-recall AUC recalculated/predicted</string>
+   </property>
+  </action>
+  <action name="actionPLSROC_AUC_recalculated_predicted_2">
+   <property name="text">
+    <string>ROC AUC recalculated/predicted</string>
+   </property>
+  </action>
+  <action name="actionPLSPrecision_Recall_AUC_recalculated_predicted_2">
+   <property name="text">
+    <string>Precision-recall AUC recalculated/predicted</string>
+   </property>
+  </action>
+  <action name="actionROC_AUC_recalculated_and_external_prediction">
+   <property name="text">
+    <string>ROC AUC recalculated and external prediction</string>
+   </property>
+  </action>
+  <action name="actionPrecision_recall_AUC_recalculated_predicted">
+   <property name="text">
+    <string>Precision-recall AUC recalculated/predicted</string>
+   </property>
+  </action>
+  <action name="actionPLSROC_Curve">
+   <property name="text">
+    <string>ROC curve</string>
+   </property>
+  </action>
+  <action name="actionPLSPrecision_recall_Curve">
+   <property name="text">
+    <string>Precision-recall curve</string>
+   </property>
+  </action>
+  <action name="actionEPLSROC_curves">
+   <property name="text">
+    <string>ROC curves</string>
+   </property>
+  </action>
+  <action name="actionEPLSPrecision_recall_curves">
+   <property name="text">
+    <string>Precision-recall curves</string>
    </property>
   </action>
  </widget>

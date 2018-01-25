@@ -6,9 +6,9 @@
 
 #include "ClassDialog.h"
 
-void ValidatorDialog::setYScramblingBlock()
+void ValidatorDialog::setYSCramblingModels()
 {
-  block = ui.block->value();
+  n_yscrambling = ui.n_yscrambling->value();
 }
 
 void ValidatorDialog::setYScrambling()
@@ -18,22 +18,6 @@ void ValidatorDialog::setYScrambling()
   }
   else{
     yscrambling= false;
-  }
-
-  if(selectedproject_ > -1 && projects_->keys().contains(selectedproject_) == true && modelid > -1){
-     int yscrambling_blocks = 0;
-    if(type == PLSValidation){
-      if(modelid < projects_->value(selectedproject_)->PLSCount())
-        yscrambling_blocks = (int)ceil((projects_->value(selectedproject_)->getPLSModel(modelid)->getObjName().size() * 5) / 17.);
-    }
-    else if(type == MLRValidation){
-      if(modelid < projects_->value(selectedproject_)->MLRCount())
-        yscrambling_blocks = (int)ceil((projects_->value(selectedproject_)->getMLRModel(modelid)->getObjName().size() * 5)/17.);
-    }
-    else if(type == LDAValidation){
-      return;
-    }
-    ui.block->setValue(yscrambling_blocks);
   }
 }
 
@@ -82,6 +66,14 @@ void ValidatorDialog::setProject(QModelIndex current)
           tab2->appendRow(row);
         }
       }
+      if(type == EPLSValidation){
+        for(int i = 0; i < projects_->value(selectedproject_)->EPLSCount(); i++){
+          QList<QStandardItem*> row;
+          row.append(new QStandardItem(projects_->value(selectedproject_)->getEPLSModelAt(i)->getName()));
+          mids.append(projects_->value(selectedproject_)->getEPLSModelAt(i)->getModelID());
+          tab2->appendRow(row);
+        }
+      }
       else if(type == MLRValidation){
         for(int i = 0; i < projects_->value(selectedproject_)->MLRCount(); i++){
           QList<QStandardItem*> row;
@@ -104,11 +96,16 @@ void ValidatorDialog::setProject(QModelIndex current)
 
 void ValidatorDialog::OK()
 {
-
   if(selectedproject_ == -1 || modelid == -1){
     QMessageBox::warning(this, tr("Warning!"), tr("Please select a project and a model to validate.\n"), QMessageBox::Close);
   }
   else{
+    if(ui.averageCrule->isChecked()){
+      crule = Averaging;
+    }
+    else{
+      crule = Median;
+    }
     compute_ = true;
     accept();
   }
@@ -122,15 +119,24 @@ ValidatorDialog::ValidatorDialog(PROJECTS *projects, int type_)
 
   projects_ = projects;
 
-  if(type == PLSValidation)
+  if(type == PLSValidation){
     setWindowTitle("Compute PLS Validation");
-  else if(type == MLRValidation)
+    ui.groupBox->hide();
+  }
+  else if(type == EPLSValidation){
+    setWindowTitle("Compute EPLS Validation");
+    ui.groupBox->show();
+  }
+  else if(type == MLRValidation){
     setWindowTitle("Compute MLR Validation");
+    ui.groupBox->hide();
+  }
   else if(type == LDAValidation){
     setWindowTitle("Compute LDA Validation");
+    ui.groupBox->hide();
     ui.YScramblingGroupBox->hide();
     ui.label->hide();
-    ui.block->hide();
+    ui.n_yscrambling->hide();
   }
 
 
@@ -145,7 +151,7 @@ ValidatorDialog::ValidatorDialog(PROJECTS *projects, int type_)
   niter = ui.iterations->value();
   ngroup = ui.groupnumber->value();
   yscrambling = false;
-  block = ui.block->value();
+  n_yscrambling = ui.n_yscrambling->value();
 
   setValidationType();
   compute_ = false;
@@ -179,7 +185,7 @@ ValidatorDialog::ValidatorDialog(PROJECTS *projects, int type_)
   connect(ui.iterations, SIGNAL(valueChanged(int)), SLOT(setNIterations()));
 
   connect(ui.YScramblingGroupBox, SIGNAL(clicked(bool)), SLOT(setYScrambling()));
-  connect(ui.block, SIGNAL(valueChanged(int)), SLOT(setYScramblingBlock()));
+  connect(ui.n_yscrambling, SIGNAL(valueChanged(int)), SLOT(setYSCramblingModels()));
 
   adjustSize();
   ui.listView->selectionModel()->clear();
