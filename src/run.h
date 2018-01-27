@@ -14,8 +14,8 @@ public:
   void Test();
   void setXMatrix(matrix *x_);
   void setYMatrix(matrix *y_);
-  void setXArray(array *ax_);
-  void setYArray(array *ay_);
+  void setXArray(tensor *ax_);
+  void setYArray(tensor *ay_);
   void setPCAModel(PCAModel *pcamod_);
   void setPLSModel(PLSModel *plsmod_);
   void setEPLSModel(EPLSModel *eplsmod_);
@@ -73,7 +73,7 @@ public:
 
 private:
   matrix *m, *x, *y;
-  array *ax, *ay;
+  tensor *ax, *ay;
   uivector *uiv;
   dvector *dv;
 

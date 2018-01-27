@@ -299,7 +299,7 @@ void DATAIO::GetArrayOrderRowCol(char *file_, const std::string  &sep, size_t *o
   file.close();
 }
 
-void DATAIO::ImportArray(char *file_, const std::string  &sep, array *data)
+void DATAIO::ImportArray(char *file_, const std::string  &sep, tensor *data)
 {
   std::ifstream  file;
   std::string line;
@@ -309,7 +309,7 @@ void DATAIO::ImportArray(char *file_, const std::string  &sep, array *data)
   GetArrayOrderRowCol(file_, sep, &order, &row, &col);
 
   for(size_t i = 0; i < order; i++){
-    AddArrayMatrix(&data, row, col);
+    AddTensorMatrix(&data, row, col);
   }
 
   order = row = col = 0;
@@ -327,7 +327,7 @@ void DATAIO::ImportArray(char *file_, const std::string  &sep, array *data)
       else{
         std::vector<std::string> tokened = split(line, delim, false);
         for(col = 0; col < tokened.size(); col++){
-          setArrayValue(data, order, row, col, atof(tokened[col].c_str()));
+          setTensorValue(data, order, row, col, atof(tokened[col].c_str()));
         }
         row++;
       }
@@ -757,7 +757,7 @@ void DATAIO::WriteMatrix(char *file_, matrix *m)
   out.close();
 }
 
-void DATAIO::WriteArray(char *file_, array *a)
+void DATAIO::WriteArray(char *file_, tensor *a)
 {
   std::fstream out;
   out.open (file_, std::ios::out | std::ios::app);
@@ -767,7 +767,7 @@ void DATAIO::WriteArray(char *file_, array *a)
   for(size_t k = 0; k < a->order; k++){
     for(size_t i = 0; i < a->m[k]->row; i++){
       for(size_t j = 0; j < a->m[k]->col; j++){
-        out << getArrayValue(a, k, i, j);
+        out << getTensorValue(a, k, i, j);
         if(j < a->m[k]->col-1)
           out << "\t";
       }

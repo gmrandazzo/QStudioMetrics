@@ -129,7 +129,7 @@ QString SerializeMatrix(matrix *mx)
   }
 }
 
-void DeserializeArray(QString serialized_ar, array **ar)
+void DeserializeArray(QString serialized_ar, tensor **ar)
 {
   if(serialized_ar.compare("NULL", Qt::CaseInsensitive) == 0 || serialized_ar.size() == 0){
     return;
@@ -148,7 +148,7 @@ void DeserializeArray(QString serialized_ar, array **ar)
 
     //NewArray(ar, _ar_.size());
     for(int k = 0; k < _ar_.size(); k++){
-      AddArrayMatrix(ar, _ar_[k].size(), _ar_[k][0].size());
+      AddTensorMatrix(ar, _ar_[k].size(), _ar_[k][0].size());
       for(int i = 0; i < _ar_[k].size(); i++){
         for(int j = 0; j < _ar_[k][i].size(); j++){
           (*ar)->m[k]->data[i][j] = std::stod(_ar_[k][i][j].toStdString());
@@ -158,7 +158,7 @@ void DeserializeArray(QString serialized_ar, array **ar)
   }
 }
 
-QString SerializeArray(array *ar)
+QString SerializeArray(tensor *ar)
 {
   if(ar->order > 0){
     if(ar->m[0]->row > 0 && ar->m[0]->col > 0){
@@ -235,7 +235,7 @@ QString GenMatrixHash(matrix *m)
   return hash;
 }
 
-QString GenArrayHash(array *a)
+QString GenArrayHash(tensor *a)
 {
   QString hash;
   if(a->order > 0){
@@ -246,8 +246,8 @@ QString GenArrayHash(array *a)
       vectorizedform.append(QString::number(a->m[k]->col)); // get the col
       for(uint i = 0; i < a->m[k]->row; i++){
         for(uint j = 0; j < a->m[k]->col; j++){
-          //vectorizedform.append(QString::number(((int)getArrayValue(a, k, i, j)*100)/100.0));
-          vectorizedform.append(QString::number((int)ceil(getArrayValue(a, k, i, j))));
+          //vectorizedform.append(QString::number(((int)getTensorValue(a, k, i, j)*100)/100.0));
+          vectorizedform.append(QString::number((int)ceil(getTensorValue(a, k, i, j))));
         }
       }
     }

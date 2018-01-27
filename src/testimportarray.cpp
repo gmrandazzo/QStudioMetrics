@@ -4,13 +4,13 @@
 
 int main(int argc, char **argv)
 {
-  array *a;
-  initArray(&a);
+  tensor *a;
+  initTensor(&a);
 
   DATAIO::ImportArray(argv[1], " \t,;\n", a);
 
-  PrintArray(a);
+  PrintTensor(a);
 
-  DelArray(&a);
+  DelTensor(&a);
   return 0;
 }

@@ -227,13 +227,13 @@ void RUN::DoEPLSValidation()
   DelMatrix(&eplsmod->y_recalculated_residuals);
   DelMatrix(&eplsmod->y_predicted);
   DelMatrix(&eplsmod->y_predicted_residuals);
-  DelArray(&eplsmod->roc_recalculated);
+  DelTensor(&eplsmod->roc_recalculated);
   DelMatrix(&eplsmod->roc_auc_recalculated);
-  DelArray(&eplsmod->precision_recall_recalculated);
+  DelTensor(&eplsmod->precision_recall_recalculated);
   DelMatrix(&eplsmod->precision_recall_ap_recalculated);
-  DelArray(&eplsmod->roc_predicted);
+  DelTensor(&eplsmod->roc_predicted);
   DelMatrix(&eplsmod->roc_auc_predicted);
-  DelArray(&eplsmod->precision_recall_predicted);
+  DelTensor(&eplsmod->precision_recall_predicted);
   DelMatrix(&eplsmod->precision_recall_ap_predicted);
 
   initMatrix(&eplsmod->r2);
@@ -245,13 +245,13 @@ void RUN::DoEPLSValidation()
   initMatrix(&eplsmod->y_recalculated_residuals);
   initMatrix(&eplsmod->y_predicted);
   initMatrix(&eplsmod->y_predicted_residuals);
-  initArray(&eplsmod->roc_recalculated);
+  initTensor(&eplsmod->roc_recalculated);
   initMatrix(&eplsmod->roc_auc_recalculated);
-  initArray(&eplsmod->precision_recall_recalculated);
+  initTensor(&eplsmod->precision_recall_recalculated);
   initMatrix(&eplsmod->precision_recall_ap_recalculated);
-  initArray(&eplsmod->roc_predicted);
+  initTensor(&eplsmod->roc_predicted);
   initMatrix(&eplsmod->roc_auc_predicted);
-  initArray(&eplsmod->precision_recall_predicted);
+  initTensor(&eplsmod->precision_recall_predicted);
   initMatrix(&eplsmod->precision_recall_ap_predicted);
 
   EPLSYPRedictorAllLV(x, eplsmod->Model(), crule, NULL, &eplsmod->y_recalculated);
@@ -630,12 +630,12 @@ void RUN::setPCAModel(PCAModel * pcamod_)
   pcamod = pcamod_;
 }
 
-void RUN::setYArray(array* ay_)
+void RUN::setYArray(tensor* ay_)
 {
   ay = ay_;
 }
 
-void RUN::setXArray(array* ax_)
+void RUN::setXArray(tensor* ax_)
 {
   ax = ax_;
 }

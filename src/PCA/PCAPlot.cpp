@@ -95,10 +95,10 @@ void PCAPlot::LoadingsMVANormDistrib(ScatterPlot2D **plot2D)
     */
 
     /*tyemporaneo per test*/
-    array *classvar;
+    tensor *classvar;
 
 
-    NewArray(&classvar, g.size());
+    NewTensor(&classvar, g.size());
 
 
     QList< QList< int > > clsid;
@@ -119,7 +119,7 @@ void PCAPlot::LoadingsMVANormDistrib(ScatterPlot2D **plot2D)
     }
 
     for(int i = 0; i < g.size(); i++){
-      NewArrayMatrix(&classvar, i, clsid[i].size(), projects->value(pid)->getPCAModel(mid)->Model()->loadings->col);
+      NewTensorMatrix(&classvar, i, clsid[i].size(), projects->value(pid)->getPCAModel(mid)->Model()->loadings->col);
     }
 
     for(int k = 0; k < clsid.size(); k++){
@@ -157,6 +157,7 @@ void PCAPlot::LoadingsMVANormDistrib(ScatterPlot2D **plot2D)
 
     (*plot2D) = new ScatterPlot2D(mx, my, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,  &projects->value(pid)->getVariableTabLabels(), &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "PC", "Prob PC", projectname + modelname + " - PCA Loadings Multivariate Normal Distribution", ScatterPlot2D::LOADINGS);
     (*plot2D)->setPID(pid);
+    DelTensor(&classvar);
   }
 
 }

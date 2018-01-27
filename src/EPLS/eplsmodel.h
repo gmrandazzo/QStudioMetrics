@@ -26,14 +26,14 @@ public:
   int getDID(){ return did; }
   void setDataHash(QString hash_){ hash = hash_; }
   QString &getDataHash(){ return hash; }
-  array *pxscores;
+  tensor *pxscores;
   matrix *py;
   matrix *r2;
   matrix *sdec;
   matrix *bias;
-  array *roc;
+  tensor *roc;
   matrix *roc_auc;
-  array *precision_recall;
+  tensor *precision_recall;
   matrix *precision_recall_ap;
 private:
   QStringList objname, yvarname;
@@ -57,13 +57,13 @@ public:
   matrix *sdep;
   matrix *bias;
   /*Discriminant Analysis*/
-  array *roc_recalculated;
+  tensor *roc_recalculated;
   matrix *roc_auc_recalculated;
-  array *precision_recall_recalculated;
+  tensor *precision_recall_recalculated;
   matrix *precision_recall_ap_recalculated;
-  array *roc_predicted;
+  tensor *roc_predicted;
   matrix *roc_auc_predicted;
-  array *precision_recall_predicted;
+  tensor *precision_recall_predicted;
   matrix *precision_recall_ap_predicted;
 
   matrix *yscrambling;

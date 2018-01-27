@@ -34,7 +34,7 @@ struct FILEDATA{
   QString fileobjname;
   QString filevarname;
   QString label; // name of matrix/aray
-  uint datatype; // 1 is matrix, 2 is array
+  uint datatype; // 1 is matrix, 2 is tensor
 };
 
 struct QPairComparerAscending
@@ -148,18 +148,18 @@ private:
 class ARRAY
 {
 public:
-  ARRAY(){ initArray(&a); }
+  ARRAY(){ initTensor(&a); }
   ~ARRAY(){
     #ifdef DEBUG
     qDebug()<< "Delete Array";
     #endif
     varname.clear();
     objname.clear();
-    DelArray(&a);
+    DelTensor(&a);
   }
 
   void SortByName(){
-    array *atmp;
+    tensor *atmp;
     QList<QPair<QString, uint> > array_;
     for(uint i = 0; i < a->m[0]->row; i++){
       array_.append(qMakePair(objname[i], i));
@@ -168,21 +168,21 @@ public:
     qSort(array_.begin(), array_.end(), QPairComparerAscending());
 
 
-    initArray(&atmp);
-    ArrayCopy(a, &atmp);
+    initTensor(&atmp);
+    TensorCopy(a, &atmp);
     objname.clear();
     for(int i = 0; i < array_.size(); i++){
       for(uint k = 0; k < atmp->order; k++){
         for(uint j = 0; j < atmp->m[k]->col; j++){
-          setArrayValue(a, k, i, j, getArrayValue(atmp, k, array_[i].second, j));
+          setTensorValue(a, k, i, j, getTensorValue(atmp, k, array_[i].second, j));
         }
       }
       objname.append(array_[i].first);
     }
-    DelArray(&atmp);
+    DelTensor(&atmp);
   }
 
-  array* &Array(){ return a; }
+  tensor* &Array(){ return a; }
   void setName(QString name_){ name = name_; }
   QString getName(){ return name.toUtf8(); }
   QStringList& getObjName(){ return objname; }
@@ -192,7 +192,7 @@ public:
 private:
   QStringList objname, varname;
   QString name;
-  array *a;
+  tensor *a;
   QString hash;
 };
 

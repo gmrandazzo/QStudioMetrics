@@ -20,9 +20,9 @@ extern "C" {
 void help(char **argv)
 {
   std::cout << "Usage" << endl;
-  std::cout << "Make a model: " << argv[0] <<"\t -model -x <xinput file> -y <yinput file>" << "\t-o <output file>" << "\t-c <N° of PC> \t -xa(autoscaling for x array)\t -ya(autoscaling for y array)"  <<std::endl;
+  std::cout << "Make a model: " << argv[0] <<"\t -model -x <xinput file> -y <yinput file>" << "\t-o <output file>" << "\t-c <N° of PC> \t -xa(autoscaling for x tensor)\t -ya(autoscaling for y tensor)"  <<std::endl;
   std::cout << "Make a prediction: " << argv[0] <<"\t -predict -dm <input model> -i <input file>" << "\t-o <output file>" << "\t-c <N° of PC>" << std::endl;
-  std::cout << "Make the cross validation: " << argv[0] <<"\t -cv -x <xinput file> -y <yinput file> \t -dm <input path model> \t -c <N° of PC> \t -g <N° of groups> -xa(autoscaling for x array)\t -ya(autoscaling for y array)" << std::endl;
+  std::cout << "Make the cross validation: " << argv[0] <<"\t -cv -x <xinput file> -y <yinput file> \t -dm <input path model> \t -c <N° of PC> \t -g <N° of groups> -xa(autoscaling for x tensor)\t -ya(autoscaling for y tensor)" << std::endl;
   std::cout << "\n\t ---------------------------------------------------------------------------- " << std::endl;
   std::cout << "\t | "<< argv[0] << " was writen by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>  |" << std::endl;
   std::cout << "\t ---------------------------------------------------------------------------- \n" << std::endl;
@@ -119,10 +119,10 @@ int main(int argc, char **argv)
     }
 
     if(genmodel == true && !xinputdata.empty() && !yinputdata.empty() && !outpath.empty() && npc > 0){
-      array *xdata, *ydata;
+      tensor *xdata, *ydata;
 
-      initArray(&xdata);
-      initArray(&ydata);
+      initTensor(&xdata);
+      initTensor(&ydata);
 
       DATAIO::ImportArray(xinputdata, xsep.c_str(), xdata);
       DATAIO::ImportArray(yinputdata, ysep.c_str(), ydata);
@@ -136,13 +136,13 @@ int main(int argc, char **argv)
       DATAIO::WriteUPLSModel(outpath, m);
 
       DelUPLSModel(&m);
-      DelArray(&xdata);
-      DelArray(&ydata);
+      DelTensor(&xdata);
+      DelTensor(&ydata);
     }
     else if(makeprediction == true && !pathmodel.empty() && !outpath.empty() && !xinputdata.empty() && npc > 0){
-      array *xdata;
+      tensor *xdata;
 
-      initArray(&xdata);
+      initTensor(&xdata);
 
       DATAIO::ImportArray(xinputdata, xsep.c_str(), xdata);
 
@@ -151,9 +151,9 @@ int main(int argc, char **argv)
       DATAIO::ImportUPLSModel(pathmodel, m);
 
       matrix *xscores;
-      array *y;
+      tensor *y;
       initMatrix(&xscores);
-      initArray(&y);
+      initTensor(&y);
 
       UPLSScorePredictor(xdata, m,  npc, &xscores);
       UPLSYPredictor(xscores, m, npc, &y);
@@ -162,30 +162,30 @@ int main(int argc, char **argv)
       DATAIO::WriteMatrix(outpath+"/X-Pred-Scores.txt", xscores);
       DATAIO::WriteArray(outpath+"/Y-DipVar-Pred.txt", y);
 
-      DelArray(&y);
+      DelTensor(&y);
       DelMatrix(&xscores);
       DelUPLSModel(&m);
-      DelArray(&xdata);
+      DelTensor(&xdata);
     }
     else if(makecrossvalidation == true && !xinputdata.empty() && !pathmodel.empty() && !yinputdata.empty() && npc > 0  && ngroups > 0){
-      array *xdata, *ydata;
+      tensor *xdata, *ydata;
       dvector *r2x;
       dvector *validated_b;
-      array *validated_yloadings;
-      array *q2y;
-      array *sdep;
+      tensor *validated_yloadings;
+      tensor *q2y;
+      tensor *sdep;
 
-      initArray(&xdata);
-      initArray(&ydata);
+      initTensor(&xdata);
+      initTensor(&ydata);
 
       DATAIO::ImportArray(xinputdata, xsep.c_str(), xdata);
       DATAIO::ImportArray(yinputdata, ysep.c_str(), ydata);
 
       initDVector(&r2x);
       initDVector(&validated_b);
-      initArray(&validated_yloadings);
-      initArray(&q2y);
-      initArray(&sdep);
+      initTensor(&validated_yloadings);
+      initTensor(&q2y);
+      initTensor(&sdep);
 
       UPLSCrossValidation(xdata, ydata,
                         xautoscaling, yautoscaling,
@@ -248,11 +248,11 @@ int main(int argc, char **argv)
         cout << endl;
       }
 
-      DelArray(&sdep);
+      DelTensor(&sdep);
       DelDVector(&r2x);
-      DelArray(&q2y);
-      DelArray(&xdata);
-      DelArray(&ydata);
+      DelTensor(&q2y);
+      DelTensor(&xdata);
+      DelTensor(&ydata);
     }
     else{
       cout << "No option selected." << endl;

@@ -83,9 +83,9 @@ int main(int argc, char **argv)
     }
 
     if(genmodel == true && !inputdata.empty() && !outputfile.empty() && npc > 0){
-      array *data;
+      tensor *data;
 
-      initArray(&data);
+      initTensor(&data);
 
       DATAIO::ImportArray(inputdata, sep.c_str(), data);
 
@@ -97,12 +97,12 @@ int main(int argc, char **argv)
         DATAIO::WriteUPCAModel(outputfile, m);
 
       DelUPCAModel(&m);
-      DelArray(&data);
+      DelTensor(&data);
     }
     else if(makeprediction == true && !datamodel.empty() && !inputdata.empty() && npc > 0){
-      array *data;
+      tensor *data;
 
-      initArray(&data);
+      initTensor(&data);
 
       DATAIO::ImportArray(inputdata, sep.c_str(), data);
       PrintArray(data);
@@ -113,10 +113,10 @@ int main(int argc, char **argv)
       DATAIO::ImportUPCAModel(datamodel, m);
 
       matrix *predxscores;
-      array *predindvar;
+      tensor *predindvar;
 
       initMatrix(&predxscores);
-      initArray(&predindvar);
+      initTensor(&predindvar);
 
       UPCAScorePredictor(data, m, npc, &predxscores);
       UPCAIndVarPredictor(predxscores, m->loadings, m->colaverage, m->colscaling,  npc, &predindvar);
@@ -125,9 +125,9 @@ int main(int argc, char **argv)
       DATAIO::WriteArray(datamodel+"/Pred-Ind-Var.txt", predindvar);
 
       DelMatrix(&predxscores);
-      DelArray(&predindvar);
+      DelTensor(&predindvar);
       DelUPCAModel(&m);
-      DelArray(&data);
+      DelTensor(&data);
     }
     else{
       cout << "No option selected." << endl;

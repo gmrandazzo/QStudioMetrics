@@ -142,9 +142,9 @@ void ImportFromFileDialog::BuildArray()
       }
     }
 
-    array *_a_ = a->Array();
+    tensor *_a_ = a->Array();
     for(int i = 0; i < ui.levelBox->value(); i++){
-      AddArrayMatrix(&_a_, rows.size(), cols.size());
+      AddTensorMatrix(&_a_, rows.size(), cols.size());
     }
 
     a->setName(ui.filename->text());
@@ -189,15 +189,15 @@ void ImportFromFileDialog::BuildArray()
               */
               double val = file[rows[i]+1][col].toDouble(&converted);
               if(converted == true){
-                setArrayValue(a->Array(), c, i, l, val);
+                setTensorValue(a->Array(), c, i, l, val);
               }
               else{
                 if(empty_cols.contains(l) == false){
                   empty_cols.append(l);
-                  setArrayValue(a->Array(), c, i, l, -9999);
+                  setTensorValue(a->Array(), c, i, l, -9999);
                 }
                 else{
-                  setArrayValue(a->Array(), c, i, l, -9999);
+                  setTensorValue(a->Array(), c, i, l, -9999);
                 }
               }
               l++;
@@ -214,15 +214,15 @@ void ImportFromFileDialog::BuildArray()
               double val = file[rows[i]+1][col].toDouble(&converted);
 
               if(converted == true){
-                setArrayValue(a->Array(), c, i, l, val);
+                setTensorValue(a->Array(), c, i, l, val);
               }
               else{
                 if(empty_cols.contains(l) == false){
                   empty_cols.append(l);
-                  setArrayValue(a->Array(), c, i, l, -9999);
+                  setTensorValue(a->Array(), c, i, l, -9999);
                 }
                 else{
-                  setArrayValue(a->Array(), c, i, l, -9999);
+                  setTensorValue(a->Array(), c, i, l, -9999);
                 }
               }
               l++;
@@ -243,15 +243,15 @@ void ImportFromFileDialog::BuildArray()
               double val = file[rows[i]][col].toDouble(&converted);
 
               if(converted == true){
-                setArrayValue(a->Array(), c, i, l, val);
+                setTensorValue(a->Array(), c, i, l, val);
               }
               else{
                 if(empty_cols.contains(l) == false){
                   empty_cols.append(l);
-                  setArrayValue(a->Array(), c, i, l, -9999);
+                  setTensorValue(a->Array(), c, i, l, -9999);
                 }
                 else{
-                  setArrayValue(a->Array(), c, i, l, -9999);
+                  setTensorValue(a->Array(), c, i, l, -9999);
                 }
               }
               l++;
@@ -268,15 +268,15 @@ void ImportFromFileDialog::BuildArray()
               double val = file[rows[i]][col].toDouble(&converted);
 
               if(converted == true){
-                setArrayValue(a->Array(), c, i, l, val);
+                setTensorValue(a->Array(), c, i, l, val);
               }
               else{
                 if(empty_cols.contains(l) == false){
                   empty_cols.append(l);
-                  setArrayValue(a->Array(), c, i, l, -9999);
+                  setTensorValue(a->Array(), c, i, l, -9999);
                 }
                 else{
-                  setArrayValue(a->Array(), c, i, l, -9999);
+                  setTensorValue(a->Array(), c, i, l, -9999);
                 }
               }
               l++;
@@ -293,12 +293,12 @@ void ImportFromFileDialog::BuildArray()
         int empty = 0;
         double mean = 0.f;
         for(size_t i = 0; i < a->Array()->m[k]->row; i++){
-          if(FLOAT_EQ(getArrayValue(a->Array(), k, i, empty_cols[j]), -9999, EPSILON)){
+          if(FLOAT_EQ(getTensorValue(a->Array(), k, i, empty_cols[j]), -9999, EPSILON)){
             make_correction = true;
             empty++;
           }
           else{
-            mean += getArrayValue(a->Array(), k, i, empty_cols[j]);
+            mean += getTensorValue(a->Array(), k, i, empty_cols[j]);
           }
           // QApplication::processEvents();
         }
@@ -306,8 +306,8 @@ void ImportFromFileDialog::BuildArray()
         if(make_correction == true){
           mean /= (a->Array()->m[k]->row - empty);
           for(size_t i = 0; i < a->Array()->m[k]->row; i++){
-            if(FLOAT_EQ(getArrayValue(a->Array(), k, i, empty_cols[j]), -9999, EPSILON)){
-              setArrayValue(a->Array(), k, i, empty_cols[j], mean);
+            if(FLOAT_EQ(getTensorValue(a->Array(), k, i, empty_cols[j]), -9999, EPSILON)){
+              setTensorValue(a->Array(), k, i, empty_cols[j], mean);
             }
             else{
               continue;

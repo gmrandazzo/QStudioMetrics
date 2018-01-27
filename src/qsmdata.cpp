@@ -230,7 +230,7 @@ void DATA::OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *m
             subitem->setText(1, QString("Matrix")); // Define the type of the data
             subitem->setText(2, QString::number((*tabcount_))); // Define the tab id number in order to close a specific table
             subitem->setText(3, QString::number(MatrixCount()-1)); // Define the matrix position id in order to find easly when you need to show data.
-            subitem->setText(4, QString::number(getProjectID())); // pid for get the array with Value
+            subitem->setText(4, QString::number(getProjectID())); // pid for get the tensor with Value
             (*tabcount_)++;
 
             MainWindow::getProjectItem(getProjectID(), treeWidget)->child(0)->addChild(subitem);
@@ -271,8 +271,8 @@ void DATA::OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *m
             subitem->setText(0, QString(f.label));
             subitem->setText(1, QString("Array"));  // Define the type of the data
             subitem->setText(2, QString::number((*tabcount_))); // Define the tab id number in order to close a specific table
-            subitem->setText(3, QString::number(ArrayCount()-1)); // Define the array position id in order to find easly when you need to show data.
-            subitem->setText(4, QString::number(getProjectID())); // pid for get the array with Value
+            subitem->setText(3, QString::number(ArrayCount()-1)); // Define the tensor position id in order to find easly when you need to show data.
+            subitem->setText(4, QString::number(getProjectID())); // pid for get the tensor with Value
             (*tabcount_)++;
             MainWindow::getProjectItem(getProjectID(), treeWidget)->child(0)->addChild(subitem);
           }
@@ -878,7 +878,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     subitem->setText(1, QString("Matrix")); // Define the type of the data
     subitem->setText(2, QString::number((*tabcount_))); // Define the tab id number in order to close a specific table
     subitem->setText(3, QString::number(MatrixCount()-1)); // Define the matrix position id in order to find easly when you need to show data.
-    subitem->setText(4, QString::number(getProjectID())); // pid for get the array with Value
+    subitem->setText(4, QString::number(getProjectID())); // pid for get the tensor with Value
     (*tabcount_)++;
     MainWindow::getProjectItem(getProjectID(), treeWidget)->child(0)->addChild(subitem);
     (*log).append(QString("Matrix %1 imported.\n").arg(name));
@@ -890,13 +890,13 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     QString name = query.value(0).toString();
     QString s_objname = query.value(1).toString();
     QString s_varname = query.value(2).toString();
-    QString s_array = query.value(3).toString();
+    QString s_tensor = query.value(3).toString();
     //add the data matrix
     addArray();
     getArray(ArrayCount()-1)->setName(name);
     getArray(ArrayCount()-1)->getObjName() = DeserializeQStringList(s_objname);
     getArray(ArrayCount()-1)->getVarName() = DeserializeQStringList(s_varname);
-    DeserializeArray(s_array, &getArray(ArrayCount()-1)->Array());
+    DeserializeArray(s_tensor, &getArray(ArrayCount()-1)->Array());
 
     // Add matrix to the treeview
     QTreeWidgetItem *subitem = new QTreeWidgetItem;
@@ -904,7 +904,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     subitem->setText(1, QString("Array")); // Define the type of the data
     subitem->setText(2, QString::number((*tabcount_))); // Define the tab id number in order to close a specific table
     subitem->setText(3, QString::number(MatrixCount()-1)); // Define the matrix position id in order to find easly when you need to show data.
-    subitem->setText(4, QString::number(getProjectID())); // pid for get the array with Value
+    subitem->setText(4, QString::number(getProjectID())); // pid for get the tensor with Value
     (*tabcount_)++;
     MainWindow::getProjectItem(getProjectID(), treeWidget)->child(0)->addChild(subitem);
     (*log).append(QString("Array %1 imported.\n").arg(name));
@@ -2216,10 +2216,10 @@ void DATA::addArray()
 void DATA::addArray(ARRAY* ar)
 {
   array_.append(new ARRAY());
-  array *ar_ = array_.last()->Array();
+  tensor *ar_ = array_.last()->Array();
 
   for(uint order = 0; order < ar->Array()->order; order++){
-    ArrayAppendMatrix(&ar_, ar->Array()->m[order]);
+    TensorAppendMatrix(&ar_, ar->Array()->m[order]);
   }
 
   array_.last()->getObjName().append(ar->getObjName());

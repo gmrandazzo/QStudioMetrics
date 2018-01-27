@@ -569,7 +569,7 @@ void ScatterPlot3D::setSelectionStyle()
                 }
 
                 if(mxid != -1){
-                  double val = getArrayValue((*arlst)[mxid]->Array(), level, p.pointid()[vtkselectedID[i]].id, col);
+                  double val = getTensorValue((*arlst)[mxid]->Array(), level, p.pointid()[vtkselectedID[i]].id, col);
                   QColor color = makeColor(val, min, max, obj.getMinSymbolColor(), obj.getMaxSymbolColor());
                   c[0] = (unsigned char)color.red();
                   c[1] = (unsigned char)color.green();
@@ -619,7 +619,7 @@ void ScatterPlot3D::setSelectionStyle()
                 }
 
                 if(myid != -1){
-                  double val = getArrayValue((*arlst)[myid]->Array(), level, p.pointid()[vtkselectedID[i]].id, col);
+                  double val = getTensorValue((*arlst)[myid]->Array(), level, p.pointid()[vtkselectedID[i]].id, col);
                   QColor color = makeColor(val, min, max, obj.getMinSymbolColor(), obj.getMaxSymbolColor());
                   c[0] = (unsigned char)color.red();
                   c[1] = (unsigned char)color.green();
