@@ -33,7 +33,7 @@
 #include "Dialogs/DoPredictionDialog.h"
 #include "Dialogs/VariablePlotDialog.h"
 #include "Dialogs/LabelDialog.h"
-#include "Dialogs/PlotDialog.h"
+#include "Dialogs/DialogPlots.h"
 #include "Dialogs/ClassPlotDialog.h"
 #include "Dialogs/SaveDialog.h"
 #include "Plotlib/VariablePlot.h"
@@ -44,6 +44,7 @@
 #include "Plotlib/SimpleScatterPlot3D.h"
 #include "PCA/PCAPlot.h"
 #include "PLS/PLSPlot.h"
+#include "EPLS/EPLSPlot.h"
 #include "MLR/MLRPlot.h"
 #include "LDA/LDAPlot.h"
 #include "dircompressor.h"
@@ -51,7 +52,7 @@
 
 void MainWindow::CheckProjects()
 {
-  havepca = havepcapred = havepls = haveplspred = haveplsvalid = haveplsyscrambling = havemlr = havemlrpred = havemlrvalid = havemlryscrambling = havelda = haveldapred = haveldavalid = false;
+  havepca = havepcapred = havepls = haveplspred = haveplsvalid = haveplsyscrambling = haveepls = haveeplspred = haveeplsvalid = haveeplsyscrambling = havemlr = havemlrpred = havemlrvalid = havemlryscrambling = havelda = haveldapred = haveldavalid = false;
 
   QMap<int, DATA*>::const_iterator i = projects->constBegin();
   while(i != projects->constEnd()){
@@ -80,6 +81,21 @@ void MainWindow::CheckProjects()
       }
     }
 
+    if(i.value()->EPLSCount() > 0){
+      havepls = true;
+      for(int j = 0; j < i.value()->EPLSCount(); j++){
+        if(i.value()->getEPLSModelAt(j)->getValidation() > 0){
+          haveeplsvalid = true;
+        }
+
+        if(i.value()->getEPLSModelAt(j)->EPLSPredictionCount() > 0){
+          haveeplspred = true;
+        }
+
+        /*if(i.value()->getEPLSModelAt(j)->Model()->yscrambling->row > 0)
+          haveeplsyscrambling = true;*/
+      }
+    }
 
     if(i.value()->MLRCount() > 0){
       havemlr = true;
@@ -1353,6 +1369,10 @@ void MainWindow::removePrediction()
           updateLog(QString("Deleting PLS Prediction %1\n").arg(getCurrentPredictionName()));
           projects->value(pid)->getPLSModel(mid)->delPLSPredictionAt(predid);
         }
+        else if(getCurrentPredictionType().compare("EPLS Prediction") == 0){
+          updateLog(QString("Deleting EPLS Prediction %1\n").arg(getCurrentPredictionName()));
+          projects->value(pid)->getEPLSModel(mid)->delEPLSPredictionAt(predid);
+        }
         else if(getCurrentPredictionType().compare("MLR Prediction") == 0){
           updateLog(QString("Deleting MLR Prediction %1\n").arg(getCurrentPredictionName()));
           projects->value(pid)->getMLRModel(mid)->delMLRPredictionAt(predid);
@@ -1975,6 +1995,39 @@ void MainWindow::showMLRPredictionRSquared()
 
       child->getTable()->model()->UpdateModel();
       child->show();
+    }
+  }
+}
+
+
+void MainWindow::showEPLSPrediction()
+{
+  if(CurrentIsPrediction() == true){
+    int pid = getCurrentPredictionProjectID();
+    int mid = getCurrentPredictionModelID();
+    int tabid = getCurrentPredictionTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
+      int predid = getCurrentPredictionID();
+      QString tabname = projectname + " - " + modelname + " - EPLS Predicted Dipendent Value" + " - " +  ui.treeWidget->currentItem()->text(0);
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getEPLSModel(mid)->getEPLSPrediction(predid)->py, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getEPLSModel(mid)->getEPLSPrediction(predid)->getObjName());
+      QStringList header;
+      header << "Object Names";
+
+      for(int i = 0; i < projects->value(pid)->getEPLSModel(mid)->getNPC(); i++){
+        for(uint j = 0; j < projects->value(pid)->getEPLSModel(mid)->Model()->ny; j++){
+          header << QString("y %1 (PC %2)").arg(QString::number(j+1)).arg(QString::number(i+1));
+        }
+      }
+
+      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
 }
@@ -2990,6 +3043,15 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
         menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
         menu.exec(globalPos);
       }
+      else if(predictiontype.compare("EPLS Prediction") == 0){
+        menu.addAction("&Show Predicted Y", this, SLOT(showEPLSPrediction()));
+        if(getCurrentPredictionYhash().compare("None") != 0){
+          menu.addAction("&Show Prediction Error", this, SLOT(showPLSPredictionRSquared()));
+        }
+        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
+        menu.exec(globalPos);
+      }
+
       else if(predictiontype.compare("MLR Prediction") == 0){
         menu.addAction("&Show Predicted Y", this, SLOT(showMLRPrediction()));
         if(getCurrentPredictionYhash().compare("None") != 0){
@@ -3200,11 +3262,6 @@ void MainWindow::showDescrpitiveStatistics()
   }
 }
 
-void MainWindow::DowngradeProjectID()
-{
-
-}
-
 void MainWindow::removeProject()
 {
   if(CurrentIsProject() == true){
@@ -3289,6 +3346,167 @@ void MainWindow::updateLog( QString str )
 {
   ui.log->append(str);
   qApp->processEvents();
+}
+
+void MainWindow::DebugProjectTree(ProjectTree pjtree)
+{
+  qDebug() << "DebugProjectTree";
+  size_t i, j, k;
+  for(i = 0; i < pjtree.size(); i++){
+    qDebug() << "Project name: " << pjtree[i].name << " id: " << pjtree[i].id;
+    for(j = 0; j < pjtree[i].mtree.size(); j++){
+      qDebug() << "Model name: " << pjtree[i].mtree[j].name << " id: " << pjtree[i].mtree[j].id;
+      for(k = 0; k < pjtree[i].mtree[j].ptree.size(); k++){
+        qDebug() << "Prediction name: " << pjtree[i].mtree[j].ptree[k].name << " id: " << pjtree[i].mtree[j].ptree[k].id;
+      }
+    }
+    qDebug() << "-----------";
+  }
+}
+
+void MainWindow::GetPCAProjects(ProjectTree *pjtree)
+{
+  size_t i, j, k;
+  for(i = 0; i < projects->keys().size(); i++){
+    PROJECT a;
+    int pid = projects->keys()[i];
+    a.name = projects->value(pid)->getProjectName();
+    a.id = pid;
+    for(j = 0; j < projects->value(pid)->PCACount(); j++){
+      MODELTREE m;
+      m.name = projects->value(pid)->getPCAModelAt(j)->getName();
+      m.id = projects->value(pid)->getPCAModelAt(j)->getModelID();
+      for(k = 0; k < projects->value(pid)->getPCAModelAt(j)->PCAPredictionCount(); k++){
+        m.ptree.append(PREDICTIONTREE());
+        m.ptree.last().name =  projects->value(pid)->getPCAModelAt(j)->getPCAPrediction(k)->getName();
+        m.ptree.last().id = projects->value(pid)->getPCAModelAt(j)->getPCAPrediction(k)->getPredID();
+      }
+      a.mtree << m;
+    }
+
+    if(a.mtree.size() > 0){
+      (*pjtree) << a;
+    }
+    else{
+      continue;
+    }
+  }
+}
+
+void MainWindow::GetPLSProjects(ProjectTree *pjtree)
+{
+  size_t i, j, k;
+  for(i = 0; i < projects->keys().size(); i++){
+    PROJECT a;
+    int pid = projects->keys()[i];
+    a.name = projects->value(pid)->getProjectName();
+    a.id = pid;
+    for(j = 0; j < projects->value(pid)->PLSCount(); j++){
+      MODELTREE m;
+      m.name = projects->value(pid)->getPLSModelAt(j)->getName();
+      m.id = projects->value(pid)->getPLSModelAt(j)->getModelID();
+      for(k = 0; k < projects->value(pid)->getPLSModelAt(j)->PLSPredictionCount(); k++){
+        m.ptree.append(PREDICTIONTREE());
+        m.ptree.last().name =  projects->value(pid)->getPLSModelAt(j)->getPLSPrediction(k)->getName();
+        m.ptree.last().id = projects->value(pid)->getPLSModelAt(j)->getPLSPrediction(k)->getPredID();
+      }
+      a.mtree << m;
+    }
+
+    if(a.mtree.size() > 0){
+      (*pjtree) << a;
+    }
+    else{
+      continue;
+    }
+  }
+}
+
+void MainWindow::GetEPLSProjects(ProjectTree *pjtree)
+{
+  size_t i, j, k;
+  for(i = 0; i < projects->keys().size(); i++){
+    PROJECT a;
+    int pid = projects->keys()[i];
+    a.name = projects->value(pid)->getProjectName();
+    a.id = pid;
+    for(j = 0; j < projects->value(pid)->EPLSCount(); j++){
+      MODELTREE m;
+      m.name = projects->value(pid)->getEPLSModelAt(j)->getName();
+      m.id = projects->value(pid)->getEPLSModelAt(j)->getModelID();
+      for(k = 0; k < projects->value(pid)->getEPLSModelAt(j)->EPLSPredictionCount(); k++){
+        m.ptree.append(PREDICTIONTREE());
+        m.ptree.last().name =  projects->value(pid)->getEPLSModelAt(j)->getEPLSPrediction(k)->getName();
+        m.ptree.last().id = projects->value(pid)->getEPLSModelAt(j)->getEPLSPrediction(k)->getPredID();
+      }
+      a.mtree << m;
+    }
+
+    if(a.mtree.size() > 0){
+      (*pjtree) << a;
+    }
+    else{
+      continue;
+    }
+  }
+}
+
+void MainWindow::GetMLRProjects(ProjectTree *pjtree)
+{
+  size_t i, j, k;
+  for(i = 0; i < projects->keys().size(); i++){
+    PROJECT a;
+    int pid = projects->keys()[i];
+    a.name = projects->value(pid)->getProjectName();
+    a.id = pid;
+    for(j = 0; j < projects->value(pid)->MLRCount(); j++){
+      MODELTREE m;
+      m.name = projects->value(pid)->getMLRModelAt(j)->getName();
+      m.id = projects->value(pid)->getMLRModelAt(j)->getModelID();
+      for(k = 0; k < projects->value(pid)->getMLRModelAt(j)->MLRPredictionCount(); k++){
+        m.ptree.append(PREDICTIONTREE());
+        m.ptree.last().name = projects->value(pid)->getMLRModelAt(j)->getMLRPrediction(k)->getName();
+        m.ptree.last().id = projects->value(pid)->getMLRModelAt(j)->getMLRPrediction(k)->getPredID();
+      }
+      a.mtree << m;
+    }
+
+    if(a.mtree.size() > 0){
+      (*pjtree) << a;
+    }
+    else{
+      continue;
+    }
+  }
+}
+
+void MainWindow::GetLDAProjects(ProjectTree *pjtree)
+{
+  size_t i, j, k;
+  for(i = 0; i < projects->keys().size(); i++){
+    PROJECT a;
+    int pid = projects->keys()[i];
+    a.name = projects->value(pid)->getProjectName();
+    a.id = pid;
+    for(j = 0; j < projects->value(pid)->LDACount(); j++){
+      MODELTREE m;
+      m.name = projects->value(pid)->getLDAModelAt(j)->getName();
+      m.id = projects->value(pid)->getLDAModelAt(j)->getModelID();
+      for(k = 0; k < projects->value(pid)->getLDAModelAt(j)->LDAPredictionCount(); k++){
+        m.ptree.append(PREDICTIONTREE());
+        m.ptree.last().name = projects->value(pid)->getLDAModelAt(j)->getLDAPrediction(k)->getName();
+        m.ptree.last().id = projects->value(pid)->getLDAModelAt(j)->getLDAPrediction(k)->getPredID();
+      }
+      a.mtree << m;
+    }
+
+    if(a.mtree.size() > 0){
+      (*pjtree) << a;
+    }
+    else{
+      continue;
+    }
+  }
 }
 
 void MainWindow::ProjectWindow()
@@ -3750,17 +3968,20 @@ void MainWindow::PlotVariableDistribution()
 void MainWindow::PCA2DScorePlot()
 {
   if(ProjectsHavePCA() == true ){
-    PlotDialog plotdialog(projects, PCA_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPCAProjects(&pjtree);
+    DebugProjectTree(pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PCAPlot pcaplot(projects);
-      pcaplot.setPID(plotdialog.selectedProject());
-      pcaplot.setMID(plotdialog.getModelID());
+      pcaplot.setPID(dp.getProjectID());
+      pcaplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       pcaplot.ScorePlot2D(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -3775,7 +3996,6 @@ void MainWindow::PCA2DLoadingsMVANDPlot()
 {
   if(ProjectsHavePCA() == true ){
     ClassPlotDialog classplotdialog(projects, ClassPlotDialog::PCALOADINGS);
-
     if(classplotdialog.exec() == QDialog::Accepted && classplotdialog.Plot() == true){
       PCAPlot pcaplot(projects);
       pcaplot.setPID(classplotdialog.selectedProject());
@@ -3799,17 +4019,19 @@ void MainWindow::PCA2DLoadingsMVANDPlot()
 void MainWindow::PCA2DLoadingsPlot()
 {
   if(ProjectsHavePCA() == true ){
-    PlotDialog plotdialog(projects, PCA_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPCAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PCAPlot pcaplot(projects);
-      pcaplot.setPID(plotdialog.selectedProject());
-      pcaplot.setMID(plotdialog.getModelID());
+      pcaplot.setPID(dp.getProjectID());
+      pcaplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       pcaplot.LoadingsPlot2D(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -3824,17 +4046,20 @@ void MainWindow::PCA2DLoadingsPlot()
 void MainWindow::PCA2DScorePlotPrediction()
 {
   if(ProjectsHavePCA() == true){
-    PlotDialog plotdialog(projects, PCAPrediction);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPCAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PCAPlot pcaplot(projects);
-      pcaplot.setPID(plotdialog.selectedProject());
-      pcaplot.setMID(plotdialog.getModelID());
-      pcaplot.setPREDID(plotdialog.getPredID());
+      pcaplot.setPID(dp.getProjectID());
+      pcaplot.setMID(dp.getModelID());
+      pcaplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       pcaplot.ScorePlotPrediction2D(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -3848,17 +4073,19 @@ void MainWindow::PCA2DScorePlotPrediction()
 void MainWindow::PCA3DScorePlot()
 {
   if(ProjectsHavePCA() == true){
-    PlotDialog plotdialog(projects, PCA_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPCAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PCAPlot pcaplot(projects);
-      pcaplot.setPID(plotdialog.selectedProject());
-      pcaplot.setMID(plotdialog.getModelID());
+      pcaplot.setPID(dp.getProjectID());
+      pcaplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot3D *plot3D;
       pcaplot.ScorePlot3D(&plot3D);
       graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -3872,17 +4099,19 @@ void MainWindow::PCA3DScorePlot()
 void MainWindow::PCA3DLoadingsPlot()
 {
   if(ProjectsHavePCA() == true){
-    PlotDialog plotdialog(projects, PCA_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPCAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PCAPlot pcaplot(projects);
-      pcaplot.setPID(plotdialog.selectedProject());
-      pcaplot.setMID(plotdialog.getModelID());
+      pcaplot.setPID(dp.getProjectID());
+      pcaplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot3D *plot3D;
       pcaplot.LoadingsPlot3D(&plot3D);
       graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -3896,18 +4125,20 @@ void MainWindow::PCA3DLoadingsPlot()
 void MainWindow::PCA3DScorePlotPrediction()
 {
   if(ProjectsHavePCA() == true){
-    PlotDialog plotdialog(projects, PCAPrediction);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPCAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PCAPlot pcaplot(projects);
-      pcaplot.setPID(plotdialog.selectedProject());
-      pcaplot.setMID(plotdialog.getModelID());
-      pcaplot.setPREDID(plotdialog.getPredID());
+      pcaplot.setPID(dp.getProjectID());
+      pcaplot.setMID(dp.getModelID());
+      pcaplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot3D *plot3D;
       pcaplot.ScorePlotPrediction3D(&plot3D);
       graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -3920,18 +4151,20 @@ void MainWindow::PCA3DScorePlotPrediction()
 
 void MainWindow::PLS2DPlot()
 {
- if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+  if(ProjectsHavePLS() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       plsplot.TU_Plot(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -3946,17 +4179,19 @@ void MainWindow::PLS2DPlot()
 void MainWindow::PLS2DTTScorePlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       plsplot.T_ScorePlot2D(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -3970,17 +4205,19 @@ void MainWindow::PLS2DTTScorePlot()
 void MainWindow::PLS2DPPLoadingsPlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       plsplot.P_LoadingsPlot2D(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -3995,16 +4232,19 @@ void MainWindow::PLS2DPPLoadingsPlot()
 void MainWindow::PLS2DWWWeightsPlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLS_);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       plsplot.WeightsPlot2D(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4019,17 +4259,19 @@ void MainWindow::PLS2DWWWeightsPlot()
 void MainWindow::PLS2DUUScorePlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       plsplot.U_ScorePlot2D(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4043,17 +4285,19 @@ void MainWindow::PLS2DUUScorePlot()
 void MainWindow::PLS2DQQLoadingsPlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       plsplot.Q_LoadingsPlot2D(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4068,17 +4312,19 @@ void MainWindow::PLS2DQQLoadingsPlot()
 void MainWindow::PLS2DPQLoadingsPlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       plsplot.PQ_LoadingsPlot2D(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4090,22 +4336,23 @@ void MainWindow::PLS2DPQLoadingsPlot()
   }
 }
 
-
 void MainWindow::PLS2DTTScorePlotPrediction()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLSPrediction);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      plsplot.setPREDID(plotdialog.getPredID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      plsplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       plsplot.T_ScorePlotPrediction2D(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4119,17 +4366,19 @@ void MainWindow::PLS2DTTScorePlotPrediction()
 void MainWindow::PLSPlotBetaCoefficients()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLSRecalcVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      plsplot.setNPrincipalComponent(plotdialog.getNPC());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      plsplot.setNLatentVariables(dp.getNLV());
       BarPlot *betas_barplot = 0;
       plsplot.BetaCoefficients(&betas_barplot);
       MDIChild *graphchild = createMdiChild();
       graphchild->setWidget(betas_barplot);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
     }
@@ -4142,16 +4391,18 @@ void MainWindow::PLSPlotBetaCoefficients()
 void MainWindow::PLSPlotBetaCoeffDWPlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLSValidation);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       SimpleLine2DPlot *dw_betas_plot = 0;
       plsplot.BetaCoefficientsDurbinWatson(&dw_betas_plot);
       MDIChild *graphchild = createMdiChild();
       graphchild->setWidget(dw_betas_plot);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
     }
@@ -4164,19 +4415,21 @@ void MainWindow::PLSPlotBetaCoeffDWPlot()
 void MainWindow::PLSRecalcVSExpPlotPrediction()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLSRecalcVSExperimentalWithPrediction);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      plsplot.setPREDID(plotdialog.getPredID());
-      plsplot.setNPrincipalComponent(plotdialog.getNPC());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      plsplot.setPREDID(dp.getPredictionID());
+      plsplot.setNLatentVariables(dp.getNLV());
       ScatterPlot2D *plot2D = 0;
       plsplot.RecalcVSExperimentalAndPrediction(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4194,19 +4447,21 @@ void MainWindow::PLSRecalcVSExpPlotPrediction()
 void MainWindow::PLSPredictedVSExpAndPredictionPlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLSPredictedVSExperimentalWithPrediction);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      plsplot.setPREDID(plotdialog.getPredID());
-      plsplot.setNPrincipalComponent(plotdialog.getNPC());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      plsplot.setPREDID(dp.getPredictionID());
+      plsplot.setNLatentVariables(dp.getNLV());
       ScatterPlot2D *plot2D = 0;
       plsplot.PredictedVSExperimentalAndPrediction(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4224,18 +4479,20 @@ void MainWindow::PLSPredictedVSExpAndPredictionPlot()
 void MainWindow::PLSRecalcVSExpPlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLSRecalcVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      plsplot.setNPrincipalComponent(plotdialog.getNPC());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      plsplot.setNLatentVariables(dp.getNLV());
       ScatterPlot2D *plot2D = 0;
       plsplot.RecalcVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4253,18 +4510,20 @@ void MainWindow::PLSRecalcVSExpPlot()
 void MainWindow::PLSRecalcResidualsVSExpPlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLSRecalcVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      plsplot.setNPrincipalComponent(plotdialog.getNPC());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      plsplot.setNLatentVariables(dp.getNLV());
       ScatterPlot2D *plot2D = 0;
       plsplot.RecalcResidualsVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4282,18 +4541,20 @@ void MainWindow::PLSRecalcResidualsVSExpPlot()
 void MainWindow::PLSPredVSExpPlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLSPredictedVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      plsplot.setNPrincipalComponent(plotdialog.getNPC());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      plsplot.setNLatentVariables(dp.getNLV());
       ScatterPlot2D *plot2D = 0;
       plsplot.PredictedVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4311,18 +4572,20 @@ void MainWindow::PLSPredVSExpPlot()
 void MainWindow::PLSPredResidualsVSExpPlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLSPredictedVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      plsplot.setNPrincipalComponent(plotdialog.getNPC());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      plsplot.setNLatentVariables(dp.getNLV());
       ScatterPlot2D *plot2D = 0;
       plsplot.PredictedResidualsVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4340,16 +4603,19 @@ void MainWindow::PLSPredResidualsVSExpPlot()
 void MainWindow::PLSPlotQ2R2()
 {
   if(ProjectsHavePLSValidated() == true){
-    PlotDialog plotdialog(projects, PLSValidation);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       QList< SimpleLine2DPlot* > plots = plsplot.R2Q2();
       for(int i = 0; i < plots.size(); i++){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plots[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
       }
@@ -4363,17 +4629,20 @@ void MainWindow::PLSPlotQ2R2()
 void MainWindow::PLSPlotR2R2Predicted()
 {
   if(ProjectsHavePLSPrediction() == true){
-    PlotDialog plotdialog(projects, PLSR2R2Plot);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      plsplot.setPREDID(plotdialog.getPredID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      plsplot.setPREDID(dp.getPredictionID());
       QList< SimpleLine2DPlot* > plots = plsplot.R2R2Prediction();
       for(int i = 0; i < plots.size(); i++){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plots[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
       }
@@ -4387,16 +4656,19 @@ void MainWindow::PLSPlotR2R2Predicted()
 void MainWindow::PLSPlotYScrambling()
 {
   if(ProjectsHavePLSYScrambling() == true){
-    PlotDialog plotdialog(projects, PLSYSCRAMBLING);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       QList< ScatterPlot2D* > plots = plsplot.YScramblingPlot();
       for(int i = 0; i < plots.size(); i++){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plots[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
       }
@@ -4411,16 +4683,19 @@ void MainWindow::PLSPlotYScrambling()
 void MainWindow::PLS3DTTTScorePlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLS_);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot3D *plot3D;
       plsplot.T_ScorePlot3D(&plot3D);
       graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4434,16 +4709,19 @@ void MainWindow::PLS3DTTTScorePlot()
 void MainWindow::PLS3DPPPLoadingsPlot()
 {
  if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLS_);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+   ProjectTree pjtree;
+   GetPLSProjects(&pjtree);
+   DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+   dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot3D *plot3D;
       plsplot.P_LoadingsPlot3D(&plot3D);
       graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4457,16 +4735,19 @@ void MainWindow::PLS3DPPPLoadingsPlot()
 void MainWindow::PLS3DWWWLoadingsPlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLS_);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot3D *plot3D;
       plsplot.WeightsPlot3D(&plot3D);
       graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4480,17 +4761,19 @@ void MainWindow::PLS3DWWWLoadingsPlot()
 void MainWindow::PLS3DUUUScorePlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot3D *plot3D;
       plsplot.U_ScorePlot3D(&plot3D);
       graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4504,17 +4787,19 @@ void MainWindow::PLS3DUUUScorePlot()
 void MainWindow::PLS3DQQQLoadingsPlot()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLS_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot3D *plot3D;
       plsplot.Q_LoadingsPlot3D(&plot3D);
       graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4528,18 +4813,20 @@ void MainWindow::PLS3DQQQLoadingsPlot()
 void MainWindow::PLS3DScorePlotPrediction()
 {
   if(ProjectsHavePLS() == true){
-    PlotDialog plotdialog(projects, PLSPrediction);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       PLSPlot plsplot(projects);
-      plsplot.setPID(plotdialog.selectedProject());
-      plsplot.setMID(plotdialog.getModelID());
-      plsplot.setPREDID(plotdialog.getPredID());
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      plsplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot3D *plot3D;
       plsplot.T_ScorePlotPrediction3D(&plot3D);
       graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4550,20 +4837,179 @@ void MainWindow::PLS3DScorePlotPrediction()
   }
 }
 
+void MainWindow::EPLSRecalcVSExpPlot()
+{
+  if(ProjectsHaveEPLSValidated() == true ){
+    ProjectTree pjtree;
+    GetEPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    if(dp.exec() == QDialog::Accepted){
+      EPLSPlot eplsplot(projects);
+      eplsplot.setPID(dp.getProjectID());
+      eplsplot.setMID(dp.getModelID());
+      eplsplot.setNLatentVariables(dp.getNLV());
+      ScatterPlot2D *plot2D = 0;
+      eplsplot.RecalcVSExperimental(&plot2D);
+      if(plot2D != 0){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plot2D);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      }
+      else{
+        QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No EPLS Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::EPLSRecalcResidualsVSExpPlot()
+{
+  if(ProjectsHaveEPLSValidated() == true ){
+    ProjectTree pjtree;
+    GetEPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    if(dp.exec() == QDialog::Accepted){
+      EPLSPlot eplsplot(projects);
+      eplsplot.setPID(dp.getProjectID());
+      eplsplot.setMID(dp.getModelID());
+      eplsplot.setNLatentVariables(dp.getNLV());
+      ScatterPlot2D *plot2D = 0;
+      eplsplot.RecalcResidualsVSExperimental(&plot2D);
+      if(plot2D != 0){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plot2D);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      }
+      else{
+        QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No EPLS Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::EPLSPredVSExpPlot()
+{
+  if(ProjectsHaveEPLSValidated() == true ){
+    ProjectTree pjtree;
+    GetEPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    if(dp.exec() == QDialog::Accepted){
+      EPLSPlot eplsplot(projects);
+      eplsplot.setPID(dp.getProjectID());
+      eplsplot.setMID(dp.getModelID());
+      eplsplot.setNLatentVariables(dp.getNLV());
+      ScatterPlot2D *plot2D = 0;
+      eplsplot.PredictedVSExperimental(&plot2D);
+      if(plot2D != 0){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plot2D);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      }
+      else{
+        QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No EPLS Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::EPLSPredResidualsVSExpPlot()
+{
+  if(ProjectsHaveEPLSValidated() == true ){
+    ProjectTree pjtree;
+    GetEPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    if(dp.exec() == QDialog::Accepted){
+      EPLSPlot eplsplot(projects);
+      eplsplot.setPID(dp.getProjectID());
+      eplsplot.setMID(dp.getModelID());
+      eplsplot.setNLatentVariables(dp.getNLV());
+      ScatterPlot2D *plot2D = 0;
+      eplsplot.PredictedResidualsVSExperimental(&plot2D);
+      if(plot2D != 0){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plot2D);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      }
+      else{
+        QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No EPLS Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::EPLSPlotR2Q2()
+{
+  if(ProjectsHaveEPLSValidated() == true ){
+    ProjectTree pjtree;
+    GetEPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      EPLSPlot eplsplot(projects);
+      eplsplot.setPID(dp.getProjectID());
+      eplsplot.setMID(dp.getModelID());
+      eplsplot.setNLatentVariables(dp.getNLV());
+      QList< SimpleLine2DPlot* > plots = eplsplot.R2Q2();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No EPLS Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::EPLSPlotSDECSDEP()
+{
+
+}
+
 void MainWindow::MLRRecalcVSExpPlot()
 {
   if(ProjectsHaveMLR() == true){
-    PlotDialog plotdialog(projects, MLRRecalcVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetMLRProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       MLRPlot mlrplot(projects);
-      mlrplot.setPID(plotdialog.selectedProject());
-      mlrplot.setMID(plotdialog.getModelID());
+      mlrplot.setPID(dp.getProjectID());
+      mlrplot.setMID(dp.getModelID());
       ScatterPlot2D *plot2D = 0;
       mlrplot.RecalcVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4581,17 +5027,20 @@ void MainWindow::MLRRecalcVSExpPlot()
 void MainWindow::MLRRecalcResidualsVSExpPlot()
 {
   if(ProjectsHaveMLR() == true){
-    PlotDialog plotdialog(projects, MLRRecalcVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetMLRProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       MLRPlot mlrplot(projects);
-      mlrplot.setPID(plotdialog.selectedProject());
-      mlrplot.setMID(plotdialog.getModelID());
+      mlrplot.setPID(dp.getProjectID());
+      mlrplot.setMID(dp.getModelID());
       ScatterPlot2D *plot2D = 0;
       mlrplot.RecalcResidualsVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4609,16 +5058,19 @@ void MainWindow::MLRRecalcResidualsVSExpPlot()
 void MainWindow::MLRBetaCoefficients()
 {
   if(ProjectsHaveMLR() == true){
-    PlotDialog plotdialog(projects, MLRRecalcVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetMLRProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       MLRPlot mlrplot(projects);
-      mlrplot.setPID(plotdialog.selectedProject());
-      mlrplot.setMID(plotdialog.getModelID());
+      mlrplot.setPID(dp.getProjectID());
+      mlrplot.setMID(dp.getModelID());
       QList<BarPlot*> barplots = mlrplot.BetaCoefficients();
       for(int i = 0; i < barplots.size(); i++){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(barplots[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
       }
@@ -4632,17 +5084,20 @@ void MainWindow::MLRBetaCoefficients()
 void MainWindow::MLRPredVSExpPlot()
 {
   if(ProjectsHaveMLR() == true){
-    PlotDialog plotdialog(projects, MLRPredictedVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetMLRProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       MLRPlot mlrplot(projects);
-      mlrplot.setPID(plotdialog.selectedProject());
-      mlrplot.setMID(plotdialog.getModelID());
+      mlrplot.setPID(dp.getProjectID());
+      mlrplot.setMID(dp.getModelID());
       ScatterPlot2D *plot2D = 0;
       mlrplot.PredictedVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4660,17 +5115,20 @@ void MainWindow::MLRPredVSExpPlot()
 void MainWindow::MLRPredResidualsVSExpPlot()
 {
   if(ProjectsHaveMLR() == true){
-    PlotDialog plotdialog(projects, MLRPredictedVSExperimental);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetMLRProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       MLRPlot mlrplot(projects);
-      mlrplot.setPID(plotdialog.selectedProject());
-      mlrplot.setMID(plotdialog.getModelID());
+      mlrplot.setPID(dp.getProjectID());
+      mlrplot.setMID(dp.getModelID());
       ScatterPlot2D *plot2D = 0;
       mlrplot.PredictedResidualsVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4688,18 +5146,21 @@ void MainWindow::MLRPredResidualsVSExpPlot()
 void MainWindow::MLRRecalcVSExpAndPredictionPlot()
 {
   if(ProjectsHaveMLR() == true && ProjectsHaveMLRPrediction() == true){
-    PlotDialog plotdialog(projects, MLRRecalcVSExperimentalWithPrediction);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetMLRProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       MLRPlot mlrplot(projects);
-      mlrplot.setPID(plotdialog.selectedProject());
-      mlrplot.setMID(plotdialog.getModelID());
-      mlrplot.setPREDID(plotdialog.getPredID());
+      mlrplot.setPID(dp.getProjectID());
+      mlrplot.setMID(dp.getModelID());
+      mlrplot.setPREDID(dp.getPredictionID());
       ScatterPlot2D *plot2D = 0;
       mlrplot.RecalcVSExperimentalAndPrediction(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4717,18 +5178,21 @@ void MainWindow::MLRRecalcVSExpAndPredictionPlot()
 void MainWindow::MLRPredictedVSExpAndPredictionPlot()
 {
   if(ProjectsHaveMLR() == true && ProjectsHaveMLRPrediction() == true){
-    PlotDialog plotdialog(projects, MLRPredictedVSExperimentalWithPrediction);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetMLRProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       MLRPlot mlrplot(projects);
-      mlrplot.setPID(plotdialog.selectedProject());
-      mlrplot.setMID(plotdialog.getModelID());
-      mlrplot.setPREDID(plotdialog.getPredID());
+      mlrplot.setPID(dp.getProjectID());
+      mlrplot.setMID(dp.getModelID());
+      mlrplot.setPREDID(dp.getPredictionID());
       ScatterPlot2D *plot2D = 0;
       mlrplot.PredictedVSExperimentalAndPrediction(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4746,16 +5210,19 @@ void MainWindow::MLRPredictedVSExpAndPredictionPlot()
 void MainWindow::MLRPlotYScrambling()
 {
   if(ProjectsHaveMLRYScrambling() == true){
-    PlotDialog plotdialog(projects, MLRYSCRAMBLING);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetMLRProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       MLRPlot mlrplot(projects);
-      mlrplot.setPID(plotdialog.selectedProject());
-      mlrplot.setMID(plotdialog.getModelID());
+      mlrplot.setPID(dp.getProjectID());
+      mlrplot.setMID(dp.getModelID());
       QList< ScatterPlot2D* > plots = mlrplot.YScramblingPlot();
       for(int i = 0; i < plots.size(); i++){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plots[i]);
-        graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
       }
@@ -4769,17 +5236,19 @@ void MainWindow::MLRPlotYScrambling()
 void MainWindow::LDAFeaturePlot2D()
 {
   if(ProjectsHaveLDA() == true ){
-    PlotDialog plotdialog(projects, LDA_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetLDAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       LDAPlot ldaplot(projects);
-      ldaplot.setPID(plotdialog.selectedProject());
-      ldaplot.setMID(plotdialog.getModelID());
+      ldaplot.setPID(dp.getProjectID());
+      ldaplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       ldaplot.FeaturePlot2D(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4793,17 +5262,19 @@ void MainWindow::LDAFeaturePlot2D()
 void MainWindow::LDAFeaturePlot3D()
 {
   if(ProjectsHaveLDA() == true ){
-    PlotDialog plotdialog(projects, LDA_);
-
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetLDAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       LDAPlot ldaplot(projects);
-      ldaplot.setPID(plotdialog.selectedProject());
-      ldaplot.setMID(plotdialog.getModelID());
+      ldaplot.setPID(dp.getProjectID());
+      ldaplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot3D *plot3D;
       ldaplot.FeaturePlot3D(&plot3D);
       graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4817,17 +5288,20 @@ void MainWindow::LDAFeaturePlot3D()
 void MainWindow::LDAFeaturePlotAndPrediction2D()
 {
   if(ProjectsHaveLDA() == true && ProjectsHaveLDAPrediction() == true){
-    PlotDialog plotdialog(projects, LDAPrediction_);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetLDAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       LDAPlot ldaplot(projects);
-      ldaplot.setPID(plotdialog.selectedProject());
-      ldaplot.setMID(plotdialog.getModelID());
-      ldaplot.setPREDID(plotdialog.getPredID());
+      ldaplot.setPID(dp.getProjectID());
+      ldaplot.setMID(dp.getModelID());
+      ldaplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       ldaplot.FeaturePlotAndPrediction2D(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4841,17 +5315,20 @@ void MainWindow::LDAFeaturePlotAndPrediction2D()
 void MainWindow::LDAFeaturePlotAndPrediction3D()
 {
   if(ProjectsHaveLDA() == true && ProjectsHaveLDAPrediction() == true){
-    PlotDialog plotdialog(projects, LDAPrediction_);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetLDAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       LDAPlot ldaplot(projects);
-      ldaplot.setPID(plotdialog.selectedProject());
-      ldaplot.setMID(plotdialog.getModelID());
-      ldaplot.setPREDID(plotdialog.getPredID());
+      ldaplot.setPID(dp.getProjectID());
+      ldaplot.setMID(dp.getModelID());
+      ldaplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot3D *plot3D;
       ldaplot.FeaturePlotAndPrediction3D(&plot3D);
       graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4865,17 +5342,20 @@ void MainWindow::LDAFeaturePlotAndPrediction3D()
 void MainWindow::LDAProbabilityDistribution()
 {
   if(ProjectsHaveLDA() == true){
-    PlotDialog plotdialog(projects, LDA_);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetLDAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       LDAPlot ldaplot(projects);
-      ldaplot.setPID(plotdialog.selectedProject());
-      ldaplot.setMID(plotdialog.getModelID());
-      ldaplot.setPREDID(plotdialog.getPredID());
+      ldaplot.setPID(dp.getProjectID());
+      ldaplot.setMID(dp.getModelID());
+      ldaplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       ldaplot.ProbabilityDistribution(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -4889,17 +5369,20 @@ void MainWindow::LDAProbabilityDistribution()
 void MainWindow::LDAProbabilityDistributionWithPredictions()
 {
   if(ProjectsHaveLDA() == true && ProjectsHaveLDAPrediction() == true){
-    PlotDialog plotdialog(projects, LDAPrediction_);
-    if(plotdialog.exec() == QDialog::Accepted && plotdialog.Plot() == true){
+    ProjectTree pjtree;
+    GetLDAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
       LDAPlot ldaplot(projects);
-      ldaplot.setPID(plotdialog.selectedProject());
-      ldaplot.setMID(plotdialog.getModelID());
-      ldaplot.setPREDID(plotdialog.getPredID());
+      ldaplot.setPID(dp.getProjectID());
+      ldaplot.setMID(dp.getModelID());
+      ldaplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
       ScatterPlot2D *plot2D;
       ldaplot.ProbabilityDistributionWithPredictions(&plot2D);
       graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(plotdialog.selectedProject(), plotdialog.getModelID()));
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -5154,105 +5637,97 @@ void MainWindow::DoPCA()
 
 void MainWindow::DoEPLSPrediction()
 {
-  if(!projects->isEmpty()){
-    int nepls = 0;
-    for(int i = 0; i < projects->values().size(); i++){
-        if(projects->values()[i]->EPLSCount() > 0)
-          nepls++;
-    }
+  if(ProjectsHaveEPLSValidated() == true){
+    DoPredictionDialog p(projects, EPLS_);
+    if(p.exec() == QDialog::Accepted && p.compute() == true){
 
-    if(nepls > 0){
-      DoPredictionDialog p(projects, EPLS_);
-      if(p.exec() == QDialog::Accepted && p.compute() == true){
+      int pid = p.getselectedProject();
+      int mid = p.getselectedModel();
+      int did = p.getselectedData();
 
-        int pid = p.getselectedProject();
-        int mid = p.getselectedModel();
-        int did = p.getselectedData();
+      StartRun();
+      CalculationMenuDisable(pid);
+      TopMenuEnableDisable();
 
-        StartRun();
-        CalculationMenuDisable(pid);
-        TopMenuEnableDisable();
+      QStringList objsel = p.getObjectSelected();
+      QStringList ysel = p.getYVariableSelected();
+      QString modelname = p.getPredictionName();
 
-        QStringList objsel = p.getObjectSelected();
-        QStringList ysel = p.getYVariableSelected();
-        QString modelname = p.getPredictionName();
+      QStringList xvarsel = projects->value(pid)->getEPLSModel(mid)->getXVarName();
+      matrix *x, *y;
+      NewMatrix(&x, objsel.size(), xvarsel.size());
+      NewMatrix(&y, objsel.size(), ysel.size());
 
-        QStringList xvarsel = projects->value(pid)->getEPLSModel(mid)->getXVarName();
-        matrix *x, *y;
-        NewMatrix(&x, objsel.size(), xvarsel.size());
-        NewMatrix(&y, objsel.size(), ysel.size());
+      PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, ysel, &x, &y);
 
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, ysel, &x, &y);
+      if(x->col == (uint)xvarsel.size()){
+        QString str = "--------------------\n Computing EPLS Prediction for: ";
+        str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
+        updateLog(str);
 
-        if(x->col == (uint)xvarsel.size()){
-          QString str = "--------------------\n Computing EPLS Prediction for: ";
-          str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
-          updateLog(str);
+        projects->value(pid)->getEPLSModel(mid)->addEPLSPrediction();
 
-          projects->value(pid)->getEPLSModel(mid)->addEPLSPrediction();
-
-          projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->setName("EPLS Prediction - " + modelname);
-          projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->setPredID(projects->value(pid)->getEPLSModel(mid)->EPLSPredictionCount()-1);
-          projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->setDID(did);
-          projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->setDataHash(projects->value(pid)->getMatrix(did)->getHash());
-          projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->setObjName(objsel);
-          projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->setYVarName(ysel);
+        projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->setName("EPLS Prediction - " + modelname);
+        projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->setPredID(projects->value(pid)->getEPLSModel(mid)->EPLSPredictionCount()-1);
+        projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->setDID(did);
+        projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->setDataHash(projects->value(pid)->getMatrix(did)->getHash());
+        projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->setObjName(objsel);
+        projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->setYVarName(ysel);
 
 
-          RUN obj;
-          obj.setXMatrix(x);
-          obj.setYMatrix(y);
-          obj.setEPLSModel(projects->value(pid)->getEPLSModel(mid));
-          obj.setElearningParm(projects->value(pid)->getEPLSModel(mid)->getElearningParm());
+        RUN obj;
+        obj.setXMatrix(x);
+        obj.setYMatrix(y);
+        obj.setEPLSModel(projects->value(pid)->getEPLSModel(mid));
+        obj.setElearningParm(projects->value(pid)->getEPLSModel(mid)->getElearningParm());
 
-          QFuture<void> future = obj.RunEPLSPrediction(projects->value(pid)->getEPLSModel(mid)->getCombinationRule());
-          while(!future.isFinished())
-            QApplication::processEvents();
+        QFuture<void> future = obj.RunEPLSPrediction(projects->value(pid)->getEPLSModel(mid)->getCombinationRule());
+        while(!future.isFinished())
+          QApplication::processEvents();
 
-  //         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getName());
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, QString::number(mid));
-          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+//         ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
+        QTreeWidgetItem *subitem = new QTreeWidgetItem;
+        subitem->setText(0, projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getName());
+        subitem->setText(1, QString::number(tabcount_));
+        subitem->setText(2, QString::number(pid));
+        subitem->setText(3, QString::number(mid));
+        subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
 
-          if(ysel.size() > 0){
-            subitem->setText(5, projects->value(pid)->getMatrix(did)->getHash());
-          }
-          else{
-            subitem->setText(5, "None");
-          }
-
-          subitem->setText(6, QString::number(projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getPredID()));
-          subitem->setText(7, QString("EPLS Prediction"));
-
-          #ifdef DEBUG
-          qDebug() << "X Predicted Scores";
-          PrintArray(projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getXPredScores());
-          qDebug() << "Y Dipendent Value Predicted";
-          PrintMatrix(projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getYDipVar());
-          qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2) << subitem->text(3) << subitem->text(4) << subitem->text(5);
-          #endif
-
-          tabcount_++;
-
-          getModelItem(pid, mid)->addChild(subitem);
+        if(ysel.size() > 0){
+          subitem->setText(5, projects->value(pid)->getMatrix(did)->getHash());
         }
         else{
-          QMessageBox::critical(this, tr("EPLS Prediction Error"),
-                    tr("Unable to compute EPLS Prediction.\n"
-                      "The number of variables differ. Please check your data."),
-                      QMessageBox::Ok);
-          updateLog(QString("Error!! Unable to compute EPLS Prediction. The number of variables differ. Please check your data.\n"));
+          subitem->setText(5, "None");
         }
-        TopMenuEnableDisable();
-        CalculationMenuEnable();
-        StopRun();
-        DelMatrix(&x);
-        DelMatrix(&y);
-        projects->value(pid)->AutoSave();
+
+        subitem->setText(6, QString::number(projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getPredID()));
+        subitem->setText(7, QString("EPLS Prediction"));
+
+        #ifdef DEBUG
+        qDebug() << "X Predicted Scores";
+        PrintArray(projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getXPredScores());
+        qDebug() << "Y Dipendent Value Predicted";
+        PrintMatrix(projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getYDipVar());
+        qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2) << subitem->text(3) << subitem->text(4) << subitem->text(5);
+        #endif
+
+        tabcount_++;
+
+        getModelItem(pid, mid)->addChild(subitem);
       }
+      else{
+        QMessageBox::critical(this, tr("EPLS Prediction Error"),
+                  tr("Unable to compute EPLS Prediction.\n"
+                    "The number of variables differ. Please check your data."),
+                    QMessageBox::Ok);
+        updateLog(QString("Error!! Unable to compute EPLS Prediction. The number of variables differ. Please check your data.\n"));
+      }
+      TopMenuEnableDisable();
+      CalculationMenuEnable();
+      StopRun();
+      DelMatrix(&x);
+      DelMatrix(&y);
+      projects->value(pid)->AutoSave();
     }
   }
 }
@@ -6632,6 +7107,20 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPLS3D_uuu_Score_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DUUUScorePlot()));
   connect(ui.actionPLS3D_qqq_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DQQQLoadingsPlot()));
   connect(ui.actionPLS3D_ttt_Score_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(PLS3DScorePlotPrediction()));
+
+
+
+  /*void EPLSRecalcResidualsVSExpPlot();
+  void EPLSPredResidualsVSExpPlot();
+  void EPLSPlotSDECSDEP();*/
+
+  connect(ui.actionEPLSRecalculated_vs_Experimental, SIGNAL(triggered(bool)), SLOT(EPLSRecalcVSExpPlot()));
+  connect(ui.actionEPLSPredicted_vs_Experimental, SIGNAL(triggered(bool)), SLOT(EPLSPredVSExpPlot()));
+  connect(ui.actionEPLSR2_and_Q2, SIGNAL(triggered(bool)), SLOT(EPLSPlotR2Q2()));
+  /*connect(ui.actionEPLSROC_curves, SIGNAL(triggered(bool)), SLOT(PLSRecalcResidualsVSExpPlot()));
+  connect(ui.actionEPLSROC_AUC_recalculated_predicted, SIGNAL(triggered(bool)), SLOT(PLSPredVSExpPlot()));
+  connect(ui.actionEPLSPrecision_recall_curves, SIGNAL(triggered(bool)), SLOT(PLSPredResidualsVSExpPlot()));
+  connect(ui.actionEPLSPrecision_Recall_AUC_recalculated_predicted, SIGNAL(triggered(bool)), SLOT(PLSPlotQ2R2()));*/
 
   //connect(ui.actionEPLSRecalculated_vs_Experimental, SIGNAL(triggered(bool)), SLOT(PLSPlotR2R2Predicted()));
 

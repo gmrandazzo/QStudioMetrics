@@ -106,6 +106,12 @@ private slots:
   void PLS3DQQQLoadingsPlot();
   void PLS3DScorePlotPrediction();
 
+  void EPLSRecalcVSExpPlot();
+  void EPLSRecalcResidualsVSExpPlot();
+  void EPLSPredVSExpPlot();
+  void EPLSPredResidualsVSExpPlot();
+  void EPLSPlotR2Q2();
+  void EPLSPlotSDECSDEP();
 
   void MLRRecalcVSExpPlot();
   void MLRRecalcResidualsVSExpPlot();
@@ -131,7 +137,6 @@ private slots:
   void ImageWindow();
 
   void removeProject();
-  void DowngradeProjectID();
   void showData();
   void showDescrpitiveStatistics();
   void addData();
@@ -164,6 +169,7 @@ private slots:
   void showEPLSRecalcY();
   void showEPLSValidatedPrediction();
   void showEPLSValidation();
+  void showEPLSPrediction();
 
   void showMLRCoeff();
   void showMLRRecalcY();
@@ -214,6 +220,13 @@ private:
 
   void updateLog(QString);
 
+  void DebugProjectTree(ProjectTree pjtree);
+  void GetPCAProjects(ProjectTree *pjtree);
+  void GetPLSProjects(ProjectTree *pjtree);
+  void GetEPLSProjects(ProjectTree *pjtree);
+  void GetMLRProjects(ProjectTree *pjtree);
+  void GetLDAProjects(ProjectTree *pjtree);
+
   int ProjectOpen(QString);
   void CheckProjects();
   bool havepca,
@@ -222,6 +235,10 @@ private:
        haveplspred,
        haveplsvalid,
        haveplsyscrambling,
+       haveepls,
+       haveeplspred,
+       haveeplsvalid,
+       haveeplsyscrambling,
        havemlr,
        havemlrpred,
        havemlrvalid,
@@ -236,12 +253,18 @@ private:
   void PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix **x, matrix **y);
   void PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix **x);
 
-  bool ProjectsHavePCA(){ return havepca; };
-  bool ProjectsHavePCAPrediction(){ return havepcapred; };
-  bool ProjectsHavePLS(){ return havepls; };
-  bool ProjectsHavePLSValidated(){ return haveplsvalid; };
+  bool ProjectsHavePCA(){ return havepca; }
+  bool ProjectsHavePCAPrediction(){ return havepcapred; }
+  bool ProjectsHavePLS(){ return havepls; }
+  bool ProjectsHavePLSValidated(){ return haveplsvalid; }
   bool ProjectsHavePLSYScrambling(){ return haveplsyscrambling; }
-  bool ProjectsHavePLSPrediction(){ return haveplspred; };
+  bool ProjectsHavePLSPrediction(){ return haveplspred; }
+
+  bool ProjectsHaveEPLS(){ return haveepls; }
+  bool ProjectsHaveEPLSValidated(){ return haveeplsvalid; }
+  bool ProjectsHaveEPLSYScrambling(){ return haveeplsyscrambling; }
+  bool ProjectsHaveEPLSPrediction(){ return haveeplspred; }
+
   bool ProjectsHaveMLR(){ return havemlr; }
   bool ProjectsHaveMLRValidated(){ return havemlrvalid; };
   bool ProjectsHaveMLRPrediction(){ return havemlrpred; };

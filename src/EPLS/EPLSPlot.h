@@ -20,7 +20,7 @@ public:
   void setPID(int pid_){ pid = pid_; }
   void setMID(int mid_){ mid = mid_; }
   void setPREDID(int predid_){ predid = predid_; }
-  void setNPrincipalComponent(int npc_){ npc = npc_; }
+  void setNLatentVariables(int nlv_){ nlv = nlv_; }
   void PredictedVSExperimentalAndPrediction(ScatterPlot2D **plot2D);
   void RecalcVSExperimentalAndPrediction(ScatterPlot2D **plot2D);
   void RecalcVSExperimental(ScatterPlot2D **plot2D);
@@ -33,6 +33,6 @@ public:
 
 private:
   PROJECTS *projects;
-  int pid, mid, predid, npc;
+  int pid, mid, predid, nlv;
 };
 #endif

@@ -11,7 +11,7 @@
 #endif
 
 
-EPLSPrediction::EPLSPrediction()
+EPLSPREDICTION::EPLSPREDICTION()
 {
   initTensor(&pxscores);
   initMatrix(&py);
@@ -24,7 +24,7 @@ EPLSPrediction::EPLSPrediction()
   initMatrix(&precision_recall_ap);
 }
 
-EPLSPrediction::~EPLSPrediction()
+EPLSPREDICTION::~EPLSPREDICTION()
 {
   #ifdef DEBUG
   qDebug() << "Delete EPLSPrediction: " << name;

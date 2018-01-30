@@ -15,44 +15,50 @@ enum{
   PCA_,
   PLS_,
   PLS_DA_,
+  PLSValidation,
   EPLS_,
   EPLS_DA_,
+  EPLSValidation,
   //UPCA_,
   //UPLS_,
-  PLSValidation,
-  EPLSValidation,
   //UPLSValidation,
   MLR_,
   MLRValidation,
+
   LDA_,
   LDAValidation,
-  //PLSVariableSelection,
-  //UPLSVariableSelection,
-
-  PCAPrediction,
-  PLSPrediction,
-  //UPCAPrediction,
-  //UPLSPrediction,
-  MLRPrediction,
   LDAPrediction_,
 
-  PLSR2R2Plot,
-  //UPLSR2R2Plot,
-  PLSRecalcVSExperimental,
-  //UPLSRecalcVSExperimental,
-  PLSPredictedVSExperimental,
-  //UPLSPredictedVSExperimental,
-  MLRRecalcVSExperimental,
-  MLRPredictedVSExperimental,
+  PCAPrediction,
+  //UPCAPrediction,
 
+  PLSPrediction,
+  PLSR2R2Plot,
+  PLSRecalcVSExperimental,
+  PLSPredictedVSExperimental,
   PLSRecalcVSExperimentalWithPrediction,
   PLSPredictedVSExperimentalWithPrediction,
+  PLSYSCRAMBLING,
+
+  EPLSPrediction,
+  EPLSR2R2Plot,
+  EPLSRecalcVSExperimental,
+  EPLSPredictedVSExperimental,
+  EPLSRecalcVSExperimentalWithPrediction,
+  EPLSPredictedVSExperimentalWithPrediction,
+  EPLSYSCRAMBLING,
+
+  //UPLSPrediction,
+  //UPLSR2R2Plot,
+  //UPLSRecalcVSExperimental,
+  //UPLSPredictedVSExperimental,
   //UPLSRecalcVSExperimentalWithPrediction,
   //UPLSPredictedVSExperimentalWithPrediction,
+  MLRPrediction,
+  MLRRecalcVSExperimental,
+  MLRPredictedVSExperimental,
   MLRRecalcVSExperimentalWithPrediction,
   MLRPredictedVSExperimentalWithPrediction,
-
-  PLSYSCRAMBLING,
   MLRYSCRAMBLING,
 
   LOO_,
@@ -73,6 +79,26 @@ enum{
   VARLABELST,
   TABLABELST
 };
+
+/*Project tree for plot dialog*/
+typedef struct{
+  int id;
+  QString name;
+} PREDICTIONTREE;
+
+typedef struct{
+    QList<PREDICTIONTREE> ptree;
+    int id;
+    QString name;
+} MODELTREE;
+
+typedef struct{
+  QList<MODELTREE> mtree;
+  int id;
+  QString name;
+} PROJECT;
+
+#define ProjectTree QList<PROJECT>
 
 /*highlight signal used in 2D plot to highlight objects (Used by FindCorrelationDialog)*/
 struct highlightSignal

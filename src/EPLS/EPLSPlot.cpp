@@ -11,8 +11,8 @@ void EPLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot2D **plot2D)
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
   QStringList varname = projects->value(pid)->getEPLSModel(mid)->getYVarName();
 
-  if(npc > projects->value(pid)->getEPLSModel(mid)->getNPC()){
-    npc = projects->value(pid)->getEPLSModel(mid)->getNPC();
+  if(nlv > projects->value(pid)->getEPLSModel(mid)->getNPC()){
+    nlv = projects->value(pid)->getEPLSModel(mid)->getNPC();
   }
 
   // Get Prediction
@@ -40,7 +40,7 @@ void EPLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot2D **plot2D)
       for(uint i = 0; i < nobjects; i++){
         uint ny = nvars;
         for(uint j = 0; j < ny; j++){
-          setMatrixValue(model_predicted_y, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_predicted, i, j+(ny*npc)-ny));
+          setMatrixValue(model_predicted_y, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_predicted, i, j+(ny*nlv)-ny));
         }
       }
 
@@ -86,7 +86,7 @@ void EPLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot2D **plot2D)
       for(uint i = 0; i < pred_nobjects; i++){
         uint ny = nvars;
         for(uint j = 0; j < ny; j++){
-          setMatrixValue(pred_predicted_y, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->getEPLSPrediction(predid)->py, i, j+(ny*npc)-ny));
+          setMatrixValue(pred_predicted_y, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->getEPLSPrediction(predid)->py, i, j+(ny*nlv)-ny));
         }
       }
 
@@ -127,7 +127,7 @@ void EPLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot2D **plot2D)
       xhash.append(projects->value(pid)->getEPLSModel(mid)->getEPLSPrediction(predid)->getDataHash());
       yhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
       yhash.append(projects->value(pid)->getEPLSModel(mid)->getEPLSPrediction(predid)->getDataHash());
-      (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted"), projectname + modelname + " - PLS Recalc VS Experimental Plot"+ QString("  (LV: %1)").arg(QString::number(npc)), ScatterPlot2D::SCORES);
+      (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted"), projectname + modelname + " - PLS Recalc VS Experimental Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot2D::SCORES);
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setAxisNameExtensions(varname);
       (*plot2D)->setPID(pid);
@@ -145,8 +145,8 @@ void EPLSPlot::RecalcVSExperimental(ScatterPlot2D **plot2D)
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
   QStringList varname = projects->value(pid)->getEPLSModel(mid)->getYVarName();
 
-  if(npc > projects->value(pid)->getEPLSModel(mid)->getNPC()){
-    npc = projects->value(pid)->getEPLSModel(mid)->getNPC();
+  if(nlv > projects->value(pid)->getEPLSModel(mid)->getNPC()){
+    nlv = projects->value(pid)->getEPLSModel(mid)->getNPC();
   }
 
   // Get Prediction
@@ -173,7 +173,7 @@ void EPLSPlot::RecalcVSExperimental(ScatterPlot2D **plot2D)
   for(uint i = 0; i < nobjects; i++){
     uint ny = nvars;
     for(uint j = 0; j < ny; j++){
-      setMatrixValue(model_recalc_y, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_recalculated, i, j+(ny*npc)-ny));
+      setMatrixValue(model_recalc_y, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_recalculated, i, j+(ny*nlv)-ny));
     }
   }
 
@@ -208,7 +208,7 @@ void EPLSPlot::RecalcVSExperimental(ScatterPlot2D **plot2D)
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
   yhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
-  (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Recalculated"), projectname + modelname + " - PLS Recalculated VS Experimental Plot"+ QString("  (LV: %1)").arg(QString::number(npc)), ScatterPlot2D::SCORES);
+  (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Recalculated"), projectname + modelname + " - PLS Recalculated VS Experimental Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot2D::SCORES);
   (*plot2D)->BuildDiagonal();
   (*plot2D)->setAxisNameExtensions(varname);
   (*plot2D)->setPID(pid);
@@ -222,8 +222,8 @@ void EPLSPlot::RecalcResidualsVSExperimental(ScatterPlot2D** plot2D)
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
   QStringList varname = projects->value(pid)->getEPLSModel(mid)->getYVarName();
 
-  if(npc > projects->value(pid)->getEPLSModel(mid)->getNPC()){
-    npc = projects->value(pid)->getEPLSModel(mid)->getNPC();
+  if(nlv > projects->value(pid)->getEPLSModel(mid)->getNPC()){
+    nlv = projects->value(pid)->getEPLSModel(mid)->getNPC();
   }
 
   // Get Prediction
@@ -251,7 +251,7 @@ void EPLSPlot::RecalcResidualsVSExperimental(ScatterPlot2D** plot2D)
     for(uint i = 0; i < nobjects; i++){
       uint ny = nvars;
       for(uint j = 0; j < ny; j++){
-        setMatrixValue(recalc_res, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_recalculated_residuals, i, j+(ny*npc)-ny));
+        setMatrixValue(recalc_res, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_recalculated_residuals, i, j+(ny*nlv)-ny));
       }
     }
 
@@ -286,7 +286,7 @@ void EPLSPlot::RecalcResidualsVSExperimental(ScatterPlot2D** plot2D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
     yhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
-    (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Recalculated Residuals"), projectname + modelname + " - PLS Experimental VS Recalculated Residuals Y Plot"+ QString("  (LV: %1)").arg(QString::number(npc)), ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Recalculated Residuals"), projectname + modelname + " - PLS Experimental VS Recalculated Residuals Y Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot2D::SCORES);
     DelMatrix(&recalc_res);
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);
@@ -301,8 +301,8 @@ void EPLSPlot::PredictedVSExperimental(ScatterPlot2D **plot2D)
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
   QStringList varname = projects->value(pid)->getEPLSModel(mid)->getYVarName();
 
-  if(npc > projects->value(pid)->getEPLSModel(mid)->getNPC()){
-    npc = projects->value(pid)->getEPLSModel(mid)->getNPC();
+  if(nlv > projects->value(pid)->getEPLSModel(mid)->getNPC()){
+    nlv = projects->value(pid)->getEPLSModel(mid)->getNPC();
   }
 
   // Get Prediction
@@ -330,7 +330,7 @@ void EPLSPlot::PredictedVSExperimental(ScatterPlot2D **plot2D)
     for(uint i = 0; i < nobjects; i++){
       uint ny = nvars;
       for(uint j = 0; j < ny; j++){
-        setMatrixValue(model_pred_y, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_predicted, i, j+(ny*npc)-ny));
+        setMatrixValue(model_pred_y, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_predicted, i, j+(ny*nlv)-ny));
       }
     }
 
@@ -364,7 +364,7 @@ void EPLSPlot::PredictedVSExperimental(ScatterPlot2D **plot2D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
     yhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
-    (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted"), projectname + modelname + "- PLS Predicted VS Experimental Plot"+ QString("  (LV: %1)").arg(QString::number(npc)), ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted"), projectname + modelname + "- PLS Predicted VS Experimental Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot2D::SCORES);
     (*plot2D)->setAxisNameExtensions(varname);
     (*plot2D)->BuildDiagonal();
     (*plot2D)->setPID(pid);
@@ -380,8 +380,8 @@ void EPLSPlot::PredictedResidualsVSExperimental(ScatterPlot2D** plot2D)
 
   QStringList varname = projects->value(pid)->getEPLSModel(mid)->getYVarName();
 
-  if(npc > projects->value(pid)->getEPLSModel(mid)->getNPC()){
-    npc = projects->value(pid)->getEPLSModel(mid)->getNPC();
+  if(nlv > projects->value(pid)->getEPLSModel(mid)->getNPC()){
+    nlv = projects->value(pid)->getEPLSModel(mid)->getNPC();
   }
 
   // Get Prediction
@@ -409,7 +409,7 @@ void EPLSPlot::PredictedResidualsVSExperimental(ScatterPlot2D** plot2D)
     for(uint i = 0; i < nobjects; i++){
       uint ny = nvars;
       for(uint j = 0; j < ny; j++){
-        setMatrixValue(pred_res, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_predicted_residuals, i, j+(ny*npc)-ny));
+        setMatrixValue(pred_res, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_predicted_residuals, i, j+(ny*nlv)-ny));
       }
     }
 
@@ -444,7 +444,7 @@ void EPLSPlot::PredictedResidualsVSExperimental(ScatterPlot2D** plot2D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
     yhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
-    (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted Residuals"), projectname + modelname + " - PLS Experimental VS Predicted Residuals Y Plot"+ QString("  (LV: %1)").arg(QString::number(npc)), ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted Residuals"), projectname + modelname + " - PLS Experimental VS Predicted Residuals Y Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot2D::SCORES);
     DelMatrix(&pred_res);
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);
@@ -457,16 +457,16 @@ QList< SimpleLine2DPlot* > EPLSPlot::R2Q2()
   QList< SimpleLine2DPlot* > plots;
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
-  uint npc = projects->value(pid)->getEPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
+  uint nlv = projects->value(pid)->getEPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
   uint yval = projects->value(pid)->getEPLSModel(mid)->r2->col;
   matrix *m;
 
   QStringList curvenames;
-  NewMatrix(&m, npc, 3);
+  NewMatrix(&m, nlv, 3);
   curvenames << "R2" << "Q2";
 
   // set the X assis that is the principal component
-  for(uint i = 0; i < npc; i++){
+  for(uint i = 0; i < nlv; i++){
     setMatrixValue(m, i, 0, i);
   }
 
@@ -487,7 +487,7 @@ QList< SimpleLine2DPlot* > EPLSPlot::R2Q2()
     setMatrixValue(m, 0, 1, 0); // R^2 in 0 pc is 0
     setMatrixValue(m, 0, 2, 0); // Q^2 in 0 pc is 0
 
-    for(uint i = 0; i < npc-1; i++){
+    for(uint i = 0; i < nlv-1; i++){
       setMatrixValue(m, i+1, 1, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->r2, i, l));
       double q2 = getMatrixValue(projects->value(pid)->getEPLSModel(mid)->q2, i, l);
       if(q2 < 0){
@@ -506,7 +506,7 @@ QList< SimpleLine2DPlot* > EPLSPlot::R2Q2()
     #endif
     plots.append(new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - R2 Q2 Plot %3").arg(projectname).arg(modelname).arg(yname), columntitle, "Latent Variables", "R2 / Q2"));
     plots.last()->setLabelDetail(true);
-    plots.last()->setXminXmanXTicks(0, npc, npc);
+    plots.last()->setXminXmanXTicks(0, nlv, nlv);
     plots.last()->setYminYmanYTicks(0, 1.2, 10);
   }
   DelMatrix(&m);
@@ -519,7 +519,7 @@ QList< SimpleLine2DPlot* > EPLSPlot::R2R2Prediction()
   QList< SimpleLine2DPlot* > plots;
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
-  uint npc = projects->value(pid)->getEPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
+  uint nlv = projects->value(pid)->getEPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
   uint yval = projects->value(pid)->getEPLSModel(mid)->r2->col;
 
   bool getq2 = false;
@@ -532,10 +532,10 @@ QList< SimpleLine2DPlot* > EPLSPlot::R2R2Prediction()
     getq2 = true;
   }
 
-  NewMatrix(&m, npc, ncol);
+  NewMatrix(&m, nlv, ncol);
 
   // set the X assis that is the principal component
-  for(uint i = 0; i < npc; i++){
+  for(uint i = 0; i < nlv; i++){
     setMatrixValue(m, i, 0, i);
   }
 
@@ -576,7 +576,7 @@ QList< SimpleLine2DPlot* > EPLSPlot::R2R2Prediction()
 
     setMatrixValue(m, 0, k, 0);  // R2 Predicted
 
-    for(uint i = 0; i < npc-1; i++){
+    for(uint i = 0; i < nlv-1; i++){
       k = 1;
       setMatrixValue(m, i+1, k, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->r2, i, l));
       k++;

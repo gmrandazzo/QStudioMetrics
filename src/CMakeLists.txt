@@ -9,7 +9,7 @@ set(QSTUDIOMETRICS_SRC
     qstudiometricsdataoperations.cpp
     qsmdata.cpp
     DATAIO.cpp
-    Dialogs/PlotDialog.cpp
+    Dialogs/DialogPlots.cpp
     Dialogs/ClassPlotDialog.cpp
     PCA/PCAPlot.cpp
     PLS/PLSPlot.cpp
@@ -70,7 +70,7 @@ set(QSTUDIOMETRICS_H
     EPLS/eplsmodel.h
     VariableSelectionModel.h
     DATAIO.h
-    Dialogs/PlotDialog.h
+    Dialogs/DialogPlots.h
     Dialogs/ClassPlotDialog.h
     PCA/PCAPlot.h
     PLS/PLSPlot.h
@@ -140,7 +140,7 @@ set(QSTUDIOMETRICS_UIS
     Plotlib/ScatterPlot3D.ui
     Plotlib/SimpleScatterPlot3D.ui
     Plotlib/SimpleLine2DPlot.ui
-    Dialogs/PlotDialog.ui
+    Dialogs/DialogPlots.ui
     Dialogs/ClassPlotDialog.ui
     Dialogs/ModelDialog.ui
     Dialogs/ModelDialogWizard.ui

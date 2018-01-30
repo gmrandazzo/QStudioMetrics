@@ -9,11 +9,11 @@
 
 #include "../qstudiometricsdataoperations.h"
 
-class EPLSPrediction
+class EPLSPREDICTION
 {
 public:
-  EPLSPrediction();
-  ~EPLSPrediction();
+  EPLSPREDICTION();
+  ~EPLSPREDICTION();
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(QStringList &objname_){ objname = objname_; }
@@ -101,7 +101,7 @@ public:
   int getXScaling(){ return xscaling; }
   int getYScaling(){ return yscaling; }
   int getModelID(){ return modelid; }
-  void addEPLSPrediction(){ prediction.append(new EPLSPrediction); };
+  void addEPLSPrediction(){ prediction.append(new EPLSPREDICTION); };
   void delEPLSPredictionAt(int id){ delete prediction[id]; prediction.removeAt(id); }
   void delEPLSPredictions(){
     for(int i = 0; i < prediction.size(); i++){
@@ -110,8 +110,8 @@ public:
     prediction.clear();
   }
 
-  EPLSPrediction *getEPLSPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
-  EPLSPrediction *getLastEPLSPrediction(){ return prediction.last(); }
+  EPLSPREDICTION *getEPLSPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
+  EPLSPREDICTION *getLastEPLSPrediction(){ return prediction.last(); }
   int EPLSPredictionCount(){ return prediction.size(); }
 
   QString& getHash(){ if(eplshash.size() == 0){ eplshash = GenMatrixHash(m->models[0]->xscores); } return eplshash; }
@@ -119,7 +119,7 @@ public:
 private:
   EPLSMODEL *m;
 
-  QList<EPLSPrediction*> prediction;
+  QList<EPLSPREDICTION*> prediction;
   QStringList objname, xvarname, yvarname;
   QString name;
   int did, xscaling, yscaling, npc, modelid, validation, algtype;

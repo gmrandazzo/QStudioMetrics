@@ -15,6 +15,9 @@ void PlotDialog::CheckPlot()
       || type == PLSValidation
       || type == PLSRecalcVSExperimental
       || type == PLSPredictedVSExperimental
+      || type == EPLSValidation
+      || type == EPLSRecalcVSExperimental
+      || type == EPLSPredictedVSExperimental
       || type == MLRRecalcVSExperimental
       || type == MLRPredictedVSExperimental
       || type == PLSYSCRAMBLING
@@ -28,11 +31,15 @@ void PlotDialog::CheckPlot()
     }
     else if(type == PCAPrediction
       || type == PLSPrediction
+      || type == EPLSPrediction
       || type == MLRPrediction
       || type == LDAPrediction_
       || type == PLSR2R2Plot
       || type == PLSRecalcVSExperimentalWithPrediction
       || type == PLSPredictedVSExperimentalWithPrediction
+      || type == EPLSR2R2Plot
+      || type == EPLSRecalcVSExperimentalWithPrediction
+      || type == EPLSPredictedVSExperimentalWithPrediction
       || type == MLRRecalcVSExperimentalWithPrediction
       || type == MLRPredictedVSExperimentalWithPrediction){
       if(modelid != -1 && predid != -1){
@@ -89,6 +96,14 @@ void PlotDialog::setModelID(QModelIndex current)
           tab3->appendRow(row);
         }
       }
+      else if(type == EPLSPrediction){ // EPLS Prediction
+        for(int i = 0; i < projects_->value(selectedproject_)->getEPLSModel(modelid)->EPLSPredictionCount(); i++){
+          predids.append(projects_->value(selectedproject_)->getEPLSModel(modelid)->getEPLSPrediction(i)->getPredID());
+          QList<QStandardItem*> row;
+          row.append(new QStandardItem(projects_->value(selectedproject_)->getEPLSModel(modelid)->getEPLSPrediction(i)->getName()));
+          tab3->appendRow(row);
+        }
+      }
       else if(type == PLSR2R2Plot){ // PLS Prediction R2R2
         for(int i = 0; i < projects_->value(selectedproject_)->getPLSModel(modelid)->PLSPredictionCount(); i++){
           if(projects_->value(selectedproject_)->getPLSModel(modelid)->getPLSPrediction(i)->getR2Y()->row > 0){
@@ -102,12 +117,38 @@ void PlotDialog::setModelID(QModelIndex current)
           }
         }
       }
+      else if(type == EPLSR2R2Plot){ // EPLS Prediction R2R2
+        for(int i = 0; i < projects_->value(selectedproject_)->getEPLSModel(modelid)->EPLSPredictionCount(); i++){
+          if(projects_->value(selectedproject_)->getEPLSModel(modelid)->getEPLSPrediction(i)->r2->row > 0){
+            predids.append(projects_->value(selectedproject_)->getEPLSModel(modelid)->getEPLSPrediction(i)->getPredID());
+            QList<QStandardItem*> row;
+            row.append(new QStandardItem(projects_->value(selectedproject_)->getEPLSModel(modelid)->getEPLSPrediction(i)->getName()));
+            tab3->appendRow(row);
+          }
+          else{
+            continue;
+          }
+        }
+      }
       else if(type == PLSRecalcVSExperimentalWithPrediction || type == PLSPredictedVSExperimentalWithPrediction){ // PLS Recalcualted VS Experimental with Predictions
         for(int i = 0; i < projects_->value(selectedproject_)->getPLSModel(modelid)->PLSPredictionCount(); i++){
           if(projects_->value(selectedproject_)->getPLSModel(modelid)->getPLSPrediction(i)->getR2Y()->row > 0){
             QList<QStandardItem*> row;
             row.append(new QStandardItem(projects_->value(selectedproject_)->getPLSModel(modelid)->getPLSPrediction(i)->getName()));
             predids.append(projects_->value(selectedproject_)->getPLSModel(modelid)->getPLSPrediction(i)->getPredID());
+            tab3->appendRow(row);
+          }
+          else{
+            continue;
+          }
+        }
+      }
+      else if(type == EPLSRecalcVSExperimentalWithPrediction || type == EPLSPredictedVSExperimentalWithPrediction){ // EPLS Recalcualted VS Experimental with Predictions
+        for(int i = 0; i < projects_->value(selectedproject_)->getEPLSModel(modelid)->EPLSPredictionCount(); i++){
+          if(projects_->value(selectedproject_)->getEPLSModel(modelid)->getEPLSPrediction(i)->r2->row > 0){
+            QList<QStandardItem*> row;
+            row.append(new QStandardItem(projects_->value(selectedproject_)->getEPLSModel(modelid)->getEPLSPrediction(i)->getName()));
+            predids.append(projects_->value(selectedproject_)->getEPLSModel(modelid)->getEPLSPrediction(i)->getPredID());
             tab3->appendRow(row);
           }
           else{
@@ -215,6 +256,52 @@ void PlotDialog::setProject(QModelIndex current)
         }
       }
     }
+    else if(type == EPLS_ || type == EPLSPrediction || type == EPLSR2R2Plot){ // pls
+      for(int i = 0; i < projects_->value(selectedproject_)->EPLSCount(); i++){
+        QList<QStandardItem*> row;
+        row.append(new QStandardItem(projects_->value(selectedproject_)->getEPLSModelAt(i)->getName()));
+        mids.append(projects_->value(selectedproject_)->getEPLSModelAt(i)->getModelID());
+        tab2->appendRow(row);
+      }
+    }
+    else if(type == EPLSValidation){ // pls validation
+      for(int i = 0; i < projects_->value(selectedproject_)->EPLSCount(); i++){
+        if(projects_->value(selectedproject_)->getEPLSModelAt(i)->getValidation() > 0){
+          QList<QStandardItem*> row;
+          row.append(new QStandardItem(projects_->value(selectedproject_)->getEPLSModelAt(i)->getName()));
+          mids.append(projects_->value(selectedproject_)->getEPLSModelAt(i)->getModelID());
+          tab2->appendRow(row);
+        }
+      }
+    }
+    else if(type == EPLSYSCRAMBLING){
+      for(int i = 0; i < projects_->value(selectedproject_)->EPLSCount(); i++){
+        if(projects_->value(selectedproject_)->getEPLSModelAt(i)->yscrambling->row > 0){
+          QList<QStandardItem*> row;
+          row.append(new QStandardItem(projects_->value(selectedproject_)->getEPLSModelAt(i)->getName()));
+          mids.append(projects_->value(selectedproject_)->getEPLSModelAt(i)->getModelID());
+          tab2->appendRow(row);
+        }
+      }
+    }
+    else if(type == EPLSRecalcVSExperimental || type == EPLSRecalcVSExperimentalWithPrediction){
+      for(int i = 0; i < projects_->value(selectedproject_)->EPLSCount(); i++){
+        QList<QStandardItem*> row;
+        row.append(new QStandardItem(projects_->value(selectedproject_)->getEPLSModelAt(i)->getName()));
+        mids.append(projects_->value(selectedproject_)->getEPLSModelAt(i)->getModelID());
+        tab2->appendRow(row);
+      }
+    }
+    else if(type == EPLSPredictedVSExperimental || type == EPLSPredictedVSExperimentalWithPrediction){ // PLS Predicted  VS Experimental
+      for(int i = 0; i < projects_->value(selectedproject_)->EPLSCount(); i++){
+        if(projects_->value(selectedproject_)->getEPLSModelAt(i)->getValidation() > 0){
+          QList<QStandardItem*> row;
+          row.append(new QStandardItem(projects_->value(selectedproject_)->getEPLSModelAt(i)->getName()));
+          mids.append(projects_->value(selectedproject_)->getEPLSModelAt(i)->getModelID());
+          tab2->appendRow(row);
+        }
+      }
+    }
     else if(type == MLRRecalcVSExperimental || type == MLRRecalcVSExperimentalWithPrediction){
       for(int i = 0; i < projects_->value(selectedproject_)->MLRCount(); i++){
         QList<QStandardItem*> row;
@@ -262,6 +349,7 @@ void PlotDialog::actionPlot()
 {
   if(type == PCA_ ||
      type == PLS_ ||
+     type == EPLS_ ||
      type == MLR_ ||
      type == LDA_ ||
      type == PLSValidation ||
@@ -269,6 +357,9 @@ void PlotDialog::actionPlot()
      type == LDAValidation ||
      type == PLSRecalcVSExperimental ||
      type == PLSPredictedVSExperimental ||
+     type == EPLSValidation ||
+     type == EPLSRecalcVSExperimental ||
+     type == EPLSPredictedVSExperimental ||
      type == MLRRecalcVSExperimental ||
      type == MLRPredictedVSExperimental ||
      type == PLSYSCRAMBLING ||
@@ -319,6 +410,7 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
      type == MLR_ ||
      type == LDA_ ||
      type == PLSValidation ||
+     type == EPLSValidation ||
      type == MLRRecalcVSExperimental ||
      type == MLRPredictedVSExperimental){
 
@@ -329,9 +421,11 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
   }
   else if(type == PCAPrediction ||
           type == PLSPrediction ||
+          type == EPLSPrediction ||
           type == MLRPrediction ||
           type == LDAPrediction_ ||
           type == PLSR2R2Plot ||
+          type == EPLSR2R2Plot ||
           type == MLRRecalcVSExperimentalWithPrediction ||
           type == MLRPredictedVSExperimentalWithPrediction){
 
@@ -341,7 +435,9 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
     ui.listView_3->setModel(tab3);
   }
   else if(type == PLSRecalcVSExperimental ||
-          type == PLSPredictedVSExperimental){
+          type == PLSPredictedVSExperimental ||
+          type == EPLSRecalcVSExperimental ||
+          type == EPLSPredictedVSExperimental){
 
     ui.predictionGroupBox->hide();
     ui.label_4->show();
@@ -349,6 +445,7 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
     tab3 = 0;
   }
   else if(type == PLSYSCRAMBLING ||
+          type == EPLSYSCRAMBLING ||
           type == MLRYSCRAMBLING){
     ui.predictionGroupBox->hide();
     ui.label_4->hide();
@@ -404,6 +501,52 @@ PlotDialog::PlotDialog(PROJECTS *projects, int type_)
     else if(type == PLSRecalcVSExperimentalWithPrediction || type == PLSPredictedVSExperimentalWithPrediction){
       for(int j = 0; j < projects_->value(pid)->PLSCount(); j++){ // almost one model must ave a prediction
         if(projects_->value(pid)->getPLSModelAt(j)->PLSPredictionCount() > 0){
+          acquire = true;
+          break;
+        }
+        else{
+          continue;
+        }
+      }
+    }
+    else if((type == EPLS_ ||
+            type == EPLSValidation ||
+            type == EPLSPrediction ||
+            type == EPLSR2R2Plot ||
+            type == EPLSYSCRAMBLING)
+            && projects_->value(pid)->EPLSCount() > 0){ // EPLS
+      if(type == EPLSYSCRAMBLING){
+        for(int i = 0; i < projects_->value(pid)->EPLSCount(); i++){
+          if(projects_->value(pid)->getEPLSModelAt(i)->yscrambling->row > 0){
+            acquire = true;
+            break;
+          }
+          else{
+            continue;
+          }
+        }
+      }
+      else{
+        acquire = true;
+      }
+    }
+    else if(type == EPLSRecalcVSExperimental && projects_->value(pid)->EPLSCount() > 0){ // EPLS
+      acquire = true;
+    }
+    else if(type == EPLSPredictedVSExperimental && projects_->value(pid)->EPLSCount() > 0){ // EPLS
+      for(int j = 0; j < projects_->value(pid)->EPLSCount(); j++){ // almost one model must be validated!
+        if(projects_->value(pid)->getEPLSModelAt(j)->getValidation() > 0){
+          acquire = true;
+          break;
+        }
+        else{
+          continue;
+        }
+      }
+    }
+    else if(type == EPLSRecalcVSExperimentalWithPrediction || type == EPLSPredictedVSExperimentalWithPrediction){
+      for(int j = 0; j < projects_->value(pid)->EPLSCount(); j++){ // almost one model must ave a prediction
+        if(projects_->value(pid)->getEPLSModelAt(j)->EPLSPredictionCount() > 0){
           acquire = true;
           break;
         }
