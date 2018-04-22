@@ -3,6 +3,12 @@
 #include <QStandardItem>
 #include <QStandardItemModel>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
+#include <QString>
+#include <QStandardPaths>
+#include <QDebug>
 
 #include "ClassDialog.h"
 
@@ -31,15 +37,75 @@ void ValidatorDialog::setNGroup()
   ngroup = ui.groupnumber->value();
 }
 
+int ValidatorDialog::ClassNameContains(QString name)
+{
+  for(int i = 0; i < kfc.size(); i++){
+    if(kfc[i].name.compare(name) == 0){
+      return i;
+    }
+    else{
+      continue;
+    }
+  }
+  return -1;
+}
+
+QString getSeparator(QString line)
+{
+  QStringList seps;
+  seps << ";" << "," << "\t" << " ";
+  for(int i = 0; i < seps.size(); i++){
+    if(line.contains(seps[i]) == true){
+      return seps[i];
+    }
+  }
+  return seps[0];
+}
+
+void ValidatorDialog::setKFoldClass()
+{
+  QString homeLocation = QStandardPaths::locate(QStandardPaths::HomeLocation, QString(), QStandardPaths::LocateDirectory);
+
+  QString csvclasses = QString::fromUtf8(QFileDialog::getOpenFileName(this, tr("Open CSV classes"),  homeLocation, tr("CSV File(*.csv)"), 0, QFileDialog::DontUseNativeDialog).toUtf8());
+  QFile file(csvclasses);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    return;
+
+  QTextStream in(&file);
+  kfc.clear();
+
+  while(!in.atEnd()){
+    QString line = in.readLine();
+    QStringList v = QString(line).split(getSeparator(line));
+    if(v.size() == 2){
+      int cid = ClassNameContains(v[1]);
+      if(cid > -1){
+        kfc[cid].objects << v[0];
+      }
+      else{
+        kfc << LABEL();
+        kfc.last().name = v[1];
+        kfc.last().objects <<  v[0];
+      }
+    }
+    else
+      continue;
+  }
+}
+
 void ValidatorDialog::setValidationType()
 {
   if(ui.leaveoneout->isChecked()){
     validtype = LOO_; // cross validation
   }
+  else if(ui.kfoldcrossvalid->isChecked()){
+    validtype = KFOLDCV_;
+  }
   else{
     validtype = BOOTSTRAPRGCV_; // cross validation
   }
 }
+
 
 void ValidatorDialog::setModelID(QModelIndex current)
 {
@@ -172,10 +238,12 @@ ValidatorDialog::ValidatorDialog(PROJECTS *projects, int type_)
   }
   tab1->appendColumn(projectsname);
 
+  connect(ui.loadclassButton, SIGNAL(clicked()), SLOT(setKFoldClass()));
   connect(ui.cancelButton, SIGNAL(clicked()), SLOT(reject()));
   connect(ui.okButton, SIGNAL(clicked()), SLOT(OK()));
 
   connect(ui.leaveoneout, SIGNAL(clicked(bool)), SLOT(setValidationType()));
+  connect(ui.kfoldcrossvalid, SIGNAL(clicked(bool)), SLOT(setValidationType()));
   connect(ui.crossvalid, SIGNAL(clicked(bool)), SLOT(setValidationType()));
 
   connect(ui.listView->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setProject(QModelIndex)));

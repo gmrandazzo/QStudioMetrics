@@ -1,9 +1,9 @@
 #include "PLSPlot.h"
 #include "scientific.h"
 
-#ifdef DEBUG
+//#ifdef DEBUG
 #include <QDebug>
-#endif
+//#endif
 
 void PLSPlot::TU_Plot(ScatterPlot2D **plot2D)
 {
@@ -385,8 +385,7 @@ void PLSPlot::BetaCoefficientsDurbinWatson(SimpleLine2DPlot **dw_betas_plot)
   for(int j = 0; j < projects->value(pid)->getPLSModel(mid)->getYVarName().size(); j++){
    yname += " - " + projects->value(pid)->getPLSModel(mid)->getYVarName()[j];
   }
-  QStringList columntitle;
-  columntitle << "Latent Variables" << QString("DW %1").arg(yname);
+
   m->data[0][0] = 0.f;
   m->data[0][1] = 0.f;
   for(uint i = 0; i < dw->size; i++){
@@ -394,7 +393,7 @@ void PLSPlot::BetaCoefficientsDurbinWatson(SimpleLine2DPlot **dw_betas_plot)
     m->data[i+1][1] = dw->data[i];
   }
 
-  (*dw_betas_plot) = new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - DW Plot %3").arg(projectname).arg(modelname).arg(yname), columntitle, "Latent Variables", "DW");
+  (*dw_betas_plot) = new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - DW Plot %3").arg(projectname).arg(modelname).arg(yname), "Latent Variables", "DW");
   (*dw_betas_plot)->setLabelDetail(true);
   (*dw_betas_plot)->setXminXmanXTicks(0, nlv, nlv);
   (*dw_betas_plot)->setYminYmanYTicks(0, 3, 10);
@@ -614,6 +613,82 @@ void PLSPlot::RecalcVSExperimental(ScatterPlot2D **plot2D)
   DelMatrix(&model_exp_y);
 }
 
+void PLSPlot::ClassRecalcVSExperimental(QList<QStringList> *cellnames, QList<QList<QPixmap>> *images, QList<QList<QColor>> *colors)
+{
+  QString projectname = projects->value(pid)->getProjectName();
+  QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+
+  if(nlv > projects->value(pid)->getPLSModel(mid)->getNPC()){
+    nlv = projects->value(pid)->getPLSModel(mid)->getNPC();
+  }
+
+  QStringList objsel = projects->value(pid)->getPLSModel(mid)->getObjName();
+  LABELS classes = projects->value(pid)->getPLSModel(mid)->getClasses();
+
+  uint nclass = classes.size();
+  if(nclass == 2){
+    nclass = 1;
+  }
+
+  matrix *mx;
+
+  for(int j = 0; j < nclass; j++){
+    QStringList row_name;
+    QList<QPixmap> row_pixmap;
+    QList<QColor> row_colors;
+
+    NewMatrix(&mx, projects->value(pid)->getPLSModel(mid)->Model()->recalculated_y->row, 3);
+    for(int i = 0; i < projects->value(pid)->getPLSModel(mid)->Model()->recalculated_y->row; i++){
+      mx->data[i][0] = projects->value(pid)->getPLSModel(mid)->Model()->recalculated_y->data[i][j+(nclass*nlv)-nclass];
+      if(classes[j].objects.contains(objsel[i]) == true){
+        // True
+        mx->data[i][1] = 1.f;
+      }
+      else{
+        //False
+        mx->data[i][1] = 0.f;
+      }
+      mx->data[i][2] = i; // objec row id
+    }
+    // Sort by the 1 probabilities to the 0 problabilities
+    MatrixReverseSort(mx, 0);
+    for(int i = 0; i < (int)mx->row; i++){
+      int objid = (int)mx->data[i][2];
+      QString name = objsel[objid]+ "\n";
+      if((int)mx->data[i][1] == 1){
+        name += QString("Is %1\n").arg(classes[j].name);
+        row_colors << Qt::green;
+      }
+      else{
+        name += QString("Not %1\n").arg(classes[j].name);
+        row_colors << Qt::red;
+      }
+      name += QString("Score: %1").arg(QString::number(mx->data[i][0], 'g', 3));
+      row_name << name;
+
+      int pixid = -1;
+      for(int k = 0; k < projects->value(pid)->getImages().size(); k++){
+        if(objsel[objid].compare(projects->value(pid)->getImages()[k].name) == 0){
+          pixid = k;
+          break;
+        }
+        else{
+          continue;
+        }
+      }
+
+      if(pixid > -1)
+        row_pixmap << projects->value(pid)->getImages()[pixid].image;
+      else
+        row_pixmap << QPixmap();
+    }
+    DelMatrix(&mx);
+    (*cellnames) << row_name;
+    (*images) << row_pixmap;
+    (*colors) << row_colors;
+  }
+}
+
 void PLSPlot::RecalcResidualsVSExperimental(ScatterPlot2D** plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();
@@ -692,6 +767,83 @@ void PLSPlot::RecalcResidualsVSExperimental(ScatterPlot2D** plot2D)
   }
 }
 
+void PLSPlot::ClassPredictedVSExperimental(QList<QStringList> *cellnames, QList<QList<QPixmap>> *images, QList<QList<QColor>> *colors)
+{
+  QString projectname = projects->value(pid)->getProjectName();
+  QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+
+  if(nlv > projects->value(pid)->getPLSModel(mid)->getNPC()){
+    nlv = projects->value(pid)->getPLSModel(mid)->getNPC();
+  }
+
+  QStringList objsel = projects->value(pid)->getPLSModel(mid)->getObjName();
+  LABELS classes = projects->value(pid)->getPLSModel(mid)->getClasses();
+
+  uint nclass = classes.size();
+  if(nclass == 2){
+    nclass = 1;
+  }
+
+  matrix *mx;
+
+  for(int j = 0; j < nclass; j++){
+    QStringList row_name;
+    QList<QPixmap> row_pixmap;
+    QList<QColor> row_colors;
+
+    NewMatrix(&mx, projects->value(pid)->getPLSModel(mid)->Model()->predicted_y->row, 3);
+    for(int i = 0; i < projects->value(pid)->getPLSModel(mid)->Model()->predicted_y->row; i++){
+      mx->data[i][0] = projects->value(pid)->getPLSModel(mid)->Model()->predicted_y->data[i][j+(nclass*nlv)-nclass];
+      if(classes[j].objects.contains(objsel[i]) == true){
+        // True
+        mx->data[i][1] = 1.f;
+      }
+      else{
+        //False
+        mx->data[i][1] = 0.f;
+      }
+      mx->data[i][2] = i; // objec row id
+    }
+    // Sort by the 1 probabilities to the 0 problabilities
+    MatrixReverseSort(mx, 0);
+    for(int i = 0; i < (int)mx->row; i++){
+      int objid = (int)mx->data[i][2];
+      QString name = objsel[objid]+ "\n";
+      if((int)mx->data[i][1] == 1){
+        name += QString("Is %1\n").arg(classes[j].name);
+        row_colors << Qt::green;
+      }
+      else{
+        name += QString("Not %1\n").arg(classes[j].name);
+        row_colors << Qt::red;
+      }
+      name += QString("Score: %1").arg(QString::number(mx->data[i][0], 'g', 3));
+      row_name << name;
+
+
+      int pixid = -1;
+      for(int k = 0; k < projects->value(pid)->getImages().size(); k++){
+        if(objsel[objid].compare(projects->value(pid)->getImages()[k].name) == 0){
+          pixid = k;
+          break;
+        }
+        else{
+          continue;
+        }
+      }
+
+      if(pixid > -1)
+        row_pixmap << projects->value(pid)->getImages()[pixid].image;
+      else
+        row_pixmap << QPixmap();
+
+    }
+    DelMatrix(&mx);
+    (*cellnames) << row_name;
+    (*images) << row_pixmap;
+    (*colors) << row_colors;
+  }
+}
 
 void PLSPlot::PredictedVSExperimental(ScatterPlot2D **plot2D)
 {
@@ -856,7 +1008,7 @@ QList< SimpleLine2DPlot* > PLSPlot::R2Q2()
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
   uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
-  uint yval = projects->value(pid)->getPLSModel(mid)->Model()->r2y_model->col;
+  uint yval = projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col;
   matrix *m;
 
   QStringList curvenames;
@@ -879,14 +1031,12 @@ QList< SimpleLine2DPlot* > PLSPlot::R2Q2()
     PrintMatrix(projects->value(pid)->getPLSModel(mid)->Model()->q2y);
     #endif
 
-    QStringList columntitle;
-    columntitle << "Latent Variables" << QString("R2 %1").arg(yname) << QString("Q2 %1").arg(yname);
 
     setMatrixValue(m, 0, 1, 0); // R^2 in 0 pc is 0
     setMatrixValue(m, 0, 2, 0); // Q^2 in 0 pc is 0
 
     for(uint i = 0; i < nlv-1; i++){
-      setMatrixValue(m, i+1, 1, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->r2y_model, i, l));
+      setMatrixValue(m, i+1, 1, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated, i, l));
       double q2 = getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->q2y, i, l);
       if(q2 < 0){
         setMatrixValue(m, i+1, 2, 0.f);
@@ -902,7 +1052,7 @@ QList< SimpleLine2DPlot* > PLSPlot::R2Q2()
     qDebug() << "Final Matrix";
     PrintMatrix(m);
     #endif
-    plots.append(new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - R2 Q2 Plot %3").arg(projectname).arg(modelname).arg(yname), columntitle, "Latent Variables", "R2 / Q2"));
+    plots.append(new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - R2 Q2 Plot %3").arg(projectname).arg(modelname).arg(yname), "Latent Variables", "R2 / Q2"));
     plots.last()->setLabelDetail(true);
     plots.last()->setXminXmanXTicks(0, nlv, nlv);
     plots.last()->setYminYmanYTicks(0, 1.2, 10);
@@ -911,6 +1061,189 @@ QList< SimpleLine2DPlot* > PLSPlot::R2Q2()
   return plots;
 }
 
+QList< SimpleLine2DPlot* > PLSPlot::ROCAUCs()
+{
+  QList< SimpleLine2DPlot* > plots;
+  QString projectname = projects->value(pid)->getProjectName();
+  QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+  uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
+  uint yval = projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->col;
+  matrix *m;
+
+  QStringList curvenames;
+  NewMatrix(&m, nlv, 3);
+  curvenames << "AUC Recalculated" << "AUC Predicted";
+
+  // set the X assis that is the principal component
+  for(uint i = 0; i < nlv; i++){
+    setMatrixValue(m, i, 0, i);
+  }
+
+  // Set the r2 values into the matrix and set the q2 values into the matrix
+  uint l = 0;
+  for(uint j = 0; j < yval; j++){
+    QString yname = projects->value(pid)->getPLSModel(mid)->getClasses()[j].name;
+
+    setMatrixValue(m, 0, 1, 0); // AUC Recalc in 0 pc is 0
+    setMatrixValue(m, 0, 2, 0); // AUC Predicted in 0 pc is 0
+
+    for(uint i = 0; i < nlv-1; i++){
+      setMatrixValue(m, i+1, 1, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated, i, l));
+      setMatrixValue(m, i+1, 2, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_validation, i, l));
+    }
+    l++;
+
+    plots.append(new SimpleLine2DPlot(m,
+                                      curvenames,
+                                      QString(" %1 - %2 - ROC AUC Recalculated/Predicted Plot %3").arg(projectname).arg(modelname).arg(yname),
+                                      "Latent Variables", "ROC AUC Recalculated / AUC Predicted"));
+    plots.last()->setLabelDetail(true);
+    plots.last()->setXminXmanXTicks(0, nlv, 1);
+    plots.last()->setYminYmanYTicks(0, 1.2, 10);
+  }
+  DelMatrix(&m);
+  return plots;
+}
+
+QList< SimpleLine2DPlot* > PLSPlot::ROCCurves()
+{
+  QList< SimpleLine2DPlot* > plots;
+  QString projectname = projects->value(pid)->getProjectName();
+  QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+  uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC(); // == roc_recalculated->order;
+  uint yval = projects->value(pid)->getPLSModel(mid)->Model()->roc_recalculated->m[0]->col/2.;
+
+  QStringList curvenames;
+  curvenames << "ROC Recalculated" << "ROC Predicted";
+
+  tensor *roc_recalculated = projects->value(pid)->getPLSModel(mid)->Model()->roc_recalculated;
+  tensor *roc_predicted = projects->value(pid)->getPLSModel(mid)->Model()->roc_validation;
+
+
+  for(uint i = 0; i < nlv; i++){
+    for(uint j = 0; j < yval; j++){
+      QString yname = projects->value(pid)->getPLSModel(mid)->getClasses()[j].name;
+      matrix *mrec, *mpred;
+      NewMatrix(&mrec, roc_recalculated->m[i]->row, 2);
+      NewMatrix(&mpred, roc_predicted->m[i]->row, 2);
+      for(uint k = 0; k < roc_recalculated->m[i]->row; k++){
+        mrec->data[k][0] =  roc_recalculated->m[i]->data[k][j*nlv];
+        mrec->data[k][1] =  roc_recalculated->m[i]->data[k][j*nlv+1];
+      }
+
+      for(uint k = 0; k < roc_predicted->m[i]->row; k++){
+        mpred->data[k][0] =  roc_predicted->m[i]->data[k][j*nlv];
+        mpred->data[k][1] =  roc_predicted->m[i]->data[k][j*nlv+1];
+      }
+      QList <matrix*> mlst;
+      mlst.append(mrec);
+      mlst.append(mpred);
+      plots.append(new SimpleLine2DPlot(mlst,
+                                        curvenames,
+                                        QString("N. LV: %1 %2 - %3 - ROC Curve Recalculated/Predicted Plot %4").arg(QString::number(i+1)).arg(projectname).arg(modelname).arg(yname),
+                                        "False positive rate", "True positive rate"));
+      plots.last()->setPlotTitle(QString("N. LV: %1; Class name: %2").arg(QString::number(i+1)).arg(yname));
+      plots.last()->setLabelDetail(true);
+      plots.last()->setXminXmanXTicks(0.0, 1.0, 1);
+      plots.last()->setYminYmanYTicks(0.0, 1.0, 1);
+      DelMatrix(&mrec);
+      DelMatrix(&mpred);
+      mlst.clear();
+    }
+  }
+  return plots;
+}
+
+QList< SimpleLine2DPlot* > PLSPlot::PrecisionRecallAveragePrecision()
+{
+  QList< SimpleLine2DPlot* > plots;
+  QString projectname = projects->value(pid)->getProjectName();
+  QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+  uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
+  uint yval = projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_recalculated->col;
+  matrix *m;
+
+  QStringList curvenames;
+  NewMatrix(&m, nlv, 3);
+  curvenames << "Precision-Recall AUC Recalculated" << "Precision-Recall AUC Predicted";
+
+  // set the X assis that is the principal component
+  for(uint i = 0; i < nlv; i++){
+    setMatrixValue(m, i, 0, i);
+  }
+
+  // Set the r2 values into the matrix and set the q2 values into the matrix
+  uint l = 0;
+  for(uint j = 0; j < yval; j++){
+    QString yname = projects->value(pid)->getPLSModel(mid)->getClasses()[j].name;
+
+    setMatrixValue(m, 0, 1, 0); // AUC Recalc in 0 pc is 0
+    setMatrixValue(m, 0, 2, 0); // AUC Predicted in 0 pc is 0
+
+    for(uint i = 0; i < nlv-1; i++){
+      setMatrixValue(m, i+1, 1, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_recalculated, i, l));
+      setMatrixValue(m, i+1, 2, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_validation, i, l));
+    }
+    l++;
+
+    plots.append(new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - Precision-Recall AUC Recalculated/Predicted Plot %3").arg(projectname).arg(modelname).arg(yname), "Latent Variables", "Prec./Rec. Recalculated and Predicted"));
+    plots.last()->setLabelDetail(true);
+    plots.last()->setXminXmanXTicks(0, nlv, 1);
+    plots.last()->setYminYmanYTicks(0, 1.2, 10);
+  }
+  DelMatrix(&m);
+  return plots;
+}
+
+QList< SimpleLine2DPlot* > PLSPlot::PrecisionRecallCurves()
+{
+  QList< SimpleLine2DPlot* > plots;
+  QString projectname = projects->value(pid)->getProjectName();
+  QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+  uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC(); // == roc_recalculated->order;
+  uint yval = projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_recalculated->m[0]->col/2.;
+
+  QStringList curvenames;
+  curvenames << "Precision-Recall Recalculated" << "Precision-Recall Predicted";
+
+  tensor *pr_recalculated = projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_recalculated;
+  tensor *pr_predicted = projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_validation;
+
+
+  for(uint i = 0; i < nlv; i++){
+    for(uint j = 0; j < yval; j++){
+      QString yname = projects->value(pid)->getPLSModel(mid)->getClasses()[j].name;
+      matrix *mrec, *mpred;
+      NewMatrix(&mrec, pr_recalculated->m[i]->row, 2);
+      NewMatrix(&mpred, pr_predicted->m[i]->row, 2);
+      for(uint k = 0; k < pr_recalculated->m[i]->row; k++){
+        mrec->data[k][0] =  pr_recalculated->m[i]->data[k][j*nlv];
+        mrec->data[k][1] =  pr_recalculated->m[i]->data[k][j*nlv+1];
+      }
+
+      for(uint k = 0; k < pr_predicted->m[i]->row; k++){
+        mpred->data[k][0] =  pr_predicted->m[i]->data[k][j*nlv];
+        mpred->data[k][1] =  pr_predicted->m[i]->data[k][j*nlv+1];
+      }
+
+      QList <matrix*> mlst;
+      mlst.append(mrec);
+      mlst.append(mpred);
+      plots.append(new SimpleLine2DPlot(mlst,
+                                        curvenames,
+                                        QString("N. LV: %1 %2 - %3 - Precision-Recall Recalculated/Predicted Plot %4").arg(QString::number(i+1)).arg(projectname).arg(modelname).arg(yname),
+                                        "Recall", "Precision"));
+      plots.last()->setPlotTitle(QString("N. LV: %1; Class name: %2").arg(QString::number(i+1)).arg(yname));
+      plots.last()->setLabelDetail(true);
+      plots.last()->setXminXmanXTicks(0.0, 1.0, 1);
+      plots.last()->setYminYmanYTicks(0.0, 1.0, 1);
+      DelMatrix(&mrec);
+      DelMatrix(&mpred);
+      mlst.clear();
+    }
+  }
+  return plots;
+}
 
 QList< SimpleLine2DPlot* > PLSPlot::R2R2Prediction()
 {
@@ -918,7 +1251,7 @@ QList< SimpleLine2DPlot* > PLSPlot::R2R2Prediction()
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
   uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
-  uint yval = projects->value(pid)->getPLSModel(mid)->Model()->r2y_model->col;
+  uint yval = projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col;
 
   bool getq2 = false;
   matrix *m;
@@ -952,15 +1285,11 @@ QList< SimpleLine2DPlot* > PLSPlot::R2R2Prediction()
     QStringList curvenames;
     curvenames << "R2";
 
-    QStringList columntitle;
-    columntitle << "Latent Variables" << QString("R^2 Y %1").arg(yname);
 
     if(getq2 == true){
-      columntitle << QString("Q^2 Y %1").arg(yname);
       curvenames << QString("Q^2 Y %1").arg(yname);
     }
 
-    columntitle << QString("R^2 Predicted Y %1").arg(yname);
     curvenames << QString("R^2 Predicted Y %1").arg(yname);
 
     int k = 1;
@@ -976,7 +1305,7 @@ QList< SimpleLine2DPlot* > PLSPlot::R2R2Prediction()
 
     for(uint i = 0; i < nlv-1; i++){
       k = 1;
-      setMatrixValue(m, i+1, k, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->r2y_model, i, l));
+      setMatrixValue(m, i+1, k, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated, i, l));
       k++;
 
       if(getq2 == true){
@@ -1013,7 +1342,7 @@ QList< SimpleLine2DPlot* > PLSPlot::R2R2Prediction()
     yaxisname += " / R2 Predicted";
 
 
-    plots.append(new SimpleLine2DPlot(m, curvenames, QString("%1 - %2 - R2 Q2 Plot Y %3").arg(projectname).arg(modelname).arg(yname), columntitle, "Latent Variables", yaxisname));
+    plots.append(new SimpleLine2DPlot(m, curvenames, QString("%1 - %2 - R2 Q2 Plot Y %3").arg(projectname).arg(modelname).arg(yname), "Latent Variables", yaxisname));
     plots.last()->setLabelDetail(true);
   }
   DelMatrix(&m);

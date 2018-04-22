@@ -133,6 +133,7 @@ void MainWindow::CheckProjects()
 }
 void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix **x)
 {
+  ResizeMatrix(x, objnames.size(), varsel.size());
   int ii = 0;
   for(int i = 0; i < indata->getObjName().size(); i++){
     if(objnames.contains(indata->getObjName()[i]) == true){
@@ -157,6 +158,9 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
 
 void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix **x, matrix **y)
 {
+  ResizeMatrix(x, objnames.size(), xvarsel.size());
+  ResizeMatrix(y, objnames.size(), yvarsel.size());
+
   int ii = 0;
   for(int i = 0; i < indata->getObjName().size(); i++){
     if(objnames.contains(indata->getObjName()[i]) == true){
@@ -180,6 +184,75 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
       continue;
     }
     QApplication::processEvents();
+  }
+}
+
+void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix **x, matrix **y)
+{
+  ResizeMatrix(x, objnames.size(), xvarsel.size());
+
+  if(classes.size() == 2){
+    ResizeMatrix(y, objnames.size(), 1);
+  }
+  else{
+    ResizeMatrix(y, objnames.size(), classes.size());
+  }
+
+  int ii = 0;
+  for(int i = 0; i < indata->getObjName().size(); i++){
+    if(objnames.contains(indata->getObjName()[i]) == true){
+      int jx = 0;
+      for(int j = 1; j < indata->getVarName().size(); j++){
+        if(xvarsel.contains(indata->getVarName()[j]) == true){
+          (*x)->data[ii][jx] = indata->Matrix()->data[i][j-1];
+          jx++;
+        }
+        else{
+          continue;
+        }
+      }
+
+      if(classes.size() == 2){
+        if(classes[0].objects.contains(indata->getObjName()[i]) == true){
+          (*y)->data[ii][0] = 1; // TRUE
+        }
+        else{
+          (*y)->data[ii][0] = 0; // FALSE
+        }
+      }
+      else{
+        for(int j = 0; j < classes.size(); j++){
+          if(classes[j].objects.contains(indata->getObjName()[i]) == true){
+            (*y)->data[ii][j] = 1; // TRUE
+          }
+          else{
+            (*y)->data[ii][j] = 0; // FALSE
+          }
+        }
+      }
+      ii++;
+    }
+    else{
+      continue;
+    }
+    QApplication::processEvents();
+  }
+}
+
+void MainWindow::PrepareKFoldClasses(QStringList objects, LABELS kfclasses, uivector **classes)
+{
+  for(int i = 0; i < objects.size(); i++){
+    size_t class_indx = 0;
+    for(int j = 0; j < kfclasses.size(); j++){
+      if(kfclasses[j].objects.contains(objects[i]) == true){
+        class_indx = j;
+        break;
+      }
+      else{
+        continue;
+      }
+    }
+    UIVectorAppend(classes, class_indx);
   }
 }
 
@@ -2077,8 +2150,9 @@ void MainWindow::showEPLSValidation()
         }
       }
 
+      QStringList yvarname = projects->value(pid)->getEPLSModel(mid)->getYVarName();
       for(uint j = 0; j < projects->value(pid)->getEPLSModel(mid)->r2->col; j++){
-        header << QString("R^2(y %1)").arg(QString::number(j+1)) << QString("Q^2(y %1)").arg(QString::number(j+1)) << QString("SDEP(y %1)").arg(QString::number(j+1)) << QString("BIAS(y %1)").arg(QString::number(j+1));
+        header << QString("R^2(%1)").arg(yvarname[j]) << QString("Q^2(%1)").arg(yvarname[j]) << QString("SDEP(%1)").arg(yvarname[j]) << QString("BIAS(%1)").arg(yvarname[j]);
       }
     }
     else{
@@ -2098,8 +2172,9 @@ void MainWindow::showEPLSValidation()
         }
       }
 
+      LABELS classes = projects->value(pid)->getEPLSModel(mid)->getClasses();
       for(uint j = 0; j < projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated->col; j++){
-        header << QString("Recalculated ROC AUC (y %1)").arg(QString::number(j+1)) << QString("Predicted ROC AUC (y %1)").arg(QString::number(j+1))  << QString("Recalculated Prec-Recall AUC (y %1)").arg(QString::number(j+1)) << QString("Predicted Prec-Recall AUC (y %1)").arg(QString::number(j+1));
+        header << QString("Recalculated ROC AUC (%1)").arg(classes[j].name) << QString("Predicted ROC AUC (%1)").arg(classes[j].name)  << QString("Recalculated Prec-Recall AUC (%1)").arg(classes[j].name) << QString("Predicted Prec-Recall AUC (%1)").arg(classes[j].name);
       }
     }
 
@@ -2338,13 +2413,15 @@ void MainWindow::showPLSValidation()
     child->newTable(tabname);
 
 
-    uint row = projects->value(pid)->getPLSModel(mid)->Model()->q2y->row;// the number of components
+    uint row = 0;
     uint col = 0;
     if(projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_){
-      col = projects->value(pid)->getPLSModel(mid)->Model()->r2y_model->col + projects->value(pid)->getPLSModel(mid)->Model()->q2y->col +  projects->value(pid)->getPLSModel(mid)->Model()->sdep->col + projects->value(pid)->getPLSModel(mid)->Model()->bias->col;
+      row = projects->value(pid)->getPLSModel(mid)->Model()->q2y->row;// the number of components
+      col = projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col + projects->value(pid)->getPLSModel(mid)->Model()->q2y->col +  projects->value(pid)->getPLSModel(mid)->Model()->sdep->col + projects->value(pid)->getPLSModel(mid)->Model()->bias->col;
     }
     else{
-      col = projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_model->col + projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_validation->col +  projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_model->col + projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_validation->col;
+      row = projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->row;
+      col = projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->col + projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_validation->col +  projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_recalculated->col + projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_validation->col;
     }
 
     #ifdef DEBUG
@@ -2360,7 +2437,7 @@ void MainWindow::showPLSValidation()
         labels.append("PC "+QString::number(i+1));
         uint l = 0;
         for(uint j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->q2y->col; j++){ // the q2 for each y
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->r2y_model, i, j));
+          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated, i, j));
           l++;
           setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->q2y, i, j));
           l++;
@@ -2371,28 +2448,30 @@ void MainWindow::showPLSValidation()
         }
       }
 
+      QStringList yvarnames = projects->value(pid)->getPLSModel(mid)->getYVarName();
       for(uint j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->q2y->col; j++){
-        header << QString("R^2(y %1)").arg(QString::number(j+1)) << QString("Q^2(y %1)").arg(QString::number(j+1)) << QString("SDEP(y %1)").arg(QString::number(j+1)) << QString("BIAS(y %1)").arg(QString::number(j+1));
+        header << QString("R^2(%1)").arg(yvarnames[j]) << QString("Q^2(%1)").arg(yvarnames[j]) << QString("SDEP(%1)").arg(yvarnames[j]) << QString("BIAS(%1)").arg(yvarnames[j]);
       }
     }
     else{ // plsda
       for(uint i = 0; i < row; i++){ // PC
         labels.append("PC "+QString::number(i+1));
         uint l = 0;
-        for(uint j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->q2y->col; j++){ // the q2 for each y
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_model, i, j));
+        for(uint j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->col; j++){ // the q2 for each y
+          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated, i, j));
           l++;
           setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_validation, i, j));
           l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_model, i, j));
+          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_recalculated, i, j));
           l++;
           setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_validation, i, j));
           l++;
         }
       }
 
-      for(uint j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_model->col; j++){
-        header << QString("Recalculated ROC AUC (y %1)").arg(QString::number(j+1)) << QString("Predicted ROC AUC (y %1)").arg(QString::number(j+1)) << QString("Recalculated Precision-recall AUC (y %1)").arg(QString::number(j+1)) << QString("Predicted Precision-recall AUC (y %1)").arg(QString::number(j+1));
+      LABELS classes = projects->value(pid)->getPLSModel(mid)->getClasses();
+      for(uint j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->col; j++){
+        header << QString("Recalculated ROC AUC (%1)").arg(classes[j].name) << QString("Predicted ROC AUC (%1)").arg(classes[j].name) << QString("Recalculated Precision-recall AUC (%1)").arg(classes[j].name) << QString("Predicted Precision-recall AUC (%1)").arg(classes[j].name);
       }
     }
 
@@ -2449,7 +2528,7 @@ void MainWindow::showPLSExpVar()
 
     uint row = projects->value(pid)->getPLSModel(mid)->Model()->xvarexp->size;
   //       uint col = 2 + projects->value(pid)->getPLSModel(mid)->Model()->r2y_model->col; // the explained variance, the sum of explained variance, the r^2 y
-    uint col = 2 + projects->value(pid)->getPLSModel(mid)->Model()->r2y_model->col + projects->value(pid)->getPLSModel(mid)->Model()->sdec->col; // the explained variance, the sum of explained variance, the r^2 y
+    uint col = 2 + projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col + projects->value(pid)->getPLSModel(mid)->Model()->sdec->col; // the explained variance, the sum of explained variance, the r^2 y
 
     child->getTable()->model()->newMatrix(row, col);
 
@@ -2467,8 +2546,8 @@ void MainWindow::showPLSExpVar()
       }
 
       int l = 2;
-      for(uint j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->r2y_model->col; j++){
-        setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->r2y_model, i, j));
+      for(uint j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col; j++){
+        setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated, i, j));
         l++;
         setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->sdec, i, j));
         l++;
@@ -2477,7 +2556,7 @@ void MainWindow::showPLSExpVar()
     child->getTable()->model()->setObjNames(labels);
     QStringList header;
     header << "Principal Component" << "X Exp Variance" << "Accum X Exp Variance";
-    for(uint j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->r2y_model->col; j++){
+    for(uint j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col; j++){
       header << QString("r^2(y: %1)").arg(QString::number(j+1));
     }
 
@@ -4487,18 +4566,34 @@ void MainWindow::PLSRecalcVSExpPlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       plsplot.setNLatentVariables(dp.getNLV());
-      ScatterPlot2D *plot2D = 0;
-      plsplot.RecalcVSExperimental(&plot2D);
-      if(plot2D != 0){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+
+      if(projects->value(dp.getProjectID())->getPLSModel(dp.getModelID())->getAlgorithm() == PLS_){
+        ScatterPlot2D *plot2D = 0;
+        plsplot.RecalcVSExperimental(&plot2D);
+        if(plot2D != 0){
+          MDIChild *graphchild = createMdiChild();
+          graphchild->setWidget(plot2D);
+          graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+          graphchild->resize(510, 530);
+          graphchild->show();
+          connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        }
+        else{
+          QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
+        }
       }
       else{
-        QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
+        QList<QStringList> cellnames;
+        QList<QList<QPixmap>> images;
+        QList<QList<QColor>> colors;
+        plsplot.ClassRecalcVSExperimental(&cellnames, &images, &colors);
+        for(int i = 0; i < cellnames.size(); i++){
+          MDIChild *child = createMdiChild();
+          QString tabname = QString("PLS %1 - Class Recalculated vs Experimental").arg(projects->value(dp.getProjectID())->getPLSModel(dp.getModelID())->getName());
+          child->newTable(tabname, cellnames[i], images[i], colors[i]);
+          child->show();
+          child->getTable()->setPID(dp.getProjectID());
+        }
       }
     }
   }
@@ -4549,18 +4644,34 @@ void MainWindow::PLSPredVSExpPlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       plsplot.setNLatentVariables(dp.getNLV());
-      ScatterPlot2D *plot2D = 0;
-      plsplot.PredictedVSExperimental(&plot2D);
-      if(plot2D != 0){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+
+      if(projects->value(dp.getProjectID())->getPLSModel(dp.getModelID())->getAlgorithm() == PLS_){
+        ScatterPlot2D *plot2D = 0;
+        plsplot.PredictedVSExperimental(&plot2D);
+        if(plot2D != 0){
+          MDIChild *graphchild = createMdiChild();
+          graphchild->setWidget(plot2D);
+          graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+          graphchild->resize(510, 530);
+          graphchild->show();
+          connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        }
+        else{
+          QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
+        }
       }
       else{
-        QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
+        QList<QStringList> cellnames;
+        QList<QList<QPixmap>> images;
+        QList<QList<QColor>> colors;
+        plsplot.ClassPredictedVSExperimental(&cellnames, &images, &colors);
+        for(int i = 0; i < cellnames.size(); i++){
+          MDIChild *child = createMdiChild();
+          QString tabname = QString("PLS %1 - Class Predicted vs Experimental").arg(projects->value(dp.getProjectID())->getPLSModel(dp.getModelID())->getName());
+          child->newTable(tabname, cellnames[i], images[i], colors[i]);
+          child->show();
+          child->getTable()->setPID(dp.getProjectID());
+        }
       }
     }
   }
@@ -4612,6 +4723,111 @@ void MainWindow::PLSPlotQ2R2()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       QList< SimpleLine2DPlot* > plots = plsplot.R2Q2();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models and Validation Model Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::PLSPlotROCAucs()
+{
+  if(ProjectsHavePLSValidated() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      PLSPlot plsplot(projects);
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      QList< SimpleLine2DPlot* > plots = plsplot.ROCAUCs();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models and Validation Model Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::PLSPlotROCCurves()
+{
+  if(ProjectsHavePLSValidated() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      PLSPlot plsplot(projects);
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      QList< SimpleLine2DPlot* > plots = plsplot.ROCCurves();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models and Validation Model Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::PLSPlotPRAucs()
+{
+  if(ProjectsHavePLSValidated() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      PLSPlot plsplot(projects);
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      QList< SimpleLine2DPlot* > plots = plsplot.PrecisionRecallAveragePrecision();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models and Validation Model Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::PLSPlotPRCurves()
+{
+  if(ProjectsHavePLSValidated() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      PLSPlot plsplot(projects);
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+
+      QList< SimpleLine2DPlot* > plots = plsplot.PrecisionRecallCurves();
       for(int i = 0; i < plots.size(); i++){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plots[i]);
@@ -4848,18 +5064,34 @@ void MainWindow::EPLSRecalcVSExpPlot()
       eplsplot.setPID(dp.getProjectID());
       eplsplot.setMID(dp.getModelID());
       eplsplot.setNLatentVariables(dp.getNLV());
-      ScatterPlot2D *plot2D = 0;
-      eplsplot.RecalcVSExperimental(&plot2D);
-      if(plot2D != 0){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+
+      if(projects->value(dp.getProjectID())->getEPLSModel(dp.getModelID())->getAlgorithm() == EPLS_){
+        ScatterPlot2D *plot2D = 0;
+        eplsplot.RecalcVSExperimental(&plot2D);
+        if(plot2D != 0){
+          MDIChild *graphchild = createMdiChild();
+          graphchild->setWidget(plot2D);
+          graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+          graphchild->resize(510, 530);
+          graphchild->show();
+          connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        }
+        else{
+          QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
+        }
       }
       else{
-        QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
+        QList<QStringList> cellnames;
+        QList<QList<QPixmap>> images;
+        QList<QList<QColor>> colors;
+        eplsplot.ClassRecalcVSExperimental(&cellnames, &images, &colors);
+        for(int i = 0; i < cellnames.size(); i++){
+          MDIChild *child = createMdiChild();
+          QString tabname = QString("EPLS %1 - Class Recalculated vs Experimental").arg(projects->value(dp.getProjectID())->getEPLSModel(dp.getModelID())->getName());
+          child->newTable(tabname, cellnames[i], images[i], colors[i]);
+          child->show();
+          child->getTable()->setPID(dp.getProjectID());
+        }
       }
     }
   }
@@ -4910,18 +5142,33 @@ void MainWindow::EPLSPredVSExpPlot()
       eplsplot.setPID(dp.getProjectID());
       eplsplot.setMID(dp.getModelID());
       eplsplot.setNLatentVariables(dp.getNLV());
-      ScatterPlot2D *plot2D = 0;
-      eplsplot.PredictedVSExperimental(&plot2D);
-      if(plot2D != 0){
-        MDIChild *graphchild = createMdiChild();
-        graphchild->setWidget(plot2D);
-        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
-        graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      if(projects->value(dp.getProjectID())->getEPLSModel(dp.getModelID())->getAlgorithm() == EPLS_){
+        ScatterPlot2D *plot2D = 0;
+        eplsplot.PredictedVSExperimental(&plot2D);
+        if(plot2D != 0){
+          MDIChild *graphchild = createMdiChild();
+          graphchild->setWidget(plot2D);
+          graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+          graphchild->resize(510, 530);
+          graphchild->show();
+          connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        }
+        else{
+          QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
+        }
       }
       else{
-        QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
+        QList<QStringList> cellnames;
+        QList<QList<QPixmap>> images;
+        QList<QList<QColor>> colors;
+        eplsplot.ClassPredictedVSExperimental(&cellnames, &images, &colors);
+        for(int i = 0; i < cellnames.size(); i++){
+          MDIChild *child = createMdiChild();
+          QString tabname = QString("EPLS %1 - Class Predicted vs Experimental").arg(projects->value(dp.getProjectID())->getEPLSModel(dp.getModelID())->getName());
+          child->newTable(tabname, cellnames[i], images[i], colors[i]);
+          child->show();
+          child->getTable()->setPID(dp.getProjectID());
+        }
       }
     }
   }
@@ -4991,6 +5238,114 @@ void MainWindow::EPLSPlotR2Q2()
 void MainWindow::EPLSPlotSDECSDEP()
 {
 
+}
+
+void MainWindow::EPLSPlotROCAucs()
+{
+  if(ProjectsHaveEPLSValidated() == true ){
+    ProjectTree pjtree;
+    GetEPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      EPLSPlot eplsplot(projects);
+      eplsplot.setPID(dp.getProjectID());
+      eplsplot.setMID(dp.getModelID());
+      eplsplot.setNLatentVariables(dp.getNLV());
+      QList< SimpleLine2DPlot* > plots = eplsplot.ROCAUCs();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No EPLS Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::EPLSPlotROCCurves()
+{
+  if(ProjectsHaveEPLSValidated() == true ){
+    ProjectTree pjtree;
+    GetEPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      EPLSPlot eplsplot(projects);
+      eplsplot.setPID(dp.getProjectID());
+      eplsplot.setMID(dp.getModelID());
+      eplsplot.setNLatentVariables(dp.getNLV());
+      QList< SimpleLine2DPlot* > plots = eplsplot.ROCCurves();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No EPLS Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::EPLSPlotPRAucs()
+{
+  if(ProjectsHaveEPLSValidated() == true ){
+    ProjectTree pjtree;
+    GetEPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      EPLSPlot eplsplot(projects);
+      eplsplot.setPID(dp.getProjectID());
+      eplsplot.setMID(dp.getModelID());
+      eplsplot.setNLatentVariables(dp.getNLV());
+      QList< SimpleLine2DPlot* > plots = eplsplot.PrecisionRecallAveragePrecision();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No EPLS Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::EPLSPlotPRCurves()
+{
+  if(ProjectsHaveEPLSValidated() == true ){
+    ProjectTree pjtree;
+    GetEPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      EPLSPlot eplsplot(projects);
+      eplsplot.setPID(dp.getProjectID());
+      eplsplot.setMID(dp.getModelID());
+      eplsplot.setNLatentVariables(dp.getNLV());
+      QList< SimpleLine2DPlot* > plots = eplsplot.PrecisionRecallCurves();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No EPLS Models Found!\n"), QMessageBox::Close);
+  }
 }
 
 void MainWindow::MLRRecalcVSExpPlot()
@@ -5569,7 +5924,7 @@ void MainWindow::DoPCA()
         projects->value(pid)->getLastPCAModel()->setVarName(varsel);
 
         matrix *x;
-        NewMatrix(&x, objsel.size(), varsel.size());
+        initMatrix(&x);
 
         if(objsel.size() == projects->value(pid)->getMatrix(did)->getObjName().size()
           && varsel.size() == projects->value(pid)->getMatrix(did)->getVarName().size()){
@@ -5655,8 +6010,8 @@ void MainWindow::DoEPLSPrediction()
 
       QStringList xvarsel = projects->value(pid)->getEPLSModel(mid)->getXVarName();
       matrix *x, *y;
-      NewMatrix(&x, objsel.size(), xvarsel.size());
-      NewMatrix(&y, objsel.size(), ysel.size());
+      initMatrix(&x);
+      initMatrix(&y);
 
       PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, ysel, &x, &y);
 
@@ -5734,11 +6089,11 @@ void MainWindow::DoEPLSPrediction()
 
 void MainWindow::DoEPLSValidation()
 {
-
   ValidatorDialog doeplsval(projects, EPLSValidation);
   if(doeplsval.exec() == QDialog::Accepted && doeplsval.compute() == true){
     int pid = doeplsval.getselectedProject();
     int mid = doeplsval.getModelID();
+    LABELS kfoldclasses = doeplsval.getKFoldClasses();
     CombinationRule crule = doeplsval.getCombinationRule();
     int ngroup = doeplsval.getNumberOfGroup();
     int niter = doeplsval.getNumberOfIteration();
@@ -5760,21 +6115,31 @@ void MainWindow::DoEPLSValidation()
       updateLog(QString("--------------------\n Computing EPLS Validation for: %1").arg(projects->value(pid)->getProjectName()));
 
       QStringList objsel, xvarsel, yvarsel;
+      LABELS classes;
       objsel = projects->value(pid)->getEPLSModel(mid)->getObjName();
       xvarsel = projects->value(pid)->getEPLSModel(mid)->getXVarName();
       yvarsel = projects->value(pid)->getEPLSModel(mid)->getYVarName();
+      classes = projects->value(pid)->getEPLSModel(mid)->getClasses();
 
       matrix *x, *y;
-      NewMatrix(&x, objsel.size(), xvarsel.size());
-      NewMatrix(&y, objsel.size(), yvarsel.size());
-
-      PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+      initMatrix(&x);
+      initMatrix(&y);
+      if(yvarsel.size() > 0 && classes.size() == 0){
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+      }
+      else{
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, classes, &x, &y);
+      }
+      uivector *kfc;
+      initUIVector(&kfc);
+      PrepareKFoldClasses(objsel, kfoldclasses, &kfc);
 
       projects->value(pid)->getEPLSModel(mid)->setCombinationRule(crule);
 
       RUN obj;
       obj.setXMatrix(x);
       obj.setYMatrix(y);
+      obj.setUIVector(kfc);
       obj.setEPLSModel(projects->value(pid)->getEPLSModel(mid));
       obj.setElearningParm(projects->value(pid)->getEPLSModel(mid)->getElearningParm());
       obj.setValidationType(vt);
@@ -5806,6 +6171,9 @@ void MainWindow::DoEPLSValidation()
       CalculationMenuEnable();
       StopRun();
       projects->value(pid)->AutoSave();
+      DelMatrix(&x);
+      DelMatrix(&y);
+      DelUIVector(&kfc);
     }
     else{
       QMessageBox::critical(this, tr("EPLS Validation Error"), "Unable to compute EPLS Validation.\nData are lost.", QMessageBox::Ok);
@@ -5839,6 +6207,7 @@ void MainWindow::DoEPLS(int algtype)
       QStringList objsel = doepls.getObjectSelected();
       QStringList xvarsel = doepls.getXVarSelected();
       QStringList yvarsel = doepls.getYVarSelected();
+      LABELS classes = doepls.getClasses();
 
       QString modelname = "EPLS - " + doepls.getModelName();
 
@@ -5869,8 +6238,8 @@ void MainWindow::DoEPLS(int algtype)
         projects->value(pid)->getLastEPLSModel()->setYVarName(yvarsel);
 
         matrix *x, *y;
-        NewMatrix(&x, objsel.size(), xvarsel.size());
-        NewMatrix(&y, objsel.size(), yvarsel.size());
+        initMatrix(&x);
+        initMatrix(&y);
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
 
@@ -5880,6 +6249,91 @@ void MainWindow::DoEPLS(int algtype)
         obj.setEPLSModel(projects->value(pid)->getLastEPLSModel());
         obj.setXScalingType(xscaling);
         obj.setYScalingType(yscaling);
+        obj.setNumberPC(pc);
+        obj.setElearningParm(eparm);
+
+        QFuture<void> future = obj.RunEPLS(algtype);
+        while(!future.isFinished()){
+          if(stoprun == true){
+            obj.AbortRun();
+            QApplication::processEvents();
+          }
+          else{
+            QApplication::processEvents();
+          }
+        }
+
+        if(stoprun == false){
+          WaitRun();
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, modelname);
+          subitem->setText(1, QString::number(tabcount_));
+          subitem->setText(2, QString::number(pid));
+          subitem->setText(3, projects->value(pid)->getMatrix(did)->getHash());
+          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+          subitem->setText(5, QString::number(xscaling));
+          subitem->setText(6, QString::number(yscaling));
+          subitem->setText(7, QString::number(pc));
+          subitem->setText(8, QString("EPLS Model"));
+          subitem->setText(9, QString::number(mid_));
+
+          tabcount_++;
+          mid_++;
+          getProjectItem(pid)->child(1)->addChild(subitem);
+        }
+        else{
+          int removeid =  projects->value(pid)->EPLSCount()-1;
+          projects->value(pid)->delEPLSModelAt(removeid);
+        }
+
+        DelMatrix(&x);
+        DelMatrix(&y);
+        TopMenuEnableDisable();
+        CalculationMenuEnable();
+        StopRun();
+      }
+      else if(did != -1 && pid != -1 && objsel.size() > 0 && xvarsel.size() > 0 && classes.size() > 0){ // EPLSDA
+        StartRun();
+        CalculationMenuDisable(pid);
+        QString str = "--------------------\n Computing EPLS Discriminant Analysis for: ";
+        str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
+        projects->value(pid)->addEPLSModel();
+        updateLog(str);
+
+        QStringList classnames;
+        for(int i = 0; i < classes.size(); i++)
+          classnames << classes[i].name;
+
+        projects->value(pid)->getLastEPLSModel()->setAlgorithm(algtype);
+        projects->value(pid)->getLastEPLSModel()->setDID(did);
+        projects->value(pid)->getLastEPLSModel()->setDataHash(projects->value(pid)->getMatrix(did)->getHash());
+        projects->value(pid)->getLastEPLSModel()->setXScaling(xscaling);
+        projects->value(pid)->getLastEPLSModel()->setYScaling(0);
+        projects->value(pid)->getLastEPLSModel()->setElearningParm(eparm);
+        if(pc > xvarsel.size()){
+          projects->value(pid)->getLastEPLSModel()->setNPC(xvarsel.size());
+        }
+        else{
+          projects->value(pid)->getLastEPLSModel()->setNPC(pc);
+        }
+        projects->value(pid)->getLastEPLSModel()->setModelID(mid_);
+        projects->value(pid)->getLastEPLSModel()->setName(modelname);
+        projects->value(pid)->getLastEPLSModel()->setObjName(objsel);
+        projects->value(pid)->getLastEPLSModel()->setXVarName(xvarsel);
+        projects->value(pid)->getLastEPLSModel()->setClasses(classes);
+
+        matrix *x, *y;
+        initMatrix(&x);
+        initMatrix(&y);
+
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, classes, &x, &y);
+
+        RUN obj;
+        obj.setXMatrix(x);
+        obj.setYMatrix(y);
+        obj.setEPLSModel(projects->value(pid)->getLastEPLSModel());
+        obj.setXScalingType(xscaling);
+        obj.setYScalingType(0);
         obj.setNumberPC(pc);
         obj.setElearningParm(eparm);
 
@@ -5954,8 +6408,8 @@ void MainWindow::DoPLSPrediction()
 
         QStringList xvarsel = projects->value(pid)->getPLSModel(mid)->getXVarName();
         matrix *x, *y;
-        NewMatrix(&x, objsel.size(), xvarsel.size());
-        NewMatrix(&y, objsel.size(), ysel.size());
+        initMatrix(&x);
+        initMatrix(&y);
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, ysel, &x, &y);
 
@@ -6043,6 +6497,7 @@ void MainWindow::DoPLSValidation()
       int ngroup = doplsval.getNumberOfGroup();
       int niter = doplsval.getNumberOfIteration();
       int vt = doplsval.getValidType();
+      LABELS kfoldclasses = doplsval.getKFoldClasses();
       bool yscrambling = doplsval.ModelYScrambling();
       int n_yscrambling = doplsval.getYSCramblingModels();
 
@@ -6063,18 +6518,30 @@ void MainWindow::DoPLSValidation()
         objsel = projects->value(pid)->getPLSModel(mid)->getObjName();
         xvarsel = projects->value(pid)->getPLSModel(mid)->getXVarName();
         yvarsel = projects->value(pid)->getPLSModel(mid)->getYVarName();
+        LABELS classes = projects->value(pid)->getPLSModel(mid)->getClasses();
 
         matrix *x, *y;
-        NewMatrix(&x, objsel.size(), xvarsel.size());
-        NewMatrix(&y, objsel.size(), yvarsel.size());
+        initMatrix(&x);
+        initMatrix(&y);
 
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+        
+        if(yvarsel.size() > 0 && classes.size() == 0){
+          PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+        }
+        else{
+          PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, classes, &x, &y);
+        }
+
+        uivector *kfc;
+        initUIVector(&kfc);
+        PrepareKFoldClasses(objsel, kfoldclasses, &kfc);
 
         RUN obj;
         obj.setXMatrix(x);
         obj.setYMatrix(y);
         obj.setPLSModel(projects->value(pid)->getPLSModel(mid));
         obj.setValidationType(vt);
+        obj.setUIVector(kfc);
         obj.setModelYScrambling(yscrambling);
         obj.setModelYScramblingModels(n_yscrambling);
 
@@ -6097,20 +6564,16 @@ void MainWindow::DoPLSValidation()
         }
 
         if(stoprun == false){
-        #ifdef DEBUG
-        qDebug() << "r2x validation";
-        PrintDVector(projects->value(pid)->getPLSModel(mid)->Model()->r2x_validation);
-
-        qDebug() << "q2y validation";
-        PrintMatrix(projects->value(pid)->getPLSModel(mid)->Model()->q2y);
-        #endif
-
           projects->value(pid)->getPLSModel(mid)->setValidation(vt);
         }
+
         TopMenuEnableDisable();
         CalculationMenuEnable();
         StopRun();
         projects->value(pid)->AutoSave();
+        DelMatrix(&x);
+        DelMatrix(&y);
+        DelUIVector(&kfc);
       }
       else{
         QMessageBox::critical(this, tr("PLS Validation Error"), "Unable to compute PLS Validation.\nData are lost.", QMessageBox::Ok);
@@ -6133,7 +6596,7 @@ void MainWindow::DoPLSRegression()
 void MainWindow::DoPLS(int algtype)
 {
   if(!projects->isEmpty()){
-    ModelDialog dopls(projects, algtype);
+    ModelDialogWizard dopls(projects, algtype);
     if(dopls.exec() == QDialog::Accepted && dopls.compute() == true){
       int pid = dopls.getselectedProject();
       int did = dopls.getselectedData();
@@ -6144,6 +6607,7 @@ void MainWindow::DoPLS(int algtype)
       QStringList objsel = dopls.getObjectSelected();
       QStringList xvarsel = dopls.getXVarSelected();
       QStringList yvarsel = dopls.getYVarSelected();
+      LABELS classes = dopls.getClasses();
 
       QString modelname = "PLS - " + dopls.getModelName();
 
@@ -6173,8 +6637,8 @@ void MainWindow::DoPLS(int algtype)
         projects->value(pid)->getLastPLSModel()->setYVarName(yvarsel);
 
         matrix *x, *y;
-        NewMatrix(&x, objsel.size(), xvarsel.size());
-        NewMatrix(&y, objsel.size(), yvarsel.size());
+        initMatrix(&x);
+        initMatrix(&y);
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
 
@@ -6230,6 +6694,91 @@ void MainWindow::DoPLS(int algtype)
         CalculationMenuEnable();
         StopRun();
       }
+      else if(did != -1 && pid != -1 && objsel.size() > 0 && xvarsel.size() > 0 && classes.size() > 0){
+        StartRun();
+        CalculationMenuDisable(pid);
+        QString str = "--------------------\n Computing PLS DA for: ";
+        str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
+        projects->value(pid)->addPLSModel();
+        updateLog(str);
+
+        projects->value(pid)->getLastPLSModel()->setAlgorithm(algtype);
+        projects->value(pid)->getLastPLSModel()->setDID(did);
+        projects->value(pid)->getLastPLSModel()->setDataHash(projects->value(pid)->getMatrix(did)->getHash());
+        projects->value(pid)->getLastPLSModel()->setXScaling(xscaling);
+        projects->value(pid)->getLastPLSModel()->setYScaling(0);
+
+        if(pc > xvarsel.size()){
+          projects->value(pid)->getLastPLSModel()->setNPC(xvarsel.size());
+        }
+        else{
+          projects->value(pid)->getLastPLSModel()->setNPC(pc);
+        }
+        projects->value(pid)->getLastPLSModel()->setModelID(mid_);
+        projects->value(pid)->getLastPLSModel()->setName(modelname);
+        projects->value(pid)->getLastPLSModel()->setObjName(objsel);
+        projects->value(pid)->getLastPLSModel()->setXVarName(xvarsel);
+        projects->value(pid)->getLastPLSModel()->setClasses(classes);
+
+        matrix *x, *y;
+        initMatrix(&x);
+        initMatrix(&y);
+
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, classes, &x, &y);
+
+        RUN obj;
+        obj.setXMatrix(x);
+        obj.setYMatrix(y);
+        obj.setPLSModel(projects->value(pid)->getLastPLSModel());
+        obj.setXScalingType(xscaling);
+        obj.setYScalingType(yscaling);
+        obj.setNumberPC(pc);
+
+        QFuture<void> future = obj.RunPLS(algtype);
+        while(!future.isFinished()){
+          if(stoprun == true){
+            obj.AbortRun();
+            QApplication::processEvents();
+          }
+          else{
+            QApplication::processEvents();
+          }
+        }
+
+        if(stoprun == false){
+          WaitRun();
+          #ifdef DEBUG
+          PrintPLSModel(projects->value(pid)->getPLSModel(mid_)->Model());
+          #endif
+
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, modelname);
+          subitem->setText(1, QString::number(tabcount_));
+          subitem->setText(2, QString::number(pid));
+          subitem->setText(3, projects->value(pid)->getMatrix(did)->getHash());
+          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+          subitem->setText(5, QString::number(xscaling));
+          subitem->setText(6, QString::number(yscaling));
+          subitem->setText(7, QString::number(pc));
+          subitem->setText(8, QString("PLS Model"));
+          subitem->setText(9, QString::number(mid_));
+
+          tabcount_++;
+          mid_++;
+          getProjectItem(pid)->child(1)->addChild(subitem);
+        }
+        else{
+          int removeid =  projects->value(pid)->PLSCount()-1;
+          projects->value(pid)->delPLSModelAt(removeid);
+        }
+
+        DelMatrix(&x);
+        DelMatrix(&y);
+        TopMenuEnableDisable();
+        CalculationMenuEnable();
+        StopRun();
+      }
+
     }
   }
 }
@@ -6357,6 +6906,7 @@ void MainWindow::DoLDAValidation()
     if(doldavalid.exec() == QDialog::Accepted && doldavalid.compute() == true){
       int pid = doldavalid.getselectedProject();
       int mid = doldavalid.getModelID();
+      LABELS kfoldclasses = doldavalid.getKFoldClasses();
       int ngroup = doldavalid.getNumberOfGroup();
       int niter = doldavalid.getNumberOfIteration();
       int vt = doldavalid.getValidType();
@@ -6609,8 +7159,8 @@ void MainWindow::DoMLRPrediction()
         QStringList yvarsel = projects->value(pid)->getMLRModel(mid)->getYVarName();
 
         matrix *x, *y;
-        NewMatrix(&x, objsel.size(), xvarsel.size());
-        NewMatrix(&y, objsel.size(), ysel.size());
+        initMatrix(&x);
+        initMatrix(&y);
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
 
@@ -6687,6 +7237,7 @@ void MainWindow::DoMLRValidation()
     if(domlrval.exec() == QDialog::Accepted && domlrval.compute() == true){
       int pid = domlrval.getselectedProject();
       int mid = domlrval.getModelID();
+      LABELS kfoldclasses = domlrval.getKFoldClasses();
       int ngroup = domlrval.getNumberOfGroup();
       int niter = domlrval.getNumberOfIteration();
       int vt = domlrval.getValidType();
@@ -6713,14 +7264,19 @@ void MainWindow::DoMLRValidation()
         yvarsel = projects->value(pid)->getMLRModel(mid)->getYVarName();
 
         matrix *x, *y;
-        NewMatrix(&x, objsel.size(), xvarsel.size());
-        NewMatrix(&y, objsel.size(), yvarsel.size());
+        initMatrix(&x);
+        initMatrix(&y);
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+
+        uivector *kfc;
+        initUIVector(&kfc);
+        PrepareKFoldClasses(objsel, kfoldclasses, &kfc);
 
         RUN obj;
         obj.setXMatrix(x);
         obj.setYMatrix(y);
+        obj.setUIVector(kfc);
         obj.setMLRModel(projects->value(pid)->getMLRModel(mid));
         obj.setValidationType(vt);
         obj.setModelYScrambling(yscrambling);
@@ -6759,6 +7315,7 @@ void MainWindow::DoMLRValidation()
         StopRun();
         DelMatrix(&x);
         DelMatrix(&y);
+        DelUIVector(&kfc);
         projects->value(pid)->AutoSave();
       }
       else{
@@ -6801,8 +7358,8 @@ void MainWindow::DoMLR()
         projects->value(pid)->getLastMLRModel()->setYVarName(yvarsel);
 
         matrix *x, *y;
-        NewMatrix(&x, objsel.size(), xvarsel.size());
-        NewMatrix(&y, objsel.size(), yvarsel.size());
+        initMatrix(&x);
+        initMatrix(&y);
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
 
@@ -7096,6 +7653,12 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPLSPred_vs_Exp, SIGNAL(triggered(bool)), SLOT(PLSPredVSExpPlot()));
   connect(ui.actionPLSPred_Residuals_vs_Exp, SIGNAL(triggered(bool)), SLOT(PLSPredResidualsVSExpPlot()));
   connect(ui.actionPLSR2_Q2, SIGNAL(triggered(bool)), SLOT(PLSPlotQ2R2()));
+  connect(ui.actionPLSROC_Curve, SIGNAL(triggered(bool)), SLOT(PLSPlotROCCurves()));
+  connect(ui.actionPLSROC_AUC_recalculated_predicted, SIGNAL(triggered(bool)), SLOT(PLSPlotROCAucs()));
+  connect(ui.actionPLSPrecision_recall_Curve, SIGNAL(triggered(bool)), SLOT(PLSPlotPRCurves()));
+  connect(ui.actionPLSPrecision_Recall_AUC_recalculated_predicted, SIGNAL(triggered(bool)), SLOT(PLSPlotPRAucs()));
+
+
   connect(ui.actionPLSYScrambling, SIGNAL(triggered(bool)), SLOT(PLSPlotYScrambling()));
   connect(ui.actionPLSBeta_Coefficients, SIGNAL(triggered(bool)), SLOT(PLSPlotBetaCoefficients()));
   connect(ui.actionBetaCoeffDWPlot, SIGNAL(triggered(bool)), SLOT(PLSPlotBetaCoeffDWPlot()));
@@ -7117,10 +7680,10 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionEPLSRecalculated_vs_Experimental, SIGNAL(triggered(bool)), SLOT(EPLSRecalcVSExpPlot()));
   connect(ui.actionEPLSPredicted_vs_Experimental, SIGNAL(triggered(bool)), SLOT(EPLSPredVSExpPlot()));
   connect(ui.actionEPLSR2_and_Q2, SIGNAL(triggered(bool)), SLOT(EPLSPlotR2Q2()));
-  /*connect(ui.actionEPLSROC_curves, SIGNAL(triggered(bool)), SLOT(PLSRecalcResidualsVSExpPlot()));
-  connect(ui.actionEPLSROC_AUC_recalculated_predicted, SIGNAL(triggered(bool)), SLOT(PLSPredVSExpPlot()));
-  connect(ui.actionEPLSPrecision_recall_curves, SIGNAL(triggered(bool)), SLOT(PLSPredResidualsVSExpPlot()));
-  connect(ui.actionEPLSPrecision_Recall_AUC_recalculated_predicted, SIGNAL(triggered(bool)), SLOT(PLSPlotQ2R2()));*/
+  connect(ui.actionEPLSROC_curves, SIGNAL(triggered(bool)), SLOT(EPLSPlotROCCurves()));
+  connect(ui.actionEPLSROC_AUC_recalculated_predicted, SIGNAL(triggered(bool)), SLOT(EPLSPlotROCAucs()));
+  connect(ui.actionEPLSPrecision_recall_curves, SIGNAL(triggered(bool)), SLOT(EPLSPlotPRCurves()));
+  connect(ui.actionEPLSPrecision_Recall_AUC_recalculated_predicted, SIGNAL(triggered(bool)), SLOT(EPLSPlotPRAucs()));
 
   //connect(ui.actionEPLSRecalculated_vs_Experimental, SIGNAL(triggered(bool)), SLOT(PLSPlotR2R2Predicted()));
 

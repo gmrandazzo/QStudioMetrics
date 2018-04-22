@@ -16,9 +16,11 @@ class SimpleLine2DPlot: public QWidget
   Q_OBJECT
 
 public:
-  SimpleLine2DPlot(matrix *m, QStringList curvenames, QString windowtitle, QStringList columntitle, QString xaxestitle, QString yaxestitle);
+  SimpleLine2DPlot(QList<matrix *> mlst, QStringList curvenames, QString windowtitle, QString xaxestitle, QString yaxestitle);
+  SimpleLine2DPlot(matrix *m, QStringList curvenames, QString windowtitle, QString xaxestitle, QString yaxestitle);
   // Simple Line Plot with one x (first column of m) and more y objects
   SimpleLine2DPlot(matrix *m, QString curvename, QString windowtitle, QString xaxestitle, QString yaxestitle);
+  void setPlotTitle(QString);
   void setLabelDetail(bool);
   void setXminXmanXTicks(double xmin, double xmax, int xtick);
   void setYminYmanYTicks(double ymin, double ymax, int ytick);

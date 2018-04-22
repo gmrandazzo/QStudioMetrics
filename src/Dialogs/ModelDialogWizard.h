@@ -27,6 +27,7 @@ public:
   QStringList getObjectSelected(){ return objsel; }
   QStringList getXVarSelected(){ return xvarsel; }
   QStringList getYVarSelected(){ return yvarsel; }
+  LABELS getClasses(){ return classes; }
   int getXScalingType(){ return xscaling; }
   int getYScalingType(){ return yscaling; }
   int getNumberOfComponent(){ return n_pc; }
@@ -35,9 +36,12 @@ public:
 private slots:
   void next();
   void OK();
-  void genListView(QModelIndex current);
-  void setData(QModelIndex current);
-  void setYData(QModelIndex current);
+  void genListView(QModelIndex current, QModelIndex previous);
+  void setData(QModelIndex current, QModelIndex previous);
+  void setYData(QModelIndex current, QModelIndex previous);
+  void importClass();
+  void addClass();
+  void removeClass();
   void EnableDisableButtons();
 
   void ELmethodChanged(int);
@@ -71,6 +75,9 @@ private:
   bool compute_;
   int xscaling, yscaling;
   uint n_pc; // Number of Principal Component
+  LABELS classes;
+  int CheckClassLabelAndObject(QString label, QString objectname);
+  void WindowAdjust();
 };
 
 #endif

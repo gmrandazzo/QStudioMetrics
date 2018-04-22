@@ -9,10 +9,16 @@
 #include <QList>
 #include <QApplication>
 #include <QTextStream>
+#include <QPainter>
+#include <QStandardItemModel>
+#include <QStandardItem>
+#include <QFileDialog>
 
 #ifdef DEBUG
 #include <QDebug>
 #endif
+
+
 
 #include "qsmdata.h"
 #include "run.h"
@@ -26,8 +32,6 @@
 
 #include <fstream>
 #include <iostream>
-
-
 
 QColor Model::makeColor(double val, const double& min, const double& max, const QColor& color1, const QColor& color2) const
 {
@@ -931,6 +935,34 @@ void Table::resetHighliting()
   model()->setMinColumnVal(0);
 }
 
+#include <QPrinter>
+void Table::SaveAsImage()
+{
+  QString fname = QFileDialog::getSaveFileName(this, tr("Save table as image..."), QString(), tr("PNG files(*.png)"));
+  if(!fname.isEmpty()){
+
+    QPixmap pixmap(ui.tableView->sizeHint());
+    ui.tableView->render(&pixmap);
+    pixmap.save(fname, "PNG", 100);
+
+    /*QPrinter printer(QPrinter::HighResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOutputFileName(fname);
+    printer.setResolution(300); //override to 300dpi
+    printer.setFontEmbeddingEnabled(true);
+    printer.setColorMode(QPrinter::Color);
+    printer.setOrientation(QPrinter::Portrait);
+    printer.setPaperSize(size(), QPrinter::DevicePixel);
+    printer.setFullPage(true);
+    QPainter painter(&printer);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::TextAntialiasing, true);
+    painter.drawPixmap(rect(), pixmap);*/
+
+
+  }
+}
+
 void Table::SortByColumn(int col)
 {
 
@@ -1052,102 +1084,118 @@ void Table::stopRun()
 
 void Table::contextMenuEvent(QContextMenuEvent *event)
 {
-  QAction *copyAct = 0,
-          *addObjLabel = 0,
-          *addVarLabel = 0,
-          *searchAct = 0,
-          *selectByAct = 0,
-          *highlitingCell = 0,
-          *resethighliting = 0,
-          *exportTable = 0;
+  if(model_){
+    QAction *copyAct = 0,
+            *addObjLabel = 0,
+            *addVarLabel = 0,
+            *searchAct = 0,
+            *selectByAct = 0,
+            *highlitingCell = 0,
+            *resethighliting = 0,
+            *exportTable = 0;
 
-  copyAct = new QAction(tr("&Copy"), this);
-  copyAct->setShortcuts(QKeySequence::Copy);
-  copyAct->setStatusTip(tr("Copy the current selection's contents to the "
-                            "clipboard"));
-  connect(copyAct, SIGNAL(triggered()), this, SLOT(copy()));
+    copyAct = new QAction(tr("&Copy"), this);
+    copyAct->setShortcuts(QKeySequence::Copy);
+    copyAct->setStatusTip(tr("Copy the current selection's contents to the "
+                              "clipboard"));
+    connect(copyAct, SIGNAL(triggered()), this, SLOT(copy()));
 
-  QMenu menu(this);
-  menu.addAction(copyAct);
-  menu.addSeparator();
+    QMenu menu(this);
+    menu.addAction(copyAct);
+    menu.addSeparator();
 
-  int colindexessize = ui.tableView->selectionModel()->selectedColumns().size();
-  int rowindexessize = ui.tableView->selectionModel()->selectedRows().size();
-  int indexessize = ui.tableView->selectionModel()->selectedIndexes().size() - 1;
-  int selected = ((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1); //(ceil(indexessize / (int)(model()->columnCount()+1)))+1)
-  /*
-  qDebug() << "indexes " << indexessize;
-  qDebug() << "col" << colindexessize << " " << (int)model()->Matrix()->col;
-  qDebug() << "row" << rowindexessize;
-  qDebug() << "Selected: " << selected;
-  qDebug() << "#############################################";
-  */
+    int colindexessize = ui.tableView->selectionModel()->selectedColumns().size();
+    int rowindexessize = ui.tableView->selectionModel()->selectedRows().size();
+    int indexessize = ui.tableView->selectionModel()->selectedIndexes().size() - 1;
+    int selected = ((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1); //(ceil(indexessize / (int)(model()->columnCount()+1)))+1)
+    /*
+    qDebug() << "indexes " << indexessize;
+    qDebug() << "col" << colindexessize << " " << (int)model()->Matrix()->col;
+    qDebug() << "row" << rowindexessize;
+    qDebug() << "Selected: " << selected;
+    qDebug() << "#############################################";
+    */
 
-  if(objlabels != 0){
-//     if(((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1) == rowindexessize && rowindexessize > 0){
-    if(selected == rowindexessize && rowindexessize > 0){
-      addObjLabel = new QAction(("&Add Object Label"), this);
-      addObjLabel->setStatusTip(tr("Add Label to selected objects"));
-      connect(addObjLabel, SIGNAL(triggered()), this, SLOT(addObjectLabel()));
-      menu.addAction(addObjLabel);
+    if(objlabels != 0){
+  //     if(((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1) == rowindexessize && rowindexessize > 0){
+      if(selected == rowindexessize && rowindexessize > 0){
+        addObjLabel = new QAction(("&Add Object Label"), this);
+        addObjLabel->setStatusTip(tr("Add Label to selected objects"));
+        connect(addObjLabel, SIGNAL(triggered()), this, SLOT(addObjectLabel()));
+        menu.addAction(addObjLabel);
+      }
     }
-  }
-
-  if(varlabels != 0){
-    if(colindexessize > 0){
-      addVarLabel = new QAction(("&Add Variable Label"), this);
-      addVarLabel->setStatusTip(tr("Add Label to selected Variables"));
-      connect(addVarLabel, SIGNAL(triggered()), this, SLOT(addVariableLabel()));
-      menu.addAction(addVarLabel);
-    }
-  }
-
-  if(model()->Matrix() != 0){
-    searchAct = new QAction(tr("&Search by column.."), this);
-    searchAct->setStatusTip(tr("Search objects in the table by column..."));
-    connect(searchAct, SIGNAL(triggered()), this, SLOT(searchBy()));
-    menu.addAction(searchAct);
 
     if(varlabels != 0){
-      selectByAct = new QAction(tr("&Select objects by"), this);
-      selectByAct->setStatusTip(tr("Select objects in the table by..."));
-      connect(selectByAct, SIGNAL(triggered()), this, SLOT(selectBy()));
-      menu.addAction(selectByAct);
+      if(colindexessize > 0){
+        addVarLabel = new QAction(("&Add Variable Label"), this);
+        addVarLabel->setStatusTip(tr("Add Label to selected Variables"));
+        connect(addVarLabel, SIGNAL(triggered()), this, SLOT(addVariableLabel()));
+        menu.addAction(addVarLabel);
+      }
     }
 
-    menu.addSeparator();
+    if(model()->Matrix() != 0){
+      searchAct = new QAction(tr("&Search by column.."), this);
+      searchAct->setStatusTip(tr("Search objects in the table by column..."));
+      connect(searchAct, SIGNAL(triggered()), this, SLOT(searchBy()));
+      menu.addAction(searchAct);
 
-    highlitingCell = new QAction(tr("&Highliting Column"), this);
-    highlitingCell->setStatusTip(tr("Highliting Cell from min to max"));
-    connect(highlitingCell, SIGNAL(triggered()), this, SLOT(highlitingCell()));
-    menu.addAction(highlitingCell);
+      if(varlabels != 0){
+        selectByAct = new QAction(tr("&Select objects by"), this);
+        selectByAct->setStatusTip(tr("Select objects in the table by..."));
+        connect(selectByAct, SIGNAL(triggered()), this, SLOT(selectBy()));
+        menu.addAction(selectByAct);
+      }
 
-    resethighliting = new QAction(tr("&Reset Highliting"), this);
-    resethighliting->setStatusTip(tr("Reset the table Highliting"));
-    connect(resethighliting, SIGNAL(triggered()), this, SLOT(resetHighliting()));
-    menu.addAction(resethighliting);
-    menu.addSeparator();
+      menu.addSeparator();
+
+      highlitingCell = new QAction(tr("&Highliting Column"), this);
+      highlitingCell->setStatusTip(tr("Highliting Cell from min to max"));
+      connect(highlitingCell, SIGNAL(triggered()), this, SLOT(highlitingCell()));
+      menu.addAction(highlitingCell);
+
+      resethighliting = new QAction(tr("&Reset Highliting"), this);
+      resethighliting->setStatusTip(tr("Reset the table Highliting"));
+      connect(resethighliting, SIGNAL(triggered()), this, SLOT(resetHighliting()));
+      menu.addAction(resethighliting);
+      menu.addSeparator();
+    }
+
+    exportTable = new QAction(tr("&Export table..."), this);
+    exportTable->setStatusTip(tr("Export table to file..."));
+    connect(exportTable, SIGNAL(triggered()), this, SLOT(ExportTable()));
+    menu.addAction(exportTable);
+
+    menu.exec(event->globalPos());
+
+    delete copyAct;
+    delete searchAct;
+    delete selectByAct;
+    delete highlitingCell;
+    delete resethighliting;
+
+    if(addObjLabel != 0){
+      delete addObjLabel;
+    }
+
+    if(addVarLabel != 0){
+      delete addVarLabel;
+    }
   }
+  else{
+    QAction *saveAsImage = 0;
 
-  exportTable = new QAction(tr("&Export table..."), this);
-  exportTable->setStatusTip(tr("Export table to file..."));
-  connect(exportTable, SIGNAL(triggered()), this, SLOT(ExportTable()));
-  menu.addAction(exportTable);
+    saveAsImage = new QAction(tr("&Save As Image..."), this);
+    saveAsImage->setStatusTip(tr("Save the table as image."));
+    connect(saveAsImage, SIGNAL(triggered()), this, SLOT(SaveAsImage()));
 
-  menu.exec(event->globalPos());
+    QMenu menu(this);
+    menu.addAction(saveAsImage);
+    menu.exec(event->globalPos());
 
-  delete copyAct;
-  delete searchAct;
-  delete selectByAct;
-  delete highlitingCell;
-  delete resethighliting;
+    delete saveAsImage;
 
-  if(addObjLabel != 0){
-    delete addObjLabel;
-  }
-
-  if(addVarLabel != 0){
-    delete addVarLabel;
   }
 }
 
@@ -1173,6 +1221,7 @@ Table::Table(QWidget *parent) : QWidget(parent)
 {
   ui.setupUi(this);
   model_ = new Model(this);
+  imgtabmodel_ = 0;
   pid = -1;
   ui.tableView->setModel(model_);
   ui.tableView->adjustSize();
@@ -1190,6 +1239,7 @@ Table::Table(matrix* m, QWidget* parent): QWidget(parent)
 {
   ui.setupUi(this);
   model_ = new Model(m, this);
+  imgtabmodel_ = 0;
   pid = -1;
   ui.tableView->setModel(model_);
   ui.tableView->adjustSize();
@@ -1207,6 +1257,7 @@ Table::Table(matrix* m, LABELS* objlabels_, LABELS* varlabels_, QWidget* parent)
 {
   ui.setupUi(this);
   model_ = new Model(m, this);
+  imgtabmodel_ = 0;
   pid = -1;
   objlabels = objlabels_;
   varlabels = varlabels_;
@@ -1225,6 +1276,7 @@ Table::Table(QList< QStringList > tab, LABELS* objlabels_, LABELS* varlabels_, Q
 {
   ui.setupUi(this);
   model_ = new Model(tab, this);
+  imgtabmodel_ = 0;
   pid = -1;
   objlabels = objlabels_;
   varlabels = varlabels_;
@@ -1241,11 +1293,75 @@ Table::Table(QList< QStringList > tab, LABELS* objlabels_, LABELS* varlabels_, Q
 //   connect(ui.tableView->horizontalHeader(),SIGNAL(sectionClicked(int)), SLOT(SortByColumn(int)));
 }
 
+Table::Table(QStringList names, QList<QPixmap> images, QList<QColor> colors, QWidget *parent): QWidget(parent)
+{
+  ui.setupUi(this);
+  model_ = 0;
+  int nrows = (int)ceil(names.size()/10.f);
+  imgtabmodel_ = new QStandardItemModel(nrows, 10, this);
+  ui.tableView->setModel(imgtabmodel_);
+
+  int k = 0;
+  for(int i = 0; i < nrows; i++){
+    for(int j = 0; j < 10; j++){
+      if(k < names.size()){
+
+        QLabel *image = new QLabel();
+        image->setMinimumSize(50, 50);
+        image->resize(50, 50);
+        image->setPixmap(images[k]);
+        image->setScaledContents(true);
+        image->pixmap()->scaled(50, 50, Qt::KeepAspectRatioByExpanding);
+
+        QLabel *label = new QLabel;
+        /*QPalette pal = label->palette();
+        pal.setColor(QPalette::Window,colors[k]);
+        pal.setColor(QPalette::WindowText, colors[k]);
+        label->setAutoFillBackground(true);
+        label->setPalette(pal);*/
+        label->setText(names[k]);
+        QVariant variant= colors[k];
+        QString colcode = variant.toString();
+        label->setStyleSheet("QLabel { background-color :"+colcode+" ; border-style: outset; border-width: 2px; border-radius: 10px; border-color: beige; font: bold 9px; min-width: 10em; padding: 6px; color : black; }");
+        QVBoxLayout *layout = new QVBoxLayout;
+        if(images[k].isNull() == false)
+          layout->addWidget(image);
+
+        layout->addWidget(label);
+        QWidget *cell = new QWidget;
+        cell->setLayout(layout);
+
+        imgtabmodel_->setItem(i, j, new QStandardItem(QString("")));
+        ui.tableView->setIndexWidget(imgtabmodel_->index(i , j), cell);
+        k++;
+      }
+      else{
+        continue;
+      }
+    }
+  }
+
+  pid = -1;
+  //ui.tableView->setModel(imgtabmodel_);
+
+  ui.tableView->adjustSize();
+  ui.tableView->installEventFilter(this);
+  ui.tableView->setSortingEnabled(false);
+//   ui.tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+  ui.tableView->verticalHeader()->setDefaultSectionSize(150);
+  ui.tableView->horizontalHeader()->setDefaultSectionSize(150);
+  //ui.tableView->horizontalHeader()->sectionResizeMode(QHeaderView::Stretch);
+  //ui.tableView->verticalHeader()->sectionResizeMode(QHeaderView::Stretch);
+//   connect(ui.tableView->horizontalHeader(),SIGNAL(sectionClicked(int)), SLOT(SortByColumn(int)));
+}
 
 Table::~Table()
 {
   #ifdef DEBUG
   qDebug()<<"~Table() Delete model_\n";
   #endif
-  delete model_;
+  if(model_)
+    delete model_;
+  else if(imgtabmodel_)
+    delete imgtabmodel_;
 }

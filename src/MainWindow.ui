@@ -259,9 +259,9 @@
       <addaction name="separator"/>
       <addaction name="actionPLSR2_Q2"/>
       <addaction name="actionPLSROC_Curve"/>
-      <addaction name="actionPLSROC_AUC_recalculated_predicted_2"/>
+      <addaction name="actionPLSROC_AUC_recalculated_predicted"/>
       <addaction name="actionPLSPrecision_recall_Curve"/>
-      <addaction name="actionPLSPrecision_Recall_AUC_recalculated_predicted_2"/>
+      <addaction name="actionPLSPrecision_Recall_AUC_recalculated_predicted"/>
       <addaction name="actionPLSYScrambling"/>
       <addaction name="separator"/>
       <addaction name="actionPLS2DScore_Plot_Prediction"/>
@@ -285,6 +285,8 @@
      <addaction name="action2D_Feature_Plot"/>
      <addaction name="action3D_Feature_Plot"/>
      <addaction name="actionProbability_Distribution_Plot"/>
+     <addaction name="actionLDAROC_Curve"/>
+     <addaction name="actionLDAPrecision_Recall_Curve"/>
      <addaction name="separator"/>
      <addaction name="action2D_Feature_Plot_and_Predictions"/>
      <addaction name="action3D_Feature_Plot_and_Predictions"/>
@@ -1431,12 +1433,12 @@
     <string>Precision-recall AUC recalculated/predicted</string>
    </property>
   </action>
-  <action name="actionPLSROC_AUC_recalculated_predicted_2">
+  <action name="actionPLSROC_AUC_recalculated_predicted">
    <property name="text">
     <string>ROC AUC recalculated/predicted</string>
    </property>
   </action>
-  <action name="actionPLSPrecision_Recall_AUC_recalculated_predicted_2">
+  <action name="actionPLSPrecision_Recall_AUC_recalculated_predicted">
    <property name="text">
     <string>Precision-recall AUC recalculated/predicted</string>
    </property>
@@ -1469,6 +1471,16 @@
   <action name="actionEPLSPrecision_recall_curves">
    <property name="text">
     <string>Precision-recall curves</string>
+   </property>
+  </action>
+  <action name="actionLDAROC_Curve">
+   <property name="text">
+    <string>ROC Curve</string>
+   </property>
+  </action>
+  <action name="actionLDAPrecision_Recall_Curve">
+   <property name="text">
+    <string>Precision-Recall Curve</string>
    </property>
   </action>
  </widget>

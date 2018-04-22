@@ -1156,7 +1156,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     DeserializeDVector(s_ycolaverage, &getLastPLSModel()->Model()->ycolaverage);
     DeserializeDVector(s_ycolscaling, &getLastPLSModel()->Model()->ycolscaling);
     DeserializeDVector(s_b, &getLastPLSModel()->Model()->b);
-    DeserializeMatrix(s_r2y_model, &getLastPLSModel()->Model()->r2y_model);
+    DeserializeMatrix(s_r2y_model, &getLastPLSModel()->Model()->r2y_recalculated);
     DeserializeMatrix(s_sdec, &getLastPLSModel()->Model()->sdec);
     DeserializeMatrix(s_recalc_y, &getLastPLSModel()->Model()->recalculated_y);
     DeserializeMatrix(s_recalc_residuals, &getLastPLSModel()->Model()->recalc_residuals);
@@ -1941,7 +1941,7 @@ QString DATA::SaveSQLData(QString savepath)
       QString serialized_ycolaverage = SerializeDVector(getPLSModelAt(i)->Model()->ycolaverage);
       QString serialized_ycolscaling = SerializeDVector(getPLSModelAt(i)->Model()->ycolscaling);
       QString serialized_b= SerializeDVector(getPLSModelAt(i)->Model()->b);
-      QString serialized_r2y_model = SerializeMatrix(getPLSModelAt(i)->Model()->r2y_model);
+      QString serialized_r2y_model = SerializeMatrix(getPLSModelAt(i)->Model()->r2y_recalculated);
       QString serialized_sdec = SerializeMatrix(getPLSModelAt(i)->Model()->sdec);
       QString serialized_recalc_y = SerializeMatrix(getPLSModelAt(i)->Model()->recalculated_y);
       QString serialized_recalc_residuals = SerializeMatrix(getPLSModelAt(i)->Model()->recalc_residuals);

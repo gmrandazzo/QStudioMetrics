@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 set(AUTHOR "Giuseppe Marco Randazzo")
 set(VERSION "1.0.5")
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_MACOSX_RPATH 1)
 
@@ -86,9 +86,10 @@ set(icon_RCC chart.qrc)
 QT5_WRAP_CPP(CHART_MOC_H ${CHART_H})
 QT5_ADD_RESOURCES(icon_RCC_SRCS ${icon_RCC})
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${QT_USE_FILE})
 
-add_library(libchart SHARED ${CHART_SRC} ${CHART_H} ${icon_RCC_SRCS})
+
+add_library(libchart SHARED ${CHART_SRC} ${CHART_H} ${icon_RCC_SRCS} ${CHART_MOC_H})
 #add_library(libchart STATIC ${CHART_SRC} ${CHART_H} ${icon_RCC_SRCS})
 set_target_properties(libchart PROPERTIES OUTPUT_NAME "chart")
 

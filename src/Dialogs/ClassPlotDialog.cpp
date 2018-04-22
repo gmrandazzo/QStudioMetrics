@@ -1,5 +1,4 @@
 #include "ClassPlotDialog.h"
-#include "PlotDialog.h"
 #include <QModelIndex>
 #include <QStandardItem>
 #include <QStandardItemModel>

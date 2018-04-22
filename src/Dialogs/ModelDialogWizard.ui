@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1734</width>
+    <width>1702</width>
     <height>580</height>
    </rect>
   </property>
@@ -127,7 +127,7 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QGridLayout" name="gridLayout_21">
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox">
@@ -835,9 +835,9 @@
              <item row="0" column="1">
               <layout class="QGridLayout" name="gridLayout_16">
                <item row="0" column="0">
-                <widget class="QPushButton" name="importButton">
+                <widget class="QPushButton" name="importclassButton">
                  <property name="text">
-                  <string>Import Classes</string>
+                  <string>Import a class</string>
                  </property>
                 </widget>
                </item>

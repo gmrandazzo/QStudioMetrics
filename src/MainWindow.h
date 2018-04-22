@@ -96,6 +96,10 @@ private slots:
   void PLSPredVSExpPlot();
   void PLSPredResidualsVSExpPlot();
   void PLSPlotQ2R2();
+  void PLSPlotROCAucs();
+  void PLSPlotROCCurves();
+  void PLSPlotPRAucs();
+  void PLSPlotPRCurves();
   void PLSPlotR2R2Predicted();
   void PLSPlotYScrambling();
 
@@ -112,6 +116,10 @@ private slots:
   void EPLSPredResidualsVSExpPlot();
   void EPLSPlotR2Q2();
   void EPLSPlotSDECSDEP();
+  void EPLSPlotROCAucs();
+  void EPLSPlotROCCurves();
+  void EPLSPlotPRAucs();
+  void EPLSPlotPRCurves();
 
   void MLRRecalcVSExpPlot();
   void MLRRecalcResidualsVSExpPlot();
@@ -250,8 +258,10 @@ private:
   void TopMenuEnableDisable();
   void CalculationMenuEnable();
   void CalculationMenuDisable(int calcpid_);
+  void PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix **x, matrix **y);
   void PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix **x, matrix **y);
   void PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix **x);
+  void PrepareKFoldClasses(QStringList objects, LABELS kfclasses, uivector **classes);
 
   bool ProjectsHavePCA(){ return havepca; }
   bool ProjectsHavePCAPrediction(){ return havepcapred; }

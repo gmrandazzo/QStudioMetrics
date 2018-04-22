@@ -241,8 +241,8 @@ void ImportFileDialog::BuildArray()
 
 void ImportFileDialog::AssignName(QStringList &list, QString name)
 {
-  list.append(name);
-  /* TOO SLOW for big datasets!!!!
+  //list.append(name);
+  /* TOO SLOW for big datasets!!!!*/
   if(list.contains(name) == true){
     int i = 1;
     while(list.contains(QString("%1_%2").arg(name).arg(QString::number(i)), Qt::CaseSensitive) == true){
@@ -252,7 +252,7 @@ void ImportFileDialog::AssignName(QStringList &list, QString name)
   }
   else{
     list.append(name);
-  }*/
+  }
 }
 
 //if(ui.firstrowvarname->isChecked() == true && ui.firstcolobjname->isChecked() == true)

@@ -7,7 +7,8 @@
 #include <QString>
 #include <QStringList>
 
-#include "../qstudiometricsdataoperations.h"
+#include "qstudiometricstypes.h"
+#include "qstudiometricsdataoperations.h"
 
 class PLSPREDICTION
 {
@@ -69,7 +70,9 @@ public:
   void setXVarName(QStringList &varname_){ xvarname = varname_; }
   QStringList &getXVarName(){ return xvarname; }
   void setYVarName(QStringList &varname_){ yvarname = varname_; }
-  QStringList &getYVarName(){ return yvarname; }
+  QStringList &getYVarName(){if(algtype == PLS_){return yvarname;}else{return cnames;} }
+  void setClasses(LABELS classes_){ classes = classes_; cnames.clear(); for(int i = 0; i < classes.size(); i++){cnames << classes[i].name;} }
+  LABELS getClasses(){ return classes; }
   void setValidation(int v){ validation = v; }
   int getValidation(){ return validation; }
   void setDID(int did_){ did = did_; }
@@ -102,8 +105,9 @@ public:
 private:
   PLSMODEL *m;
   QList<PLSPREDICTION*> prediction;
-  QStringList objname, xvarname, yvarname;
+  QStringList objname, xvarname, yvarname, cnames;
   QString name;
+  LABELS classes;
   int did, xscaling, yscaling, npc, modelid, validation, algtype;
   QString hash, plshash;
 };

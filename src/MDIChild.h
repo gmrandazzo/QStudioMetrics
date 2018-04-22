@@ -24,9 +24,10 @@ public:
   void newTable(QString& tabname, matrix *m); // show in this table an'allocated matrix
   void newTable(QString& tabname, matrix *m, LABELS *objlabels_, LABELS *varlabels_); // show in this table an'allocated matrix
   void newTable(QString& tabname, QList<QStringList> tab, LABELS *objlabels_, LABELS *varlabels_); // show in this table an'allocated matrix
+  void newTable(QString& tabname, QStringList names, QList<QPixmap> images, QList<QColor> colors);
   void newListView(QString& tabname, QStringList lst);
   void newModelInfo();
-  
+
   void setWindowID(int id_){ id = id_; }
   int getWindowID(){ return id; }
   Table* getTable(){ return table; }

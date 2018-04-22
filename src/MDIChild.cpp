@@ -57,6 +57,15 @@ void MDIChild::newTable(QString& tabname, QList< QStringList > tab, LABELS* objl
   resize(300, 260);
 }
 
+void MDIChild::newTable(QString& tabname, QStringList names, QList<QPixmap> images, QList<QColor> colors)
+{
+  setWindowTitle(tabname);
+  table = new Table(names, images, colors, this);
+  table->setObjectName(tabname);
+  setWidget(table);
+  resize(300, 260);
+}
+
 MDIChild::MDIChild()
 {
   table = 0;
@@ -73,7 +82,7 @@ MDIChild::~MDIChild()
   #endif
   if(table != 0)
     delete table;
-  
+
   if(modinfo != 0)
     delete modinfo;
 }

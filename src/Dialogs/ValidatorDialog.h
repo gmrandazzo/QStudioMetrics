@@ -23,6 +23,7 @@ public:
 
   bool compute(){ return compute_; }
   int getselectedProject(){ return selectedproject_; }
+  LABELS getKFoldClasses(){ return kfc; };
   int getNumberOfGroup(){ return ngroup; }
   int getNumberOfIteration(){ return niter; }
   int getModelID(){ return modelid; }
@@ -36,6 +37,7 @@ private slots:
   void setProject(QModelIndex current);
   void setModelID(QModelIndex current);
   void setValidationType();
+  void setKFoldClass();
   void setNIterations();
   void setNGroup();
   void setYScrambling();
@@ -47,6 +49,8 @@ private:
   PROJECTS *projects_;
   QList<int> pids;
   QList<int> mids;
+  LABELS kfc;
+  int ClassNameContains(QString);
   QStandardItemModel *tab1, *tab2;
   int selectedproject_;
   int type; // 0 PLS, 1 UPLS

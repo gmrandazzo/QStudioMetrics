@@ -148,9 +148,9 @@ int main(int argc, char **argv)
 
       PLS(xdata, ydata, npc, xautoscaling, yautoscaling, m, NULL);
       if(r_genmodel == true)
-        PLSRegressionStatistics(ydata, m->recalculated_y, &(m->r2y_model), &(m->sdec), NULL);
+        PLSRegressionStatistics(ydata, m->recalculated_y, &(m->r2y_recalculated), &(m->sdec), NULL);
       else
-        PLSDiscriminantAnalysisStatistics(ydata, m->recalculated_y, NULL, &(m->r2y_model), NULL, &(m->sdec));
+        PLSDiscriminantAnalysisStatistics(ydata, m->recalculated_y, NULL, &(m->r2y_recalculated), NULL, &(m->sdec));
 
       DATAIO::WritePLSModel((char*)outputfile.c_str(), m);
 

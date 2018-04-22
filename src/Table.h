@@ -78,6 +78,7 @@ public:
   Table(matrix *m_, QWidget *parent = 0);
   Table(matrix *m_, LABELS *objlabels_, LABELS *varlabels_, QWidget *parent = 0);
   Table(QList<QStringList> tab, LABELS *objlabels_, LABELS *varlabels_, QWidget *parent = 0);
+  Table(QStringList names, QList<QPixmap> images, QList<QColor> colors, QWidget *parent = 0);
   ~Table();
 
   void setPID(int pid_){ pid = pid_; } /*used for img signal*/
@@ -97,6 +98,7 @@ private slots:
   void stopRun();
   void SetSelectionName();
   void SortByColumn(int);
+  void SaveAsImage();
 
 signals:
   void TabImageSignalChanged(ImageSignal new_ts);
@@ -104,6 +106,7 @@ signals:
 private:
   Ui::Table ui;
   Model *model_;
+  QStandardItemModel *imgtabmodel_;
   LABELS *objlabels, *varlabels;
   ImageSignal ts;
   int pid;

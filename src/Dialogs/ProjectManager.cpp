@@ -365,11 +365,11 @@ ProjectManager::ProjectManager(DATA *data_)
   ui.tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
   ui.tableView->setModel(table);
 
-  ui.addImageAsRGB->hide();
+  /*ui.addImageAsRGB->hide();
   #ifdef DEBUG
   ui.addImageAsRGB->show();
   #endif
-
+  */
   connect(ui.addFileButton, SIGNAL(clicked(bool)) , SLOT(Add()));
   connect(ui.addImageAsRGB, SIGNAL(clicked(bool)), SLOT(AddImagesAsRGB()));
   connect(ui.addImageListButton, SIGNAL(clicked(bool)), SLOT(AddImageList()));

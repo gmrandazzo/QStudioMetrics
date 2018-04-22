@@ -24,6 +24,7 @@ Chart::Chart(QWidget *parent)
   #ifdef DEBUG
   printf("Chart::Chart\n");
   #endif
+  antialiasing = true;
   rescalefactor = 0.25;
   labeldetail = false;
 
@@ -141,6 +142,11 @@ void Chart::Refresh()
     */
   }
   refreshPixmap();
+}
+
+void Chart::setAntialiasing(bool antialiasing_)
+{
+  antialiasing = antialiasing_;
 }
 
 void Chart::setXaxisName(QString xaxisname)
@@ -476,11 +482,11 @@ void Chart::SaveAsImage(QString imgname)
   pixmap.save(&buffer, "PNG"); // writes pixmap into bytes in PNG format
   */
   if(imgname.contains(".png", Qt::CaseInsensitive) == true){
-    pixmap.save(imgname);
+    pixmap.save(imgname, "PNG", 100);
   }
   else if(imgname.contains(".jpg", Qt::CaseInsensitive) == true ||
     imgname.contains(".jpeg", Qt::CaseInsensitive) == true){
-    pixmap.save(imgname);
+    pixmap.save(imgname, "JPG", 100);
   }
   else if(imgname.contains(".pdf", Qt::CaseInsensitive) == true){
     QPrinter printer(QPrinter::HighResolution);
@@ -493,6 +499,8 @@ void Chart::SaveAsImage(QString imgname)
     printer.setPaperSize(size(), QPrinter::DevicePixel);
     printer.setFullPage(true);
     QPainter painter(&printer);
+    painter.setRenderHint(QPainter::Antialiasing, antialiasing);
+    painter.setRenderHint(QPainter::TextAntialiasing, antialiasing);
     painter.drawPixmap(rect(), pixmap);
   }
   else{
@@ -727,10 +735,9 @@ void Chart::refreshPixmap()
 
   QPainter painter(&pixmap);
   painter.initFrom(this);
+  painter.setRenderHint(QPainter::Antialiasing, antialiasing);
+  painter.setRenderHint(QPainter::TextAntialiasing, antialiasing);
 
-  painter.setRenderHint(QPainter::Antialiasing);
-  painter.setRenderHint(QPainter::TextAntialiasing);
-  painter.setRenderHint(QPainter::HighQualityAntialiasing);
   //painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
   drawGrid(&painter);
@@ -793,6 +800,10 @@ void Chart::drawGrid(QPainter *painter)
   #ifdef DEBUG
   printf("Chart::drawGrid\n");
   #endif
+
+  painter->setRenderHint(QPainter::Antialiasing, antialiasing);
+  painter->setRenderHint(QPainter::TextAntialiasing, antialiasing);
+
   QRect rect(Margin, Margin, width() - 2 * Margin, height() - 2 * Margin);
   if(!rect.isValid())
       return;
@@ -804,8 +815,9 @@ void Chart::drawGrid(QPainter *painter)
 
   qreal min, max, stepx, stepy;
 
+  /*
   int nintegers = integer_digits(settings.spanX());
-  //printf("nintegers %d\n", nintegers);
+  printf("nintegers %d\n", nintegers);
 
   if(nintegers > 0){
     stepx = (0.5 * (double)nintegers);
@@ -814,13 +826,19 @@ void Chart::drawGrid(QPainter *painter)
     int nzeros = zeros_after_decimal_point(settings.spanX())+1;
     //printf("nzeros %d\n", nzeros);
     stepx = 0.5/pow(10, nzeros);
-  }
+  }*/
+
 
   //stepx = settings.spanX() / settings.numXTicks;
   //stepx = 0.5;
   min = floor(settings.minX);
   max = ceil(settings.maxX);
-
+  stepx = (max-min)/10.f;
+  //printf("PRE stepx: %f min: %f max: %f\n", stepx, min, max);
+  if(stepx > 1.f){
+    stepx = ceil(stepx);
+  }
+  //printf("FINAL stepx: %f min: %f max: %f\n", stepx, min, max);
   //float factor = rect.width() / painter->fontMetrics().width("-20");
 
   qreal factor = rect.width()/480.;
@@ -832,6 +850,7 @@ void Chart::drawGrid(QPainter *painter)
   for (qreal ix = min; ix < max; ix += stepx){
       qreal dx = ix - settings.minX;
       qreal x = rect.left() + (dx * (rect.width() - 1) / settings.spanX());
+      //printf("ix: %f x: %f  rect.left() %f rect.right() %f\n", ix, x, rect.left(), rect.right());
       if(x > rect.left() && x < rect.right()){
         painter->setPen(gridpen);
         painter->drawLine(x, rect.top(), x, rect.bottom());
@@ -857,7 +876,7 @@ void Chart::drawGrid(QPainter *painter)
   }
 
   //stepy = settings.spanY() / settings.numYTicks;
-  nintegers = integer_digits(settings.spanY());
+  /*nintegers = integer_digits(settings.spanY());
   if(nintegers > 0){
     stepy = (0.5 * (double)nintegers);
   }
@@ -865,9 +884,13 @@ void Chart::drawGrid(QPainter *painter)
     int nzeros = zeros_after_decimal_point(settings.spanX())+1;
     stepy = 0.5/pow(10, nzeros);
   }
-
+  */
   min = floor(settings.minY);
   max = ceil(settings.maxY);
+  stepy = (max-min)/10.f;
+  if(stepy > 1.f){
+    stepy = ceil(stepy);
+  }
 
   for (qreal iy = min; iy < max; iy += stepy){
     qreal dy = iy - settings.minY;
@@ -954,6 +977,9 @@ void Chart::drawCurves(QPainter *painter)
   #ifdef DEBUG
   printf("Chart::drawCurves\n");
   #endif
+  painter->setRenderHint(QPainter::Antialiasing, antialiasing);
+  painter->setRenderHint(QPainter::TextAntialiasing, antialiasing);
+
   PlotSettings settings = zoomStack[curZoom];
   QRect rect(Margin, Margin,
               width() - 2 * Margin, height() - 2 * Margin);
@@ -1029,6 +1055,9 @@ void Chart::drawScatters(QPainter *painter)
   #ifdef DEBUG
   printf("Chart::drawScatters\n");
   #endif
+  painter->setRenderHint(QPainter::Antialiasing, antialiasing);
+  painter->setRenderHint(QPainter::TextAntialiasing, antialiasing);
+
   PlotSettings settings = zoomStack[curZoom];
   QRect rect(Margin, Margin,
               width() - 2 * Margin, height() - 2 * Margin);

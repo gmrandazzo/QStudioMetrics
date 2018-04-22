@@ -178,6 +178,9 @@ void RUN::DoMLRValidation()
   if(vt == LOO_){ // Leave One Out
     LeaveOneOut(&minpt, _MLR_, &mlrmodel->Model()->predicted_y, &mlrmodel->Model()->pred_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
   }
+  else if(vt == KFOLDCV_){
+    KFoldCV(&minpt, uiv, _MLR_, &mlrmodel->Model()->predicted_y, &mlrmodel->Model()->pred_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
+  }
   else{
     BootstrapRandomGroupsCV(&minpt, ngroup, niter, _MLR_, &mlrmodel->Model()->predicted_y, &mlrmodel->Model()->pred_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
   }
@@ -218,8 +221,6 @@ void RUN::DoEPLSPrediction()
 
 void RUN::DoEPLSValidation()
 {
-  DelMatrix(&eplsmod->r2);
-  DelMatrix(&eplsmod->sdec);
   DelMatrix(&eplsmod->q2);
   DelMatrix(&eplsmod->sdep);
   DelMatrix(&eplsmod->bias);
@@ -227,17 +228,11 @@ void RUN::DoEPLSValidation()
   DelMatrix(&eplsmod->y_recalculated_residuals);
   DelMatrix(&eplsmod->y_predicted);
   DelMatrix(&eplsmod->y_predicted_residuals);
-  DelTensor(&eplsmod->roc_recalculated);
-  DelMatrix(&eplsmod->roc_auc_recalculated);
-  DelTensor(&eplsmod->precision_recall_recalculated);
-  DelMatrix(&eplsmod->precision_recall_ap_recalculated);
   DelTensor(&eplsmod->roc_predicted);
   DelMatrix(&eplsmod->roc_auc_predicted);
   DelTensor(&eplsmod->precision_recall_predicted);
   DelMatrix(&eplsmod->precision_recall_ap_predicted);
 
-  initMatrix(&eplsmod->r2);
-  initMatrix(&eplsmod->sdec);
   initMatrix(&eplsmod->q2);
   initMatrix(&eplsmod->sdep);
   initMatrix(&eplsmod->bias);
@@ -245,10 +240,6 @@ void RUN::DoEPLSValidation()
   initMatrix(&eplsmod->y_recalculated_residuals);
   initMatrix(&eplsmod->y_predicted);
   initMatrix(&eplsmod->y_predicted_residuals);
-  initTensor(&eplsmod->roc_recalculated);
-  initMatrix(&eplsmod->roc_auc_recalculated);
-  initTensor(&eplsmod->precision_recall_recalculated);
-  initMatrix(&eplsmod->precision_recall_ap_recalculated);
   initTensor(&eplsmod->roc_predicted);
   initMatrix(&eplsmod->roc_auc_predicted);
   initTensor(&eplsmod->precision_recall_predicted);
@@ -256,10 +247,12 @@ void RUN::DoEPLSValidation()
 
   EPLSYPRedictorAllLV(x, eplsmod->Model(), crule, NULL, &eplsmod->y_recalculated);
 
-  if(algtype == EPLS_)
+  if(algtype == EPLS_){
     EPLSRegressionStatistics(y, eplsmod->y_recalculated, &eplsmod->r2, &eplsmod->sdec, NULL);
-  else
+  }
+  else{
     EPLSDiscriminantAnalysisStatistics(y, eplsmod->y_recalculated, &eplsmod->roc_recalculated, &eplsmod->roc_auc_recalculated, &eplsmod->precision_recall_recalculated, &eplsmod->precision_recall_ap_recalculated);
+  }
 
   MODELINPUT minpt;
   minpt.mx = &x;
@@ -270,6 +263,9 @@ void RUN::DoEPLSValidation()
 
   if(vt == LOO_){ // Leave One Out
     LeaveOneOut(&minpt, _EPLS_, &eplsmod->y_predicted, &eplsmod->y_predicted_residuals, QThread::idealThreadCount(), &scientifisignal, 2, eparm, crule);
+  }
+  else if(vt == KFOLDCV_){
+    KFoldCV(&minpt, uiv, _EPLS_, &eplsmod->y_predicted, &eplsmod->y_predicted_residuals, QThread::idealThreadCount(), &scientifisignal, 2, eparm, crule);
   }
   else{
     BootstrapRandomGroupsCV(&minpt, ngroup, niter, _EPLS_, &eplsmod->y_predicted, &eplsmod->y_predicted_residuals, QThread::idealThreadCount(), &scientifisignal, 2, eparm, crule);
@@ -306,7 +302,7 @@ void RUN::DoPLSPrediction()
 {
 
   // we go from 1 because for 0 component no value can be calculated.
-  PLSYPredictorAllLV(x, plsmod->Model(), plsmod->getLastPLSPrediction()->XPredScoresPointer(),plsmod->getLastPLSPrediction()->YDipVarPointer());
+  PLSYPredictorAllLV(x, plsmod->Model(), plsmod->getLastPLSPrediction()->XPredScoresPointer(), plsmod->getLastPLSPrediction()->YDipVarPointer());
 
   if(y != 0 && y->col > 0){ // calculate the R2 for the prediction
     PLSRegressionStatistics(y, plsmod->getLastPLSPrediction()->getYDipVar(), plsmod->getLastPLSPrediction()->R2YPointer(), plsmod->getLastPLSPrediction()->SDECPointer(), NULL);
@@ -315,17 +311,39 @@ void RUN::DoPLSPrediction()
 
 void RUN::DoPLSValidation()
 {
+  //DelMatrix(&plsmod->Model()->r2y_recalculated);
+  //DelMatrix(&plsmod->Model()->sdec);
   DelMatrix(&plsmod->Model()->q2y);
   DelMatrix(&plsmod->Model()->sdep);
   DelMatrix(&plsmod->Model()->bias);
   DelMatrix(&plsmod->Model()->predicted_y);
   DelMatrix(&plsmod->Model()->pred_residuals);
+  DelTensor(&plsmod->Model()->roc_validation);
+  DelMatrix(&plsmod->Model()->roc_auc_validation);
+  DelTensor(&plsmod->Model()->precision_recall_validation);
+  DelMatrix(&plsmod->Model()->precision_recall_ap_validation);
 
+  //initMatrix(&plsmod->Model()->r2y_recalculated);
+  //initMatrix(&plsmod->Model()->sdec);
   initMatrix(&plsmod->Model()->q2y);
   initMatrix(&plsmod->Model()->sdep);
   initMatrix(&plsmod->Model()->bias);
   initMatrix(&plsmod->Model()->predicted_y);
   initMatrix(&plsmod->Model()->pred_residuals);
+  initTensor(&plsmod->Model()->roc_validation);
+  initMatrix(&plsmod->Model()->roc_auc_validation);
+  initTensor(&plsmod->Model()->precision_recall_validation);
+  initMatrix(&plsmod->Model()->precision_recall_ap_validation);
+
+
+  /*PLSYPredictorAllLV(x, plsmod->Model(), NULL, &plsmod->Model()->recalculated_y);
+
+  if(algtype == EPLS_){
+    PLSRegressionStatistics(y, plsmod->Model()->recalculated_y, &plsmod->Model()->r2y_recalculated, &plsmod->Model()->sdec, NULL);
+  }
+  else{
+    PLSDiscriminantAnalysisStatistics(y, plsmod->Model()->recalculated_y, &eplsmod->roc_recalculated, &eplsmod->roc_auc_recalculated, &eplsmod->precision_recall_recalculated, &eplsmod->precision_recall_ap_recalculated);
+  }*/
 
   MODELINPUT minpt;
   minpt.mx = &x;
@@ -334,16 +352,23 @@ void RUN::DoPLSValidation()
   minpt.xautoscaling = plsmod->getXScaling();
   minpt.yautoscaling = plsmod->getYScaling();
 
+
   if(vt == LOO_){ // Leave One Out
     LeaveOneOut(&minpt, _PLS_, &plsmod->Model()->predicted_y, &plsmod->Model()->pred_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
+  }
+  else if(vt == KFOLDCV_){
+    KFoldCV(&minpt, uiv, _PLS_, &plsmod->Model()->predicted_y, &plsmod->Model()->pred_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
   }
   else{
     BootstrapRandomGroupsCV(&minpt, ngroup, niter, _PLS_, &plsmod->Model()->predicted_y, &plsmod->Model()->pred_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
   }
-  if(algtype == PLS_)
+
+  if(algtype == PLS_){
     PLSRegressionStatistics(y, plsmod->Model()->predicted_y, &plsmod->Model()->q2y, &plsmod->Model()->sdep, &plsmod->Model()->bias);
-  else
+  }
+  else{
     PLSDiscriminantAnalysisStatistics(y, plsmod->Model()->predicted_y, &plsmod->Model()->roc_validation, &plsmod->Model()->roc_auc_validation, &plsmod->Model()->precision_recall_validation, &plsmod->Model()->precision_recall_ap_validation);
+  }
 
   if(yscrambling == true){
     DelMatrix(&plsmod->Model()->yscrambling);
@@ -365,9 +390,9 @@ void RUN::DoPLS()
 {
   PLS(x, y, pc, xscaling, yscaling, plsmod->Model(), &scientifisignal);
   if(algtype == PLS_)
-    PLSRegressionStatistics(y, plsmod->Model()->recalculated_y, &plsmod->Model()->r2y_model, &plsmod->Model()->sdec, NULL);
+    PLSRegressionStatistics(y, plsmod->Model()->recalculated_y, &plsmod->Model()->r2y_recalculated, &plsmod->Model()->sdec, NULL);
   else
-    PLSDiscriminantAnalysisStatistics(y, plsmod->Model()->recalculated_y, &plsmod->Model()->roc_model, &plsmod->Model()->roc_auc_model, &plsmod->Model()->precision_recall_model, &plsmod->Model()->precision_recall_ap_model);
+    PLSDiscriminantAnalysisStatistics(y, plsmod->Model()->recalculated_y, &plsmod->Model()->roc_recalculated, &plsmod->Model()->roc_auc_recalculated, &plsmod->Model()->precision_recall_recalculated, &plsmod->Model()->precision_recall_ap_recalculated);
 }
 
 void RUN::DoPCAPrediction()

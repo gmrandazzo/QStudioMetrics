@@ -498,7 +498,7 @@ void DATAIO::ImportPLSModel(char *path_, PLSMODEL* m)
 
   ImportDvector(bcoeff, m->b);
 
-  ImportMatrix(r2y, sep, m->r2y_model);
+  ImportMatrix(r2y, sep, m->r2y_recalculated);
   ImportMatrix(sdec, sep, m->sdec);
   ImportMatrix(recalc_y, sep, m->recalculated_y);
   ImportMatrix(recalc_residuals, sep, m->recalc_residuals);
@@ -855,7 +855,7 @@ void DATAIO::WritePLSModel(char *path_, PLSMODEL* m)
 
   WriteDvector(bcoeff, m->b);
 
-  WriteMatrix(r2y, m->r2y_model);
+  WriteMatrix(r2y, m->r2y_recalculated);
   WriteMatrix(sdec, m->sdec);
   WriteMatrix(recalc_y, m->recalculated_y);
   WriteMatrix(recalc_residuals, m->recalc_residuals);

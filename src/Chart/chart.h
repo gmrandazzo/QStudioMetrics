@@ -21,7 +21,7 @@ class Chart : public QWidget
 public:
     Chart(QWidget *parent = 0);
     ~Chart();
-
+    void setAntialiasing(bool antialiasing_);
     void setXaxisName(QString xaxisname);
     void setYaxisName(QString yaxisname);
     void setPlotTitle(QString plottitle);
@@ -100,6 +100,7 @@ private:
     QRect rubberBandRect;
     QPixmap pixmap;
     QString m_xaxisname, m_yaxisname, m_plottitle;
+    bool antialiasing;
 };
 
 class PlotSettings

@@ -6,8 +6,8 @@
 #include <QList>
 #include <QString>
 #include <QStringList>
-
-#include "../qstudiometricsdataoperations.h"
+#include "qstudiometricstypes.h"
+#include "qstudiometricsdataoperations.h"
 
 class EPLSPREDICTION
 {
@@ -80,7 +80,9 @@ public:
   void setXVarName(QStringList &varname_){ xvarname = varname_; }
   QStringList &getXVarName(){ return xvarname; }
   void setYVarName(QStringList &varname_){ yvarname = varname_; }
-  QStringList &getYVarName(){ return yvarname; }
+  void setClasses(LABELS &classes_){ classes = classes_; cnames.clear(); for(int i = 0; i < classes.size(); i++){cnames << classes[i].name;}}
+  LABELS getClasses(){ return classes; }
+  QStringList &getYVarName(){if(algtype == EPLS_){return yvarname;}else{return cnames;} }
   void setAlgorithm(int algtype_){ algtype = algtype_; };
   int getAlgorithm(){ return algtype; }
   void setElearningParm(ELearningParameters eparm_) { eparm = eparm_; }
@@ -120,9 +122,10 @@ private:
   EPLSMODEL *m;
 
   QList<EPLSPREDICTION*> prediction;
-  QStringList objname, xvarname, yvarname;
+  QStringList objname, xvarname, yvarname, cnames;
   QString name;
   int did, xscaling, yscaling, npc, modelid, validation, algtype;
+  LABELS classes;
   ELearningParameters eparm;
   CombinationRule crule;
   QString hash, eplshash;
