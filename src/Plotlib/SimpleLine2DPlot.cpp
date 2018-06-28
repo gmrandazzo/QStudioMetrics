@@ -16,7 +16,7 @@ void SimpleLine2DPlot::slotExit()
 }
 
 
-int random(int low, int high)
+int SimpleLine2DPlot::random_(int low, int high)
 {
   return rand() % (high - low + 1) + low;
 }
@@ -34,21 +34,6 @@ void SimpleLine2DPlot::setPlotTitle(QString title)
   chart->setPlotTitle(title);
 }
 
-void SimpleLine2DPlot::setLabelDetail(bool labeldetail_)
-{
-  chart->setLabelDetail(labeldetail_);
-}
-
-void SimpleLine2DPlot::setXminXmanXTicks(double xmin, double xmax, int xtick)
-{
-    chart->setXminXmaxXTick(xmin, xmax, xtick);
-}
-
-void SimpleLine2DPlot::setYminYmanYTicks(double ymin, double ymax, int ytick)
-{
-    chart->setYminYmaxYTick(ymin, ymax, ytick);
-}
-
 SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename, QString windowtitle, QString xaxestitle, QString yaxestitle)
 {
   ui.setupUi(this);
@@ -56,7 +41,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename, QString windowt
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
-  chart = new Chart();
+  chart = new QPlotlyWindow(this);
   plotLayout->addWidget(chart);
   ui.plotwidget->setLayout(plotLayout);
 
@@ -87,7 +72,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString wi
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
-  chart = new Chart();
+  chart = new QPlotlyWindow(this);
   plotLayout->addWidget(chart);
   ui.plotwidget->setLayout(plotLayout);
 
@@ -98,7 +83,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString wi
   if(m->col > (uint)colors.size()){
     srand(time(0));
     for(uint i = 0; i < m->col - colors.size(); i++){
-      colors.append(QColor(random(0, 256), random(0, 256), random(0, 256)));
+      colors.append(QColor(random_(0, 256), random_(0, 256), random_(0, 256)));
     }
   }
 
@@ -114,6 +99,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString wi
       curve.append(QPointF(x, y));
     }
     chart->addCurve(curve, QString("%1").arg(curvenames[j-1]), colors[j-1]);
+    chart->setCurveStyle(j-1, LM);
   }
 
   chart->Refresh();
@@ -128,7 +114,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(QList< matrix* > mlst, QStringList curvenames
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
-  chart = new Chart();
+  chart = new QPlotlyWindow(this);
   plotLayout->addWidget(chart);
   ui.plotwidget->setLayout(plotLayout);
 
@@ -139,7 +125,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(QList< matrix* > mlst, QStringList curvenames
   if(mlst.size() > colors.size()){
     srand(time(0));
     for(uint i = 0; i < mlst.size() - colors.size(); i++){
-      colors.append(QColor(random(0, 256), random(0, 256), random(0, 256)));
+      colors.append(QColor(random_(0, 256), random_(0, 256), random_(0, 256)));
     }
   }
 
@@ -151,6 +137,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(QList< matrix* > mlst, QStringList curvenames
       curve.append(QPointF(x, y));
     }
     chart->addCurve(curve, QString("%1").arg(curvenames[i]), colors[i]);
+    chart->setCurveStyle(i, LM);
   }
 
   chart->setXaxisName(xaxestitle);

@@ -12,9 +12,9 @@
 #include "qsmdata.h"
 
 // Version
-#define major_ 1
-#define minor_ 9
-#define patch_ 9
+#define major_ 2
+#define minor_ 0
+#define patch_ 0
 
 class MainWindow : public QMainWindow
 {

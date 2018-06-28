@@ -1,0 +1,5 @@
+-I/Users/marco/projects/QPlotly-1.0.0
+-I/Users/marco/projects/QPlotly-1.0.0/build
+-o
+/Users/marco/projects/QPlotly-1.0.0/build/moc_qplotly.cpp
+/Users/marco/projects/QPlotly-1.0.0/qplotly.h

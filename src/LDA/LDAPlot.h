@@ -1,8 +1,8 @@
 #ifndef LDAPLOT_H
 #define LDAPLOT_H
 
-#include "../Plotlib/ScatterPlot2D.h"
-#include "../Plotlib/ScatterPlot3D.h"
+#include "../Plotlib/ScatterPlot.h"
+
 #include "../Plotlib/SimpleLine2DPlot.h"
 #include "qsmdata.h"
 
@@ -19,12 +19,12 @@ public:
   void setMID(int mid_){ mid = mid_; }
   void setPREDID(int predid_){ predid = predid_; }
 
-  void FeaturePlot2D(ScatterPlot2D **plot2D);
-  void FeaturePlot3D(ScatterPlot3D **plot3D);
-  void ProbabilityDistribution(ScatterPlot2D **plot2D);
-  void FeaturePlotAndPrediction2D(ScatterPlot2D **plot2D);
-  void FeaturePlotAndPrediction3D(ScatterPlot3D **plot3D);
-  void ProbabilityDistributionWithPredictions(ScatterPlot2D** plot2D);
+  void FeaturePlot2D(ScatterPlot **plot2D);
+  void FeaturePlot3D(ScatterPlot **plot3D);
+  void ProbabilityDistribution(ScatterPlot **plot2D);
+  void FeaturePlotAndPrediction2D(ScatterPlot **plot2D);
+  void FeaturePlotAndPrediction3D(ScatterPlot **plot3D);
+  void ProbabilityDistributionWithPredictions(ScatterPlot** plot2D);
 
 private:
   PROJECTS *projects;

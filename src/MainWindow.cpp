@@ -37,11 +37,9 @@
 #include "Dialogs/ClassPlotDialog.h"
 #include "Dialogs/SaveDialog.h"
 #include "Plotlib/VariablePlot.h"
-#include "Plotlib/ScatterPlot2D.h"
-#include "Plotlib/ScatterPlot3D.h"
+#include "Plotlib/ScatterPlot.h"
 #include "Plotlib/BarPlot.h"
 #include "Plotlib/SimpleLine2DPlot.h"
-#include "Plotlib/SimpleScatterPlot3D.h"
 #include "PCA/PCAPlot.h"
 #include "PLS/PLSPlot.h"
 #include "EPLS/EPLSPlot.h"
@@ -131,23 +129,40 @@ void MainWindow::CheckProjects()
     ++i;
   }
 }
+
+/*Fast implementation of index_of for QStringList*/
+static inline int _index_of_(QStringList lst, QString str)
+{
+  int indx = 0;
+  QStringMatcher matcher(str);
+  foreach(const QString &lstitem, lst){
+    if(matcher.indexIn(lstitem) != -1){
+      return indx;
+    }
+    else{
+      indx++;
+    }
+  }
+  return -1;
+}
+
 void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix **x)
 {
   ResizeMatrix(x, objnames.size(), varsel.size());
-  int ii = 0;
   for(int i = 0; i < indata->getObjName().size(); i++){
-    if(objnames.contains(indata->getObjName()[i]) == true){
-      int jx = 0;
+    //int ii = objnames.indexOf(QRegExp(indata->getObjName()[i]));
+    int ii = _index_of_(objnames, indata->getObjName()[i]);
+    if(ii > -1){
       for(int j = 1; j < indata->getVarName().size(); j++){
-        if(varsel.contains(indata->getVarName()[j]) == true){
+        //int jx = varsel.indexOf(QRegExp(indata->getVarName()[j]));
+        int jx = _index_of_(varsel, indata->getVarName()[j]);
+        if(jx > -1){
           (*x)->data[ii][jx] = indata->Matrix()->data[i][j-1];
-          jx++;
         }
         else{
           continue;
         }
       }
-      ii++;
     }
     else{
       continue;
@@ -161,24 +176,25 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   ResizeMatrix(x, objnames.size(), xvarsel.size());
   ResizeMatrix(y, objnames.size(), yvarsel.size());
 
-  int ii = 0;
   for(int i = 0; i < indata->getObjName().size(); i++){
-    if(objnames.contains(indata->getObjName()[i]) == true){
-      int jx = 0, jy= 0;
+    //int ii = objnames.indexOf(QRegExp(indata->getObjName()[i]));
+    int ii = _index_of_(objnames, indata->getObjName()[i]);
+    if(ii > -1){
       for(int j = 1; j < indata->getVarName().size(); j++){
-        if(xvarsel.contains(indata->getVarName()[j]) == true){
+        //int jx = xvarsel.indexOf(QRegExp(indata->getVarName()[j]));
+        //int jy = yvarsel.indexOf(QRegExp(indata->getVarName()[j]));
+        int jx = _index_of_(xvarsel, indata->getVarName()[j]);
+        int jy = _index_of_(yvarsel, indata->getVarName()[j]);
+        if(jx > -1 && jy == -1){
           (*x)->data[ii][jx] = indata->Matrix()->data[i][j-1];
-          jx++;
         }
-        else if(yvarsel.contains(indata->getVarName()[j]) == true){
+        else if(jx == -1 && jy > -1){
           (*y)->data[ii][jy] = indata->Matrix()->data[i][j-1];
-          jy++;
         }
         else{
           continue;
         }
       }
-      ii++;
     }
     else{
       continue;
@@ -198,14 +214,14 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     ResizeMatrix(y, objnames.size(), classes.size());
   }
 
-  int ii = 0;
+
   for(int i = 0; i < indata->getObjName().size(); i++){
-    if(objnames.contains(indata->getObjName()[i]) == true){
-      int jx = 0;
+    int ii = _index_of_(objnames, indata->getObjName()[i]);
+    if(ii > 0){
       for(int j = 1; j < indata->getVarName().size(); j++){
-        if(xvarsel.contains(indata->getVarName()[j]) == true){
+        int jx = _index_of_(xvarsel, indata->getVarName()[j]);
+        if(jx > -1){
           (*x)->data[ii][jx] = indata->Matrix()->data[i][j-1];
-          jx++;
         }
         else{
           continue;
@@ -230,7 +246,6 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
           }
         }
       }
-      ii++;
     }
     else{
       continue;
@@ -1293,8 +1308,8 @@ void MainWindow::PlotVariableVSVariableBis(vvplotSignal vvs)
       vplot.setVarID2(projects->value(vvs.pid)->getMatrix(mxid)->getVarName().indexOf(vvs.vname2)-1);
       vplot.setLayerID(-1);
 
-      ScatterPlot2D *plot2D = vplot.VariableVSVariable();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      ScatterPlot *plot2D = vplot.VariableVSVariable();
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
 
       MDIChild *graphchild = createMdiChild();
       graphchild->setWidget(plot2D);
@@ -3993,8 +4008,8 @@ void MainWindow::PlotVariableVSVariable()
     vplot.setVarID1(vvplot.getVariableID1());
     vplot.setVarID2(vvplot.getVariableID2());
 
-    ScatterPlot2D *plot2D = vplot.VariableVSVariable();
-    connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+    ScatterPlot *plot2D = vplot.VariableVSVariable();
+    connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
 
     MDIChild *graphchild = createMdiChild();
     graphchild->setWidget(plot2D);
@@ -4057,13 +4072,13 @@ void MainWindow::PCA2DScorePlot()
       pcaplot.setPID(dp.getProjectID());
       pcaplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       pcaplot.ScorePlot2D(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4081,13 +4096,13 @@ void MainWindow::PCA2DLoadingsMVANDPlot()
       pcaplot.setMID(classplotdialog.getModelID());
       pcaplot.setGroups(classplotdialog.getClass());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       pcaplot.LoadingsMVANormDistrib(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(classplotdialog.selectedProject(), classplotdialog.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4107,14 +4122,14 @@ void MainWindow::PCA2DLoadingsPlot()
       pcaplot.setPID(dp.getProjectID());
       pcaplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       pcaplot.LoadingsPlot2D(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      connect(plot2D, SIGNAL(ScatterPlot2DVVPlotSignal(vvplotSignal)), SLOT(PlotVariableVSVariableBis(vvplotSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotVVPlotSignal(vvplotSignal)), SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   }
   else{
@@ -4135,13 +4150,13 @@ void MainWindow::PCA2DScorePlotPrediction()
       pcaplot.setMID(dp.getModelID());
       pcaplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       pcaplot.ScorePlotPrediction2D(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4161,13 +4176,13 @@ void MainWindow::PCA3DScorePlot()
       pcaplot.setPID(dp.getProjectID());
       pcaplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
+      ScatterPlot *plot3D;
       pcaplot.ScorePlot3D(&plot3D);
       graphchild->setWidget(plot3D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4187,13 +4202,13 @@ void MainWindow::PCA3DLoadingsPlot()
       pcaplot.setPID(dp.getProjectID());
       pcaplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
+      ScatterPlot *plot3D;
       pcaplot.LoadingsPlot3D(&plot3D);
       graphchild->setWidget(plot3D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4214,13 +4229,13 @@ void MainWindow::PCA3DScorePlotPrediction()
       pcaplot.setMID(dp.getModelID());
       pcaplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
+      ScatterPlot *plot3D;
       pcaplot.ScorePlotPrediction3D(&plot3D);
       graphchild->setWidget(plot3D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4240,13 +4255,13 @@ void MainWindow::PLS2DPlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       plsplot.TU_Plot(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4267,13 +4282,13 @@ void MainWindow::PLS2DTTScorePlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       plsplot.T_ScorePlot2D(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4293,14 +4308,14 @@ void MainWindow::PLS2DPPLoadingsPlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       plsplot.P_LoadingsPlot2D(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      connect(plot2D, SIGNAL(ScatterPlot2DVVPlotSignal(vvplotSignal)), SLOT(PlotVariableVSVariableBis(vvplotSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotVVPlotSignal(vvplotSignal)), SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   }
   else{
@@ -4320,14 +4335,14 @@ void MainWindow::PLS2DWWWeightsPlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       plsplot.WeightsPlot2D(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      connect(plot2D, SIGNAL(ScatterPlot2DVVPlotSignal(vvplotSignal)), SLOT(PlotVariableVSVariableBis(vvplotSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotVVPlotSignal(vvplotSignal)), SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   }
   else{
@@ -4347,13 +4362,13 @@ void MainWindow::PLS2DUUScorePlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       plsplot.U_ScorePlot2D(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4373,14 +4388,14 @@ void MainWindow::PLS2DQQLoadingsPlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       plsplot.Q_LoadingsPlot2D(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      connect(plot2D, SIGNAL(ScatterPlot2DVVPlotSignal(vvplotSignal)), SLOT(PlotVariableVSVariableBis(vvplotSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotVVPlotSignal(vvplotSignal)), SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   }
   else{
@@ -4400,14 +4415,14 @@ void MainWindow::PLS2DPQLoadingsPlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       plsplot.PQ_LoadingsPlot2D(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-      connect(plot2D, SIGNAL(ScatterPlot2DVVPlotSignal(vvplotSignal)), SLOT(PlotVariableVSVariableBis(vvplotSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotVVPlotSignal(vvplotSignal)), SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   }
   else{
@@ -4428,13 +4443,13 @@ void MainWindow::PLS2DTTScorePlotPrediction()
       plsplot.setMID(dp.getModelID());
       plsplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       plsplot.T_ScorePlotPrediction2D(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4503,7 +4518,7 @@ void MainWindow::PLSRecalcVSExpPlotPrediction()
       plsplot.setMID(dp.getModelID());
       plsplot.setPREDID(dp.getPredictionID());
       plsplot.setNLatentVariables(dp.getNLV());
-      ScatterPlot2D *plot2D = 0;
+      ScatterPlot *plot2D = 0;
       plsplot.RecalcVSExperimentalAndPrediction(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
@@ -4511,7 +4526,7 @@ void MainWindow::PLSRecalcVSExpPlotPrediction()
         graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
       }
       else{
         QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -4535,7 +4550,7 @@ void MainWindow::PLSPredictedVSExpAndPredictionPlot()
       plsplot.setMID(dp.getModelID());
       plsplot.setPREDID(dp.getPredictionID());
       plsplot.setNLatentVariables(dp.getNLV());
-      ScatterPlot2D *plot2D = 0;
+      ScatterPlot *plot2D = 0;
       plsplot.PredictedVSExperimentalAndPrediction(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
@@ -4543,7 +4558,7 @@ void MainWindow::PLSPredictedVSExpAndPredictionPlot()
         graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
       }
       else{
         QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -4568,7 +4583,7 @@ void MainWindow::PLSRecalcVSExpPlot()
       plsplot.setNLatentVariables(dp.getNLV());
 
       if(projects->value(dp.getProjectID())->getPLSModel(dp.getModelID())->getAlgorithm() == PLS_){
-        ScatterPlot2D *plot2D = 0;
+        ScatterPlot *plot2D = 0;
         plsplot.RecalcVSExperimental(&plot2D);
         if(plot2D != 0){
           MDIChild *graphchild = createMdiChild();
@@ -4576,7 +4591,7 @@ void MainWindow::PLSRecalcVSExpPlot()
           graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
           graphchild->resize(510, 530);
           graphchild->show();
-          connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+          connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
         }
         else{
           QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -4613,7 +4628,7 @@ void MainWindow::PLSRecalcResidualsVSExpPlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       plsplot.setNLatentVariables(dp.getNLV());
-      ScatterPlot2D *plot2D = 0;
+      ScatterPlot *plot2D = 0;
       plsplot.RecalcResidualsVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
@@ -4621,7 +4636,7 @@ void MainWindow::PLSRecalcResidualsVSExpPlot()
         graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
       }
       else{
         QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -4646,7 +4661,7 @@ void MainWindow::PLSPredVSExpPlot()
       plsplot.setNLatentVariables(dp.getNLV());
 
       if(projects->value(dp.getProjectID())->getPLSModel(dp.getModelID())->getAlgorithm() == PLS_){
-        ScatterPlot2D *plot2D = 0;
+        ScatterPlot *plot2D = 0;
         plsplot.PredictedVSExperimental(&plot2D);
         if(plot2D != 0){
           MDIChild *graphchild = createMdiChild();
@@ -4654,7 +4669,7 @@ void MainWindow::PLSPredVSExpPlot()
           graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
           graphchild->resize(510, 530);
           graphchild->show();
-          connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+          connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
         }
         else{
           QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -4691,7 +4706,7 @@ void MainWindow::PLSPredResidualsVSExpPlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       plsplot.setNLatentVariables(dp.getNLV());
-      ScatterPlot2D *plot2D = 0;
+      ScatterPlot *plot2D = 0;
       plsplot.PredictedResidualsVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
@@ -4699,7 +4714,7 @@ void MainWindow::PLSPredResidualsVSExpPlot()
         graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
       }
       else{
         QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -4880,7 +4895,7 @@ void MainWindow::PLSPlotYScrambling()
       PLSPlot plsplot(projects);
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
-      QList< ScatterPlot2D* > plots = plsplot.YScramblingPlot();
+      QList< ScatterPlot* > plots = plsplot.YScramblingPlot();
       for(int i = 0; i < plots.size(); i++){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plots[i]);
@@ -4908,13 +4923,13 @@ void MainWindow::PLS3DTTTScorePlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
+      ScatterPlot *plot3D;
       plsplot.T_ScorePlot3D(&plot3D);
       graphchild->setWidget(plot3D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4934,13 +4949,13 @@ void MainWindow::PLS3DPPPLoadingsPlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
+      ScatterPlot *plot3D;
       plsplot.P_LoadingsPlot3D(&plot3D);
       graphchild->setWidget(plot3D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4960,13 +4975,13 @@ void MainWindow::PLS3DWWWLoadingsPlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
+      ScatterPlot *plot3D;
       plsplot.WeightsPlot3D(&plot3D);
       graphchild->setWidget(plot3D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -4986,13 +5001,13 @@ void MainWindow::PLS3DUUUScorePlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
+      ScatterPlot *plot3D;
       plsplot.U_ScorePlot3D(&plot3D);
       graphchild->setWidget(plot3D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -5012,13 +5027,13 @@ void MainWindow::PLS3DQQQLoadingsPlot()
       plsplot.setPID(dp.getProjectID());
       plsplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
+      ScatterPlot *plot3D;
       plsplot.Q_LoadingsPlot3D(&plot3D);
       graphchild->setWidget(plot3D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -5039,13 +5054,13 @@ void MainWindow::PLS3DScorePlotPrediction()
       plsplot.setMID(dp.getModelID());
       plsplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
+      ScatterPlot *plot3D;
       plsplot.T_ScorePlotPrediction3D(&plot3D);
       graphchild->setWidget(plot3D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -5066,7 +5081,7 @@ void MainWindow::EPLSRecalcVSExpPlot()
       eplsplot.setNLatentVariables(dp.getNLV());
 
       if(projects->value(dp.getProjectID())->getEPLSModel(dp.getModelID())->getAlgorithm() == EPLS_){
-        ScatterPlot2D *plot2D = 0;
+        ScatterPlot *plot2D = 0;
         eplsplot.RecalcVSExperimental(&plot2D);
         if(plot2D != 0){
           MDIChild *graphchild = createMdiChild();
@@ -5074,7 +5089,7 @@ void MainWindow::EPLSRecalcVSExpPlot()
           graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
           graphchild->resize(510, 530);
           graphchild->show();
-          connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+          connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
         }
         else{
           QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -5111,7 +5126,7 @@ void MainWindow::EPLSRecalcResidualsVSExpPlot()
       eplsplot.setPID(dp.getProjectID());
       eplsplot.setMID(dp.getModelID());
       eplsplot.setNLatentVariables(dp.getNLV());
-      ScatterPlot2D *plot2D = 0;
+      ScatterPlot *plot2D = 0;
       eplsplot.RecalcResidualsVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
@@ -5119,7 +5134,7 @@ void MainWindow::EPLSRecalcResidualsVSExpPlot()
         graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
       }
       else{
         QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -5143,7 +5158,7 @@ void MainWindow::EPLSPredVSExpPlot()
       eplsplot.setMID(dp.getModelID());
       eplsplot.setNLatentVariables(dp.getNLV());
       if(projects->value(dp.getProjectID())->getEPLSModel(dp.getModelID())->getAlgorithm() == EPLS_){
-        ScatterPlot2D *plot2D = 0;
+        ScatterPlot *plot2D = 0;
         eplsplot.PredictedVSExperimental(&plot2D);
         if(plot2D != 0){
           MDIChild *graphchild = createMdiChild();
@@ -5151,7 +5166,7 @@ void MainWindow::EPLSPredVSExpPlot()
           graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
           graphchild->resize(510, 530);
           graphchild->show();
-          connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+          connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
         }
         else{
           QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -5188,7 +5203,7 @@ void MainWindow::EPLSPredResidualsVSExpPlot()
       eplsplot.setPID(dp.getProjectID());
       eplsplot.setMID(dp.getModelID());
       eplsplot.setNLatentVariables(dp.getNLV());
-      ScatterPlot2D *plot2D = 0;
+      ScatterPlot *plot2D = 0;
       eplsplot.PredictedResidualsVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
@@ -5196,7 +5211,7 @@ void MainWindow::EPLSPredResidualsVSExpPlot()
         graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
       }
       else{
         QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -5359,7 +5374,7 @@ void MainWindow::MLRRecalcVSExpPlot()
       MLRPlot mlrplot(projects);
       mlrplot.setPID(dp.getProjectID());
       mlrplot.setMID(dp.getModelID());
-      ScatterPlot2D *plot2D = 0;
+      ScatterPlot *plot2D = 0;
       mlrplot.RecalcVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
@@ -5367,7 +5382,7 @@ void MainWindow::MLRRecalcVSExpPlot()
         graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
       }
       else{
         QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -5390,7 +5405,7 @@ void MainWindow::MLRRecalcResidualsVSExpPlot()
       MLRPlot mlrplot(projects);
       mlrplot.setPID(dp.getProjectID());
       mlrplot.setMID(dp.getModelID());
-      ScatterPlot2D *plot2D = 0;
+      ScatterPlot *plot2D = 0;
       mlrplot.RecalcResidualsVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
@@ -5398,7 +5413,7 @@ void MainWindow::MLRRecalcResidualsVSExpPlot()
         graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
       }
       else{
         QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -5447,7 +5462,7 @@ void MainWindow::MLRPredVSExpPlot()
       MLRPlot mlrplot(projects);
       mlrplot.setPID(dp.getProjectID());
       mlrplot.setMID(dp.getModelID());
-      ScatterPlot2D *plot2D = 0;
+      ScatterPlot *plot2D = 0;
       mlrplot.PredictedVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
@@ -5455,7 +5470,7 @@ void MainWindow::MLRPredVSExpPlot()
         graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
       }
       else{
         QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -5478,7 +5493,7 @@ void MainWindow::MLRPredResidualsVSExpPlot()
       MLRPlot mlrplot(projects);
       mlrplot.setPID(dp.getProjectID());
       mlrplot.setMID(dp.getModelID());
-      ScatterPlot2D *plot2D = 0;
+      ScatterPlot *plot2D = 0;
       mlrplot.PredictedResidualsVSExperimental(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
@@ -5486,7 +5501,7 @@ void MainWindow::MLRPredResidualsVSExpPlot()
         graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
       }
       else{
         QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -5510,7 +5525,7 @@ void MainWindow::MLRRecalcVSExpAndPredictionPlot()
       mlrplot.setPID(dp.getProjectID());
       mlrplot.setMID(dp.getModelID());
       mlrplot.setPREDID(dp.getPredictionID());
-      ScatterPlot2D *plot2D = 0;
+      ScatterPlot *plot2D = 0;
       mlrplot.RecalcVSExperimentalAndPrediction(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
@@ -5518,7 +5533,7 @@ void MainWindow::MLRRecalcVSExpAndPredictionPlot()
         graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
       }
       else{
         QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -5542,7 +5557,7 @@ void MainWindow::MLRPredictedVSExpAndPredictionPlot()
       mlrplot.setPID(dp.getProjectID());
       mlrplot.setMID(dp.getModelID());
       mlrplot.setPREDID(dp.getPredictionID());
-      ScatterPlot2D *plot2D = 0;
+      ScatterPlot *plot2D = 0;
       mlrplot.PredictedVSExperimentalAndPrediction(&plot2D);
       if(plot2D != 0){
         MDIChild *graphchild = createMdiChild();
@@ -5550,7 +5565,7 @@ void MainWindow::MLRPredictedVSExpAndPredictionPlot()
         graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
         graphchild->resize(510, 530);
         graphchild->show();
-        connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
       }
       else{
         QMessageBox::warning(this, tr("Warning!"), tr("Original Data Model not found!\n"), QMessageBox::Close);
@@ -5573,7 +5588,7 @@ void MainWindow::MLRPlotYScrambling()
       MLRPlot mlrplot(projects);
       mlrplot.setPID(dp.getProjectID());
       mlrplot.setMID(dp.getModelID());
-      QList< ScatterPlot2D* > plots = mlrplot.YScramblingPlot();
+      QList< ScatterPlot* > plots = mlrplot.YScramblingPlot();
       for(int i = 0; i < plots.size(); i++){
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(plots[i]);
@@ -5600,13 +5615,13 @@ void MainWindow::LDAFeaturePlot2D()
       ldaplot.setPID(dp.getProjectID());
       ldaplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       ldaplot.FeaturePlot2D(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -5626,13 +5641,13 @@ void MainWindow::LDAFeaturePlot3D()
       ldaplot.setPID(dp.getProjectID());
       ldaplot.setMID(dp.getModelID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
+      ScatterPlot *plot3D;
       ldaplot.FeaturePlot3D(&plot3D);
       graphchild->setWidget(plot3D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -5653,13 +5668,13 @@ void MainWindow::LDAFeaturePlotAndPrediction2D()
       ldaplot.setMID(dp.getModelID());
       ldaplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       ldaplot.FeaturePlotAndPrediction2D(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -5680,13 +5695,13 @@ void MainWindow::LDAFeaturePlotAndPrediction3D()
       ldaplot.setMID(dp.getModelID());
       ldaplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot3D *plot3D;
+      ScatterPlot *plot3D;
       ldaplot.FeaturePlotAndPrediction3D(&plot3D);
       graphchild->setWidget(plot3D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlot3DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -5707,13 +5722,13 @@ void MainWindow::LDAProbabilityDistribution()
       ldaplot.setMID(dp.getModelID());
       ldaplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       ldaplot.ProbabilityDistribution(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -5734,13 +5749,13 @@ void MainWindow::LDAProbabilityDistributionWithPredictions()
       ldaplot.setMID(dp.getModelID());
       ldaplot.setPREDID(dp.getPredictionID());
       MDIChild *graphchild = createMdiChild();
-      ScatterPlot2D *plot2D;
+      ScatterPlot *plot2D;
       ldaplot.ProbabilityDistributionWithPredictions(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
       graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlot2DImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -5774,56 +5789,10 @@ void MainWindow::DoPCAPrediction()
         QStringList varsel = projects->value(pid)->getPCAModel(mid)->getVarName();
 
         matrix *x;
+
+
         NewMatrix(&x, objsel.size(), varsel.size());
-
-        if(objsel.size() == projects->value(pid)->getMatrix(did)->getObjName().size()
-          && varsel.size() == projects->value(pid)->getMatrix(did)->getVarName().size()){
-          MatrixCopy(projects->value(pid)->getMatrix(did)->Matrix(), &x);
-        }
-        else{
-          QList <int> varid;
-          for(int i = 1; i < projects->value(pid)->getMatrix(did)->getVarName().size(); i++){
-            if(varsel.contains(projects->value(pid)->getMatrix(did)->getVarName()[i]) == true){
-              varid.append(i-1);
-            }
-            else
-              continue;
-          }
-
-          for(int i = 0; i < objsel.size(); i++){
-              int indx = projects->value(pid)->getMatrix(did)->getObjName().indexOf(objsel[i]);
-              if(indx > -1){
-                for(int j = 0; j < varid.size(); j++){
-                  x->data[i][j] = projects->value(pid)->getMatrix(did)->Matrix()->data[indx][varid[j]];
-                }
-              }
-              else
-                continue;
-          }
-
-          /* Old and slow!!
-          int ii = 0;
-          for(int i = 0; i < projects->value(pid)->getMatrix(did)->getObjName().size(); i++){
-            if(objsel.contains(projects->value(pid)->getMatrix(did)->getObjName()[i]) == true){
-              int jx = 0;
-              for(int j = 1; j < projects->value(pid)->getMatrix(did)->getVarName().size(); j++){
-                if(varsel.contains(projects->value(pid)->getMatrix(did)->getVarName()[j]) == true){
-                  x->data[ii][jx] = projects->value(pid)->getMatrix(did)->Matrix()->data[i][j-1];
-                  jx++;
-                }
-                else{
-                  continue;
-                }
-              }
-              ii++;
-            }
-            else{
-              continue;
-            }
-            QApplication::processEvents();
-          }
-          */
-        }
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
 
         if(x->col == (uint)varsel.size()){
           QString str = "--------------------\n Computing PCA Prediction for: ";
@@ -6524,7 +6493,7 @@ void MainWindow::DoPLSValidation()
         initMatrix(&x);
         initMatrix(&y);
 
-        
+
         if(yvarsel.size() > 0 && classes.size() == 0){
           PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
         }
@@ -6801,26 +6770,7 @@ void MainWindow::DoLDAPrediction()
       matrix *x;
       NewMatrix(&x, objsel.size(), varsel.size());
 
-      int ii = 0;
-      for(int i = 0; i < projects->value(pid)->getMatrix(did)->getObjName().size(); i++){
-        if(objsel.contains(projects->value(pid)->getMatrix(did)->getObjName()[i]) == true){
-          int jx = 0;
-          for(int j = 1; j < projects->value(pid)->getMatrix(did)->getVarName().size(); j++){
-            if(varsel.contains(projects->value(pid)->getMatrix(did)->getVarName()[j]) == true){
-              x->data[ii][jx] = projects->value(pid)->getMatrix(did)->Matrix()->data[i][j-1];
-              jx++;
-            }
-            else{
-              continue;
-            }
-          }
-          ii++;
-        }
-        else{
-          continue;
-        }
-        QApplication::processEvents();
-      }
+      PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
 
       if(x->col == (uint)varsel.size()){
         QString str = "--------------------\n Computing LDA Prediction for: ";
@@ -6935,19 +6885,12 @@ void MainWindow::DoLDAValidation()
         NewMatrix(&x, objsel.size(), varsel.size());
         NewUIVector(&y, objsel.size());
 
-        int ii = 0;
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
+
+        // Rudimental y class preparation
         for(int i = 0; i < projects->value(pid)->getMatrix(did)->getObjName().size(); i++){
-          if(objsel.contains(projects->value(pid)->getMatrix(did)->getObjName()[i]) == true){
-            int jx = 0;
-            for(int j = 1; j < projects->value(pid)->getMatrix(did)->getVarName().size(); j++){
-              if(varsel.contains(projects->value(pid)->getMatrix(did)->getVarName()[j]) == true){
-                x->data[ii][jx] = projects->value(pid)->getMatrix(did)->Matrix()->data[i][j-1];
-                jx++;
-              }
-              else{
-                continue;
-              }
-            }
+          int ii = _index_of_(objsel, projects->value(pid)->getMatrix(did)->getObjName()[i]);
+          if(ii > -1){
             for(int j = 0; j < classes.size(); j++){
               if(classes[j].contains(projects->value(pid)->getMatrix(did)->getObjName()[i]) == true){
                 y->data[ii] = j;
@@ -6957,7 +6900,6 @@ void MainWindow::DoLDAValidation()
                 continue;
               }
             }
-            ii++;
           }
           else{
             continue;
@@ -7048,20 +6990,12 @@ void MainWindow::DoLDA()
         NewMatrix(&x, objsel.size(), varsel.size());
         NewUIVector(&y, objsel.size());
 
-        int ii = 0;
-        for(int i = 0; i < projects->value(pid)->getMatrix(did)->getObjName().size(); i++){
-          if(objsel.contains(projects->value(pid)->getMatrix(did)->getObjName()[i]) == true){
-            int jx = 0;
-            for(int j = 1; j < projects->value(pid)->getMatrix(did)->getVarName().size(); j++){
-              if(varsel.contains(projects->value(pid)->getMatrix(did)->getVarName()[j]) == true){
-                x->data[ii][jx] = projects->value(pid)->getMatrix(did)->Matrix()->data[i][j-1];
-                jx++;
-              }
-              else{
-                continue;
-              }
-            }
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
 
+        // Rudimental y class preparation
+        for(int i = 0; i < projects->value(pid)->getMatrix(did)->getObjName().size(); i++){
+          int ii = _index_of_(objsel, projects->value(pid)->getMatrix(did)->getObjName()[i]);
+          if(ii > -1){
             for(int j = 0; j < classes.size(); j++){
               if(classes[j].contains(projects->value(pid)->getMatrix(did)->getObjName()[i]) == true){
                 y->data[ii] = j;
@@ -7071,7 +7005,6 @@ void MainWindow::DoLDA()
                 continue;
               }
             }
-            ii++;
           }
           else{
             continue;

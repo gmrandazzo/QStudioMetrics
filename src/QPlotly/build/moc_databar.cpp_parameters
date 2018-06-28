@@ -1,0 +1,5 @@
+-I/Users/marco/projects/QPlotly-1.0.0
+-I/Users/marco/projects/QPlotly-1.0.0/build
+-o
+/Users/marco/projects/QPlotly-1.0.0/build/moc_databar.cpp
+/Users/marco/projects/QPlotly-1.0.0/databar.h

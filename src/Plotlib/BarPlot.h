@@ -8,18 +8,7 @@
 #include <QColor>
 #include "ui_BarPlot.h"
 
-#include <vtkVersion.h>
-#include <vtkRenderer.h>
-#include <vtkRenderWindow.h>
-#include <vtkSmartPointer.h>
-#include <vtkChartXY.h>
-#include <vtkPlot.h>
-#include <vtkTable.h>
-#include <vtkDoubleArray.h>
-#include <vtkContextView.h>
-#include <vtkContextScene.h>
-#include <vtkRenderWindowInteractor.h>
-#include <vtkAxis.h>
+#include "QPlotly/qplotly.h"
 
 #include "qsmdata.h"
 
@@ -38,19 +27,11 @@ public:
 
 private slots:
   void slotExit();
-  void SavePlotImage();
-  void RescalePlot();
-  void PlotUpdate();
 
 private:
   Ui::BarPlot ui;
-  QList<dvector*> vlst;
-  dvector *v;
-  QList<QColor> colors;
-
-  vtkSmartPointer<vtkContextView> view;
-  vtkSmartPointer<vtkChartXY> chart;
-  vtkSmartPointer<vtkTable> table;
+  QPlotlyWindow *chart;
+  void genBars(dvector *v, int split, double min, double max, QVector<qreal> *bval, QStringList *bnames);
 };
 
 #endif

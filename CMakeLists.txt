@@ -44,9 +44,6 @@ foreach(_component ${_components})
   endif()
 endforeach()
 
-find_package(VTK REQUIRED)
-include(${VTK_USE_FILE}) # include UseVTK.cmake
-
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules/")
 find_package(Libscientific)
 
@@ -100,5 +97,5 @@ include_directories(
 )
 
 
-add_subdirectory(src/Chart)
+add_subdirectory(src/QPlotly)
 add_subdirectory (src)

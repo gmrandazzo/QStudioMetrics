@@ -1,6 +1,6 @@
 #ifndef VARIABLEPLOT_H
 #define VARIABLEPLOT_H
-#include "ScatterPlot2D.h"
+#include "ScatterPlot.h"
 #include "BarPlot.h"
 #include "qsmdata.h"
 
@@ -24,7 +24,7 @@ public:
   void setLayerID(int layerid_){ layerid = layerid_; }
 
 
-  ScatterPlot2D *VariableVSVariable();
+  ScatterPlot *VariableVSVariable();
   BarPlot *VariableDistribution();
 private:
   PROJECTS *projects;

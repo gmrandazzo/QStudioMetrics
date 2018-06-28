@@ -28,9 +28,7 @@ set(QSTUDIOMETRICS_SRC
     Dialogs/LinePlotStyleDialog.cpp
     Plotlib/BarPlot.cpp
     Dialogs/FindCorrelationWidget.cpp
-    Plotlib/ScatterPlot3D.cpp
-    Plotlib/SimpleScatterPlot3D.cpp
-    Plotlib/ScatterPlot2D.cpp
+    Plotlib/ScatterPlot.cpp
     Plotlib/SimpleLine2DPlot.cpp
     Dialogs/ModelDialog.cpp
     Dialogs/ModelDialogWizard.cpp
@@ -89,9 +87,7 @@ set(QSTUDIOMETRICS_H
     Dialogs/LinePlotStyleDialog.h
     Plotlib/BarPlot.h
     Dialogs/FindCorrelationWidget.h
-    Plotlib/ScatterPlot3D.h
-    Plotlib/SimpleScatterPlot3D.h
-    Plotlib/ScatterPlot2D.h
+    Plotlib/ScatterPlot.h
     Plotlib/SimpleLine2DPlot.h
     Dialogs/ModelDialog.h
     Dialogs/ModelDialogWizard.h
@@ -136,9 +132,7 @@ set(QSTUDIOMETRICS_UIS
     Dialogs/LinePlotStyleDialog.ui
     Plotlib/BarPlot.ui
     Dialogs/FindCorrelationWidget.ui
-    Plotlib/ScatterPlot2D.ui
-    Plotlib/ScatterPlot3D.ui
-    Plotlib/SimpleScatterPlot3D.ui
+    Plotlib/ScatterPlot.ui
     Plotlib/SimpleLine2DPlot.ui
     Dialogs/DialogPlots.ui
     Dialogs/ClassPlotDialog.ui
@@ -210,7 +204,7 @@ endif()
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(QStudioMetrics ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS})
-target_link_libraries(QStudioMetrics ${LIBSCIENTIFIC_LIBRARY} libchart ${QT5_LIBRARIES} ${VTK_LIBRARIES})
+target_link_libraries(QStudioMetrics ${LIBSCIENTIFIC_LIBRARY} libqplotly ${QT5_LIBRARIES})
 
 add_executable(qsm-pca ${QSTUDIOMETRICS_CMDPCA_SRC})
 target_link_libraries(qsm-pca ${LIBSCIENTIFIC_LIBRARY})

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>529</width>
-    <height>391</height>
+    <width>524</width>
+    <height>472</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
-    <widget class="QVTKWidget" name="qvtkWidget" native="true">
+    <widget class="QWidget" name="plotwidget" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -24,8 +24,8 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>320</width>
-       <height>270</height>
+       <width>500</width>
+       <height>300</height>
       </size>
      </property>
     </widget>
@@ -110,13 +110,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QVTKWidget</class>
-   <extends>QWidget</extends>
-   <header>QVTKWidget.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

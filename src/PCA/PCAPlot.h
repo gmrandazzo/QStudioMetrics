@@ -1,7 +1,6 @@
 #ifndef PCAPLOT_H
 #define PCAPLOT_H
-#include "../Plotlib/ScatterPlot2D.h"
-#include "../Plotlib/ScatterPlot3D.h"
+#include "../Plotlib/ScatterPlot.h"
 #include "qsmdata.h"
 
 #include <QList>
@@ -17,14 +16,14 @@ public:
   void setMID(int mid_){ mid = mid_; }
   void setPREDID(int predid_){ predid = predid_; }
   void setGroups(LABELS g_){ g = g_; }
-  /*ScatterPlot2D *ScorePlot2D();*/
-  void ScorePlot2D(ScatterPlot2D **plot2D);
-  void ScorePlotPrediction2D(ScatterPlot2D **plot2D);
-  void LoadingsMVANormDistrib(ScatterPlot2D **plot2D);
-  void LoadingsPlot2D(ScatterPlot2D **plot2D);
-  void ScorePlot3D(ScatterPlot3D **plot3D);
-  void ScorePlotPrediction3D(ScatterPlot3D **plot3D);
-  void LoadingsPlot3D(ScatterPlot3D **plot3D);
+  /*ScatterPlot *ScorePlot2D();*/
+  void ScorePlot2D(ScatterPlot **plot2D);
+  void ScorePlotPrediction2D(ScatterPlot **plot2D);
+  void LoadingsMVANormDistrib(ScatterPlot **plot2D);
+  void LoadingsPlot2D(ScatterPlot **plot2D);
+  void ScorePlot3D(ScatterPlot **plot3D);
+  void ScorePlotPrediction3D(ScatterPlot **plot3D);
+  void LoadingsPlot3D(ScatterPlot **plot3D);
 
 private:
   PROJECTS *projects;

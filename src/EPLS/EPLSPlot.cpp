@@ -5,7 +5,7 @@
 #include <QDebug>
 #endif
 
-void EPLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot2D **plot2D)
+void EPLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot **plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
@@ -127,7 +127,7 @@ void EPLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot2D **plot2D)
       xhash.append(projects->value(pid)->getEPLSModel(mid)->getEPLSPrediction(predid)->getDataHash());
       yhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
       yhash.append(projects->value(pid)->getEPLSModel(mid)->getEPLSPrediction(predid)->getDataHash());
-      (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted"), projectname + modelname + " - PLS Recalc VS Experimental Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot2D::SCORES);
+      (*plot2D) = new ScatterPlot(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted"), projectname + modelname + " - PLS Recalc VS Experimental Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot::SCORES);
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setAxisNameExtensions(varname);
       (*plot2D)->setPID(pid);
@@ -215,7 +215,7 @@ void EPLSPlot::ClassPredictedVSExperimental(QList<QStringList> *cellnames, QList
   }
 }
 
-void EPLSPlot::RecalcVSExperimental(ScatterPlot2D **plot2D)
+void EPLSPlot::RecalcVSExperimental(ScatterPlot **plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
@@ -284,7 +284,7 @@ void EPLSPlot::RecalcVSExperimental(ScatterPlot2D **plot2D)
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
   yhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
-  (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Recalculated"), projectname + modelname + " - PLS Recalculated VS Experimental Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot2D::SCORES);
+  (*plot2D) = new ScatterPlot(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Recalculated"), projectname + modelname + " - PLS Recalculated VS Experimental Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot::SCORES);
   (*plot2D)->BuildDiagonal();
   (*plot2D)->setAxisNameExtensions(varname);
   (*plot2D)->setPID(pid);
@@ -292,7 +292,7 @@ void EPLSPlot::RecalcVSExperimental(ScatterPlot2D **plot2D)
   DelMatrix(&model_exp_y);
 }
 
-void EPLSPlot::RecalcResidualsVSExperimental(ScatterPlot2D** plot2D)
+void EPLSPlot::RecalcResidualsVSExperimental(ScatterPlot** plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
@@ -362,7 +362,7 @@ void EPLSPlot::RecalcResidualsVSExperimental(ScatterPlot2D** plot2D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
     yhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
-    (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Recalculated Residuals"), projectname + modelname + " - PLS Experimental VS Recalculated Residuals Y Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Recalculated Residuals"), projectname + modelname + " - PLS Experimental VS Recalculated Residuals Y Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot::SCORES);
     DelMatrix(&recalc_res);
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);
@@ -447,7 +447,7 @@ void EPLSPlot::ClassRecalcVSExperimental(QList<QStringList> *cellnames, QList<QL
   }
 }
 
-void EPLSPlot::PredictedVSExperimental(ScatterPlot2D **plot2D)
+void EPLSPlot::PredictedVSExperimental(ScatterPlot **plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
@@ -516,7 +516,7 @@ void EPLSPlot::PredictedVSExperimental(ScatterPlot2D **plot2D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
     yhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
-    (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted"), projectname + modelname + "- PLS Predicted VS Experimental Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted"), projectname + modelname + "- PLS Predicted VS Experimental Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot::SCORES);
     (*plot2D)->setAxisNameExtensions(varname);
     (*plot2D)->BuildDiagonal();
     (*plot2D)->setPID(pid);
@@ -525,7 +525,7 @@ void EPLSPlot::PredictedVSExperimental(ScatterPlot2D **plot2D)
   }
 }
 
-void EPLSPlot::PredictedResidualsVSExperimental(ScatterPlot2D** plot2D)
+void EPLSPlot::PredictedResidualsVSExperimental(ScatterPlot** plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
@@ -596,7 +596,7 @@ void EPLSPlot::PredictedResidualsVSExperimental(ScatterPlot2D** plot2D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
     yhash.append(projects->value(pid)->getEPLSModel(mid)->getDataHash());
-    (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted Residuals"), projectname + modelname + " - PLS Experimental VS Predicted Residuals Y Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted Residuals"), projectname + modelname + " - PLS Experimental VS Predicted Residuals Y Plot"+ QString("  (LV: %1)").arg(QString::number(nlv)), ScatterPlot::SCORES);
     DelMatrix(&pred_res);
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);
@@ -640,9 +640,6 @@ QList< SimpleLine2DPlot* > EPLSPlot::ROCAUCs()
                                       curvenames,
                                       QString(" %1 - %2 - ROC AUC Recalculated/Predicted Plot %3").arg(projectname).arg(modelname).arg(yname),
                                       "Latent Variables", "ROC AUC Recalculated / AUC Predicted"));
-    plots.last()->setLabelDetail(true);
-    plots.last()->setXminXmanXTicks(0, nlv, 1);
-    plots.last()->setYminYmanYTicks(0, 1.2, 10);
   }
   DelMatrix(&m);
   return plots;
@@ -686,9 +683,6 @@ QList< SimpleLine2DPlot* > EPLSPlot::ROCCurves()
                                         QString("N. LV: %1 %2 - %3 - ROC Curve Recalculated/Predicted Plot %4").arg(QString::number(i+1)).arg(projectname).arg(modelname).arg(yname),
                                         "False positive rate", "True positive rate"));
       plots.last()->setPlotTitle(QString("N. LV: %1; Class name: %2").arg(QString::number(i+1)).arg(yname));
-      plots.last()->setLabelDetail(true);
-      plots.last()->setXminXmanXTicks(0.0, 1.0, 1);
-      plots.last()->setYminYmanYTicks(0.0, 1.0, 1);
       DelMatrix(&mrec);
       DelMatrix(&mpred);
       mlst.clear();
@@ -730,9 +724,6 @@ QList< SimpleLine2DPlot* > EPLSPlot::PrecisionRecallAveragePrecision()
     l++;
 
     plots.append(new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - Precision-Recall AUC Recalculated/Predicted Plot %3").arg(projectname).arg(modelname).arg(yname), "Latent Variables", "Prec./Rec. Recalculated and Predicted"));
-    plots.last()->setLabelDetail(true);
-    plots.last()->setXminXmanXTicks(0, nlv, 1);
-    plots.last()->setYminYmanYTicks(0, 1.2, 10);
   }
   DelMatrix(&m);
   return plots;
@@ -777,9 +768,6 @@ QList< SimpleLine2DPlot* > EPLSPlot::PrecisionRecallCurves()
                                         QString("N. LV: %1 %2 - %3 - Precision-Recall Recalculated/Predicted Plot %4").arg(QString::number(i+1)).arg(projectname).arg(modelname).arg(yname),
                                         "Recall", "Precision"));
       plots.last()->setPlotTitle(QString("N. LV: %1; Class name: %2").arg(QString::number(i+1)).arg(yname));
-      plots.last()->setLabelDetail(true);
-      plots.last()->setXminXmanXTicks(0.0, 1.0, 1);
-      plots.last()->setYminYmanYTicks(0.0, 1.0, 1);
       DelMatrix(&mrec);
       DelMatrix(&mpred);
       mlst.clear();
@@ -839,9 +827,6 @@ QList< SimpleLine2DPlot* > EPLSPlot::R2Q2()
     PrintMatrix(m);
     #endif
     plots.append(new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - R2 Q2 Plot %3").arg(projectname).arg(modelname).arg(yname), "Latent Variables", "R2 / Q2"));
-    plots.last()->setLabelDetail(true);
-    plots.last()->setXminXmanXTicks(0, nlv, nlv);
-    plots.last()->setYminYmanYTicks(0, 1.2, 10);
   }
   DelMatrix(&m);
   return plots;
@@ -946,15 +931,14 @@ QList< SimpleLine2DPlot* > EPLSPlot::R2R2Prediction()
 
 
     plots.append(new SimpleLine2DPlot(m, curvenames, QString("%1 - %2 - R2 Q2 Plot Y %3").arg(projectname).arg(modelname).arg(yname), "Latent Variables", yaxisname));
-    plots.last()->setLabelDetail(true);
   }
   DelMatrix(&m);
   return plots;
 }
 
-/*QList<ScatterPlot2D*> EPLSPlot::YScramblingPlot()
+/*QList<ScatterPlot*> EPLSPlot::YScramblingPlot()
 {
-  QList<ScatterPlot2D*> plots2D;
+  QList<ScatterPlot*> plots2D;
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
   QList<matrix*> mxlst;
@@ -980,7 +964,7 @@ QList< SimpleLine2DPlot* > EPLSPlot::R2R2Prediction()
       mxlst[0]->data[i][1] = projects->value(pid)->getEPLSModel(mid)->Model()->yscrambling->data[i][j+1];
       mxlst[1]->data[i][1] = projects->value(pid)->getEPLSModel(mid)->Model()->yscrambling->data[i][j+1+ndepvar];
     }
-    plots2D.append(new ScatterPlot2D(mxlst, objnamelst, "Correlation with Y Real Vector", "R2/Q2", QString("PLS Y Scrambling Plot")));
+    plots2D.append(new ScatterPlot(mxlst, objnamelst, "Correlation with Y Real Vector", "R2/Q2", QString("PLS Y Scrambling Plot")));
     plots2D.last()->setPID(pid);
   }
 

@@ -1,8 +1,7 @@
 #ifndef MLRPLOT_H
 #define MLRPLOT_H
 
-#include "../Plotlib/ScatterPlot2D.h"
-#include "../Plotlib/ScatterPlot3D.h"
+#include "../Plotlib/ScatterPlot.h"
 #include "../Plotlib/SimpleLine2DPlot.h"
 #include "../Plotlib/BarPlot.h"
 #include "qsmdata.h"
@@ -22,13 +21,13 @@ public:
   void setPREDID(int predid_){ predid = predid_; }
 
   QList< BarPlot* > BetaCoefficients();
-  void PredictedVSExperimentalAndPrediction(ScatterPlot2D **plot2D);
-  void RecalcVSExperimentalAndPrediction(ScatterPlot2D **plot2D);
-  void RecalcVSExperimental(ScatterPlot2D **plot2D);
-  void RecalcResidualsVSExperimental(ScatterPlot2D **plot2D);
-  void PredictedVSExperimental(ScatterPlot2D **plot2D);
-  void PredictedResidualsVSExperimental(ScatterPlot2D **plot2D);
-  QList<ScatterPlot2D*> YScramblingPlot();
+  void PredictedVSExperimentalAndPrediction(ScatterPlot **plot2D);
+  void RecalcVSExperimentalAndPrediction(ScatterPlot **plot2D);
+  void RecalcVSExperimental(ScatterPlot **plot2D);
+  void RecalcResidualsVSExperimental(ScatterPlot **plot2D);
+  void PredictedVSExperimental(ScatterPlot **plot2D);
+  void PredictedResidualsVSExperimental(ScatterPlot **plot2D);
+  QList<ScatterPlot*> YScramblingPlot();
 
 private:
   PROJECTS *projects;

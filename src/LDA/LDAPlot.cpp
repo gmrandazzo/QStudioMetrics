@@ -1,7 +1,7 @@
 #include "LDAPlot.h"
 #include <unistd.h>
 
-void LDAPlot::FeaturePlot2D(ScatterPlot2D** plot2D)
+void LDAPlot::FeaturePlot2D(ScatterPlot** plot2D)
 {
   if(mid > -1){
     QString projectname = projects->value(pid)->getProjectName();
@@ -22,12 +22,12 @@ void LDAPlot::FeaturePlot2D(ScatterPlot2D** plot2D)
 
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getLDAModel(mid)->getDataHash());
-    (*plot2D) = new ScatterPlot2D(mxlst, objnamelst,  &projects->value(pid)->getMATRIXList(), xhash, yhash,  &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "LD", "LD", QString(projectname + modelname + " - LDA Feature Plot "), ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot(mxlst, objnamelst,  &projects->value(pid)->getMATRIXList(), xhash, yhash,  &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "LD", "LD", QString(projectname + modelname + " - LDA Feature Plot "), ScatterPlot::SCORES);
     (*plot2D)->setPID(pid);
   }
 }
 
-void LDAPlot::FeaturePlot3D(ScatterPlot3D** plot3D)
+void LDAPlot::FeaturePlot3D(ScatterPlot** plot3D)
 {
   if(mid > -1){
     QString projectname = projects->value(pid)->getProjectName();
@@ -47,12 +47,12 @@ void LDAPlot::FeaturePlot3D(ScatterPlot3D** plot3D)
     }
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getLDAModel(mid)->getDataHash());
-    (*plot3D) = new ScatterPlot3D(mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("%1 - %2 - LDA Feature Plot").arg(projectname).arg(modelname), "LD", "LD", "LD", ScatterPlot3D::SCORES);
+    (*plot3D) = new ScatterPlot(mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("%1 - %2 - LDA Feature Plot").arg(projectname).arg(modelname), "LD", "LD", "LD", ScatterPlot::SCORES);
     (*plot3D)->setPID(pid);
   }
 }
 
-void LDAPlot::ProbabilityDistribution(ScatterPlot2D** plot2D)
+void LDAPlot::ProbabilityDistribution(ScatterPlot** plot2D)
 {
   if(mid > -1){
     QString projectname = projects->value(pid)->getProjectName();
@@ -166,7 +166,7 @@ void LDAPlot::ProbabilityDistribution(ScatterPlot2D** plot2D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getLDAModel(mid)->getDataHash());
 
-    (*plot2D) = new ScatterPlot2D(mx, my, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "Y", "Prob Y", projectname + modelname + " - LDA Multivariate Normal Distribution of Probabilities", ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot(mx, my, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "Y", "Prob Y", projectname + modelname + " - LDA Multivariate Normal Distribution of Probabilities", ScatterPlot::SCORES);
 
     (*plot2D)->addCurve(mnpdf, mnpdfname, colors);
     (*plot2D)->setPID(pid);
@@ -177,7 +177,7 @@ void LDAPlot::ProbabilityDistribution(ScatterPlot2D** plot2D)
   }
 }
 
-void LDAPlot::FeaturePlotAndPrediction2D(ScatterPlot2D** plot2D)
+void LDAPlot::FeaturePlotAndPrediction2D(ScatterPlot** plot2D)
 {
   if(mid > -1 && predid > -1){
     QString projectname = projects->value(pid)->getProjectName();
@@ -202,12 +202,12 @@ void LDAPlot::FeaturePlotAndPrediction2D(ScatterPlot2D** plot2D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getLDAModel(mid)->getDataHash());
     xhash.append(projects->value(pid)->getLDAModel(mid)->getLDAPrediction(predid)->getDataHash());
-    (*plot2D) = new ScatterPlot2D(mxlst, objnamelst,  &projects->value(pid)->getMATRIXList(), xhash, yhash,  &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "LD", "LD", QString(projectname + modelname + " - LDA Feature Plot "), ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot(mxlst, objnamelst,  &projects->value(pid)->getMATRIXList(), xhash, yhash,  &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "LD", "LD", QString(projectname + modelname + " - LDA Feature Plot "), ScatterPlot::SCORES);
     (*plot2D)->setPID(pid);
   }
 }
 
-void LDAPlot::FeaturePlotAndPrediction3D(ScatterPlot3D** plot3D)
+void LDAPlot::FeaturePlotAndPrediction3D(ScatterPlot** plot3D)
 {
   if(mid > -1 && predid > -1){
     QString projectname = projects->value(pid)->getProjectName();
@@ -232,12 +232,12 @@ void LDAPlot::FeaturePlotAndPrediction3D(ScatterPlot3D** plot3D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getLDAModel(mid)->getDataHash());
     xhash.append(projects->value(pid)->getLDAModel(mid)->getLDAPrediction(predid)->getDataHash());
-    (*plot3D) = new ScatterPlot3D(mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("%1 - %2 - LDA Feature Plot").arg(projectname).arg(modelname), "LD", "LD", "LD", ScatterPlot3D::SCORES);
+    (*plot3D) = new ScatterPlot(mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("%1 - %2 - LDA Feature Plot").arg(projectname).arg(modelname), "LD", "LD", "LD", ScatterPlot::SCORES);
     (*plot3D)->setPID(pid);
   }
 }
 
-void LDAPlot::ProbabilityDistributionWithPredictions(ScatterPlot2D** plot2D)
+void LDAPlot::ProbabilityDistributionWithPredictions(ScatterPlot** plot2D)
 {
   if(mid > -1 && predid > -1){
     QString projectname = projects->value(pid)->getProjectName();
@@ -352,7 +352,7 @@ void LDAPlot::ProbabilityDistributionWithPredictions(ScatterPlot2D** plot2D)
       ycol +=2;
     }
 
-    (*plot2D) = new ScatterPlot2D(mx, my, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "Y", "Prob Y", projectname + modelname + " - LDA Multivariate Normal Distribution of Probabilities", ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot(mx, my, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "Y", "Prob Y", projectname + modelname + " - LDA Multivariate Normal Distribution of Probabilities", ScatterPlot::SCORES);
 
     (*plot2D)->addCurve(mnpdf, mnpdfname, colors);
     (*plot2D)->setPID(pid);

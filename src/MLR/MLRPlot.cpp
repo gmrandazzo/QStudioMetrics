@@ -1,7 +1,7 @@
 #include "MLRPlot.h"
 #include "scientific.h"
 
-void MLRPlot::RecalcVSExperimentalAndPrediction(ScatterPlot2D **plot2D)
+void MLRPlot::RecalcVSExperimentalAndPrediction(ScatterPlot **plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
@@ -88,7 +88,7 @@ void MLRPlot::RecalcVSExperimentalAndPrediction(ScatterPlot2D **plot2D)
       xhash.append(projects->value(pid)->getMLRModel(mid)->getMLRPrediction(predid)->getDataHash());
       yhash.append(projects->value(pid)->getMLRModel(mid)->getDataHash());
       yhash.append(projects->value(pid)->getMLRModel(mid)->getMLRPrediction(predid)->getDataHash());
-      (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental Y"), QString("Recalculated and Predicted Y"), projectname + modelname + " - MLR Recalc VS Experimental Plot", ScatterPlot2D::SCORES);
+      (*plot2D) = new ScatterPlot(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental Y"), QString("Recalculated and Predicted Y"), projectname + modelname + " - MLR Recalc VS Experimental Plot", ScatterPlot::SCORES);
       DelMatrix(&recalc_y);
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setPID(pid);
@@ -99,7 +99,7 @@ void MLRPlot::RecalcVSExperimentalAndPrediction(ScatterPlot2D **plot2D)
   }
 }
 
-void MLRPlot::PredictedVSExperimentalAndPrediction(ScatterPlot2D **plot2D)
+void MLRPlot::PredictedVSExperimentalAndPrediction(ScatterPlot **plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
@@ -186,7 +186,7 @@ void MLRPlot::PredictedVSExperimentalAndPrediction(ScatterPlot2D **plot2D)
       xhash.append(projects->value(pid)->getMLRModel(mid)->getMLRPrediction(predid)->getDataHash());
       yhash.append(projects->value(pid)->getMLRModel(mid)->getDataHash());
       yhash.append(projects->value(pid)->getMLRModel(mid)->getMLRPrediction(predid)->getDataHash());
-      (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted"), QString(projectname + modelname + " - MLR Recalc VS Experimental Plot"), ScatterPlot2D::SCORES);
+      (*plot2D) = new ScatterPlot(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted"), QString(projectname + modelname + " - MLR Recalc VS Experimental Plot"), ScatterPlot::SCORES);
       (*plot2D)->setAxisNameExtensions(varname);
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setPID(pid);
@@ -214,7 +214,7 @@ QList< BarPlot* > MLRPlot::BetaCoefficients()
   return barplots;
 }
 
-void MLRPlot::RecalcVSExperimental(ScatterPlot2D **plot2D)
+void MLRPlot::RecalcVSExperimental(ScatterPlot **plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
@@ -261,7 +261,7 @@ void MLRPlot::RecalcVSExperimental(ScatterPlot2D **plot2D)
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getMLRModel(mid)->getDataHash());
   yhash.append(projects->value(pid)->getMLRModel(mid)->getDataHash());
-  (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Recalculated"), projectname + modelname + " - MLR Recalculated VS Experimental Plot", ScatterPlot2D::SCORES);
+  (*plot2D) = new ScatterPlot(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Recalculated"), projectname + modelname + " - MLR Recalculated VS Experimental Plot", ScatterPlot::SCORES);
   (*plot2D)->BuildDiagonal();
   (*plot2D)->setPID(pid);
   (*plot2D)->setAxisNameExtensions(varname);
@@ -269,7 +269,7 @@ void MLRPlot::RecalcVSExperimental(ScatterPlot2D **plot2D)
   DelMatrix(&model_exp_y);
 }
 
-void MLRPlot::RecalcResidualsVSExperimental(ScatterPlot2D** plot2D)
+void MLRPlot::RecalcResidualsVSExperimental(ScatterPlot** plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
@@ -317,7 +317,7 @@ void MLRPlot::RecalcResidualsVSExperimental(ScatterPlot2D** plot2D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getMLRModel(mid)->getDataHash());
     yhash.append(projects->value(pid)->getMLRModel(mid)->getDataHash());
-    (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Recalculated Residuals"), projectname + modelname + " - MLR Experimental VS Recalculated Residuals Y Plot", ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Recalculated Residuals"), projectname + modelname + " - MLR Experimental VS Recalculated Residuals Y Plot", ScatterPlot::SCORES);
     DelMatrix(&recalc_res);
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);
@@ -326,7 +326,7 @@ void MLRPlot::RecalcResidualsVSExperimental(ScatterPlot2D** plot2D)
 }
 
 
-void MLRPlot::PredictedVSExperimental(ScatterPlot2D **plot2D)
+void MLRPlot::PredictedVSExperimental(ScatterPlot **plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
@@ -373,7 +373,7 @@ void MLRPlot::PredictedVSExperimental(ScatterPlot2D **plot2D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getMLRModel(mid)->getDataHash());
     yhash.append(projects->value(pid)->getMLRModel(mid)->getDataHash());
-    (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted"), projectname + modelname + " - MLR Predicted VS Experimental Plot", ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted"), projectname + modelname + " - MLR Predicted VS Experimental Plot", ScatterPlot::SCORES);
     (*plot2D)->BuildDiagonal();
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);
@@ -382,7 +382,7 @@ void MLRPlot::PredictedVSExperimental(ScatterPlot2D **plot2D)
   }
 }
 
-void MLRPlot::PredictedResidualsVSExperimental(ScatterPlot2D** plot2D)
+void MLRPlot::PredictedResidualsVSExperimental(ScatterPlot** plot2D)
 {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
@@ -431,7 +431,7 @@ void MLRPlot::PredictedResidualsVSExperimental(ScatterPlot2D** plot2D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getMLRModel(mid)->getDataHash());
     yhash.append(projects->value(pid)->getMLRModel(mid)->getDataHash());
-    (*plot2D) = new ScatterPlot2D(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted Residuals"), projectname + modelname + " - MLR Experimental VS Predicted Residuals Y Plot", ScatterPlot2D::SCORES);
+    (*plot2D) = new ScatterPlot(mx, my, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("Experimental"), QString("Predicted Residuals"), projectname + modelname + " - MLR Experimental VS Predicted Residuals Y Plot", ScatterPlot::SCORES);
     DelMatrix(&pred_res);
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);
@@ -439,9 +439,9 @@ void MLRPlot::PredictedResidualsVSExperimental(ScatterPlot2D** plot2D)
   }
 }
 
-QList<ScatterPlot2D*> MLRPlot::YScramblingPlot()
+QList<ScatterPlot*> MLRPlot::YScramblingPlot()
 {
-  QList<ScatterPlot2D*> plots2D;
+  QList<ScatterPlot*> plots2D;
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
   QList<matrix*> mxlst;
@@ -467,7 +467,7 @@ QList<ScatterPlot2D*> MLRPlot::YScramblingPlot()
       mxlst[0]->data[i][1] = projects->value(pid)->getMLRModel(mid)->Model()->r2q2scrambling->data[i][j+1];
       mxlst[1]->data[i][1] = projects->value(pid)->getMLRModel(mid)->Model()->r2q2scrambling->data[i][j+1+ndepvar];
     }
-    plots2D.append(new ScatterPlot2D(mxlst, objnamelst,  "Correlation with Y Real Vector", "R2/Q2", QString("MLR Y Scrambling Plot")));
+    plots2D.append(new ScatterPlot(mxlst, objnamelst,  "Correlation with Y Real Vector", "R2/Q2", QString("MLR Y Scrambling Plot")));
     plots2D.last()->setPID(pid);
   }
 

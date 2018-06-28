@@ -9,7 +9,7 @@
 #include "ui_SimpleLine2DPlot.h"
 
 
-#include "Chart/chart.h"
+#include "QPlotly/qplotly.h"
 
 class SimpleLine2DPlot: public QWidget
 {
@@ -21,17 +21,15 @@ public:
   // Simple Line Plot with one x (first column of m) and more y objects
   SimpleLine2DPlot(matrix *m, QString curvename, QString windowtitle, QString xaxestitle, QString yaxestitle);
   void setPlotTitle(QString);
-  void setLabelDetail(bool);
-  void setXminXmanXTicks(double xmin, double xmax, int xtick);
-  void setYminYmanYTicks(double ymin, double ymax, int ytick);
 
 private slots:
   void slotExit();
   void SavePlotImage();
 
 private:
+  int random_(int low, int high);
   Ui::SimpleLine2DPlot ui;
-  Chart *chart;
+  QPlotlyWindow *chart;
 };
 
 #endif

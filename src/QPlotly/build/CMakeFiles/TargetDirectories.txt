@@ -1,0 +1,6 @@
+/Users/marco/projects/QPlotly-1.0.0/build/CMakeFiles/rebuild_cache.dir
+/Users/marco/projects/QPlotly-1.0.0/build/CMakeFiles/edit_cache.dir
+/Users/marco/projects/QPlotly-1.0.0/build/CMakeFiles/testqplotly.dir
+/Users/marco/projects/QPlotly-1.0.0/build/CMakeFiles/libqplotly.dir
+/Users/marco/projects/QPlotly-1.0.0/build/CMakeFiles/testqplotly_autogen.dir
+/Users/marco/projects/QPlotly-1.0.0/build/CMakeFiles/libqplotly_autogen.dir
