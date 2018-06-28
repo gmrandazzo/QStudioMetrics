@@ -6,10 +6,9 @@ The software is writen in C++ using the Qt5 framework and run under Linux, Windo
 QStudioMetrics compute:
   - Principal Component Analysis (PCA)
   - Partial Least Squares (PLS)
+  - Ensemble Partial Least Squares (EPLS)
   - Multiple Linear Regression (MLR)
   - Linar Discriminant Analysis (LDA)
-  - Unfolding Principal Component Analysis (UPCA)
-  - Unfolding Partial Least Squares (UPLS)
   - Clustering analysis: Hierarchical and K-Means
   - Model validation: leave-one-out, bootstrap k-fold cross validation, y-scrambling
 
@@ -40,7 +39,6 @@ Dependencies
 - cmake >= 2.8.9
 - Qt5
 - libscientific > 0.8
-- VTK >= 7.0
 
 Install
 =======
@@ -50,7 +48,8 @@ Install
 Compile from source
 ===================
 
-cmake .. -Wno-dev -DCMAKE_PREFIX_PATH=/usr/local/Cellar/qt5/5.9.1/ -DVTK_DIR=/usr/local/Cellar/vtk/8.0.1/lib/cmake/vtk-8.0 -DLIBSCIENTIFIC_ROOT_DIR=/usr/local/Cellar/libscientific/HEAD-b4a8a4f/
+
+cmake .. -Wno-dev -DCMAKE_PREFIX_PATH=/usr/local/Cellar/qt/5.11.1/ -DLIBSCIENTIFIC_ROOT_DIR=/usr/local/Cellar/libscientific/HEAD-b4a8a4f/
 make
 
 
