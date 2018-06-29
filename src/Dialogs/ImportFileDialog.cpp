@@ -320,7 +320,7 @@ void ImportFileDialog::ImportType1()
       else{
         if(row == 0){
           QStringList items = line.split(sep);
-          for(int j = 1; j < items.size(); j++){
+          for(int j = 0; j < items.size(); j++){
             AssignName(m->getVarName(), items[j]);
           }
         }
@@ -904,7 +904,9 @@ void ImportFileDialog::Preview()
       QStringList items = line.split(getSeparator());
       if(row == 0){
         if(ui.firstrowvarname->isChecked() == true){
-          items.removeFirst();
+          if(ui.firstcolobjname->isChecked() == true){
+            items.removeFirst();
+          }
           for(int i = 0; i < items.size(); i++){
             AssignName(varnames, items[i]);
           }

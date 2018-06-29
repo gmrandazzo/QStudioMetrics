@@ -631,7 +631,7 @@ void ImportFromFileDialog::LoadVariableNames()
       }
     }
     else{
-      for(int j = 1; j < file.first().size(); j++){
+      for(int j = 0; j < file.first().size(); j++){
         if(ui.skipcolmissingvalue->isChecked()){
           if(columntoskip.contains(j) == true){
             continue;
