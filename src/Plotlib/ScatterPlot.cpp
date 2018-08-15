@@ -613,8 +613,12 @@ void ScatterPlot::hideSelection()
 
 void ScatterPlot::clearSelection()
 {
-  selectedIDS.clear();
+  qDebug() << "Clear Selection";
+  for(int i = 0; i < selectedIDS.size(); i++){
+    chart->getPoint(selectedIDS[i])->setSelection(false);
+  }
   chart->ClearSelection();
+  selectedIDS.clear();
   PlotUpdate();
 }
 
@@ -1392,7 +1396,8 @@ void ScatterPlot::FindCorrelations()
 void ScatterPlot::ShowContextMenu(const QPoint& pos)
 {
   getPointSelected();
-  QPoint globalPos = ui.plotwidget->mapToGlobal(pos);
+  /*QPoint globalPos = ui.plotwidget->mapToGlobal(pos);*/
+  QPoint globalPos = chart->weview()->mapToGlobal(pos);
   QMenu menu;
 
   if(type == SCORES){
@@ -1652,12 +1657,10 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QStrin
 //       chart.setWindowTitle(QObject::tr("chart"));
 //     PlotFromfile(&chart, argv[1]);
 
-  plotLayout = new QVBoxLayout();
   //chart = new Chart();
   chart = new QPlotlyWindow(this);
   chart->setPlotTitle(windowtitle);
-  plotLayout->addWidget(chart);
-  ui.plotwidget->setLayout(plotLayout);
+  ui.plotlayout->addWidget(chart);
 
   ui.axis3_name->hide();
   ui.axis3->hide();
@@ -1721,12 +1724,10 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QList<
   cwidget = 0;
   ehotel = false;
 
-  plotLayout = new QVBoxLayout();
   //chart = new Chart();
   chart = new QPlotlyWindow(this);
   chart->setPlotTitle(windowtitle);
-  plotLayout->addWidget(chart);
-  ui.plotwidget->setLayout(plotLayout);
+  ui.plotlayout->addWidget(chart);
 
   ui.axis3_name->hide();
   ui.axis3->hide();
@@ -1795,12 +1796,10 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname,
   cwidget = 0;
   ehotel = false;
 
-  plotLayout = new QVBoxLayout(this);
   //chart = new Chart();
   chart = new QPlotlyWindow(this);
   chart->setPlotTitle(windowtitle);
-  plotLayout->addWidget(chart);
-  ui.plotwidget->setLayout(plotLayout);
+  ui.plotlayout->addWidget(chart);
 
   ui.progressBar->hide();
   ui.abortButton->hide();
@@ -1842,12 +1841,9 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname,
     }
   }
 
-
   ui.axis1->setMaximum(maxcol);
   ui.axis2->setMaximum(maxcol);
   ui.axis3->setMaximum(maxcol);
-
-
 
   //Finally render the scene
   chart->Refresh();
@@ -1870,12 +1866,10 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QList<
   cwidget = 0;
   ehotel = false;
 
-  plotLayout = new QVBoxLayout();
   //chart = new Chart();
   chart = new QPlotlyWindow(this);
   chart->setPlotTitle(windowtitle);
-  plotLayout->addWidget(chart);
-  ui.plotwidget->setLayout(plotLayout);
+  ui.plotlayout->addWidget(chart);
 
   ui.axis3_name->hide();
   ui.axis3->hide();
@@ -1936,11 +1930,9 @@ ScatterPlot::ScatterPlot(QList<matrix*> &mx_, QList<matrix*> &my_, dvector* b_, 
   cwidget = 0;
   ehotel = false;
 
-  plotLayout = new QVBoxLayout();
   //chart = new Chart();
   chart = new QPlotlyWindow(this);
-  plotLayout->addWidget(chart);
-  ui.plotwidget->setLayout(plotLayout);
+  ui.plotlayout->addWidget(chart);
 
   ui.axis1->hide();
   ui.axis2->hide();
@@ -2005,12 +1997,10 @@ ScatterPlot::ScatterPlot(QList<matrix*>& mx_, QList<matrix*>& my_, dvector* b_, 
   cwidget = 0;
   ehotel = false;
 
-  plotLayout = new QVBoxLayout();
   //chart = new Chart();
   chart = new QPlotlyWindow(this);
   chart->setPlotTitle(windowtitle);
-  plotLayout->addWidget(chart);
-  ui.plotwidget->setLayout(plotLayout);
+  ui.plotlayout->addWidget(chart);
 
   ui.axis1->hide();
   ui.axis2->hide();
@@ -2084,12 +2074,10 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
   cwidget = 0;
   ehotel = false;
 
-  plotLayout = new QVBoxLayout();
   //chart = new Chart();
   chart = new QPlotlyWindow(this);
   chart->setPlotTitle(windowtitle);
-  plotLayout->addWidget(chart);
-  ui.plotwidget->setLayout(plotLayout);
+  ui.plotlayout->addWidget(chart);
 
   ui.axis1->hide();
   ui.axis2->hide();
@@ -2156,12 +2144,10 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
   cwidget = 0;
   ehotel = false;
 
-  plotLayout = new QVBoxLayout();
   //chart = new Chart();
   chart = new QPlotlyWindow(this);
   chart->setPlotTitle(windowtitle);
-  plotLayout->addWidget(chart);
-  ui.plotwidget->setLayout(plotLayout);
+  ui.plotlayout->addWidget(chart);
 
   ui.axis1->hide();
   ui.axis2->hide();
@@ -2221,7 +2207,6 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
 ScatterPlot::~ScatterPlot()
 {
   delete chart;
-  delete plotLayout;
   if(cwidget != 0)
     delete cwidget;
 }

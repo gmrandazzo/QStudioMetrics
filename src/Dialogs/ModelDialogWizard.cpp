@@ -51,6 +51,61 @@ int ModelDialogWizard::CheckClassLabelAndObject(QString label, QString objectnam
   }
 }
 
+void ModelDialogWizard::AddObject2Class(QString class_name, QString objname)
+{
+  QAbstractItemModel *model = ui.listView_6->model();
+  int indx = CheckClassLabelAndObject(class_name, objname);
+  if(indx > -1){
+    // Class found then add object if exist
+    for(int i = 0; i < model->rowCount(); i++){
+      if(model->index(i, 0).data(Qt::DisplayRole).toString().compare(objname) == 0){
+        classes[indx].objects.append(objname);
+        model->removeRow(i);
+        break;
+      }
+      else{
+        continue;
+      }
+    }
+  }
+  else{
+    //Class not found then if object exist add class.
+    for(int i = 0; i < model->rowCount(); i++){
+      if(model->index(i, 0).data(Qt::DisplayRole).toString().compare(objname) == 0){
+        classes.append(LABEL());
+        classes.last().objects.append(objname);
+        classes.last().name = class_name;
+        QList<QStandardItem*> row;
+        row.append(new QStandardItem(class_name));
+        tab7->appendRow(row);
+        model->removeRow(i);
+        break;
+      }
+      else{
+        continue;
+      }
+    }
+  }
+}
+
+void ModelDialogWizard::ClassByLabel()
+{
+  if(ui.class_SelectByLabel->currentIndex() > 0){
+    int labelindex = ui.class_SelectByLabel->currentIndex()-1;
+    QStringList lstobjects =  projects_->value(selectedproject_)->getObjectLabels()[labelindex].objects;
+    QString class_name = projects_->value(selectedproject_)->getObjectLabels()[labelindex].name;
+    for(int i = 0; i < lstobjects.size(); i++){
+      AddObject2Class(class_name,  lstobjects[i]);
+    }
+    ui.class_SelectByLabel->setCurrentIndex(0);
+  }
+  else{
+    ui.class_SelectByLabel->setCurrentIndex(0);
+    return;
+  }
+
+}
+
 void ModelDialogWizard::importClass()
 {
 
@@ -61,49 +116,18 @@ void ModelDialogWizard::importClass()
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
 
-    QAbstractItemModel *model = ui.listView_6->model();
+    //QAbstractItemModel *model = ui.listView_6->model();
 
     QTextStream in(&file);
     while(!in.atEnd()){
       QString line = in.readLine();
-      QStringList linesplit = line.split(";");
+      QStringList linesplit = line.split(",");
       if(linesplit.size() < 2)
         continue;
       else{
         // linesplit[0]; objname
         //linesplit[1]; Classname
-        int indx = CheckClassLabelAndObject(linesplit[1], linesplit[0]);
-        if(indx > -1){
-          // Class found then add object if exist
-          for(int i = 0; i < model->rowCount(); i++){
-            if(model->index(i, 0).data(Qt::DisplayRole).toString().compare(linesplit[0]) == 0){
-              classes[indx].objects.append(linesplit[0]);
-              model->removeRow(i);
-              break;
-            }
-            else{
-              continue;
-            }
-          }
-        }
-        else{
-          //Class not found then if object exist add class.
-          for(int i = 0; i < model->rowCount(); i++){
-            if(model->index(i, 0).data(Qt::DisplayRole).toString().compare(linesplit[0]) == 0){
-              classes.append(LABEL());
-              classes.last().objects.append(linesplit[0]);
-              classes.last().name = linesplit[1];
-              QList<QStandardItem*> row;
-              row.append(new QStandardItem(linesplit[1]));
-              tab7->appendRow(row);
-              model->removeRow(i);
-              break;
-            }
-            else{
-              continue;
-            }
-          }
-        }
+        AddObject2Class(linesplit[1], linesplit[0]);
       }
     }
   }
@@ -184,11 +208,14 @@ void ModelDialogWizard::genListView(QModelIndex current, QModelIndex previous)
           tab2->appendRow(row_tab2);
         }
       }
-      ui.objSelectByLabel->clear();
 
+      ui.objSelectByLabel->clear();
+      ui.class_SelectByLabel->clear();
       ui.objSelectByLabel->addItem("Select by label...");
+      ui.class_SelectByLabel->addItem("Select by label...");
       for(int i = 0; i < projects_->value(selectedproject_)->getObjectLabels().size(); i++){
         ui.objSelectByLabel->addItem(projects_->value(selectedproject_)->getObjectLabels()[i].name);
+        ui.class_SelectByLabel->addItem(projects_->value(selectedproject_)->getObjectLabels()[i].name);
       }
 
       ui.xvarSelectByLabel->clear();
@@ -678,10 +705,12 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
   connect(ui.listView_4->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButtons()));
   connect(ui.listView_5->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButtons()));
   connect(ui.listView_6->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButtons()));
+  connect(ui.listView_7->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButtons()));
 
-  connect(ui.importclassButton, SIGNAL(clicked(bool)), SLOT(importClass()));
-  connect(ui.addButton, SIGNAL(clicked(bool)), SLOT(addClass()));
-  connect(ui.removeButton, SIGNAL(clicked(bool)), SLOT(removeClass()));
+  connect(ui.class_SelectByLabel, SIGNAL(currentIndexChanged(int)), SLOT(ClassByLabel()));
+  connect(ui.class_import, SIGNAL(clicked(bool)), SLOT(importClass()));
+  connect(ui.class_addButton, SIGNAL(clicked(bool)), SLOT(addClass()));
+  connect(ui.class_removeButton, SIGNAL(clicked(bool)), SLOT(removeClass()));
 
   connect(ui.elmethodComboBox, SIGNAL(currentIndexChanged(int)), SLOT(ELmethodChanged(int)));
 

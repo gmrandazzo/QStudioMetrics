@@ -149,23 +149,45 @@ static inline int _index_of_(QStringList lst, QString str)
 void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix **x)
 {
   ResizeMatrix(x, objnames.size(), varsel.size());
-  for(int i = 0; i < indata->getObjName().size(); i++){
-    //int ii = objnames.indexOf(QRegExp(indata->getObjName()[i]));
-    int ii = _index_of_(objnames, indata->getObjName()[i]);
+
+  QList<int> aligned_varid, aligned_objid;
+
+  for(int i = 0; i < objnames.size(); i++){
+    int ii = _index_of_(indata->getObjName(), objnames[i]);
     if(ii > -1){
-      for(int j = 1; j < indata->getVarName().size(); j++){
-        //int jx = varsel.indexOf(QRegExp(indata->getVarName()[j]));
-        int jx = _index_of_(varsel, indata->getVarName()[j]);
-        if(jx > -1){
-          (*x)->data[ii][jx] = indata->Matrix()->data[i][j-1];
-        }
-        else{
-          continue;
-        }
-      }
+      aligned_objid.append(ii);
     }
     else{
       continue;
+    }
+  }
+
+  for(int j = 0; j < varsel.size(); j++){
+    int jx = _index_of_(indata->getVarName(), varsel[j])-1;
+    if(jx > -1){
+      aligned_varid.append(jx);
+    }
+    else{
+      aligned_varid.append(-1);
+    }
+  }
+
+
+  /*qDebug() << " aligned_id" << aligned_id.size() << " " << varsel.size() << " " << varsel[0];
+  if(aligned_id.size() != varsel.size())
+    return;*/
+
+  for(int i = 0; i < aligned_objid.size(); i++){
+    //int ii = objnames.indexOf(QRegExp(indata->getObjName()[i]));
+    int ii = aligned_objid[i];
+    for(int j = 0; j < aligned_varid.size(); j++){
+      int jx = aligned_varid[j];
+      if(jx > -1){
+        (*x)->data[i][j] = indata->Matrix()->data[ii][jx];
+      }
+      else{
+        continue;
+      }
     }
     QApplication::processEvents();
   }
@@ -176,29 +198,66 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   ResizeMatrix(x, objnames.size(), xvarsel.size());
   ResizeMatrix(y, objnames.size(), yvarsel.size());
 
-  for(int i = 0; i < indata->getObjName().size(); i++){
-    //int ii = objnames.indexOf(QRegExp(indata->getObjName()[i]));
-    int ii = _index_of_(objnames, indata->getObjName()[i]);
+
+  QList<int> aligned_xvarid, aligned_yvarid, aligned_objid;
+
+  for(int i = 0; i < objnames.size(); i++){
+    int ii = _index_of_(indata->getObjName(), objnames[i]);
     if(ii > -1){
-      for(int j = 1; j < indata->getVarName().size(); j++){
-        //int jx = xvarsel.indexOf(QRegExp(indata->getVarName()[j]));
-        //int jy = yvarsel.indexOf(QRegExp(indata->getVarName()[j]));
-        int jx = _index_of_(xvarsel, indata->getVarName()[j]);
-        int jy = _index_of_(yvarsel, indata->getVarName()[j]);
-        if(jx > -1 && jy == -1){
-          (*x)->data[ii][jx] = indata->Matrix()->data[i][j-1];
-        }
-        else if(jx == -1 && jy > -1){
-          (*y)->data[ii][jy] = indata->Matrix()->data[i][j-1];
-        }
-        else{
-          continue;
-        }
-      }
+      aligned_objid.append(ii);
     }
     else{
       continue;
     }
+  }
+
+  for(int j = 0; j < xvarsel.size(); j++){
+    int jx = _index_of_(indata->getVarName(), xvarsel[j])-1;
+    if(jx > -1){
+      aligned_xvarid.append(jx);
+    }
+    else{
+      aligned_xvarid.append(-1);
+    }
+  }
+
+  for(int j = 0; j < yvarsel.size(); j++){
+    int jx = _index_of_(indata->getVarName(), yvarsel[j])-1;
+    if(jx > -1){
+      aligned_yvarid.append(jx);
+    }
+    else{
+      aligned_yvarid.append(-1);
+    }
+  }
+
+
+  //qDebug() << " aligned_id" << aligned_xvarid.size() << " " << aligned_yvarid.size() << " " << xvarsel.size() << " " << yvarsel.size();
+
+
+  for(int i = 0; i < aligned_objid.size(); i++){
+    //int ii = objnames.indexOf(QRegExp(indata->getObjName()[i]));
+    int ii = aligned_objid[i];
+    for(int j = 0; j < aligned_xvarid.size(); j++){
+      int jx = aligned_xvarid[j];
+      if(jx > -1){
+        (*x)->data[i][j] = indata->Matrix()->data[ii][jx];
+      }
+      else{
+        continue;
+      }
+    }
+
+    for(int j = 0; j < aligned_yvarid.size(); j++){
+      int jy = aligned_yvarid[j];
+      if(jy > -1){
+        (*y)->data[i][j] = indata->Matrix()->data[ii][jy];
+      }
+      else{
+        continue;
+      }
+    }
+
     QApplication::processEvents();
   }
 }
@@ -213,7 +272,39 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   else{
     ResizeMatrix(y, objnames.size(), classes.size());
   }
+ /*
+  QList<int> aligned_xvarid, aligned_yvarid, aligned_objid;
 
+  for(int i = 0; i < objnames.size(); i++){
+    int ii = _index_of_(indata->getObjName(), objnames[i]);
+    if(ii > -1){
+      aligned_objid.append(ii);
+    }
+    else{
+      continue;
+    }
+  }
+
+  for(int j = 0; j < xvarsel.size(); j++){
+    int jx = _index_of_(indata->getVarName(), xvarsel[j]);
+    if(jx > -1){
+      aligned_xvarid.append(jx);
+    }
+    else{
+      aligned_xvarid.append(-1);
+    }
+  }
+
+  for(int j = 0; j < yvarsel.size(); j++){
+    int jx = _index_of_(indata->getVarName(), yvarsel[j]);
+    if(jx > -1){
+      aligned_yvarid.append(jx);
+    }
+    else{
+      aligned_yvarid.append(-1);
+    }
+  }
+  */
 
   for(int i = 0; i < indata->getObjName().size(); i++){
     int ii = _index_of_(objnames, indata->getObjName()[i]);
@@ -7564,7 +7655,7 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
 
   connect(ui.actionPCA2DScore_Plot, SIGNAL(triggered(bool)), SLOT(PCA2DScorePlot()));
   connect(ui.actionPCA2DLoadings_Plot, SIGNAL(triggered(bool)), SLOT(PCA2DLoadingsPlot()));
-  connect(ui.actionPCA2DLoadingsMVAND_Plot, SIGNAL(triggered(bool)), SLOT(PCA2DLoadingsMVANDPlot()));
+  //connect(ui.actionPCA2DLoadingsMVAND_Plot, SIGNAL(triggered(bool)), SLOT(PCA2DLoadingsMVANDPlot()));
   connect(ui.actionPCA2DScore_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(PCA2DScorePlotPrediction()));
   connect(ui.actionPCA3DScore_Plot, SIGNAL(triggered(bool)), SLOT(PCA3DScorePlot()));
   connect(ui.actionPCA3DLoadings_Plot, SIGNAL(triggered(bool)), SLOT(PCA3DLoadingsPlot()));

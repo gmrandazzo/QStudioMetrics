@@ -39,6 +39,7 @@ private slots:
   void genListView(QModelIndex current, QModelIndex previous);
   void setData(QModelIndex current, QModelIndex previous);
   void setYData(QModelIndex current, QModelIndex previous);
+  void ClassByLabel();
   void importClass();
   void addClass();
   void removeClass();
@@ -77,6 +78,7 @@ private:
   uint n_pc; // Number of Principal Component
   LABELS classes;
   int CheckClassLabelAndObject(QString label, QString objectname);
+  void AddObject2Class(QString class_label, QString objname);
   void WindowAdjust();
 };
 

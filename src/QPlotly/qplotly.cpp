@@ -225,7 +225,7 @@ QVector< DataCurve > QPlotlyWindow::getCurves()
 void QPlotlyWindow::RemoveCurveAt(int cid)
 {
   #ifdef DEBUG
-  printf("Chart::RemoveCurveAt\n");
+  printf("QPlotlyWindow::RemoveCurveAt\n");
   #endif
   c.remove(cid);
 }
@@ -233,7 +233,7 @@ void QPlotlyWindow::RemoveCurveAt(int cid)
 void QPlotlyWindow::RemoveAllCurves()
 {
   #ifdef DEBUG
-  printf("Chart::RemoveAllCurves\n");
+  printf("QPlotlyWindow::RemoveAllCurves\n");
   #endif
   c.clear();
 }
@@ -255,13 +255,19 @@ void QPlotlyWindow::SelectAll()
 
 void QPlotlyWindow::ClearSelection()
 {
+  #ifdef DEBUG
+  printf("QPlotlyWindow::ClearSelection");
+  #endif
+  for(int i = 0; i < selected_points.size(); i++){
+    p[selected_points[i]]->setSelection(false);
+  }
   selected_points.clear();
 }
 
 void QPlotlyWindow::SaveAsImage(QString imgname)
 {
   #ifdef DEBUG
-  printf("Chart::SaveAsImage\n");
+  printf("QPlotlyWindow::SaveAsImage\n");
   #endif
   /*
   QByteArray bytes;
@@ -307,6 +313,7 @@ QString QPlotlyWindow::genJSONScatter()
   size_t i;
   QString x = "x: [", y = "y: [", text = "text: [", color = "color: [", msize = "size: [";
   QString xm = "x: [", ym = "y: [", textm = "text: [", colorm = "color: [", msizem = "size: [";
+  QString xs = "x: [", ys = "y: [", texts = "text: [", colors = "color: [", msizes = "size: [";
 
   for(i = 0; i < p.size()-1; i++){
     int r_, g_, b_, a_;
@@ -324,11 +331,20 @@ QString QPlotlyWindow::genJSONScatter()
         msizem += QString("%1,").arg(p[i]->radius());
       }
       else{
-        x += QString("%1,").arg(p[i]->x());
-        y += QString("%1,").arg(p[i]->y());
-        text += QString("'%1',").arg(p[i]->getName());
-        color += QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
-        msize += QString("%1,").arg(p[i]->radius());
+        if(p[i]->isSelected() == true){
+          xs += QString("%1,").arg(p[i]->x());
+          ys += QString("%1,").arg(p[i]->y());
+          texts += QString("'%1',").arg(p[i]->getName());
+          colors += QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+          msizes += QString("%1,").arg(p[i]->radius());
+        }
+        else{
+          x += QString("%1,").arg(p[i]->x());
+          y += QString("%1,").arg(p[i]->y());
+          text += QString("'%1',").arg(p[i]->getName());
+          color += QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+          msize += QString("%1,").arg(p[i]->radius());
+        }
       }
     }
     else{
@@ -356,18 +372,47 @@ QString QPlotlyWindow::genJSONScatter()
       text += QString("'']");
       color += QString("]");
       msize += QString("]");
+      xs += QString("]");
+      ys += QString("]");
+      texts += QString("'']");
+      colors += QString("]");
+      msizes += QString("]");
     }
     else{
-      x += QString("%1]").arg(p[last_id]->x());
-      y += QString("%1]").arg(p[last_id]->y());
-      text += QString("'%1']").arg(p[last_id]->getName());
-      color += QString("'rgba(%1, %2, %3, %4)']").arg(r_).arg(g_).arg(b_).arg(a_);
-      msize += QString("%1]").arg(p[last_id]->radius());
-      xm += QString("]");
-      ym += QString("]");
-      textm += QString("'']");
-      colorm += QString("]");
-      msizem += QString("]");
+      if(p[last_id]->isSelected() == true){
+        xs += QString("%1]").arg(p[last_id]->x());
+        ys += QString("%1]").arg(p[last_id]->y());
+        texts += QString("'%1']").arg(p[last_id]->getName());
+        colors += QString("'rgba(%1, %2, %3, %4)']").arg(r_).arg(g_).arg(b_).arg(a_);
+        msizes += QString("%1]").arg(p[last_id]->radius());
+        x += QString("]");
+        y += QString("]");
+        text += QString("'']");
+        color += QString("]");
+        msize += QString("]");
+        xm += QString("]");
+        ym += QString("]");
+        textm += QString("'']");
+        colorm += QString("]");
+        msizem += QString("]");
+      }
+      else{
+        x += QString("%1]").arg(p[last_id]->x());
+        y += QString("%1]").arg(p[last_id]->y());
+        text += QString("'%1']").arg(p[last_id]->getName());
+        color += QString("'rgba(%1, %2, %3, %4)']").arg(r_).arg(g_).arg(b_).arg(a_);
+        msize += QString("%1]").arg(p[last_id]->radius());
+        xm += QString("]");
+        ym += QString("]");
+        textm += QString("'']");
+        colorm += QString("]");
+        msizem += QString("]");
+        xs += QString("]");
+        ys += QString("]");
+        texts += QString("'']");
+        colors += QString("]");
+        msizes += QString("]");
+      }
     }
   }
   else{
@@ -381,6 +426,11 @@ QString QPlotlyWindow::genJSONScatter()
     textm += QString("'']");
     colorm += QString("]");
     msizem += QString("]");
+    xs += QString("]");
+    ys += QString("]");
+    texts += QString("'']");
+    colors += QString("]");
+    msizes += QString("]");
   }
 
   QString scatter_type = "scatter";
@@ -391,6 +441,8 @@ QString QPlotlyWindow::genJSONScatter()
   json += QString("var id%1 = { %2, %3, %4, mode: 'markers', marker: { %5, opacity: 0.9, %6 }, type: '%7' };").arg(trace_id).arg(x).arg(y).arg(text).arg(msize).arg(color).arg(scatter_type);
   trace_id++;
   json += QString("var id%1 = { %2, %3, %4, mode: 'markers+text', textposition: 'top center', textfont: { family: 'Raleway, sans-serif' }, marker: { %5, opacity: 0.9, %6 }, type: '%7' };").arg(trace_id).arg(xm).arg(ym).arg(textm).arg(msizem).arg(colorm).arg(scatter_type);
+  trace_id++;
+  json += QString("var id%1 = { %2, %3, %4, mode: 'markers', marker: { %5, opacity: 0.9, %6, line: { color: 'rgb(231, 99, 250)', width: 1} }, type: '%7' };").arg(trace_id).arg(xs).arg(ys).arg(texts).arg(msizes).arg(colors).arg(scatter_type);
   trace_id++;
   return json;
 }
@@ -708,6 +760,8 @@ void QPlotlyWindow::handleCookieAdded(const QNetworkCookie &cookie)
       //qDebug() << "id Nr. " << selected_points.last();
     }
     else{
+      Refresh();
+      update();
       return;
     }
   }
@@ -716,8 +770,12 @@ void QPlotlyWindow::handleCookieAdded(const QNetworkCookie &cookie)
      for(int i = 0; i < selected_points.size(); i++){
       qDebug() << selected_points[i] << "\n";
     }*/
+    Refresh();
+    update();
     return;
   }
+  Refresh();
+  update();
   return;
 }
 
@@ -741,7 +799,6 @@ QPlotlyWindow::QPlotlyWindow(QWidget *parent) : QWidget(parent)
   this->setLayout(mainLayout);
   cookie_store = wview->page()->profile()->cookieStore();
   connect(cookie_store, &QWebEngineCookieStore::cookieAdded, this, &QPlotlyWindow::handleCookieAdded);
-
 }
 
 QPlotlyWindow::~QPlotlyWindow()

@@ -315,7 +315,6 @@
       </property>
       <addaction name="actionPCA2DScore_Plot"/>
       <addaction name="actionPCA2DLoadings_Plot"/>
-      <addaction name="actionPCA2DLoadingsMVAND_Plot"/>
       <addaction name="separator"/>
       <addaction name="actionPCA2DScore_Plot_Prediction"/>
      </widget>

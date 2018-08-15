@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>607</width>
-    <height>513</height>
+    <width>612</width>
+    <height>634</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -29,19 +29,35 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="0" column="0" colspan="3">
-    <widget class="QWidget" name="plotwidget" native="true">
+   <item row="2" column="0">
+    <widget class="QProgressBar" name="progressBar">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="minimumSize">
+     <property name="maximumSize">
       <size>
-       <width>500</width>
-       <height>300</height>
+       <width>100</width>
+       <height>20</height>
       </size>
+     </property>
+     <property name="value">
+      <number>24</number>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" colspan="2">
+    <widget class="QPushButton" name="abortButton">
+     <property name="maximumSize">
+      <size>
+       <width>100</width>
+       <height>25</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Abort</string>
      </property>
     </widget>
    </item>
@@ -215,36 +231,25 @@
      </property>
     </spacer>
    </item>
-   <item row="2" column="0">
-    <widget class="QProgressBar" name="progressBar">
+   <item row="0" column="0" colspan="3">
+    <widget class="QGroupBox" name="plotgroupBox">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="maximumSize">
+     <property name="minimumSize">
       <size>
-       <width>100</width>
-       <height>20</height>
+       <width>500</width>
+       <height>300</height>
       </size>
      </property>
-     <property name="value">
-      <number>24</number>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1" colspan="2">
-    <widget class="QPushButton" name="abortButton">
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>25</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Abort</string>
-     </property>
+     <layout class="QGridLayout" name="gridLayout_5">
+      <item row="0" column="0">
+       <layout class="QGridLayout" name="plotlayout"/>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

@@ -132,7 +132,6 @@ signals:
 
 private:
   Ui::ScatterPlot ui;
-  QVBoxLayout *plotLayout;
   QPlotlyWindow *chart;
   FindCorrelationWidget *cwidget;
   QList <QSMPOINT> p;
