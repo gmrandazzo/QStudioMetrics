@@ -310,7 +310,7 @@ void QPlotlyWindow::close() {}
 QString QPlotlyWindow::genJSONScatter()
 {
   QString json;
-  size_t i;
+  int i;
   QString x = "x: [", y = "y: [", text = "text: [", color = "color: [", msize = "size: [";
   QString xm = "x: [", ym = "y: [", textm = "text: [", colorm = "color: [", msizem = "size: [";
   QString xs = "x: [", ys = "y: [", texts = "text: [", colors = "color: [", msizes = "size: [";
@@ -450,7 +450,7 @@ QString QPlotlyWindow::genJSONScatter()
 QString QPlotlyWindow::genJSON3DScatter()
 {
   QString json;
-  size_t i;
+  int i;
   QString x = "x:[", y = "y:[", z = "z:[", text = "text:[", color = "color:[";
 
   for(i = 0; i < p.size()-1; i++){
@@ -484,7 +484,7 @@ QString QPlotlyWindow::genJSON3DScatter()
       continue;
     }
   }
-  int last_id = p.size()-1;
+  size_t last_id = p.size()-1;
   int r_, g_, b_, a_;
   r_ = p[last_id]->getColor().red();
   g_ = p[last_id]->getColor().green();
@@ -542,7 +542,7 @@ QString QPlotlyWindow::genJSONCurve()
 QString QPlotlyWindow::genJSONBar()
 {
   QString json;
-  size_t i, j;
+  int i, j;
   for(i = 0; i < b.size(); i++){
     if(b[i]->isVisible() == true){
       int r_, g_, b_, a_;
@@ -709,8 +709,15 @@ void QPlotlyWindow::Plot()
 int QPlotlyWindow::FindPoint(qreal x, qreal y, qreal z, QString name_)
 {
   DataPoint f(x, y, z, name_);
+  int indx = std::find(p.begin(), p.end(), &f) - p.begin();
+  if(indx == p.size()){
+    return -1;
+  }
+  else{
+    return indx;
+  }
   //return p.indexOf(&f);
-  for(int i = 0; i < p.size(); i++){
+  /*for(int i = 0; i < p.size(); i++){
     if(p[i]->compare(f) == true){
       return i;
     }
@@ -718,7 +725,7 @@ int QPlotlyWindow::FindPoint(qreal x, qreal y, qreal z, QString name_)
       continue;
     }
   }
-  return -1;
+  return -1;*/
   /*auto it = std::find(p.begin(), p.end(), &f);
   if (it == p.end()){
     return -1;
@@ -767,7 +774,7 @@ void QPlotlyWindow::handleCookieAdded(const QNetworkCookie &cookie)
   }
   else if(cookie_.contains("selpnt=end") == true){
     /* Selection END!
-     for(int i = 0; i < selected_points.size(); i++){
+     for(size_t i = 0; i < selected_points.size(); i++){
       qDebug() << selected_points[i] << "\n";
     }*/
     Refresh();

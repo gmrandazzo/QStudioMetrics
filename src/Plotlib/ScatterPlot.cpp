@@ -105,9 +105,9 @@ QList<QColor> ScatterPlot::GenColorList(int size)
   QList<QColor> colors;
   colors << Qt::black << Qt::blue << Qt::red << Qt::green << Qt::magenta << Qt::cyan;
 
-  if(size > (uint)colors.size()){
+  if(size > colors.size()){
     srand(time(0));
-    for(uint i = 0; i < size - colors.size(); i++){
+    for(int i = 0; i < size - colors.size(); i++){
       colors.append(QColor(random(0, 256), random(0, 256), random(0, 256)));
     }
   }
@@ -309,7 +309,7 @@ void ScatterPlot::BuildHotellingEllipse()
 
   /*Draw the ellipse*/
   int cid = -1;
-  for(size_t i = 0; i < chart->getCurves().size(); i++){
+  for(int i = 0; i < chart->getCurves().size(); i++){
     if(chart->getCurves()[i].name().compare("Hotelling ellipse 95% confidence") == 0){
       cid = i;
       break;
@@ -1007,7 +1007,7 @@ void ScatterPlot::setOnOffHotellingEllipse()
 {
   if(ehotel == true){ // Remove Hotelling
     int cid = -1;
-    for(size_t i = 0; i < chart->getCurves().size(); i++){
+    for(int i = 0; i < chart->getCurves().size(); i++){
       if(chart->getCurves()[i].name().compare("Hotelling ellipse 95% confidence") == 0){
         cid = i;
         break;

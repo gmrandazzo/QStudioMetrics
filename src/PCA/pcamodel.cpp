@@ -11,12 +11,13 @@
 
 void PCAPREDICTION::ImportPCAPredictionInfo(char *path){
   QFile file(QString::fromUtf8(path)+"/info.txt");
-  if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+  if(!file.open(QIODevice::ReadOnly | QIODevice::Text)){
     return;
+  }
 
-    size_t row = 0;
-    QTextStream in(&file);
-    while(!in.atEnd()){
+  size_t row = 0;
+  QTextStream in(&file);
+  while(!in.atEnd()){
     QString line = in.readLine();
     if(line.contains("#") == true || line.isEmpty()){ // skip line
       continue;

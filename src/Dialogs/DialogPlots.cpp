@@ -68,7 +68,7 @@ void DialogPlots::setModel(QModelIndex current, QModelIndex previous)
   mid = current.row();
   if(dtype == ThreeColumns){
     tab3->clear();
-    for(size_t i = 0; i < pjtree[pid].mtree[mid].ptree.size(); i++){
+    for(int i = 0; i < pjtree[pid].mtree[mid].ptree.size(); i++){
       QList<QStandardItem*> row;
       row.append(new QStandardItem(pjtree[pid].mtree[mid].ptree[i].name));
       tab3->appendRow(row);
@@ -81,7 +81,7 @@ void DialogPlots::setProject(QModelIndex current, QModelIndex previous)
 {
   pid = current.row();
   tab2->clear();
-  for(size_t i = 0; i < pjtree[pid].mtree.size(); i++){
+  for(int i = 0; i < pjtree[pid].mtree.size(); i++){
     QList<QStandardItem*> row;
     row.append(new QStandardItem(pjtree[pid].mtree[i].name));
     tab2->appendRow(row);
@@ -121,7 +121,7 @@ void DialogPlots::hideOptions(bool opt)
 
 DialogPlots::DialogPlots(ProjectTree pjtree_, int dtype_)
 {
-  size_t i;
+  int i;
   ui.setupUi(this);
   ui.listView->setSelectionBehavior(QAbstractItemView::SelectRows);
   ui.listView_2->setSelectionBehavior(QAbstractItemView::SelectRows);

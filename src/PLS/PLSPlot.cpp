@@ -629,13 +629,13 @@ void PLSPlot::ClassRecalcVSExperimental(QList<QStringList> *cellnames, QList<QLi
 
   matrix *mx;
 
-  for(int j = 0; j < nclass; j++){
+  for(size_t j = 0; j < nclass; j++){
     QStringList row_name;
     QList<QPixmap> row_pixmap;
     QList<QColor> row_colors;
 
     NewMatrix(&mx, projects->value(pid)->getPLSModel(mid)->Model()->recalculated_y->row, 3);
-    for(int i = 0; i < projects->value(pid)->getPLSModel(mid)->Model()->recalculated_y->row; i++){
+    for(size_t i = 0; i < projects->value(pid)->getPLSModel(mid)->Model()->recalculated_y->row; i++){
       mx->data[i][0] = projects->value(pid)->getPLSModel(mid)->Model()->recalculated_y->data[i][j+(nclass*nlv)-nclass];
       if(classes[j].objects.contains(objsel[i]) == true){
         // True
@@ -783,13 +783,13 @@ void PLSPlot::ClassPredictedVSExperimental(QList<QStringList> *cellnames, QList<
 
   matrix *mx;
 
-  for(int j = 0; j < nclass; j++){
+  for(size_t j = 0; j < nclass; j++){
     QStringList row_name;
     QList<QPixmap> row_pixmap;
     QList<QColor> row_colors;
 
     NewMatrix(&mx, projects->value(pid)->getPLSModel(mid)->Model()->predicted_y->row, 3);
-    for(int i = 0; i < projects->value(pid)->getPLSModel(mid)->Model()->predicted_y->row; i++){
+    for(size_t i = 0; i < projects->value(pid)->getPLSModel(mid)->Model()->predicted_y->row; i++){
       mx->data[i][0] = projects->value(pid)->getPLSModel(mid)->Model()->predicted_y->data[i][j+(nclass*nlv)-nclass];
       if(classes[j].objects.contains(objsel[i]) == true){
         // True

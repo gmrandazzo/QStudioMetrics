@@ -124,12 +124,12 @@ SimpleLine2DPlot::SimpleLine2DPlot(QList< matrix* > mlst, QStringList curvenames
   // Generate some colors
   if(mlst.size() > colors.size()){
     srand(time(0));
-    for(uint i = 0; i < mlst.size() - colors.size(); i++){
+    for(int i = 0; i < mlst.size() - colors.size(); i++){
       colors.append(QColor(random_(0, 256), random_(0, 256), random_(0, 256)));
     }
   }
 
-  for(uint i = 0; i < mlst.size(); i++){
+  for(int i = 0; i < mlst.size(); i++){
     QVector< QPointF > curve;
     for(uint j = 0; j < mlst[i]->row; j++){
       qreal x = mlst[i]->data[j][0];

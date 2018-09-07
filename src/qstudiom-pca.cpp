@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     string inputdata, labelfname, datamodel, outputfile, sep;
     bool genmodel, makeprediction;
     genmodel = makeprediction = false;
-    sep = " \t";
+    sep = ", \t";
 
     for(int i = 0; i < argc; i++){
       if(strcmp(argv[i], "-model") == 0 || strcmp(argv[i], "-m") == 0){

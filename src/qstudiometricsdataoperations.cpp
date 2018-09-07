@@ -45,7 +45,7 @@ QString SerializeDVector(dvector *v)
 {
   if(v->size > 0){
     std::string serialized_dvector;
-    for(int i = 0; i < v->size-1; i++)
+    for(size_t i = 0; i < v->size-1; i++)
       serialized_dvector += std::to_string(v->data[i])+";";
     serialized_dvector += std::to_string(v->data[v->size-1]);
     return QString(serialized_dvector.c_str()).toUtf8();
@@ -73,7 +73,7 @@ QString SerializeUIVector(uivector *v)
 {
   if(v->size > 0){
     std::string serialized_uivector;
-    for(int i = 0; i < v->size-1; i++)
+    for(size_t i = 0; i < v->size-1; i++)
       serialized_uivector += std::to_string(v->data[i])+";";
     serialized_uivector += std::to_string(v->data[v->size-1]);
     return QString(serialized_uivector.c_str()).toUtf8();
@@ -108,16 +108,16 @@ QString SerializeMatrix(matrix *mx)
 {
   if(mx->row > 0 && mx->col > 0){
     std::string serialized_mx;
-    for(int i = 0; i < mx->row-1; i++){
+    for(size_t i = 0; i < mx->row-1; i++){
       //start a row and concatenate values
-      for(int j = 0; j < mx->col-1; j++){
+      for(size_t j = 0; j < mx->col-1; j++){
         serialized_mx += std::to_string(mx->data[i][j])+";";
       }
       serialized_mx += std::to_string(mx->data[i][mx->col-1])+"//"; //end row
     }
 
     int lrow = mx->row-1;
-    for(int j = 0; j < mx->col-1; j++){
+    for(size_t j = 0; j < mx->col-1; j++){
       serialized_mx += std::to_string(mx->data[lrow][j])+";";
     }
     serialized_mx += std::to_string(mx->data[lrow][mx->col-1]); //end row
@@ -163,17 +163,17 @@ QString SerializeArray(tensor *ar)
   if(ar->order > 0){
     if(ar->m[0]->row > 0 && ar->m[0]->col > 0){
       std::string serialized_ar;
-      for(int k = 0; k < ar->order; k++){
-        for(int i = 0; i < ar->m[k]->row-1; i++){
+      for(size_t k = 0; k < ar->order; k++){
+        for(size_t i = 0; i < ar->m[k]->row-1; i++){
           //start a row and concatenate values
-          for(int j = 0; j < ar->m[k]->col-1; j++){
+          for(size_t j = 0; j < ar->m[k]->col-1; j++){
             serialized_ar += std::to_string(ar->m[k]->data[i][j])+";";
           }
           serialized_ar += std::to_string(ar->m[k]->data[i][ar->m[k]->col-1])+"//"; // end row
         }
 
         int lrow = ar->m[k]->row-1;
-        for(int j = 0; j < ar->m[k]->col-1; j++){
+        for(size_t j = 0; j < ar->m[k]->col-1; j++){
           serialized_ar += std::to_string(ar->m[k]->data[lrow][j])+";";
         }
         serialized_ar += std::to_string(ar->m[k]->data[lrow][ar->m[k]->col-1]);

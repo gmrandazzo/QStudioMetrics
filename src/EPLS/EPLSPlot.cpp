@@ -158,13 +158,13 @@ void EPLSPlot::ClassPredictedVSExperimental(QList<QStringList> *cellnames, QList
 
   matrix *mx;
 
-  for(int j = 0; j < nclass; j++){
+  for(size_t j = 0; j < nclass; j++){
     QStringList row_name;
     QList<QPixmap> row_pixmap;
     QList<QColor> row_colors;
 
     NewMatrix(&mx, projects->value(pid)->getEPLSModel(mid)->y_predicted->row, 3);
-    for(int i = 0; i < projects->value(pid)->getEPLSModel(mid)->y_predicted->row; i++){
+    for(size_t i = 0; i < projects->value(pid)->getEPLSModel(mid)->y_predicted->row; i++){
       mx->data[i][0] = projects->value(pid)->getEPLSModel(mid)->y_predicted->data[i][j+(nclass*nlv)-nclass];
       if(classes[j].objects.contains(objsel[i]) == true){
         // True
@@ -389,13 +389,13 @@ void EPLSPlot::ClassRecalcVSExperimental(QList<QStringList> *cellnames, QList<QL
 
   matrix *mx;
 
-  for(int j = 0; j < nclass; j++){
+  for(size_t j = 0; j < nclass; j++){
     QStringList row_name;
     QList<QPixmap> row_pixmap;
     QList<QColor> row_colors;
 
     NewMatrix(&mx, projects->value(pid)->getEPLSModel(mid)->y_recalculated->row, 3);
-    for(int i = 0; i < projects->value(pid)->getEPLSModel(mid)->y_recalculated->row; i++){
+    for(size_t i = 0; i < projects->value(pid)->getEPLSModel(mid)->y_recalculated->row; i++){
       mx->data[i][0] = projects->value(pid)->getEPLSModel(mid)->y_recalculated->data[i][j+(nclass*nlv)-nclass];
       if(classes[j].objects.contains(objsel[i]) == true){
         // True

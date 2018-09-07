@@ -15,7 +15,7 @@ void BarPlot::slotExit()
 
 void BarPlot::genBars(dvector *v, int split, double min, double max, QVector<qreal> *bval, QStringList *bnames)
 {
-  size_t i, j;
+  int i, j;
   double step, x;
   step = (max-min)/(double)split;
 
@@ -29,7 +29,7 @@ void BarPlot::genBars(dvector *v, int split, double min, double max, QVector<qre
     x+=step;
   }
 
-  for(i = 0; i < v->size; i++){
+  for(i = 0; i < (int)v->size; i++){
     for(j = 0; j < dx.size()-1; j++){
       if(v->data[i] < dx[j]){
         break;
@@ -87,7 +87,7 @@ BarPlot::BarPlot(QList<dvector*> vlst_, QString windowtitle, QString xaxestitle,
 
   double min, max;
 
-  for(size_t i = 0; i < vlst_.size(); i++){
+  for(int i = 0; i < vlst_.size(); i++){
     double t_min, t_max;
     DVectorMinMax(vlst_[i], &t_min, &t_max);
     if(i == 0){
@@ -103,7 +103,7 @@ BarPlot::BarPlot(QList<dvector*> vlst_, QString windowtitle, QString xaxestitle,
     }
   }
 
-  for(size_t i = 0; i < vlst_.size(); i++){
+  for(int i = 0; i < vlst_.size(); i++){
     QStringList bnames;
     QVector<qreal> y;
     QStringList text;
@@ -117,7 +117,7 @@ BarPlot::BarPlot(QList<dvector*> vlst_, QString windowtitle, QString xaxestitle,
       color.setRgb(randInt(0, 255), randInt(0, 255), randInt(0, 255));
     }
 
-    for(size_t j = 0; j < bnames.size(); j++)
+    for(int j = 0; j < bnames.size(); j++)
       text << labelname[i];
 
     chart->addBars(bnames, y, text, color);
