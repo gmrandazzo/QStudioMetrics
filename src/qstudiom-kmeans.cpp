@@ -18,7 +18,7 @@ using namespace std;
 void help(char **argv)
 {
   std::cout << "Usage" << endl;
-  std::cout << "Make a model: " << argv[0] <<"\t -i <input file>" << "\t-o <output file>" << "\t-c <centroid outputs>\t-t <initializer type>\t-n <number of clusters>" <<std::endl;
+  std::cout << "Make a model: " << argv[0] <<"\t -i <input file>" << "\t-o <output file>" << "\t-c <centroid outputs>\t-t <initializer type>\t-n <number of clusters>\t-nth <number of threads>" <<std::endl;
   std::cout << "Initializer types:" << std::endl;
   std::cout << " 0 = random" << std::endl;
   std::cout << " 1 = D. Arthur k-means++ " << std::endl;
@@ -35,7 +35,7 @@ int main(int argc, char **argv)
     help(argv);
   }
   else{
-    int n_clusters, init = 1;
+    int n_clusters, init = 1, nthreads = 1;
     string inputdata, outcentroids, outputfile, sep;
     sep = ", \t";
 
@@ -68,6 +68,12 @@ int main(int argc, char **argv)
           init = atoi(argv[i+1]);
         }
       }
+
+      if(strcmp(argv[i], "-nth") == 0){
+        if(i+1 < argc){
+          nthreads = atoi(argv[i+1]);
+        }
+      }
     }
 
     if(!inputdata.empty() &&
@@ -81,7 +87,7 @@ int main(int argc, char **argv)
       uivector *clusters;
       initUIVector(&clusters);
       DATAIO::ImportMatrix((char*)inputdata.c_str(), sep, data);
-      KMeans(data, n_clusters, init, &clusters, &centroids, NULL);
+      KMeans(data, n_clusters, init, &clusters, &centroids, nthreads, NULL);
       DATAIO::WriteUIvector((char*)outputfile.c_str(), clusters);
       DATAIO::WriteMatrix((char*)outcentroids.c_str(), centroids);
       DelUIVector(&clusters);

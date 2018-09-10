@@ -15,10 +15,10 @@
 void RUN::DoClusterValidation()
 {
   if(vt == BOOTSTRAPRGCV_){
-    KMeansRandomGroupsCV(m, nmaxclusters, clusteralgoritm, ngroup, niter, &dv, &scientifisignal);
+    KMeansRandomGroupsCV(m, nmaxclusters, clusteralgoritm, ngroup, niter, &dv, QThread::idealThreadCount(), &scientifisignal);
   }
   else{
-    KMeansJumpMethod(m, nmaxclusters, clusteralgoritm, &dv, &scientifisignal);
+    KMeansJumpMethod(m, nmaxclusters, clusteralgoritm, &dv, QThread::idealThreadCount(), &scientifisignal);
   }
 }
 
@@ -26,7 +26,7 @@ void RUN::DoClustering()
 {
   if(objselectiontype == 3){ /*get all objects...*/
     if(clusteralgoritm < 4){
-      KMeans(m, nclusters, clusteralgoritm, &uiv, NULL, &scientifisignal);
+      KMeans(m, nclusters, clusteralgoritm, &uiv, NULL, QThread::idealThreadCount(), &scientifisignal);
     }
     else{
       HierarchicalClustering(m, nclusters, &uiv, NULL, &dendogram, (enum LinkageType)linktype, &scientifisignal);
@@ -35,7 +35,7 @@ void RUN::DoClustering()
   else{
     matrix *centroids;
     initMatrix(&centroids);
-    KMeans(m, nclusters, clusteralgoritm, &uiv, &centroids, &scientifisignal);
+    KMeans(m, nclusters, clusteralgoritm, &uiv, &centroids, QThread::idealThreadCount(), &scientifisignal);
     PruneResults(m, centroids, nmaxobjects, objselectiontype, uiv);
     DelMatrix(&centroids);
   }

@@ -245,7 +245,7 @@ int main(int argc, char **argv)
       minpt.xautoscaling = xautoscaling;
       minpt.yautoscaling = yautoscaling;
 
-      BootstrapRandomGroupsCV(&minpt, ngroups, iterations, _PLS_, &pred, &predresiduals, 4, NULL, 0);
+      BootstrapRandomGroupsCV(&minpt, ngroups, iterations, _PLS_, &pred, &predresiduals, nthreads, NULL, 0);
 //      LeaveOneOut(&minpt, _PLS_, &m->predicted_y, &m->pred_residuals, 4, NULL, 0);
       PLSRegressionStatistics(ydata, pred, &q2y, &sdep, &bias);
 
