@@ -173,6 +173,7 @@ set(QSTUDIOMETRICS_CMDBINTEST_SRC DATAIO.cpp qstudiom-bintest.cpp)
 set(QSTUDIOMETRICS_CMDDOE_SRC DATAIO.cpp qstudiom-doe.cpp)
 set(QSTUDIOMETRICS_CMDMDC_SRC DATAIO.cpp qstudiom-mdc.cpp)
 set(QSTUDIOMETRICS_CMDKMEANS_SRC DATAIO.cpp qstudiom-kmeans.cpp)
+set(QSTUDIOMETRICS_CMDHGM_SRC DATAIO.cpp qstudiom-hypgridmap.cpp)
 
 
 set(icon_RCC icons/icons.qrc)
@@ -219,6 +220,9 @@ target_link_libraries(qsm-mdc ${LIBSCIENTIFIC_LIBRARY})
 
 add_executable(qsm-kmeans ${QSTUDIOMETRICS_CMDKMEANS_SRC})
 target_link_libraries(qsm-kmeans ${LIBSCIENTIFIC_LIBRARY})
+
+add_executable(qsm-hgm ${QSTUDIOMETRICS_CMDHGM_SRC})
+target_link_libraries(qsm-hgm ${LIBSCIENTIFIC_LIBRARY})
 
 #add_executable(qsm-objselector qsmcompselector.cpp DATAIO.cpp)
 #target_link_libraries(qsm-objselector ${LIBSCIENTIFIC_LIBRARY})
