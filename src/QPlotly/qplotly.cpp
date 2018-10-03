@@ -588,7 +588,8 @@ void QPlotlyWindow::Plot()
     code +="<head>";
 
     code +="<!-- Plotly.js -->";
-    QFile file("plotly-latest.min.js");
+    QString plotly_file = QString("%1/plotly-latest.min.js").arg(qApp->applicationDirPath());
+    QFile file(plotly_file);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text)){
       code +="<script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>";
     }

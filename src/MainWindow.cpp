@@ -4228,6 +4228,31 @@ void MainWindow::PCA2DLoadingsPlot()
   }
 }
 
+void MainWindow::PCA2DExpVarPlot()
+{
+  if(ProjectsHavePCA() == true){
+    ProjectTree pjtree;
+    GetPCAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      PCAPlot pcaplot(projects);
+      pcaplot.setPID(dp.getProjectID());
+      pcaplot.setMID(dp.getModelID());
+      MDIChild *graphchild = createMdiChild();
+      SimpleLine2DPlot *plot2D;
+      pcaplot.ExpVarPlot(&plot2D);
+      graphchild->setWidget(plot2D);
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+      graphchild->resize(510, 530);
+      graphchild->show();
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"), QMessageBox::Close);
+  }
+}
+
 void MainWindow::PCA2DScorePlotPrediction()
 {
   if(ProjectsHavePCA() == true){
@@ -7655,6 +7680,7 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
 
   connect(ui.actionPCA2DScore_Plot, SIGNAL(triggered(bool)), SLOT(PCA2DScorePlot()));
   connect(ui.actionPCA2DLoadings_Plot, SIGNAL(triggered(bool)), SLOT(PCA2DLoadingsPlot()));
+  connect(ui.actionPCA2DExpVarPlot, SIGNAL(triggered(bool)), SLOT(PCA2DExpVarPlot()));
   //connect(ui.actionPCA2DLoadingsMVAND_Plot, SIGNAL(triggered(bool)), SLOT(PCA2DLoadingsMVANDPlot()));
   connect(ui.actionPCA2DScore_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(PCA2DScorePlotPrediction()));
   connect(ui.actionPCA3DScore_Plot, SIGNAL(triggered(bool)), SLOT(PCA3DScorePlot()));

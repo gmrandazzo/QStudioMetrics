@@ -76,13 +76,13 @@ int main(int argc, char **argv)
       matrix *data;
       initMatrix(&data);
       DATAIO::ImportMatrix((char*)inputdata.c_str(), sep, data);
-      uivector *bins_id;
+      dvector *bins_id;
       HyperGridModel *hgm;
-      initUIVector(&bins_id);
+      initDVector(&bins_id);
       NewHyperGridMap(&hgm);
       HyperGridMap(data, grid_step_size, &bins_id, &hgm);
-      printf("Total number of bins : %zu %zu\n", hgm->bsize, hgm->gsize);
-      DATAIO::WriteUIvector((char*)outbins.c_str(), bins_id);
+      printf("Total number of bins : %lf %zu\n", hgm->bsize, hgm->gsize);
+      DATAIO::WriteDvector((char*)outbins.c_str(), bins_id);
       DATAIO::MakeDir((char*)outhgm.c_str());
       string gmap = outhgm+"/gmap.txt";
       DATAIO::WriteMatrix((char*)gmap.c_str(), hgm->gmap);
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
       DATAIO::WriteDvector((char*)mult.c_str(), hgm->mult);
 
       DelHyperGridMap(&hgm);
-      DelUIVector(&bins_id);
+      DelDVector(&bins_id);
       DelMatrix(&data);
     }
     else if(!inputdata.empty() &&
@@ -101,9 +101,9 @@ int main(int argc, char **argv)
       matrix *data;
       initMatrix(&data);
       DATAIO::ImportMatrix((char*)inputdata.c_str(), sep, data);
-      uivector *bins_id;
+      dvector *bins_id;
       HyperGridModel *hgm;
-      initUIVector(&bins_id);
+      initDVector(&bins_id);
       NewHyperGridMap(&hgm);
       string gmap = inhgm+"/gmap.txt";
       string mult = inhgm+"/mult.txt";
@@ -116,9 +116,9 @@ int main(int argc, char **argv)
         hgm->bsize *= grid_step_size;
       }
       HyperGridMapObjects(data, hgm, &bins_id);
-      DATAIO::WriteUIvector((char*)outbins.c_str(), bins_id);
+      DATAIO::WriteDvector((char*)outbins.c_str(), bins_id);
       DelHyperGridMap(&hgm);
-      DelUIVector(&bins_id);
+      DelDVector(&bins_id);
       DelMatrix(&data);
     }
     else{

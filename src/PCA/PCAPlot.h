@@ -1,6 +1,7 @@
 #ifndef PCAPLOT_H
 #define PCAPLOT_H
 #include "../Plotlib/ScatterPlot.h"
+#include "../Plotlib/SimpleLine2DPlot.h"
 #include "qsmdata.h"
 
 #include <QList>
@@ -19,6 +20,7 @@ public:
   /*ScatterPlot *ScorePlot2D();*/
   void ScorePlot2D(ScatterPlot **plot2D);
   void ScorePlotPrediction2D(ScatterPlot **plot2D);
+  void ExpVarPlot(SimpleLine2DPlot **plot2D);
   void LoadingsMVANormDistrib(ScatterPlot **plot2D);
   void LoadingsPlot2D(ScatterPlot **plot2D);
   void ScorePlot3D(ScatterPlot **plot3D);

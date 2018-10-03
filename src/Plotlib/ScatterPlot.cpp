@@ -661,7 +661,7 @@ void ScatterPlot::setSelectionStyle()
       for(int i = 0; i < (*vartablabels).size(); i++){
         varnames.append((*vartablabels)[i]->getFeaturesName());
       }
-      varnames.removeAll("Object Names");
+      varnames.removeAll("Objects");
       varnames.removeDuplicates();
 
       SelectionStyleDialog obj(varnames);
@@ -828,7 +828,7 @@ void ScatterPlot::setSelectionStyle()
         varname.append((*mxlst)[xid[i]]->getVarName());
       }
       varname.removeDuplicates();
-      varname.removeAll("Labels");
+      //varname.removeAll("Labels");
     }
 
     if(yid.size() > 0){
@@ -836,8 +836,10 @@ void ScatterPlot::setSelectionStyle()
         varname.append((*mxlst)[yid[i]]->getVarName());
       }
       varname.removeDuplicates();
-      varname.removeAll("Labels");
+      //varname.removeAll("Labels");
     }
+
+    varname.removeAll("Objects");
 
     SelectionStyleDialog obj(varname);
     if(obj.exec() == QDialog::Accepted){

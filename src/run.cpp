@@ -29,14 +29,14 @@ void RUN::DoClustering()
       KMeans(m, nclusters, clusteralgoritm, &uiv, NULL, QThread::idealThreadCount(), &scientifisignal);
     }
     else{
-      HierarchicalClustering(m, nclusters, &uiv, NULL, &dendogram, (enum LinkageType)linktype, &scientifisignal);
+      HierarchicalClustering(m, nclusters, &uiv, NULL, &dendogram, (enum LinkageType)linktype, QThread::idealThreadCount(), &scientifisignal);
     }
   }
   else{
     matrix *centroids;
     initMatrix(&centroids);
     KMeans(m, nclusters, clusteralgoritm, &uiv, &centroids, QThread::idealThreadCount(), &scientifisignal);
-    PruneResults(m, centroids, nmaxobjects, objselectiontype, uiv);
+    PruneResults(m, centroids, nmaxobjects, objselectiontype, uiv, QThread::idealThreadCount());
     DelMatrix(&centroids);
   }
 }
@@ -79,12 +79,12 @@ void RUN::DoRandomSelection()
 
 void RUN::DoMaxDisSelection()
 {
-  MaxDis(m, nobjects, metric, &uiv, &scientifisignal);
+  MaxDis(m, nobjects, metric, &uiv, QThread::idealThreadCount(), &scientifisignal);
 }
 
 void RUN::DoMDCSelection()
 {
-  MDC(m, nobjects, metric, &uiv, &scientifisignal);
+  MDC(m, nobjects, metric, &uiv, QThread::idealThreadCount(), &scientifisignal);
 }
 
 void RUN::DoLDAPrediction()

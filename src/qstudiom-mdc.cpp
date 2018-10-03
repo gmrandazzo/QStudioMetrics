@@ -1,21 +1,30 @@
 #include <iostream>
 #include <cstdio>
 #include "DATAIO.h"
-#include <scientific.h>
+
 
 int main(int argc, char **argv)
 {
-  if(argc >= 3){
+  if(argc >= 4){
     matrix *x;
     uivector *idsel;
     initMatrix(&x);
     DATAIO::ImportMatrix(argv[1], "\t", x);
     initUIVector(&idsel);
-    if(argc == 3){
-      MDC(x, 0, 0, &idsel, NULL);
+
+    size_t nthreads;
+    if(argc == 4){
+      nthreads = atoi(argv[3]);
     }
     else{
-      MDC(x, atoi(argv[3]), 0, &idsel, NULL);
+      nthreads = atoi(argv[4]);
+    }
+
+    if(argc == 4){
+      MDC(x, 0, 0, &idsel, nthreads , NULL);
+    }
+    else{
+      MDC(x, atoi(argv[3]), 0, &idsel, nthreads, NULL);
     }
     DATAIO::WriteUIvector(argv[2], idsel);
     DelMatrix(&x);
@@ -23,7 +32,7 @@ int main(int argc, char **argv)
     return 0;
   }
   else{
-    printf("\n Usage: %s <Input Table File> <Out File> <N compounds>\n", argv[0]);
+    printf("\n Usage: %s <Input Table File> <Out File> <N compounds> <nthreads>\n", argv[0]);
     return 0;
   }
 }

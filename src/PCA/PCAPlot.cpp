@@ -54,6 +54,46 @@ void PCAPlot::LoadingsPlot2D(ScatterPlot **plot2D)
   (*plot2D)->setModelType(PCA_);
 }
 
+void PCAPlot::ExpVarPlot(SimpleLine2DPlot **plot2D)
+{
+  QList< SimpleLine2DPlot* > plots;
+  QString projectname = projects->value(pid)->getProjectName();
+  QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
+  uint npc = projects->value(pid)->getPCAModel(mid)->getNPC();
+  matrix *m;
+
+  QStringList curvenames;
+  NewMatrix(&m, npc, 3);
+  curvenames << "Explained Variance" << "Broken-Stick model";
+
+  // set the X assis that is the principal component
+  for(uint i = 0; i < npc; i++){
+    m->data[i][0] = i+1;
+  }
+
+  //set the explained variance and the calculated broken-stick model calculated with npc as k!
+  dvector *varexp = projects->value(pid)->getPCAModel(mid)->Model()->varexp;
+  int bsm = 1;
+  for(uint i = 0; i < varexp->size; i++){
+    m->data[i][1] = varexp->data[i];
+    int d = bsm;
+    for(uint j = 0; j < npc; j++){
+      m->data[i][2] += 1/(float)(d+j);
+    }
+    m->data[i][2] /= npc;
+    m->data[i][2] *= 100;
+    bsm+=1;
+  }
+
+  #ifdef DEBUG
+  qDebug() << "Final Matrix";
+  PrintMatrix(m);
+  #endif
+  (*plot2D) = new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - Explained Variance Plot").arg(projectname).arg(modelname), "PC", "Exp. Var.");
+  DelMatrix(&m);
+}
+
+
 void PCAPlot::LoadingsMVANormDistrib(ScatterPlot **plot2D)
 {
   if(mid > -1){
