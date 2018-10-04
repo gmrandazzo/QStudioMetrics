@@ -76,21 +76,28 @@ int main(int argc, char **argv)
       matrix *data;
       initMatrix(&data);
       DATAIO::ImportMatrix((char*)inputdata.c_str(), sep, data);
-      dvector *bins_id;
+
       HyperGridModel *hgm;
-      initDVector(&bins_id);
+      hgmbins *bins_id;
       NewHyperGridMap(&hgm);
       HyperGridMap(data, grid_step_size, &bins_id, &hgm);
       printf("Total number of bins : %lf %zu\n", hgm->bsize, hgm->gsize);
-      DATAIO::WriteDvector((char*)outbins.c_str(), bins_id);
       DATAIO::MakeDir((char*)outhgm.c_str());
       string gmap = outhgm+"/gmap.txt";
       DATAIO::WriteMatrix((char*)gmap.c_str(), hgm->gmap);
-      string mult = outhgm+"/mult.txt";
-      DATAIO::WriteDvector((char*)mult.c_str(), hgm->mult);
+
+      ofstream fbins;
+      fbins.open(outbins);
+      for(size_t i = 0; i < bins_id->nobj; i++){
+        std::string hashstr;
+        for(size_t j = 0; j < bins_id->hash_size; j++)
+          hashstr += std::to_string(bins_id->hash[i][j]);
+        fbins << hashstr << "\n";
+      }
+      fbins.close();
 
       DelHyperGridMap(&hgm);
-      DelDVector(&bins_id);
+      DelHGMBins(&bins_id);
       DelMatrix(&data);
     }
     else if(!inputdata.empty() &&
@@ -101,14 +108,11 @@ int main(int argc, char **argv)
       matrix *data;
       initMatrix(&data);
       DATAIO::ImportMatrix((char*)inputdata.c_str(), sep, data);
-      dvector *bins_id;
+      hgmbins *bins_id;
       HyperGridModel *hgm;
-      initDVector(&bins_id);
       NewHyperGridMap(&hgm);
       string gmap = inhgm+"/gmap.txt";
-      string mult = inhgm+"/mult.txt";
       DATAIO::ImportMatrix((char*)gmap.c_str(), sep, hgm->gmap);
-      DATAIO::ImportDvector((char*)mult.c_str(), hgm->mult);
       grid_step_size = ceil((hgm->gmap->data[0][1]-hgm->gmap->data[0][0])/hgm->gmap->data[0][2]);
       hgm->gsize = grid_step_size;
       hgm->bsize = 1;
@@ -116,9 +120,19 @@ int main(int argc, char **argv)
         hgm->bsize *= grid_step_size;
       }
       HyperGridMapObjects(data, hgm, &bins_id);
-      DATAIO::WriteDvector((char*)outbins.c_str(), bins_id);
+
+      ofstream fbins;
+      fbins.open(outbins);
+      for(size_t i = 0; i < bins_id->nobj; i++){
+        std::string hashstr;
+        for(size_t j = 0; j < bins_id->hash_size; j++)
+          hashstr += std::to_string(bins_id->hash[i][j]);
+        fbins << hashstr << "\n";
+      }
+      fbins.close();
+
       DelHyperGridMap(&hgm);
-      DelDVector(&bins_id);
+      DelHGMBins(&bins_id);
       DelMatrix(&data);
     }
     else{
