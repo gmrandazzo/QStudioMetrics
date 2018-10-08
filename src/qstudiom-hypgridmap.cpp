@@ -90,9 +90,10 @@ int main(int argc, char **argv)
       fbins.open(outbins);
       for(size_t i = 0; i < bins_id->nobj; i++){
         std::string hashstr;
-        for(size_t j = 0; j < bins_id->hash_size; j++)
-          hashstr += std::to_string(bins_id->hash[i][j]);
-        fbins << hashstr << "\n";
+        for(size_t j = 0; j < bins_id->hash_size-1; j++)
+          hashstr += std::to_string(bins_id->hash[i][j]) + "-";
+        hashstr += std::to_string(bins_id->hash[i][bins_id->hash_size-1]) + "\n";
+        fbins << hashstr;
       }
       fbins.close();
 

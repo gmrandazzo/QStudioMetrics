@@ -1,5 +1,4 @@
 #include <QApplication>
-#include <QRandomGenerator>
 #include "qplotly.h"
 #include <cmath>
 
@@ -68,25 +67,11 @@ void _2DScattePlotExample(QPlotlyWindow *chart)
   chart->setXaxisName("Test X Axis");
   chart->setYaxisName("Test Y Axis");
   chart->setPlotTitle("Test Plot Title");
+
 }
 
-void _2DScattePlotExampleBIS(QPlotlyWindow *chart)
-{
-  int n_points = 100000;
 
-  for(int i = 0; i < n_points; i++){
-    qreal x = QRandomGenerator::global()->generateDouble();
-    qreal y = QRandomGenerator::global()->generateDouble();
-    QString name = QString("Obj%1").arg(i);
-    chart->addPoint(x, y, name);
-  }
-
-  chart->setXaxisName("Test X Axis");
-  chart->setYaxisName("Test Y Axis");
-  chart->setPlotTitle("Test Plot Title");
-}
-
-void _BarPlotExample(QPlotlyWindow *chart)
+void _BarPlotExmaple(QPlotlyWindow *chart)
 {
   QStringList x1, text1;
   QVector<qreal> y1;
@@ -105,32 +90,13 @@ void _BarPlotExample(QPlotlyWindow *chart)
 
 }
 
-void _CurvePlotExample(QPlotlyWindow *chart)
-{
-  QVector< QPointF > curve;
-  double x, dx;
-  x = -6;
-  dx = 0.1;
-  while(x < 6){
-    double y = sin(x);
-    curve.append(QPointF(x, y));
-    x+=dx;
-  }
-  chart->addCurve(curve, "curve", Qt::red);
-}
-
 int main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
   QPlotlyWindow chart;
-  int major, minor, patch;
-  QPlotlyVersion(&major, &minor, &patch);
-  printf("QPlotly Version %d.%d.%d\n", major, minor, patch);
   //_2DScattePlotExample(&chart);
-  _2DScattePlotExampleBIS(&chart);
-  //_BarPlotExample(&chart);
-  //_3DRandomPlotExample(&chart);
-  //_CurvePlotExample(&chart);
+  _BarPlotExmaple(&chart);
+  /*_3DRandomPlotExample(&chart);*/
   chart.Plot();
   chart.show();
   return app.exec();
