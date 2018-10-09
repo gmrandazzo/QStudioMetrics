@@ -84,8 +84,12 @@ int main(int argc, char **argv)
       printf("Total number of bins : %lf %zu\n", hgm->bsize, hgm->gsize);
       DATAIO::MakeDir((char*)outhgm.c_str());
       string gmap = outhgm+"/gmap.txt";
+      string colavg = outhgm+"/colavg.txt";
+      string colscaling = outhgm+"/colscaling.txt";
       DATAIO::WriteMatrix((char*)gmap.c_str(), hgm->gmap);
-
+      DATAIO::WriteDvector((char*)colavg.c_str(), hgm->colaverage);
+      DATAIO::WriteDvector((char*)colscaling.c_str(), hgm->colscaling);
+      
       ofstream fbins;
       fbins.open(outbins);
       for(size_t i = 0; i < bins_id->nobj; i++){
