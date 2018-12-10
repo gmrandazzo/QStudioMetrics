@@ -252,8 +252,12 @@ int main(int argc, char **argv)
       if(!pathmodel.empty()){
         string q2yfile = pathmodel+"/Validated_q2y.txt";
         string sdepfile = pathmodel+"/Validated_sdep.txt";
+        string predfile = pathmodel+"/Validated_Predicted_Y.txt";
+        string resfile = pathmodel+"/Validated_Predicted_Residuals.txt";
         DATAIO::WriteMatrix((char*)q2yfile.c_str(), q2y);
         DATAIO::WriteMatrix((char*)sdepfile.c_str(), sdep);
+        DATAIO::WriteMatrix((char*)predfile.c_str(), pred);
+        DATAIO::WriteMatrix((char*)resfile.c_str(), predresiduals);
       }
 
       cout.setf(ios_base::right,ios_base::adjustfield);
