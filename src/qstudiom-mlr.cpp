@@ -17,18 +17,9 @@ using namespace std;
 void help(char **argv)
 {
   std::cout << "Usage" << endl;
-  std::cout << "Make a model: " << argv[0] <<" -(r/d)model -x <xinput file>  -y <yinput file>" << " -o <output file> -c <N° of LV> -xa(autoscaling for x matrix) -ya(autoscaling for y matrix)\n"  <<std::endl;
-  std::cout << "Make a prediction: " << argv[0] <<" -predict -dm <input model> -x <xinput file> -o <output file> -c <N° of LV>\n" << std::endl;
-  std::cout << "Make the cross validation: " << argv[0] <<" -cv -x  <xinput file>  -y <yinput file> -dm <input path model> -g <N° of groups> -i <N° iterations> -c <N° of LV> -nth <N° threads>\n" << std::endl;
-
-  std::cout << "Calculate beta coefficients: " << argv[0] << " -betas -x  <xinput file>  -y <yinput file> -dm <input path model>  -c <N° of LV> -xa [0, 1, 2, 3, 4, 5] -ya [0, 1, 2, 3, 4, 5]\n" << std::endl;
-  std::cout << "Autoscaling type:" << std::endl;
-  std::cout << " 0 = no scaling" << std::endl;
-  std::cout << " 1 = SDEV autoscaling" << std::endl;
-  std::cout << " 2 = RMS scaling" << std::endl;
-  std::cout << " 3 = Pareto scaling" << std::endl;
-  std::cout << " 4 = Range scaling" << std::endl;
-  std::cout << " 5 = Level scalign" << std::endl;
+  std::cout << "Make a model: " << argv[0] <<" -model -x <xinput file>  -y <yinput file>" << " -o <output file>\n"  << std::endl;
+  std::cout << "Make a prediction: " << argv[0] <<" -predict -dm <input model> -x <xinput file> -o <output file>\n" << std::endl;
+  std::cout << "Make the cross validation: " << argv[0] <<" -cv -x  <xinput file>  -y <yinput file> -dm <input path model> -g <N° of groups> -i <N° iterations> -nth <N° threads>\n" << std::endl;
 
   std::cout << "\n\t ---------------------------------------------------------------------------- " << std::endl;
   std::cout << "\t | "<< argv[0] << " was writen by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>  |" << std::endl;
@@ -41,21 +32,15 @@ int main(int argc, char **argv)
     help(argv);
   }
   else{
-    size_t npc = 0, ngroups = 0, iterations = 20, xautoscaling = 0 , yautoscaling = 0, nthreads = 1;
+    size_t ngroups = 0, iterations = 20, nthreads = 1;
     string xinputdata, yinputdata, pathmodel, outputfile, xsep, ysep;
-    bool r_genmodel, d_genmodel, genbetas, makeprediction, makecrossvalidation;
-    r_genmodel = d_genmodel = genbetas = makeprediction = makecrossvalidation = false;
+    bool genmodel, makeprediction, makecrossvalidation, verbose;
+    verbose = genmodel = makeprediction = makecrossvalidation = false;
     xsep = ysep = ";";
 
     for(int i = 0; i < argc; i++){
-      if(strcmp(argv[i], "-rmodel") == 0 || strcmp(argv[i], "-m") == 0){
-        r_genmodel = true;
-      }
-      if(strcmp(argv[i], "-dmodel") == 0 || strcmp(argv[i], "-m") == 0){
-        d_genmodel = true;
-      }
-      if(strcmp(argv[i], "-betas") == 0 || strcmp(argv[i], "-m") == 0){
-        genbetas = true;
+      if(strcmp(argv[i], "-model") == 0 || strcmp(argv[i], "-m") == 0){
+        genmodel = true;
       }
       if(strcmp(argv[i], "-predict") == 0 || strcmp(argv[i], "-p") == 0){
         makeprediction = true;
@@ -83,11 +68,6 @@ int main(int argc, char **argv)
         }
       }
 
-      if(strcmp(argv[i], "-c") == 0){
-        if(i+1 < argc)
-          npc = atoi(argv[i+1]);
-      }
-
       if(strcmp(argv[i], "-g") == 0){
         if(i+1 < argc)
           ngroups = atoi(argv[i+1]);
@@ -101,16 +81,6 @@ int main(int argc, char **argv)
       if(strcmp(argv[i], "-data-model") == 0 || strcmp(argv[i], "-dm") == 0){
         if(i+1 < argc)
           pathmodel = argv[i+1];
-      }
-
-      if(strcmp(argv[i], "-xa") == 0){
-        if(i+1 < argc)
-          xautoscaling = atoi(argv[i+1]);
-      }
-
-      if(strcmp(argv[i], "-ya") == 0){
-        if(i+1 < argc)
-          yautoscaling = atoi(argv[i+1]);
       }
 
       if(strcmp(argv[i], "-sx") == 0){
@@ -132,9 +102,13 @@ int main(int argc, char **argv)
         if(i+1 < argc)
           nthreads = atoi (argv[i+1]);
       }
+
+      if(strcmp(argv[i], "-verbose") == 0 || strcmp(argv[i], "-v") == 0){
+        verbose = true;
+      }
     }
 
-    if((r_genmodel == true || d_genmodel == true) && !xinputdata.empty() && !yinputdata.empty() && !outputfile.empty() && npc > 0){
+    if(genmodel == true && !xinputdata.empty() && !yinputdata.empty() && !outputfile.empty()){
       matrix *xdata, *ydata;
 
       initMatrix(&xdata);
@@ -143,89 +117,49 @@ int main(int argc, char **argv)
       DATAIO::ImportMatrix((char*)xinputdata.c_str(), xsep, xdata);
       DATAIO::ImportMatrix((char*)yinputdata.c_str(), ysep, ydata);
 
-      PLSMODEL *m;
-      NewPLSModel(&m);
+      MLRMODEL *m;
+      NewMLRModel(&m);
 
-      printf("N. LVs: %lu\n", npc);
-      printf("x row %lu col %lu\n", xdata->row, xdata->col);
-      printf("y row %lu col %lu\n", ydata->row, ydata->col);
+      if(verbose == true){
+        printf("x row %lu col %lu\n", xdata->row, xdata->col);
+        printf("y row %lu col %lu\n", ydata->row, ydata->col);
+      }
 
-      PLS(xdata, ydata, npc, xautoscaling, yautoscaling, m, NULL);
-      if(r_genmodel == true)
-        PLSRegressionStatistics(ydata, m->recalculated_y, &(m->r2y_recalculated), &(m->sdec), NULL);
-      else
-        PLSDiscriminantAnalysisStatistics(ydata, m->recalculated_y, NULL, &(m->r2y_recalculated), NULL, &(m->sdec));
+      MLR(xdata, ydata, m, NULL);
+      MLRRegressionStatistics(ydata, m->recalculated_y, &(m->r2y_model), &(m->sdec), NULL);
 
-      DATAIO::WritePLSModel((char*)outputfile.c_str(), m);
+      DATAIO::WriteMLRModel((char*)outputfile.c_str(), m);
 
-      DelPLSModel(&m);
+      DelMLRModel(&m);
       DelMatrix(&xdata);
       DelMatrix(&ydata);
     }
-    else if(genbetas == true && !xinputdata.empty() && !yinputdata.empty() && npc > 0){
-      matrix *xdata, *ydata;
-      dvector *betas;
-      initMatrix(&xdata);
-      initMatrix(&ydata);
-
-      DATAIO::ImportMatrix((char*)xinputdata.c_str(), xsep, xdata);
-      DATAIO::ImportMatrix((char*)yinputdata.c_str(), ysep, ydata);
-
-      PLSMODEL *m;
-      NewPLSModel(&m);
-
-      PLS(xdata, ydata, npc, xautoscaling, yautoscaling, m, NULL);
-      initDVector(&betas);
-      PLSBetasCoeff(m, npc, &betas);
-
-      for(size_t i = 0; i < betas->size; i++){
-        cout << betas->data[i] << endl;
-      }
-
-
-      if(!pathmodel.empty()){
-        string betasfile = pathmodel+"/betas.txt";
-        DATAIO::WriteDvector((char*)betasfile.c_str(), betas);
-      }
-
-      DelDVector(&betas);
-      DelPLSModel(&m);
-      DelMatrix(&xdata);
-      DelMatrix(&ydata);
-    }
-    else if(makeprediction == true && !pathmodel.empty() && !xinputdata.empty() && !outputfile.empty() && npc > 0){
+    else if(makeprediction == true && !pathmodel.empty() && !xinputdata.empty() && !outputfile.empty()){
       matrix *xdata;
       initMatrix(&xdata);
 
       DATAIO::ImportMatrix((char*)xinputdata.c_str(), xsep, xdata);
 
+      MLRMODEL *m;
+      NewMLRModel(&m);
+      DATAIO::ImportMLRModel((char*)pathmodel.c_str(), m);
 
-      PLSMODEL *m;
-      NewPLSModel(&m);
-      DATAIO::ImportPLSModel((char*)pathmodel.c_str(), m);
-
-      matrix *xscores, *y;
-      initMatrix(&xscores);
-      initMatrix(&y);
-
-      PLSScorePredictor(xdata, m,  npc, &xscores);
-      PLSYPredictor(xscores, m, npc, &y);
+      matrix *predicted_y;
+      initMatrix(&predicted_y);
+      MLRPredictY(xdata, NULL, m, &predicted_y, NULL, NULL, NULL);
 
       DATAIO::MakeDir((char*)outputfile.c_str());
-      string ptscores = outputfile+"/T-Scores-Pred.txt";
       string ypred = outputfile+"/Y-Pred.txt";
-      DATAIO::WriteMatrix((char*)ptscores.c_str(), xscores);
-      DATAIO::WriteMatrix((char*)ypred.c_str(), y);
+      DATAIO::WriteMatrix((char*)ypred.c_str(), predicted_y);
 
-      DelMatrix(&y);
-      DelMatrix(&xscores);
-      DelPLSModel(&m);
+      DelMatrix(&predicted_y);
+      DelMLRModel(&m);
       DelMatrix(&xdata);
     }
-    else if(makecrossvalidation == true && !xinputdata.empty() && !yinputdata.empty() && ngroups > 0 && npc > 0){
+    else if(makecrossvalidation == true && !xinputdata.empty() && !yinputdata.empty() && ngroups > 0){
       matrix *xdata, *ydata;
-      matrix *q2y, *sdep, *bias, *pred, *predresiduals;
-      matrix *q2y_consistency, *sdep_consistency, *bias_consistency;
+      matrix *pred, *predresiduals;
+      dvector *q2y, *sdep, *bias;
 
       initMatrix(&xdata);
       initMatrix(&ydata);
@@ -233,37 +167,31 @@ int main(int argc, char **argv)
       DATAIO::ImportMatrix((char*)yinputdata.c_str(), ysep, ydata);
 
 
-      initMatrix(&q2y);
-      initMatrix(&sdep);
-      initMatrix(&bias);
+      initDVector(&q2y);
+      initDVector(&sdep);
+      initDVector(&bias);
       initMatrix(&pred);
       initMatrix(&predresiduals);
-      initMatrix(&q2y_consistency);
-      initMatrix(&sdep_consistency);
-      initMatrix(&bias_consistency);
 
       MODELINPUT minpt;
       minpt.mx = &xdata;
       minpt.my = &ydata;
-      minpt.nlv = npc;
-      minpt.xautoscaling = xautoscaling;
-      minpt.yautoscaling = yautoscaling;
 
-      BootstrapRandomGroupsCV(&minpt, ngroups, iterations, _PLS_, &pred, &predresiduals, nthreads, NULL, 0);
-//      LeaveOneOut(&minpt, _PLS_, &m->predicted_y, &m->pred_residuals, 4, NULL, 0);
-      PLSRegressionStatistics(ydata, pred, &q2y, &sdep, &bias);
+      BootstrapRandomGroupsCV(&minpt, ngroups, iterations, _MLR_, &pred, &predresiduals, nthreads, NULL, 0);
+      MLRRegressionStatistics(ydata, pred, &q2y, &sdep, &bias);
 
       if(!pathmodel.empty()){
         string q2yfile = pathmodel+"/Validated_q2y.txt";
         string sdepfile = pathmodel+"/Validated_sdep.txt";
         string predfile = pathmodel+"/Validated_Predicted_Y.txt";
         string resfile = pathmodel+"/Validated_Predicted_Residuals.txt";
-        DATAIO::WriteMatrix((char*)q2yfile.c_str(), q2y);
-        DATAIO::WriteMatrix((char*)sdepfile.c_str(), sdep);
+        DATAIO::WriteDvector((char*)q2yfile.c_str(), q2y);
+        DATAIO::WriteDvector((char*)sdepfile.c_str(), sdep);
         DATAIO::WriteMatrix((char*)predfile.c_str(), pred);
         DATAIO::WriteMatrix((char*)resfile.c_str(), predresiduals);
       }
 
+      /*
       cout.setf(ios_base::right,ios_base::adjustfield);
       cout.setf(ios::fixed,ios::floatfield);
 
@@ -331,15 +259,13 @@ int main(int argc, char **argv)
         }
         cout << endl;
       }
+      */
 
-      DelMatrix(&bias_consistency);
-      DelMatrix(&q2y_consistency);
-      DelMatrix(&sdep_consistency);
-      DelMatrix(&q2y);
-      DelMatrix(&bias);
+      DelDVector(&q2y);
+      DelDVector(&bias);
+      DelDVector(&sdep);
       DelMatrix(&pred);
       DelMatrix(&predresiduals);
-      DelMatrix(&sdep);
       DelMatrix(&xdata);
       DelMatrix(&ydata);
     }

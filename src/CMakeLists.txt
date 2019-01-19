@@ -167,6 +167,7 @@ set(QSTUDIOMETRICS_UIS
 
 set(QSTUDIOMETRICS_CMDPCA_SRC DATAIO.cpp qstudiom-pca.cpp)
 set(QSTUDIOMETRICS_CMDPLS_SRC DATAIO.cpp qstudiom-pls.cpp)
+set(QSTUDIOMETRICS_CMDMLR_SRC DATAIO.cpp qstudiom-mlr.cpp)
 set(QSTUDIOMETRICS_CMDUPCA_SRC DATAIO.cpp qstudiom-upca.cpp)
 set(QSTUDIOMETRICS_CMDUPLS_SRC DATAIO.cpp qstudiom-upls.cpp)
 set(QSTUDIOMETRICS_CMDBINTEST_SRC DATAIO.cpp qstudiom-bintest.cpp)
@@ -214,6 +215,9 @@ target_link_libraries(qsm-pca ${LIBSCIENTIFIC_LIBRARY})
 
 add_executable(qsm-pls ${QSTUDIOMETRICS_CMDPLS_SRC})
 target_link_libraries(qsm-pls ${LIBSCIENTIFIC_LIBRARY})
+
+add_executable(qsm-mlr ${QSTUDIOMETRICS_CMDMLR_SRC})
+target_link_libraries(qsm-mlr ${LIBSCIENTIFIC_LIBRARY})
 
 add_executable(qsm-mdc ${QSTUDIOMETRICS_CMDMDC_SRC})
 target_link_libraries(qsm-mdc ${LIBSCIENTIFIC_LIBRARY})
