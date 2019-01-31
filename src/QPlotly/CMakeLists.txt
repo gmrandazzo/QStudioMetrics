@@ -83,11 +83,12 @@ set(QPLOTLY_H
 set(QPLOTLY_TEST_SRC testqplotly.cpp)
 
 # start building interface from moc
-QT5_WRAP_CPP(QPLOTLY_MOC_H ${QPLOTLY_H})
+#QT5_WRAP_CPP(QPLOTLY_MOC_H ${QPLOTLY_H})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${QT_USE_FILE})
 
-add_library(libqplotly SHARED ${QPLOTLY_SRC} ${QPLOTLY_H} ${QPLOTLY_MOC_H})
+#add_library(libqplotly SHARED ${QPLOTLY_SRC} ${QPLOTLY_H} ${QPLOTLY_MOC_H})
+add_library(libqplotly SHARED ${QPLOTLY_SRC} ${QPLOTLY_H})
 #add_library(libqplotly STATIC ${QPLOTLY_SRC} ${QPLOTLY_H})
 set_target_properties(libqplotly PROPERTIES OUTPUT_NAME "qplotly")
 

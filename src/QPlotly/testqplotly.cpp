@@ -1,5 +1,8 @@
 #include <QApplication>
+#include <QtGlobal>
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
 #include <QRandomGenerator>
+#endif
 #include "qplotly.h"
 #include <cmath>
 
@@ -75,8 +78,13 @@ void _2DScattePlotExampleBIS(QPlotlyWindow *chart)
   int n_points = 100000;
 
   for(int i = 0; i < n_points; i++){
+    #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
     qreal x = QRandomGenerator::global()->generateDouble();
     qreal y = QRandomGenerator::global()->generateDouble();
+    #else
+    qreal x = randnum(-10,10);
+    qreal y = randnum(-10,10);
+    #endif
     QString name = QString("Obj%1").arg(i);
     chart->addPoint(x, y, name);
   }
@@ -127,9 +135,9 @@ int main(int argc, char *argv[])
   QPlotlyVersion(&major, &minor, &patch);
   printf("QPlotly Version %d.%d.%d\n", major, minor, patch);
   //_2DScattePlotExample(&chart);
-  _2DScattePlotExampleBIS(&chart);
+  //_2DScattePlotExampleBIS(&chart);
   //_BarPlotExample(&chart);
-  //_3DRandomPlotExample(&chart);
+  _3DRandomPlotExample(&chart);
   //_CurvePlotExample(&chart);
   chart.Plot();
   chart.show();

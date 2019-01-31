@@ -66,30 +66,21 @@ void ValidatorDialog::setKFoldClass()
 {
   QString homeLocation = QStandardPaths::locate(QStandardPaths::HomeLocation, QString(), QStandardPaths::LocateDirectory);
 
-  QString csvclasses = QString::fromUtf8(QFileDialog::getOpenFileName(this, tr("Open CSV classes"),  homeLocation, tr("CSV File(*.csv)"), 0, QFileDialog::DontUseNativeDialog).toUtf8());
-  QFile file(csvclasses);
+  QString csv = QString::fromUtf8(QFileDialog::getOpenFileName(this, tr("Open CSV Groups"), homeLocation, tr("CSV File(*.csv)"), 0, QFileDialog::DontUseNativeDialog).toUtf8());
+  QFile file(csv);
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     return;
 
   QTextStream in(&file);
   kfc.clear();
 
+  int cid = 0;
   while(!in.atEnd()){
     QString line = in.readLine();
-    QStringList v = QString(line).split(getSeparator(line));
-    if(v.size() == 2){
-      int cid = ClassNameContains(v[1]);
-      if(cid > -1){
-        kfc[cid].objects << v[0];
-      }
-      else{
-        kfc << LABEL();
-        kfc.last().name = v[1];
-        kfc.last().objects <<  v[0];
-      }
-    }
-    else
-      continue;
+    kfc << LABEL();
+    kfc.last().name = QString::number(cid);
+    kfc.last().objects << QString(line).split(getSeparator(line));
+    cid++;
   }
 }
 
