@@ -18,7 +18,7 @@
 
 #define MAJOR 1
 #define MINOR 1
-#define PATCH 0
+#define PATCH 1
 
 void QPlotlyVersion(int *major, int *minor, int *patch);
 

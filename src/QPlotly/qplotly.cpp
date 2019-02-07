@@ -357,7 +357,7 @@ QStringList QPlotlyWindow::JSonScatterWorker(int from, int to)
         msizem += QString("%1,").arg(p[i]->radius());
       }
       else{
-        if(p[i]->isSelected() == true){
+        if(p[i]->isSelected() == true || selected_points.contains(i) == true){
           xs += QString("%1,").arg(p[i]->x());
           ys += QString("%1,").arg(p[i]->y());
           texts += QString("'%1',").arg(p[i]->getName());
@@ -513,7 +513,7 @@ QString QPlotlyWindow::genJSONScatter()
       msizes += QString("]");
     }
     else{
-      if(p[last_id]->isSelected() == true){
+      if(p[last_id]->isSelected() == true || selected_points.contains(last_id) == true){
         xs += QString("%1]").arg(p[last_id]->x());
         ys += QString("%1]").arg(p[last_id]->y());
         texts += QString("'%1']").arg(p[last_id]->getName());
@@ -918,10 +918,34 @@ void QPlotlyWindow::Plot()
   }
 }
 
+class DataPointIsEqual {
+  DataPoint p1;
+public:
+  DataPointIsEqual(DataPoint &p):p1(p){}
+  bool operator()(DataPoint *p2) const
+  {
+    //QEPSILON and FLOAT_EQ DEFINED IN DATAPOINT.H
+    if(FLOAT_EQ(p1.x(), p2->x(), QEPSILON) &&
+       FLOAT_EQ(p1.y(), p2->y(), QEPSILON) &&
+       FLOAT_EQ(p1.z(), p2->z(), QEPSILON)){
+      if(p1.getName().compare(p2->getName()) == 0){
+        return true;
+      }
+      else{
+        return false;
+      }
+    }
+    else{
+      return false;
+    }
+  }
+};
+
 int QPlotlyWindow::FindPoint(qreal x, qreal y, qreal z, QString name_)
 {
   DataPoint f(x, y, z, name_);
-  int indx = std::find(p.begin(), p.end(), &f) - p.begin();
+  //int indx = std::find(p.begin(), p.end(), &f) - p.begin();
+  int indx = std::find_if(p.begin(), p.end(), DataPointIsEqual(f)) - p.begin();
   if(indx == p.size()){
     return -1;
   }
@@ -955,6 +979,9 @@ void QPlotlyWindow::handleCookieAdded(const QNetworkCookie &cookie)
   #endif
 
   if(cookie_.contains("selpnt=start") == true){
+    #ifdef DEBUG
+    qDebug() << "Clear previous selection";
+    #endif
     for(int i = 0; i < selected_points.size(); i++){
       p[selected_points[i]]->setSelection(false);
     }
@@ -973,6 +1000,10 @@ void QPlotlyWindow::handleCookieAdded(const QNetworkCookie &cookie)
       z = atof(vars[5].toStdString().c_str());
     QString name = vars[7];
     int id = FindPoint(x, y, z, name);
+    #ifdef DEBUG
+    qDebug() << "Find Point Result: " << id;
+    #endif
+
     if(id > -1){
       selected_points << id;
       p[id]->setSelection(true);
@@ -985,6 +1016,9 @@ void QPlotlyWindow::handleCookieAdded(const QNetworkCookie &cookie)
     }
   }
   else if(cookie_.contains("selpnt=end") == true){
+    #ifdef DEBUG
+    qDebug() << "End point selection";
+    #endif
     /* Selection END!
      for(size_t i = 0; i < selected_points.size(); i++){
       qDebug() << selected_points[i] << "\n";
