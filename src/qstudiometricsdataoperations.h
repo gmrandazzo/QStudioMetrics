@@ -19,8 +19,8 @@ void DeserializeUIVector(QString serialized_dvector, uivector **v);
 QString SerializeUIVector(uivector *v);
 void DeserializeMatrix(QString serialized_mx, matrix **mx);
 QString SerializeMatrix(matrix *mx);
-void DeserializeArray(QString serialized_ar, tensor **ar);
-QString SerializeArray(tensor *ar);
+void DeserializeTensor(QString serialized_ar, tensor **ar);
+QString SerializeTensor(tensor *ar);
 
 // hash functions
 // Serialze the matrix and return a QCryptographicHash in hexadecimal

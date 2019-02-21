@@ -96,12 +96,14 @@ private slots:
   void PLSRecalcResidualsVSExpPlot();
   void PLSPredVSExpPlot();
   void PLSPredResidualsVSExpPlot();
-  void PLSPlotQ2R2();
+  void PLSPlotR2Q2();
+  void PLSPlotRMSE();
   void PLSPlotROCAucs();
   void PLSPlotROCCurves();
   void PLSPlotPRAucs();
   void PLSPlotPRCurves();
   void PLSPlotR2R2Predicted();
+  void PLSPlotRMSEPredicted();
   void PLSPlotYScrambling();
 
   void PLS3DTTTScorePlot();

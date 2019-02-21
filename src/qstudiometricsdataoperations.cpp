@@ -129,7 +129,7 @@ QString SerializeMatrix(matrix *mx)
   }
 }
 
-void DeserializeArray(QString serialized_ar, tensor **ar)
+void DeserializeTensor(QString serialized_ar, tensor **ar)
 {
   if(serialized_ar.compare("NULL", Qt::CaseInsensitive) == 0 || serialized_ar.size() == 0){
     return;
@@ -158,7 +158,7 @@ void DeserializeArray(QString serialized_ar, tensor **ar)
   }
 }
 
-QString SerializeArray(tensor *ar)
+QString SerializeTensor(tensor *ar)
 {
   if(ar->order > 0){
     if(ar->m[0]->row > 0 && ar->m[0]->col > 0){

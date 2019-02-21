@@ -16,8 +16,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <io.h>
+#ifdef MINGW32
 #include <direct.h>
 #include <dir.h>
+#endif
 #else
 #include <sys/types.h>
 #include <unistd.h>

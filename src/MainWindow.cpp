@@ -395,20 +395,22 @@ void MainWindow::TopMenuEnableDisable()
 
   if(ProjectsHavePLS() == false){
     ui.menuPlot_PLS_Model->setEnabled(false);
-    ui.actionPLSR2_Q2->setEnabled(false);
   }
   else{
     ui.menuPlot_PLS_Model->setEnabled(true);
 
     if(ProjectsHavePLSValidated() == false){
       ui.actionPLSR2_Q2->setEnabled(false);
+      ui.actionPLSRMSE->setEnabled(false);
       ui.actionPLSPred_vs_Exp->setEnabled(false);
       ui.actionPLSPred_Residuals_vs_Exp->setEnabled(false);
     }
     else{
+      // Check if is a pls regression or discriminant analysis
       ui.actionPLSR2_Q2->setEnabled(true);
       ui.actionPLSPred_vs_Exp->setEnabled(true);
       ui.actionPLSPred_Residuals_vs_Exp->setEnabled(true);
+      ui.actionPLSRMSE->setEnabled(true);
     }
 
     if(ProjectsHavePLSYScrambling() == false){
@@ -1537,7 +1539,7 @@ void MainWindow::removePrediction()
       int predid =  getCurrentPredictionID();
       int pid = getCurrentPredictionProjectID();
       int mid = getCurrentPredictionModelID();
-      if(pid > -1 && mid > -1 and predid > -1){
+      if(pid > -1 && mid > -1 && predid > -1){
         DowngradePredictionID();
 
         if(getCurrentPredictionType().compare("PCA Prediction") == 0){
@@ -4842,7 +4844,7 @@ void MainWindow::PLSPredResidualsVSExpPlot()
   }
 }
 
-void MainWindow::PLSPlotQ2R2()
+void MainWindow::PLSPlotR2Q2()
 {
   if(ProjectsHavePLSValidated() == true){
     ProjectTree pjtree;
@@ -4864,7 +4866,33 @@ void MainWindow::PLSPlotQ2R2()
     }
   }
   else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models and Validation Model Found!\n"), QMessageBox::Close);
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS model and/or validation found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::PLSPlotRMSE()
+{
+  if(ProjectsHavePLSValidated() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      PLSPlot plsplot(projects);
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      QList< SimpleLine2DPlot* > plots = plsplot.RMSE();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS model and/or validation found!\n"), QMessageBox::Close);
   }
 }
 
@@ -4890,7 +4918,7 @@ void MainWindow::PLSPlotROCAucs()
     }
   }
   else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models and Validation Model Found!\n"), QMessageBox::Close);
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS model and/or validation found!\n"), QMessageBox::Close);
   }
 }
 
@@ -4916,7 +4944,7 @@ void MainWindow::PLSPlotROCCurves()
     }
   }
   else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models and Validation Model Found!\n"), QMessageBox::Close);
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS model and/or validation found!\n"), QMessageBox::Close);
   }
 }
 
@@ -4942,7 +4970,7 @@ void MainWindow::PLSPlotPRAucs()
     }
   }
   else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models and Validation Model Found!\n"), QMessageBox::Close);
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS model and/or validation found!\n"), QMessageBox::Close);
   }
 }
 
@@ -4969,7 +4997,7 @@ void MainWindow::PLSPlotPRCurves()
     }
   }
   else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models and Validation Model Found!\n"), QMessageBox::Close);
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS model and/or validation found!\n"), QMessageBox::Close);
   }
 }
 
@@ -4996,7 +5024,34 @@ void MainWindow::PLSPlotR2R2Predicted()
     }
   }
   else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models and Validation Model Found!\n"), QMessageBox::Close);
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS model and/or validation found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::PLSPlotRMSEPredicted()
+{
+  if(ProjectsHavePLSPrediction() == true){
+    ProjectTree pjtree;
+    GetPLSProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      PLSPlot plsplot(projects);
+      plsplot.setPID(dp.getProjectID());
+      plsplot.setMID(dp.getModelID());
+      plsplot.setPREDID(dp.getPredictionID());
+      QList< SimpleLine2DPlot* > plots = plsplot.RMSEPrediction();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS model and/or validation found!\n"), QMessageBox::Close);
   }
 }
 
@@ -6703,7 +6758,6 @@ void MainWindow::DoPLS(int algtype)
         str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
         projects->value(pid)->addPLSModel();
         updateLog(str);
-
         projects->value(pid)->getLastPLSModel()->setAlgorithm(algtype);
         projects->value(pid)->getLastPLSModel()->setDID(did);
         projects->value(pid)->getLastPLSModel()->setDataHash(projects->value(pid)->getMatrix(did)->getHash());
@@ -6786,7 +6840,6 @@ void MainWindow::DoPLS(int algtype)
         str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
         projects->value(pid)->addPLSModel();
         updateLog(str);
-
         projects->value(pid)->getLastPLSModel()->setAlgorithm(algtype);
         projects->value(pid)->getLastPLSModel()->setDID(did);
         projects->value(pid)->getLastPLSModel()->setDataHash(projects->value(pid)->getMatrix(did)->getHash());
@@ -7702,7 +7755,8 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPLSRecalc_Residuals_vs_Exp, SIGNAL(triggered(bool)), SLOT(PLSRecalcResidualsVSExpPlot()));
   connect(ui.actionPLSPred_vs_Exp, SIGNAL(triggered(bool)), SLOT(PLSPredVSExpPlot()));
   connect(ui.actionPLSPred_Residuals_vs_Exp, SIGNAL(triggered(bool)), SLOT(PLSPredResidualsVSExpPlot()));
-  connect(ui.actionPLSR2_Q2, SIGNAL(triggered(bool)), SLOT(PLSPlotQ2R2()));
+  connect(ui.actionPLSR2_Q2, SIGNAL(triggered(bool)), SLOT(PLSPlotR2Q2()));
+  connect(ui.actionPLSRMSE, SIGNAL(triggered(bool)), SLOT(PLSPlotRMSE()));
   connect(ui.actionPLSROC_Curve, SIGNAL(triggered(bool)), SLOT(PLSPlotROCCurves()));
   connect(ui.actionPLSROC_AUC_recalculated_predicted, SIGNAL(triggered(bool)), SLOT(PLSPlotROCAucs()));
   connect(ui.actionPLSPrecision_recall_Curve, SIGNAL(triggered(bool)), SLOT(PLSPlotPRCurves()));
@@ -7714,6 +7768,8 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionBetaCoeffDWPlot, SIGNAL(triggered(bool)), SLOT(PLSPlotBetaCoeffDWPlot()));
 
   connect(ui.actionPLSR2_Prediction, SIGNAL(triggered(bool)), SLOT(PLSPlotR2R2Predicted()));
+  connect(ui.actionPLSRMSEModel_and_External_Prediction, SIGNAL(triggered(bool)), SLOT(PLSPlotRMSEPredicted()));
+
   connect(ui.actionPLS3D_ttt_Score_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DTTTScorePlot()));
   connect(ui.actionPLS3D_ppp_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DPPPLoadingsPlot()));
   connect(ui.actionPLS3D_www_Weights_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DWWWLoadingsPlot()));

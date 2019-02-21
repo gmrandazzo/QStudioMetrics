@@ -46,11 +46,13 @@ public:
   void ClassPredictedVSExperimental(QList<QStringList> *cellnames, QList<QList<QPixmap>> *images, QList<QList<QColor>> *colors);
   void PredictedResidualsVSExperimental(ScatterPlot **plot2D);
   QList< SimpleLine2DPlot* > R2Q2();
+  QList< SimpleLine2DPlot* > RMSE();
   QList< SimpleLine2DPlot* > ROCAUCs();
   QList< SimpleLine2DPlot* > ROCCurves();
   QList< SimpleLine2DPlot* > PrecisionRecallAveragePrecision();
   QList< SimpleLine2DPlot* > PrecisionRecallCurves();
   QList< SimpleLine2DPlot* > R2R2Prediction();
+  QList< SimpleLine2DPlot* > RMSEPrediction();
   QList< ScatterPlot *> YScramblingPlot();
 
 private:

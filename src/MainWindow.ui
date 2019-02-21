@@ -258,10 +258,13 @@
       <addaction name="actionPLSPred_Residuals_vs_Exp"/>
       <addaction name="separator"/>
       <addaction name="actionPLSR2_Q2"/>
+      <addaction name="actionPLSRMSE"/>
+      <addaction name="separator"/>
       <addaction name="actionPLSROC_Curve"/>
       <addaction name="actionPLSROC_AUC_recalculated_predicted"/>
       <addaction name="actionPLSPrecision_recall_Curve"/>
       <addaction name="actionPLSPrecision_Recall_AUC_recalculated_predicted"/>
+      <addaction name="separator"/>
       <addaction name="actionPLSYScrambling"/>
       <addaction name="separator"/>
       <addaction name="actionPLS2DScore_Plot_Prediction"/>
@@ -270,6 +273,7 @@
       <addaction name="actionPLSR2_Prediction"/>
       <addaction name="actionROC_AUC_recalculated_and_external_prediction"/>
       <addaction name="actionPrecision_recall_AUC_recalculated_predicted"/>
+      <addaction name="actionPLSRMSEModel_and_External_Prediction"/>
      </widget>
      <addaction name="menu2D_Space_3"/>
      <addaction name="menu3D_Space_3"/>
@@ -762,7 +766,7 @@
   </action>
   <action name="actionPLSR2_Q2">
    <property name="text">
-    <string>R2 and Q2</string>
+    <string>R2 (Training) and Q2 (Validation)</string>
    </property>
   </action>
   <action name="actionPLS3D_ttt_Score_Plot">
@@ -1518,6 +1522,41 @@
   <action name="actionPCA2DExpVarPlot">
    <property name="text">
     <string>Explained Variance and Broken-Stick Model</string>
+   </property>
+  </action>
+  <action name="actionPLSRMSE">
+   <property name="text">
+    <string>RMSE (Training/Validation)</string>
+   </property>
+  </action>
+  <action name="actionPLSMAE">
+   <property name="text">
+    <string>Mean absolute error (Training/Validation)</string>
+   </property>
+  </action>
+  <action name="actionMeans_squared_error_Training_Validation_Ext_prediction">
+   <property name="text">
+    <string>Mean squared error (Training/Validation/Ext. prediction)</string>
+   </property>
+  </action>
+  <action name="actionMean_squared_error_External_prediction">
+   <property name="text">
+    <string>Mean squared error (External prediction)</string>
+   </property>
+  </action>
+  <action name="actionMean_absolute_error_External_prediction">
+   <property name="text">
+    <string>Mean absolute error (External prediction)</string>
+   </property>
+  </action>
+  <action name="actionPLSRMSEModel_and_External_Prediction">
+   <property name="text">
+    <string>RMSE (Training/Validation/External prediction)</string>
+   </property>
+  </action>
+  <action name="actionPLSMAEModel_and_External_Prediction">
+   <property name="text">
+    <string>Mean absolute error Model and External prediction</string>
    </property>
   </action>
  </widget>

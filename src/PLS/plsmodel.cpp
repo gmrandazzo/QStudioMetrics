@@ -175,6 +175,7 @@ PLSModel::PLSModel()
   NewPLSModel(&m);
   did = xscaling = yscaling = npc = modelid = -1;
   validation = 0;
+  algtype = PLS_;
 }
 
 PLSModel::~PLSModel()
