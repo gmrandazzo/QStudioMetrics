@@ -71,6 +71,7 @@ MDIChild::MDIChild()
   table = 0;
   modinfo = 0;
   setAttribute(Qt::WA_DeleteOnClose);
+  setWindowIcon(QIcon()); 
   id = -1;
 }
 

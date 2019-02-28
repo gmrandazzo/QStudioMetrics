@@ -11,11 +11,38 @@
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
+
+#ifdef WEBKIT
+#include <QWebView>
+#include <QSettings>
+#else
 #include <QWebEngineView>
 #include <QWebEngineProfile>
 #include <QWebEngineFullScreenRequest>
+#endif
+
 
 #include <QDebug>
+
+#ifdef WEBKIT
+CustomNetworkCookieJar::CustomNetworkCookieJar( QObject * p_pParent )
+    : QNetworkCookieJar( p_pParent )
+{
+}
+
+CustomNetworkCookieJar::~CustomNetworkCookieJar()
+{
+}
+
+bool CustomNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> & p_grCookieList, const QUrl &p_grUrl)
+{
+    for(int i = 0; i < p_grCookieList.size(); i++){
+       QString cookie = QString("%1=%2").arg(QString(p_grCookieList[i].name())).arg(QString(p_grCookieList[i].value()));
+       emit cookiesChanged(cookie);
+    }
+    return true;
+}
+#endif
 
 void QPlotlyVersion(int *major, int *minor, int *patch)
 {
@@ -260,7 +287,7 @@ void QPlotlyWindow::RemoveAllCurves()
 
 void QPlotlyWindow::Refresh()
 {
-  printf("Refresh\n");
+  //printf("Refresh\n");
   // instead of  Plotly.update('graph', data_update) do a replot!
   Plot();
 }
@@ -912,9 +939,10 @@ void QPlotlyWindow::Plot()
   }
   */
   if(code.size() > 0){
-    QUrl page = WriteTemporaryPage(code);
+    page = WriteTemporaryPage(code);
     wview->load(page);
-    //wview->load(QUrl(QStringLiteral("https://www.qt.io")));//
+    //wview->load(QUrl(QStringLiteral("https://www.google.com")));
+    //nam->cookieJar()->cookiesForUrl(QUrl(QStringLiteral("https://www.google.com")));
   }
 }
 
@@ -971,14 +999,26 @@ int QPlotlyWindow::FindPoint(qreal x, qreal y, qreal z, QString name_)
   }*/
 }
 
-void QPlotlyWindow::handleCookieAdded(const QNetworkCookie &cookie)
+#ifdef WEBKIT
+void QPlotlyWindow::WebKithandleCookieAdded(QString cookie)
+{
+  //qDebug() << cookie;
+  CookieParser(cookie);
+}
+#else
+void QPlotlyWindow::WebEnginehandleCookieAdded(const QNetworkCookie &cookie)
 {
   QString cookie_(cookie.toRawForm());
+  CookieParser(cookie_);
   #ifdef DEBUG
   qDebug() << cookie_ << "\n";
   #endif
+}
+#endif
 
-  if(cookie_.contains("selpnt=start") == true){
+void QPlotlyWindow::CookieParser(QString cookie)
+{
+  if(cookie.contains("selpnt=start") == true){
     #ifdef DEBUG
     qDebug() << "Clear previous selection";
     #endif
@@ -987,11 +1027,11 @@ void QPlotlyWindow::handleCookieAdded(const QNetworkCookie &cookie)
     }
     selected_points.clear();
   }
-  else if(cookie_.contains("point=") == true){
+  else if(cookie.contains("point=") == true){
     #ifdef DEBUG
-    qDebug() << cookie_.split(";");
+    qDebug() << cookie.split(";");
     #endif
-    QStringList vars = cookie_.split(";")[0].split(" ");
+    QStringList vars = cookie.split(";")[0].split(" ");
     //point=x: 2 y: 2 z: 2 name: due; path=/var/folders/1z/j2xq6qss7s93bmf23nzcskp00000gp/T/testqplotly-YlDhEE"
     qreal x = 0.f, y = 0.f, z = 0.f;
     x = atof(vars[1].toStdString().c_str());
@@ -1012,10 +1052,9 @@ void QPlotlyWindow::handleCookieAdded(const QNetworkCookie &cookie)
     else{
       //Refresh();
       update();
-      return;
     }
   }
-  else if(cookie_.contains("selpnt=end") == true){
+  else if(cookie.contains("selpnt=end") == true){
     #ifdef DEBUG
     qDebug() << "End point selection";
     #endif
@@ -1025,12 +1064,11 @@ void QPlotlyWindow::handleCookieAdded(const QNetworkCookie &cookie)
     }*/
     Refresh(); // OK THIS
     update();
-    return;
   }
   //Refresh();
   update();
-  return;
 }
+
 
 QPlotlyWindow::QPlotlyWindow(QWidget *parent) : QWidget(parent)
 {
@@ -1044,14 +1082,32 @@ QPlotlyWindow::QPlotlyWindow(QWidget *parent) : QWidget(parent)
 
   QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
   QVBoxLayout *mainLayout = new QVBoxLayout;
+  #ifdef WEBKIT
+  wview = new QWebView(this);
+  #else
   wview = new QWebEngineView(this);
+  #endif
   this->setMinimumSize(this->size());
   wview->resize(this->size());
   //wview->page()->profile()->setPersistentCookiesPolicy(QWebEngineProfile::ForcePersistentCookies);
   mainLayout->addWidget(wview);
   this->setLayout(mainLayout);
+  //cookie halding
+  #ifdef WEBKIT
+  /* 1) get QWebPage and grap the underlying QNetworkAccessManager
+   * 2) Set a custom cookieJar that overrides the functions to set cookies.
+   * 3) When a cookie is added emit a signal and get it in a format that you need
+   */
+  cookieJar = new CustomNetworkCookieJar();
+
+  nam = new QNetworkAccessManager();
+  nam->setCookieJar(cookieJar);
+  wview->page()->setNetworkAccessManager(nam);
+  connect(nam->cookieJar(), SIGNAL(cookiesChanged(QString)), this, SLOT(WebKithandleCookieAdded(QString)));
+  #else
   cookie_store = wview->page()->profile()->cookieStore();
-  connect(cookie_store, &QWebEngineCookieStore::cookieAdded, this, &QPlotlyWindow::handleCookieAdded);
+  connect(cookie_store, &QWebEngineCookieStore::cookieAdded, this, &QPlotlyWindow::WebEnginehandleCookieAdded);
+  #endif
 }
 
 QPlotlyWindow::~QPlotlyWindow()
@@ -1059,6 +1115,12 @@ QPlotlyWindow::~QPlotlyWindow()
   // Free the memory!
   dir.remove();
   delete wview;
+
+  #ifdef WEBKIT
+  delete cookieJar;
+  delete nam;
+  #endif
+
   for(int i = 0; i < p.size(); i++){
     delete p[i];
   }

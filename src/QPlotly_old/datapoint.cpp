@@ -32,18 +32,17 @@ void DataPoint::setName(QString name)
   m_name = name;
 }
 
-QString &DataPoint::getName()
+QString DataPoint::getName() const
 {
   return m_name;
 }
-
 
 void DataPoint::setColor(const QColor &color)
 {
   m_color = color;
 }
 
-QColor &DataPoint::getColor()
+QColor DataPoint::getColor() const
 {
   return m_color;
 }

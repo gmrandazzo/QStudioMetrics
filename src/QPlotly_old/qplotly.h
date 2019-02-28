@@ -15,6 +15,13 @@
 #include "datacurve.h"
 #include "databar.h"
 
+
+#define MAJOR 1
+#define MINOR 1
+#define PATCH 1
+
+void QPlotlyVersion(int *major, int *minor, int *patch);
+
 enum PLOTTYPE
 {
    _2D,
@@ -89,7 +96,10 @@ private:
   QWebEngineCookieStore *cookie_store;
   QTemporaryDir dir;
   QUrl WriteTemporaryPage(QString code);
+  void ModifyTemporaryPage(QString code, QList<int> line_ids);
+  QStringList JSonScatterWorker(int from, int to);
   QString genJSONScatter();
+  QStringList JSon3DScatterWorker(int from, int to);
   QString genJSON3DScatter();
   QString genJSONCurve();
   QString genJSONBar();

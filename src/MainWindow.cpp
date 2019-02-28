@@ -7615,9 +7615,14 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
 {
   ui.setupUi(this);
 
-#ifdef RELEASE // look in ImportFileDialog.cpp... same exception...
+  #if defined(RELEASE) || defined(WIN32) // look in ImportFileDialog.cpp... same exception...
   ui.actionPCA2DLoadingsMVAND_Plot->setVisible(false);
-#endif
+  ui.actionEPLS_Regression->setVisible(false);
+  ui.actionEPLS_Discriminant_Analysis->setVisible(false);
+  ui.actionEPLS_Validator->setVisible(false);
+  ui.actionEPLS_Prediction->setVisible(false);
+  ui.menuEPLS_plots->menuAction()->setVisible(false);
+  #endif
 
   confdir = confdir_;
   QFile file(confdir+"recents");

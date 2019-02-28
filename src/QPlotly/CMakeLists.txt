@@ -1,13 +1,12 @@
 PROJECT(libqplotly)
 cmake_minimum_required(VERSION 2.8)
 set(AUTHOR "Giuseppe Marco Randazzo")
-set(VERSION "1.0.0")
+set(VERSION "1.1.1")
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_MACOSX_RPATH 1)
-
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: DEBUG or RELEASE" FORCE)
@@ -36,7 +35,13 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
 #    WebKitWidgets
 #    OpenGL)
 
-set(_components Core Gui Widgets PrintSupport WebEngine WebEngineWidgets)
+if(WIN32)
+  set(_components Core Gui Widgets WebKitWidgets Network PrintSupport)
+  add_definitions(-DWEBKIT)
+else()
+  set(_components Core Gui Widgets PrintSupport WebEngine WebEngineWidgets)
+endif()
+
 foreach(_component ${_components})
   find_package(Qt5${_component} REQUIRED )
   list(APPEND QT5_LIBRARIES ${Qt5${_component}_LIBRARIES})
@@ -52,7 +57,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 if(WIN32)
   message(STATUS "OS: Windows")
   # add -static if you whant to compile with gcc lib static
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pipe -mwindows -pedantic -Wall")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pipe -DWIN32 -mwindows -pedantic -Wall")
   # add to the linker flags the static library -static-libgcc -static-libstdc++
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -s -Wl,-O1")
 elseif(APPLE)
@@ -96,10 +101,9 @@ if(WIN32)
   target_link_libraries(libqplotly  ${QT5_LIBRARIES} Qt5::WinMain "-mwindows")
 else()
   target_link_libraries(libqplotly ${QT5_LIBRARIES})
-
-
-  add_executable(testqplotly ${QPLOTLY_TEST_SRC})
-  target_link_libraries(testqplotly libqplotly ${QT5_LIBRARIES})
 endif()
+
+add_executable(testqplotly ${QPLOTLY_TEST_SRC})
+target_link_libraries(testqplotly libqplotly ${QT5_LIBRARIES})
 
 # install(TARGETS libqplotly LIBRARY DESTINATION lib COMPONENT Libraries)

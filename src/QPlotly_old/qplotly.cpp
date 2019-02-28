@@ -1,18 +1,28 @@
 #include "qplotly.h"
 #include <algorithm>
+
+#include <QApplication>
+#include <QFile>
 #include <QString>
 #include <QStringList>
+#include <QTextStream>
+#include <QThread>
+#include <QtConcurrent/QtConcurrent>
+#include <QUrl>
+#include <QVBoxLayout>
+#include <QWidget>
 #include <QWebEngineView>
 #include <QWebEngineProfile>
 #include <QWebEngineFullScreenRequest>
-#include <QUrl>
-#include <QFile>
-#include <QTextStream>
-#include <QVBoxLayout>
-#include <QWidget>
-#include <QApplication>
 
 #include <QDebug>
+
+void QPlotlyVersion(int *major, int *minor, int *patch)
+{
+  (*major) = MAJOR;
+  (*minor) = MINOR;
+  (*patch) = PATCH;
+}
 
 void QPlotlyWindow::Demo()
 {
@@ -55,10 +65,10 @@ void QPlotlyWindow::Demo()
 QUrl QPlotlyWindow::WriteTemporaryPage(QString code)
 {
   if (dir.isValid()) {
-    #ifdef DEBUG
-    printf("QPlotlyWindow::WriteTemporaryPage\n");
+    //#ifdef DEBUG
+    //printf("QPlotlyWindow::WriteTemporaryPage\n");
     qDebug() << "Path is" << dir.path();
-    #endif
+    //#endif
 
     dir.setAutoRemove(false);
 
@@ -76,6 +86,16 @@ QUrl QPlotlyWindow::WriteTemporaryPage(QString code)
     }
   }
   return QUrl();
+}
+
+void QPlotlyWindow::ModifyTemporaryPage(QString code, QList<int> line_ids)
+{
+  QString f_path = QString("%1/index.html").arg(dir.path());
+  QFile f(f_path);
+  for(int i = 0; i < line_ids.size(); i++){
+    return;
+  }
+  return;
 }
 
 void QPlotlyWindow::setXaxisName(QString xaxisname_)
@@ -240,6 +260,7 @@ void QPlotlyWindow::RemoveAllCurves()
 
 void QPlotlyWindow::Refresh()
 {
+  printf("Refresh\n");
   // instead of  Plotly.update('graph', data_update) do a replot!
   Plot();
 }
@@ -307,14 +328,127 @@ void QPlotlyWindow::SaveAsImage(QString imgname)
 
 void QPlotlyWindow::close() {}
 
+QStringList QPlotlyWindow::JSonScatterWorker(int from, int to)
+{
+  //qDebug() << "Run from " << from << " to " << to;
+  //Simple visible point
+  QString x = "", y = "", text = "", color = "", msize = "";
+  //Simple point marked with label
+  QString xm = "", ym = "", textm = "", colorm = "", msizem = "";
+  //Simple point selected
+  QString xs = "", ys = "", texts = "", colors = "", msizes = "";
+
+  if(to > p.size()-1)
+    to = p.size()-1;
+
+  for(int i = from; i < to; i++){
+    int r_, g_, b_, a_;
+    r_ = p[i]->getColor().red();
+    g_ = p[i]->getColor().green();
+    b_ = p[i]->getColor().blue();
+    a_ = p[i]->getColor().alpha();
+
+    if(p[i]->isVisible() == true){
+      if(p[i]->isLabelVisible() == true){
+        xm += QString("%1,").arg(p[i]->x());
+        ym += QString("%1,").arg(p[i]->y());
+        textm += QString("'%1',").arg(p[i]->getName());
+        colorm += QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+        msizem += QString("%1,").arg(p[i]->radius());
+      }
+      else{
+        if(p[i]->isSelected() == true || selected_points.contains(i) == true){
+          xs += QString("%1,").arg(p[i]->x());
+          ys += QString("%1,").arg(p[i]->y());
+          texts += QString("'%1',").arg(p[i]->getName());
+          colors += QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+          msizes += QString("%1,").arg(p[i]->radius());
+        }
+        else{
+          x += QString("%1,").arg(p[i]->x());
+          y += QString("%1,").arg(p[i]->y());
+          text += QString("'%1',").arg(p[i]->getName());
+          color += QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+          msize += QString("%1,").arg(p[i]->radius());
+        }
+      }
+    }
+    else{
+      continue;
+    }
+  }
+
+  QStringList rval;
+  rval.append(x);
+  rval.append(y);
+  rval.append(text);
+  rval.append(color);
+  rval.append(msize);
+  rval.append(xm);
+  rval.append(ym);
+  rval.append(textm);
+  rval.append(colorm);
+  rval.append(msizem);
+  rval.append(xs);
+  rval.append(ys);
+  rval.append(texts);
+  rval.append(colors);
+  rval.append(msizes);
+  return rval;
+}
+
 QString QPlotlyWindow::genJSONScatter()
 {
   QString json;
-  int i;
+  //Simple visible point
   QString x = "x: [", y = "y: [", text = "text: [", color = "color: [", msize = "size: [";
+  //Simple point marked with label
   QString xm = "x: [", ym = "y: [", textm = "text: [", colorm = "color: [", msizem = "size: [";
+  //Simple point selected
   QString xs = "x: [", ys = "y: [", texts = "text: [", colors = "color: [", msizes = "size: [";
 
+  int nth = QThread::idealThreadCount();
+  int step = (int)ceil((p.size()-1)/(double)nth);
+
+  if(step == 0){
+    nth = 1;
+    step = p.size()-1;
+  }
+
+  QList<QFuture<QStringList>> futures;
+  int from = 0, to = step;
+  for(int i = 0; i < nth; i++){
+    futures.append(QtConcurrent::run(this, &QPlotlyWindow::JSonScatterWorker, from, to));
+    from = to;
+    if(from+step > p.size()-1){
+      to = p.size()-1;
+    }
+    else{
+      to+=step;
+    }
+  }
+
+
+  for(int i = 0; i < futures.size(); i++){
+    QStringList r = futures[i].result();
+    x += r[0];
+    y += r[1];
+    text += r[2];
+    color += r[3];
+    msize += r[4];
+    xm += r[5];
+    ym += r[6];
+    textm += r[7];
+    colorm += r[8];
+    msizem += r[9];
+    xs += r[10];
+    ys += r[11];
+    texts += r[12];
+    colors += r[13];
+    msizes += r[14];
+  }
+
+  /* SINGLE THREAD IMPLEMENTATION
   for(i = 0; i < p.size()-1; i++){
     int r_, g_, b_, a_;
     r_ = p[i]->getColor().red();
@@ -350,7 +484,7 @@ QString QPlotlyWindow::genJSONScatter()
     else{
       continue;
     }
-  }
+  }*/
 
   int last_id = p.size()-1;
 
@@ -366,7 +500,7 @@ QString QPlotlyWindow::genJSONScatter()
       ym += QString("%1]").arg(p[last_id]->y());
       textm += QString("'%1']").arg(p[last_id]->getName());
       colorm += QString("'rgba(%1, %2, %3, %4)']").arg(r_).arg(g_).arg(b_).arg(a_);
-      msizem += QString("%1]").arg(p[i]->radius());
+      msizem += QString("%1]").arg(p[last_id]->radius());
       x += QString("]");
       y += QString("]");
       text += QString("'']");
@@ -379,7 +513,7 @@ QString QPlotlyWindow::genJSONScatter()
       msizes += QString("]");
     }
     else{
-      if(p[last_id]->isSelected() == true){
+      if(p[last_id]->isSelected() == true || selected_points.contains(last_id) == true){
         xs += QString("%1]").arg(p[last_id]->x());
         ys += QString("%1]").arg(p[last_id]->y());
         texts += QString("'%1']").arg(p[last_id]->getName());
@@ -447,13 +581,10 @@ QString QPlotlyWindow::genJSONScatter()
   return json;
 }
 
-QString QPlotlyWindow::genJSON3DScatter()
+QStringList QPlotlyWindow::JSon3DScatterWorker(int from, int to)
 {
-  QString json;
-  int i;
-  QString x = "x:[", y = "y:[", z = "z:[", text = "text:[", color = "color:[";
-
-  for(i = 0; i < p.size()-1; i++){
+  QString x = "", y = "", z = "", text = "", color = "";
+  for(int i = from; i < to; i++){
     if(p[i]->isVisible() == true){
       int r_, g_, b_, a_;
       r_ = p[i]->getColor().red();
@@ -484,6 +615,86 @@ QString QPlotlyWindow::genJSON3DScatter()
       continue;
     }
   }
+
+  QStringList res;
+  res.append(x);
+  res.append(y);
+  res.append(z);
+  res.append(text);
+  res.append(color);
+  return res;
+}
+
+QString QPlotlyWindow::genJSON3DScatter()
+{
+  QString json;
+  QString x = "x:[", y = "y:[", z = "z:[", text = "text:[", color = "color:[";
+
+
+  int nth = QThread::idealThreadCount();
+  int step = (int)ceil((p.size()-1)/(double)nth);
+
+  if(step == 0){
+    nth = 1;
+    step = p.size()-1;
+  }
+
+  QList<QFuture<QStringList>> futures;
+  int from = 0, to = step;
+  for(int i = 0; i < nth; i++){
+    futures.append(QtConcurrent::run(this, &QPlotlyWindow::JSon3DScatterWorker, from, to));
+    from = to;
+    if(from+step > p.size()-1){
+      to = p.size()-1;
+    }
+    else{
+      to+=step;
+    }
+  }
+
+
+  for(int i = 0; i < futures.size(); i++){
+    QStringList r = futures[i].result();
+    x += r[0];
+    y += r[1];
+    z += r[2];
+    text += r[3];
+    color += r[4];
+  }
+
+  /* SINGLE THREAD IMPLEMENTATION
+  for(int i = 0; i < p.size()-1; i++){
+    if(p[i]->isVisible() == true){
+      int r_, g_, b_, a_;
+      r_ = p[i]->getColor().red();
+      g_ = p[i]->getColor().green();
+      b_ = p[i]->getColor().blue();
+      a_ = p[i]->getColor().alpha();
+      if(p[i]->isLabelVisible() == true){
+        //json += QString("var id%1 = { x: [%2], y: [%3], text: ['%4'], mode: 'markers+text', textposition: 'top center', textfont: { family: 'Raleway, sans-serif' }, marker: { size: %5, opacity: 0.9, color: 'rgba(%6, %7, %8, %9)' }, type: 'scatter' };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
+        //json += QString("var id%1 = { x: [%2], y: [%3], z: [%4] text: ['%5'], mode: 'markers+text', textposition: 'top center', textfont: { family: 'Raleway, sans-serif' }, marker: { size: %6, opacity: 0.9, color: 'rgba(%7, %8, %9, %10)', symbol: 'circle', }, type: 'scatter3d' };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->z()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
+        x+=QString("%1,").arg(p[i]->x());
+        y+=QString("%1,").arg(p[i]->y());
+        z+=QString("%1,").arg(p[i]->z());
+        text+=QString("'%1',").arg(p[i]->getName());
+        color+=QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+      }
+      else{
+        //json += QString("var id%1 = { x: [%2], y: [%3], text: ['%4'], mode: 'markers', marker: { size: %5, opacity: 0.9, color: 'rgba(%6, %7, %8, %9)' }, type: 'scatter' };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
+        //json += QString("var id%1 = { x: [%2], y: [%3], z: [%4], text: ['%5'], mode: 'markers', marker: { size: %6, opacity: 0.9, color: 'rgba(%7, %8, %9, %10)', symbol: 'circle', }, type: 'scatter3d' };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->z()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
+        x+=QString("%1,").arg(p[i]->x());
+        y+=QString("%1,").arg(p[i]->y());
+        z+=QString("%1,").arg(p[i]->z());
+        text+=QString("'%1',").arg(p[i]->getName());
+        color+=QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+      }
+      //trace_id++;
+    }
+    else{
+      continue;
+    }
+  }*/
+
   size_t last_id = p.size()-1;
   int r_, g_, b_, a_;
   r_ = p[last_id]->getColor().red();
@@ -707,10 +918,34 @@ void QPlotlyWindow::Plot()
   }
 }
 
+class DataPointIsEqual {
+  DataPoint p1;
+public:
+  DataPointIsEqual(DataPoint &p):p1(p){}
+  bool operator()(DataPoint *p2) const
+  {
+    //QEPSILON and FLOAT_EQ DEFINED IN DATAPOINT.H
+    if(FLOAT_EQ(p1.x(), p2->x(), QEPSILON) &&
+       FLOAT_EQ(p1.y(), p2->y(), QEPSILON) &&
+       FLOAT_EQ(p1.z(), p2->z(), QEPSILON)){
+      if(p1.getName().compare(p2->getName()) == 0){
+        return true;
+      }
+      else{
+        return false;
+      }
+    }
+    else{
+      return false;
+    }
+  }
+};
+
 int QPlotlyWindow::FindPoint(qreal x, qreal y, qreal z, QString name_)
 {
   DataPoint f(x, y, z, name_);
-  int indx = std::find(p.begin(), p.end(), &f) - p.begin();
+  //int indx = std::find(p.begin(), p.end(), &f) - p.begin();
+  int indx = std::find_if(p.begin(), p.end(), DataPointIsEqual(f)) - p.begin();
   if(indx == p.size()){
     return -1;
   }
@@ -744,6 +979,9 @@ void QPlotlyWindow::handleCookieAdded(const QNetworkCookie &cookie)
   #endif
 
   if(cookie_.contains("selpnt=start") == true){
+    #ifdef DEBUG
+    qDebug() << "Clear previous selection";
+    #endif
     for(int i = 0; i < selected_points.size(); i++){
       p[selected_points[i]]->setSelection(false);
     }
@@ -762,27 +1000,34 @@ void QPlotlyWindow::handleCookieAdded(const QNetworkCookie &cookie)
       z = atof(vars[5].toStdString().c_str());
     QString name = vars[7];
     int id = FindPoint(x, y, z, name);
+    #ifdef DEBUG
+    qDebug() << "Find Point Result: " << id;
+    #endif
+
     if(id > -1){
       selected_points << id;
       p[id]->setSelection(true);
       //qDebug() << "id Nr. " << selected_points.last();
     }
     else{
-      Refresh();
+      //Refresh();
       update();
       return;
     }
   }
   else if(cookie_.contains("selpnt=end") == true){
+    #ifdef DEBUG
+    qDebug() << "End point selection";
+    #endif
     /* Selection END!
      for(size_t i = 0; i < selected_points.size(); i++){
       qDebug() << selected_points[i] << "\n";
     }*/
-    Refresh();
+    Refresh(); // OK THIS
     update();
     return;
   }
-  Refresh();
+  //Refresh();
   update();
   return;
 }

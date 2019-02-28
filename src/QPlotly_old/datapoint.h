@@ -9,7 +9,7 @@
 
 #include <QDebug>
 
-#define QEPSILON 1e-4  /* Define your own tolerance*/
+#define QEPSILON 1e-3  /* Define your own tolerance*/
 #define FLOAT_EQ(x,v, EPSILON) (((v - EPSILON) < x) && (x <( v + EPSILON)))
 
 class DataPoint
@@ -23,9 +23,9 @@ public:
   void setY(qreal y);
   void setZ(qreal z);
   void setName(QString name);
-  QString &getName();
+  QString getName() const;
   void setColor(const QColor &color);
-  QColor &getColor();
+  QColor getColor() const;
   void setWidth(int width);
   void setRadius(int radius);
   void setSelection(bool selection);

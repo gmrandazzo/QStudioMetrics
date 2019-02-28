@@ -35,6 +35,7 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
 #    WebKitWidgets
 #    OpenGL)
 
+
 set(_components Core Gui Widgets Sql PrintSupport Concurrent)
 foreach(_component ${_components})
   find_package(Qt5${_component} REQUIRED)
@@ -53,6 +54,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x  -Wno-extra-semi")
 # IF RELEASE
 if(cmake_build_type_tolower STREQUAL "release")
   set(CMAKE_CXX_FLAGS_COVERAGE "${CMAKE_CXX_FLAGS_RELEASE} -fprofile-arcs -ftest-coverage")
+endif()
+
+string(TOLOWER "${PLOT_ENGINE}" plot_engine_tolower)
+if(plot_engine_tolower STREQUAL "webkit")
+  message(STATUS "Plot engine: WEBKIT")
+  add_definitions(-DWEBKIT)
 endif()
 
 if(WIN32)

@@ -271,9 +271,9 @@
       <addaction name="actionPLSRecalc_vs_Exp_with_Prediction"/>
       <addaction name="actionPLSPred_vs_Exp_with_Prediction"/>
       <addaction name="actionPLSR2_Prediction"/>
+      <addaction name="actionPLSRMSEModel_and_External_Prediction"/>
       <addaction name="actionROC_AUC_recalculated_and_external_prediction"/>
       <addaction name="actionPrecision_recall_AUC_recalculated_predicted"/>
-      <addaction name="actionPLSRMSEModel_and_External_Prediction"/>
      </widget>
      <addaction name="menu2D_Space_3"/>
      <addaction name="menu3D_Space_3"/>
