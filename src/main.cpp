@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QStyleFactory>
 #include <QtCore/QFileInfo>
 #include <QtNetwork/QHostInfo>
 #include <QDir>
@@ -20,6 +21,7 @@ int main(int argc, char *argv[])
   #endif
 
   QApplication app(argc, argv);
+  QApplication::setStyle(QStyleFactory::create("Fusion"));
   QString path;
   QString k;
   path = QString("%1/.QStudioMetrics/").arg(QDir::homePath());
