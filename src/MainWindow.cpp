@@ -3383,6 +3383,7 @@ void MainWindow::showData()
       QString tabname = projectname +"-Matrix-"+ getCurrentDataName();
 
       MDIChild *child = createMdiChild();
+
       #ifdef DEBUG
       qDebug() << "pid: " << pid << " did " << did;
       #endif
@@ -3525,6 +3526,7 @@ void MainWindow::closeMDI(const int &id)
 MDIChild *MainWindow::createMdiChild()
 {
   MDIChild *child = new MDIChild;
+  child->setWindowIcon(QIcon(QPixmap(1,1)));
   ui.mdiArea->addSubWindow(child);
   return child;
 }

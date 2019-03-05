@@ -10,6 +10,7 @@ void MDIChild::newModelInfo()
   modinfo = new ModelInfo(this);
   setWidget(modinfo);
   modinfo->Adjust();
+  setWindowIcon(QIcon(QPixmap(1,1)));
   adjustSize();
 }
 
@@ -18,6 +19,7 @@ void MDIChild::newListView(QString& tabname, QStringList lst)
   setWindowTitle(tabname);
   listview = new ListView(lst);
   setWidget(listview);
+  setWindowIcon(QIcon(QPixmap(1,1)));
   adjustSize();
 }
 
@@ -27,6 +29,7 @@ void MDIChild::newTable (QString& tabname_)
   table = new Table(this);
   table->setObjectName(tabname_);
   setWidget(table);
+  setWindowIcon(QIcon(QPixmap(1,1)));
   resize(300, 260);
 }
 
@@ -36,6 +39,7 @@ void MDIChild::newTable (QString& tabname_, matrix* m)
   table = new Table(m, this);
   table->setObjectName(tabname_);
   setWidget(table);
+  setWindowIcon(QIcon(QPixmap(1,1)));
   resize(300, 260);
 }
 
@@ -45,6 +49,7 @@ void MDIChild::newTable(QString& tabname_, matrix* m, LABELS *objlabels_, LABELS
   table = new Table(m, objlabels_, varlabels_, this);
   table->setObjectName(tabname_);
   setWidget(table);
+  setWindowIcon(QIcon(QPixmap(1,1)));
   resize(300, 260);
 }
 
@@ -54,6 +59,7 @@ void MDIChild::newTable(QString& tabname, QList< QStringList > tab, LABELS* objl
   table = new Table(tab, objlabels_, varlabels_, this);
   table->setObjectName(tabname);
   setWidget(table);
+  setWindowIcon(QIcon(QPixmap(1,1)));
   resize(300, 260);
 }
 
@@ -63,6 +69,7 @@ void MDIChild::newTable(QString& tabname, QStringList names, QList<QPixmap> imag
   table = new Table(names, images, colors, this);
   table->setObjectName(tabname);
   setWidget(table);
+  setWindowIcon(QIcon(QPixmap(1,1)));
   resize(300, 260);
 }
 
@@ -71,7 +78,7 @@ MDIChild::MDIChild()
   table = 0;
   modinfo = 0;
   setAttribute(Qt::WA_DeleteOnClose);
-  setWindowIcon(QIcon()); 
+  setWindowIcon(QIcon(QPixmap(1,1)));
   id = -1;
 }
 
