@@ -7,6 +7,8 @@
 #include <QPixmap>
 #include <scientific.h>
 
+#define DEFAULT_EMTPY_VALUE -9999.
+
 enum{
   MATRIXDATA = 0,
   ARRAYDATA,

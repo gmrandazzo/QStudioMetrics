@@ -287,7 +287,7 @@ void ImportFileDialog::ImportType0()
           for(int j = 1; j < items.size(); j++){
             bool converted;
             double val = items[j].replace(",",".").toDouble(&converted);
-            m->Matrix()->data[row-1][j-1] = (converted == true) ? val : -9999.;
+            m->Matrix()->data[row-1][j-1] = (converted == true) ? val : DEFAULT_EMTPY_VALUE;
           }
         }
         row++;
@@ -329,7 +329,7 @@ void ImportFileDialog::ImportType1()
           for(int j = 0; j < items.size(); j++){
             bool converted;
             double val = items[j].replace(",",".").toDouble(&converted);
-            m->Matrix()->data[row-1][j] = (converted == true) ? val : -9999.;
+            m->Matrix()->data[row-1][j] = (converted == true) ? val : DEFAULT_EMTPY_VALUE;
           }
         }
         row++;
@@ -364,7 +364,7 @@ void ImportFileDialog::ImportType2()
         for(int j = 1; j < items.size(); j++){
           bool converted;
           double val = items[j].replace(",",".").toDouble(&converted);
-          m->Matrix()->data[row][j-1] = (converted == true) ? val : -9999.;
+          m->Matrix()->data[row][j-1] = (converted == true) ? val : DEFAULT_EMTPY_VALUE;
         }
         row++;
       }
@@ -397,7 +397,7 @@ void ImportFileDialog::ImportType3()
         for(int j = 0; j < items.size(); j++){
           bool converted;
           double val = items[j].replace(",",".").toDouble(&converted);
-          m->Matrix()->data[row][j] = (converted == true) ? val : -9999.;
+          m->Matrix()->data[row][j] = (converted == true) ? val : DEFAULT_EMTPY_VALUE;
         }
         row++;
       }
@@ -455,30 +455,32 @@ void ImportFileDialog::BuildMatrix()
     m->getVarName().append(tmp);
   }
 
-  // Check if there are nan value and substitute with the average.
-  for(size_t j = 0; j < m->Matrix()->col; j++){
-    double mean = 0.f;
-    int empty = 0;
-    for(int i = 0; i < (int)m->Matrix()->row; i++){
-      if(FLOAT_EQ(getMatrixValue(m->Matrix(), i, j), -9999, EPSILON)){
-        empty++;
+  if(ui.fix_empty_values->isChecked()){
+    // Check if there are nan value and substitute with the average.
+    for(size_t j = 0; j < m->Matrix()->col; j++){
+      double mean = 0.f;
+      int empty = 0;
+      for(int i = 0; i < (int)m->Matrix()->row; i++){
+        if(FLOAT_EQ(getMatrixValue(m->Matrix(), i, j), DEFAULT_EMTPY_VALUE, EPSILON)){
+          empty++;
+        }
+        else{
+          mean += getMatrixValue(m->Matrix(), i, j);
+        }
       }
-      else{
-        mean += getMatrixValue(m->Matrix(), i, j);
-      }
-    }
 
-    mean /= (m->Matrix()->row - empty);
+      mean /= (m->Matrix()->row - empty);
 
-    if(_isnan_(mean))
-      mean = 0.f;
+      if(_isnan_(mean))
+        mean = 0.f;
 
-    for(int i = 0; i < (int)m->Matrix()->row; i++){
-      if(FLOAT_EQ(getMatrixValue(m->Matrix(), i, j), -9999, EPSILON)){
-        setMatrixValue(m->Matrix(), i, j, mean);
-      }
-      else{
-        continue;
+      for(int i = 0; i < (int)m->Matrix()->row; i++){
+        if(FLOAT_EQ(getMatrixValue(m->Matrix(), i, j), DEFAULT_EMTPY_VALUE, EPSILON)){
+          setMatrixValue(m->Matrix(), i, j, mean);
+        }
+        else{
+          continue;
+        }
       }
     }
   }
@@ -558,7 +560,7 @@ void ImportFileDialog::BuildMatrix()
                   bool converted;
                   double val = QString(tl).replace(",",".").toDouble(&converted);
                   //qDebug() << val << row-1 << field-1;
-                  _m_->data[row-1][field-1] = (converted == true) ? val : -9999.;
+                  _m_->data[row-1][field-1] = (converted == true) ? val : DEFAULT_EMTPY_VALUE;
 
                   //_m_->data[row-1][field-1] = atof(tl);
                 }

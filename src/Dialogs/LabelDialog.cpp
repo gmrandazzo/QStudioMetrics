@@ -4,7 +4,7 @@
 
 #include "addLabelDialog.h"
 #include "ImportLabelListDialog.h"
-#include "ImportFromFileDialog.h"
+#include "ImportFileDialog.h"
 #include "qstudiometricstypes.h"
 
 #ifdef DEBUG
@@ -76,29 +76,24 @@ void LabelDialog::AddLabel()
 
 void LabelDialog::ImportTable()
 {
-  ImportFromFileDialog iffd;
-
+  ImportFileDialog iffd;
   iffd.setPath(lastpath);
   if(iffd.exec() == QDialog::Accepted){
-    if(iffd.getDataType() == MATRIXDATA){
-      QList<QStandardItem*> label;
-      label.append(new QStandardItem(iffd.getMatrix()->getName()));
-      tab2->appendRow(label);
-      tablabels->append(new TABLABEL());
-      tablabels->last()->setName(iffd.getMatrix()->getName());
-      matrix *msrc = iffd.getMatrix()->Matrix();
-      matrix *mdst = tablabels->last()->getMatrix();
-      MatrixCopy(msrc, &mdst);
-      tablabels->last()->getObjectsName().append(iffd.getMatrix()->getObjName());
-      tablabels->last()->getFeaturesName().append(iffd.getMatrix()->getVarName());
+    QList<QStandardItem*> label;
+    label.append(new QStandardItem(iffd.getMatrix()->getName()));
+    tab2->appendRow(label);
+    tablabels->append(new TABLABEL());
+    tablabels->last()->setName(iffd.getMatrix()->getName());
+    matrix *msrc = iffd.getMatrix()->Matrix();
+    matrix *mdst = tablabels->last()->getMatrix();
+    MatrixCopy(msrc, &mdst);
+    tablabels->last()->getObjectsName().append(iffd.getMatrix()->getObjName());
+    tablabels->last()->getFeaturesName().append(iffd.getMatrix()->getVarName());
 
-      lidlst.append(labtype());
-      lidlst.last().id = ntablabels();
-      lidlst.last().type = TABLABELST;
-    }
-    else{
-      return;
-    }
+    lidlst.append(labtype());
+    lidlst.last().id = ntablabels();
+    lidlst.last().type = TABLABELST;
+
     lastpath = iffd.getLastPath();
   }
 }

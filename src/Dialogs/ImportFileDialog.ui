@@ -157,7 +157,7 @@
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
        <layout class="QGridLayout" name="gridLayout_8">
-        <item row="2" column="0">
+        <item row="3" column="0">
          <widget class="QCheckBox" name="transpose">
           <property name="minimumSize">
            <size>
@@ -214,7 +214,7 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
+        <item row="4" column="0">
          <widget class="QCheckBox" name="skipcolmissingvalue">
           <property name="minimumSize">
            <size>
@@ -236,7 +236,7 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
+        <item row="4" column="1">
          <widget class="QSpinBox" name="colmissvalueBox">
           <property name="minimum">
            <number>1</number>
@@ -249,7 +249,17 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="2">
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="fix_empty_values">
+          <property name="text">
+           <string>Fix empty values with column average value</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2">
          <widget class="QLabel" name="label_9">
           <property name="text">
            <string>%</string>

@@ -52,7 +52,7 @@ private:
   QString getLabel();
 
   FSIZE GetSize();
-  
+
   void ImportType0();
   void ImportType1();
   void ImportType2();

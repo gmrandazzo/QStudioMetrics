@@ -42,7 +42,6 @@ set(QSTUDIOMETRICS_SRC
     Plotlib/VariablePlot.cpp
     Dialogs/ProjectManager.cpp
     Dialogs/addfileDialog.cpp
-    Dialogs/ImportFromFileDialog.cpp
     Dialogs/ImportFileDialog.cpp
     Dialogs/SaveDialog.cpp
     Dialogs/SearchOnTableDialog.cpp
@@ -101,7 +100,6 @@ set(QSTUDIOMETRICS_H
     Plotlib/VariablePlot.h
     Dialogs/ProjectManager.h
     Dialogs/addfileDialog.h
-    Dialogs/ImportFromFileDialog.h
     Dialogs/ImportFileDialog.h
     Dialogs/SaveDialog.h
     Dialogs/SearchOnTableDialog.h
@@ -147,7 +145,6 @@ set(QSTUDIOMETRICS_UIS
     Dialogs/VariablePlotDialog.ui
     Dialogs/ProjectManager.ui
     Dialogs/addfileDialog.ui
-    Dialogs/ImportFromFileDialog.ui
     Dialogs/ImportFileDialog.ui
     Dialogs/SaveDialog.ui
     Dialogs/SearchOnTableDialog.ui
