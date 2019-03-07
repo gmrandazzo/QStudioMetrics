@@ -156,8 +156,8 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   }
 
   QMap<QString, int> varmap;
-  for(int i = 0; i < indata->getVarName().size(); i++){
-    varmap[indata->getVarName()[i]] = i;
+  for(int i = 1; i < indata->getVarName().size(); i++){
+    varmap[indata->getVarName()[i]] = i-1;
   }
 
   QList<int> aligned_varid, aligned_objid;
@@ -194,6 +194,8 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
 
 void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix **x, matrix **y)
 {
+  //qDebug() << xvarsel;
+  //qDebug() << yvarsel;
   ResizeMatrix(x, objnames.size(), xvarsel.size());
   ResizeMatrix(y, objnames.size(), yvarsel.size());
 
@@ -203,8 +205,8 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   }
 
   QMap<QString, int> varmap;
-  for(int i = 0; i < indata->getVarName().size(); i++){
-    varmap[indata->getVarName()[i]] = i;
+  for(int i = 1; i < indata->getVarName().size(); i++){
+    varmap[indata->getVarName()[i]] = i-1;
   }
 
   QList<int> aligned_xvarid, aligned_yvarid, aligned_objid;
@@ -239,7 +241,10 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     }
   }
 
+
   //qDebug() << " aligned_id" << aligned_xvarid.size() << " " << aligned_yvarid.size() << " " << xvarsel.size() << " " << yvarsel.size();
+  //qDebug() << aligned_xvarid;
+  //qDebug() << aligned_yvarid;
 
   //Copy the data
   for(int i = 0; i < aligned_objid.size(); i++){
@@ -255,6 +260,7 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     }
     QApplication::processEvents();
   }
+  PrintMatrix((*x));
 }
 
 void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix **x, matrix **y)
@@ -274,8 +280,8 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   }
 
   QMap<QString, int> varmap;
-  for(int i = 0; i < indata->getVarName().size(); i++){
-    varmap[indata->getVarName()[i]] = i;
+  for(int i = 1; i < indata->getVarName().size(); i++){
+    varmap[indata->getVarName()[i]] = i-1;
   }
 
 
