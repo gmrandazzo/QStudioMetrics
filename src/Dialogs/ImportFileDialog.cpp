@@ -9,6 +9,7 @@
 #include <QTextStream>
 #include <QtConcurrent/QtConcurrentRun>
 #include <QFutureWatcher>
+#include <QtConcurrent>
 
 /*
 void ImportFileDialog::BuildArray()
@@ -239,23 +240,139 @@ void ImportFileDialog::BuildArray()
 }
 */
 
+
 void ImportFileDialog::AssignName(QStringList &list, QString name)
 {
-  //list.append(name);
-  /* TOO SLOW for big datasets!!!!*/
-  if(list.contains(name) == true){
-    int i = 1;
-    while(list.contains(QString("%1_%2").arg(name).arg(QString::number(i)), Qt::CaseSensitive) == true){
-      i++;
+  /*
+   * Fast check if duplicate names in list!
+   * Test resutls: works fast with 10.000.000 names!
+   */
+  try{
+    int indx = rnames[name];
+    if(indx == 0){
+      list.append(name);
+      rnames[name] = 1;
     }
-    list.append(QString("%1_%2").arg(name).arg(QString::number(i)));
+    else{
+      list.append(QString("%1_%2").arg(name).arg(QString::number(indx+1)));
+      rnames[name]= indx+1;
+    }
+  }
+  catch(...){
+    list.append(name);
+    rnames[name] = 1;
+  }
+}
+
+int ImportFileDialog::getHeader(QStringList* header)
+{
+  QFileInfo info(ui.file->text());
+  if(info.exists()){
+    QFile f(ui.file->text());
+    f.open(QIODevice::ReadOnly | QIODevice::Text);
+    QString skipchar = getSkipChar();
+    QString sep = getSeparator();
+    QTextStream in(&f);
+    size_t i = 0;
+    while(!in.atEnd()){
+      QString line = in.readLine();
+      if(QString(line[0]).compare(skipchar, Qt::CaseInsensitive) == 0 || line.isEmpty()){ // skip line empty or starting with a skip char
+        i++;
+      }
+      else{
+        (*header) = line.split(sep);
+        break;
+      }
+    }
+    f.close();
+    return i;
+  }
+  return 0;
+}
+
+QList<int> ImportFileDialog::getLineToSkip()
+{
+  QList<int> lskip;
+  if(ui.ignore_lines_start_char->isChecked()){
+    QFileInfo info(ui.file->text());
+    if(info.exists()){
+      QFile f(ui.file->text());
+      f.open(QIODevice::ReadOnly | QIODevice::Text);
+      QTextStream in(&f);
+
+      QString skipchar = getSkipChar();
+      size_t row = 0;
+      std::string line;
+      while(!in.atEnd()){
+        QString line = in.readLine();
+        if(QString(line).compare(skipchar, Qt::CaseInsensitive) == 0 || line.isEmpty()){ // skip line empty or starting with a skip char
+          lskip.append(row);
+          row++;
+        }
+        else{
+          continue;
+        }
+      }
+      f.close();
+    }
+    return lskip;
   }
   else{
-    list.append(name);
+    return lskip;
   }
 }
 
 //if(ui.firstrowvarname->isChecked() == true && ui.firstcolobjname->isChecked() == true)
+void ImportFileDialog::ImportType0()
+{
+  QFileInfo info(ui.file->text());
+  if(info.exists()){
+    // get line to skip
+    QList<int> lskip = getLineToSkip();
+    // get separator
+    QString sep = getSeparator();
+    // Assign header to matrix
+    Clean_rnames();
+    AssignName(m->getVarName(), "Objects");
+    QStringList header;
+    int header_line = getHeader(&header);
+    for(int j = 1; j < header.size(); j++){
+      AssignName(m->getVarName(), header[j]);
+    }
+
+    //add header line to the lines to skip
+    lskip << header_line;
+    // open the file
+    Clean_rnames();
+    QFile f(ui.file->text());
+    f.open(QIODevice::ReadOnly | QIODevice::Text);
+    QTextStream in(&f);
+
+    size_t lnum = 0;
+    size_t row = 0;
+    while(!in.atEnd()){
+      QString line = in.readLine();
+      if(lskip.indexOf(lnum) > -1){
+        lnum++;
+      }
+      else{
+        // import data into the matrix
+        QStringList items = line.split(sep);
+        AssignName(m->getObjName(), items[0]);
+        for(int j = 1; j < items.size(); j++){
+          bool converted;
+          double val = items[j].replace(",",".").toDouble(&converted);
+          m->Matrix()->data[row][j-1] = (converted == true) ? val : DEFAULT_EMTPY_VALUE;
+        }
+        row++;
+      }
+      lnum++;
+    }
+    f.close();
+  }
+}
+
+/* slow version
 void ImportFileDialog::ImportType0()
 {
   QFileInfo info(ui.file->text());
@@ -271,7 +388,8 @@ void ImportFileDialog::ImportType0()
     QTextStream in(&f);
     while(!in.atEnd()){
       QString line = in.readLine();
-      if(QString(line[0]).compare(skipchar, Qt::CaseInsensitive) == 0 || line.isEmpty()){ // skip line empty or starting with a skip char
+      // skip line empty or starting with a skip char
+      if(QString(line[0]).compare(skipchar, Qt::CaseInsensitive) == 0 || line.isEmpty()){
         continue;
       }
       else{
@@ -296,6 +414,7 @@ void ImportFileDialog::ImportType0()
     f.close();
   }
 }
+*/
 
 
 // if(ui.firstrowvarname->isChecked() == true && ui.firstcolobjname->isChecked() == false)
@@ -303,34 +422,42 @@ void ImportFileDialog::ImportType1()
 {
   QFileInfo info(ui.file->text());
   if(info.exists()){
+
+    // get line to skip
+    QList<int> lskip = getLineToSkip();
+    // get separator
+    QString sep = getSeparator();
+    // Assign header to matrix
+    Clean_rnames();
+    AssignName(m->getVarName(), "Objects");
+    QStringList header;
+    int header_line = getHeader(&header);
+    for(int j = 1; j < header.size(); j++){
+      AssignName(m->getVarName(), header[j]);
+    }
+    //add header line to the lines to skip
+    lskip << header_line;
+    // open the file
+    Clean_rnames();
+
     QFile f(ui.file->text());
     if(!f.open(QIODevice::ReadOnly | QIODevice::Text))
       return;
 
-    AssignName(m->getVarName(), "Objects");
-    size_t row = 0;
-    QString skipchar = getSkipChar();
-    QString sep = getSeparator();
     QTextStream in(&f);
+    size_t lnum = 0;
+    size_t row = 0;
     while(!in.atEnd()){
       QString line = in.readLine();
-      if(QString(line[0]).compare(skipchar, Qt::CaseInsensitive) == 0 || line.isEmpty()){ // skip line empty or starting with a skip char
-        continue;
+      if(lskip.indexOf(lnum) > -1){
+        lnum++;
       }
       else{
-        if(row == 0){
-          QStringList items = line.split(sep);
-          for(int j = 0; j < items.size(); j++){
-            AssignName(m->getVarName(), items[j]);
-          }
-        }
-        else{
-          QStringList items = line.split(sep);
-          for(int j = 0; j < items.size(); j++){
-            bool converted;
-            double val = items[j].replace(",",".").toDouble(&converted);
-            m->Matrix()->data[row-1][j] = (converted == true) ? val : DEFAULT_EMTPY_VALUE;
-          }
+        QStringList items = line.split(sep);
+        for(int j = 0; j < items.size(); j++){
+          bool converted;
+          double val = items[j].replace(",",".").toDouble(&converted);
+          m->Matrix()->data[row][j] = (converted == true) ? val : DEFAULT_EMTPY_VALUE;
         }
         row++;
       }
@@ -344,19 +471,26 @@ void ImportFileDialog::ImportType2()
 {
   QFileInfo info(ui.file->text());
   if(info.exists()){
+    // get line to skip
+    QList<int> lskip = getLineToSkip();
+    // get separator
+    QString sep = getSeparator();
+
     QFile f(ui.file->text());
     if(!f.open(QIODevice::ReadOnly | QIODevice::Text))
       return;
 
+    Clean_rnames();
     AssignName(m->getVarName(), "Objects");
+    size_t lnum = 0;
     size_t row = 0;
-    QString skipchar = getSkipChar();
-    QString sep = getSeparator();
     QTextStream in(&f);
+    // open the file
+    Clean_rnames();
     while(!in.atEnd()){
       QString line = in.readLine();
-      if(QString(line[0]).compare(skipchar, Qt::CaseInsensitive) == 0 || line.isEmpty()){ // skip line empty or starting with a skip char
-        continue;
+      if(lskip.indexOf(lnum) > -1){
+        lnum++;
       }
       else{
         QStringList items = line.split(sep);
@@ -378,19 +512,26 @@ void ImportFileDialog::ImportType3()
 {
   QFileInfo info(ui.file->text());
   if(info.exists()){
+    // get line to skip
+    QList<int> lskip = getLineToSkip();
+    // get separator
+    QString sep = getSeparator();
+
     QFile f(ui.file->text());
     if(!f.open(QIODevice::ReadOnly | QIODevice::Text))
       return;
 
+    Clean_rnames();
     AssignName(m->getVarName(), "Objects");
     size_t row = 0;
-    QString skipchar = getSkipChar();
-    QString sep = getSeparator();
+    size_t lnum = 0;
     QTextStream in(&f);
+    // open the file
+    Clean_rnames();
     while(!in.atEnd()){
       QString line = in.readLine();
-      if(QString(line[0]).compare(skipchar, Qt::CaseInsensitive) == 0 || line.isEmpty()){ // skip line empty or starting with a skip char
-        continue;
+      if(lskip.indexOf(lnum) > -1){
+        lnum++;
       }
       else{
         QStringList items = line.split(sep);
@@ -416,16 +557,24 @@ void ImportFileDialog::BuildMatrix()
 
   // Import the matrix
   if(ui.firstrowvarname->isChecked() == true && ui.firstcolobjname->isChecked() == true){
-    ImportType0();
+    QFuture<void> future = QtConcurrent::run(this, &ImportFileDialog::ImportType0);
+    future.waitForFinished();
+    //ImportType0();
   }
   else if(ui.firstrowvarname->isChecked() == true && ui.firstcolobjname->isChecked() == false){
-    ImportType1();
+    QFuture<void> future = QtConcurrent::run(this, &ImportFileDialog::ImportType1);
+    future.waitForFinished();
+    //ImportType1();
   }
   else if(ui.firstrowvarname->isChecked() == false && ui.firstcolobjname->isChecked() == true){
-    ImportType2();
+    QFuture<void> future = QtConcurrent::run(this, &ImportFileDialog::ImportType2);
+    future.waitForFinished();
+    //ImportType2();
   }
   else{ //ui.firstrowvarname->isChecked() == false && ui.firstcolobjname->isChecked() == false
-    ImportType3();
+    QFuture<void> future = QtConcurrent::run(this, &ImportFileDialog::ImportType3);
+    future.waitForFinished();
+    //ImportType3();
   }
 
   // verify the variable names
@@ -1016,15 +1165,33 @@ FSIZE ImportFileDialog::GetSize()
     if(!f.open(QIODevice::ReadOnly | QIODevice::Text))
       return sz;
 
-    QString skipchar = getSkipChar();
+    QList<int> lskip = getLineToSkip();
     QString sep = getSeparator();
+
     QTextStream in(&f);
-    while(!in.atEnd()){
-      QString line = in.readLine();
-      if(QString(line[0]).compare(skipchar) == 0 || line.isEmpty()){ // skip line empty or starting with a skip char
-        continue;
+    if(lskip.size() > 0){
+      size_t lnum = 0;
+      while(!in.atEnd()){
+        QString line = in.readLine();
+        if(lskip.indexOf(lnum) > -1){
+          lnum++;
+        }
+        else{
+          sz.row++;
+          size_t col = line.split(sep).size();
+          size_t linelenght = line.size();
+          if(col > sz.col)
+            sz.col = col;
+
+          if(linelenght+3 > sz.linelenght)
+            sz.linelenght = linelenght+3;
+          lnum++;
+        }
       }
-      else{
+    }
+    else{
+      while(!in.atEnd()){
+        QString line = in.readLine();
         sz.row++;
         size_t col = line.split(sep).size();
         size_t linelenght = line.size();
@@ -1127,7 +1294,15 @@ void ImportFileDialog::Open()
     list.last().remove(".csv", Qt::CaseInsensitive);
     ui.filename->setText(list.last());
   }
+
+  Clean_rnames();
   Preview();
+}
+
+void ImportFileDialog::Clean_rnames()
+{
+  //qDeleteAll(rnames.begin(), rnames.end());
+  rnames.clear();
 }
 
 ImportFileDialog::ImportFileDialog(): QDialog()

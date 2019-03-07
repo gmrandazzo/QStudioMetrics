@@ -18,6 +18,7 @@ struct FSIZE{
   size_t linelenght;
 };
 
+
 class ImportFileDialog: public QDialog
 {
   Q_OBJECT
@@ -52,6 +53,9 @@ private:
   QString getLabel();
 
   FSIZE GetSize();
+  int getHeader(QStringList *header);
+  QList<int> getLineToSkip();
+
 
   void ImportType0();
   void ImportType1();
@@ -59,6 +63,8 @@ private:
   void ImportType3();
 
   void BuildMatrix();
+  void Clean_rnames();
+  QMap<QString, int> rnames;
 //   void BuildArray();
 };
 

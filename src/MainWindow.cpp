@@ -150,44 +150,43 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
 {
   ResizeMatrix(x, objnames.size(), varsel.size());
 
-  QList<int> aligned_varid, aligned_objid;
+  QMap<QString, int> objmap;
+  for(int i = 0; i < indata->getObjName().size(); i++){
+    objmap[indata->getObjName()[i]] = i;
+  }
 
+  QMap<QString, int> varmap;
+  for(int i = 0; i < indata->getVarName().size(); i++){
+    varmap[indata->getVarName()[i]] = i;
+  }
+
+  QList<int> aligned_varid, aligned_objid;
   for(int i = 0; i < objnames.size(); i++){
-    int ii = _index_of_(indata->getObjName(), objnames[i]);
-    if(ii > -1){
-      aligned_objid.append(ii);
+    auto it = objmap.find(objnames[i]);
+    if(it != objmap.end()){
+        aligned_objid.append(it.value());
     }
     else{
       continue;
     }
   }
 
-  for(int j = 0; j < varsel.size(); j++){
-    int jx = _index_of_(indata->getVarName(), varsel[j])-1;
-    if(jx > -1){
-      aligned_varid.append(jx);
+  for(int i = 0; i < varsel.size(); i++){
+    auto it = varmap.find(varsel[i]);
+    if(it != varmap.end()){
+        aligned_varid.append(it.value());
     }
     else{
-      aligned_varid.append(-1);
+      continue;
     }
   }
 
-
-  /*qDebug() << " aligned_id" << aligned_id.size() << " " << varsel.size() << " " << varsel[0];
-  if(aligned_id.size() != varsel.size())
-    return;*/
-
+  //Copy the data
   for(int i = 0; i < aligned_objid.size(); i++){
-    //int ii = objnames.indexOf(QRegExp(indata->getObjName()[i]));
     int ii = aligned_objid[i];
     for(int j = 0; j < aligned_varid.size(); j++){
       int jx = aligned_varid[j];
-      if(jx > -1){
-        (*x)->data[i][j] = indata->Matrix()->data[ii][jx];
-      }
-      else{
-        continue;
-      }
+      (*x)->data[i][j] = indata->Matrix()->data[ii][jx];
     }
     QApplication::processEvents();
   }
@@ -198,66 +197,62 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   ResizeMatrix(x, objnames.size(), xvarsel.size());
   ResizeMatrix(y, objnames.size(), yvarsel.size());
 
+  QMap<QString, int> objmap;
+  for(int i = 0; i < indata->getObjName().size(); i++){
+    objmap[indata->getObjName()[i]] = i;
+  }
+
+  QMap<QString, int> varmap;
+  for(int i = 0; i < indata->getVarName().size(); i++){
+    varmap[indata->getVarName()[i]] = i;
+  }
 
   QList<int> aligned_xvarid, aligned_yvarid, aligned_objid;
 
   for(int i = 0; i < objnames.size(); i++){
-    int ii = _index_of_(indata->getObjName(), objnames[i]);
-    if(ii > -1){
-      aligned_objid.append(ii);
+    auto it = objmap.find(objnames[i]);
+    if(it != objmap.end()){
+        aligned_objid.append(it.value());
     }
     else{
       continue;
     }
   }
 
-  for(int j = 0; j < xvarsel.size(); j++){
-    int jx = _index_of_(indata->getVarName(), xvarsel[j])-1;
-    if(jx > -1){
-      aligned_xvarid.append(jx);
+  for(int i = 0; i < xvarsel.size(); i++){
+    auto it = varmap.find(xvarsel[i]);
+    if(it != varmap.end()){
+        aligned_xvarid.append(it.value());
     }
     else{
-      aligned_xvarid.append(-1);
+      continue;
     }
   }
 
-  for(int j = 0; j < yvarsel.size(); j++){
-    int jx = _index_of_(indata->getVarName(), yvarsel[j])-1;
-    if(jx > -1){
-      aligned_yvarid.append(jx);
+  for(int i = 0; i < yvarsel.size(); i++){
+    auto it = varmap.find(yvarsel[i]);
+    if(it != varmap.end()){
+        aligned_yvarid.append(it.value());
     }
     else{
-      aligned_yvarid.append(-1);
+      continue;
     }
   }
-
 
   //qDebug() << " aligned_id" << aligned_xvarid.size() << " " << aligned_yvarid.size() << " " << xvarsel.size() << " " << yvarsel.size();
 
-
+  //Copy the data
   for(int i = 0; i < aligned_objid.size(); i++){
-    //int ii = objnames.indexOf(QRegExp(indata->getObjName()[i]));
     int ii = aligned_objid[i];
     for(int j = 0; j < aligned_xvarid.size(); j++){
       int jx = aligned_xvarid[j];
-      if(jx > -1){
-        (*x)->data[i][j] = indata->Matrix()->data[ii][jx];
-      }
-      else{
-        continue;
-      }
+      (*x)->data[i][j] = indata->Matrix()->data[ii][jx];
     }
 
     for(int j = 0; j < aligned_yvarid.size(); j++){
       int jy = aligned_yvarid[j];
-      if(jy > -1){
-        (*y)->data[i][j] = indata->Matrix()->data[ii][jy];
-      }
-      else{
-        continue;
-      }
+      (*y)->data[i][j] = indata->Matrix()->data[ii][jy];
     }
-
     QApplication::processEvents();
   }
 }
@@ -272,40 +267,72 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   else{
     ResizeMatrix(y, objnames.size(), classes.size());
   }
- /*
-  QList<int> aligned_xvarid, aligned_yvarid, aligned_objid;
+
+  QMap<QString, int> objmap;
+  for(int i = 0; i < indata->getObjName().size(); i++){
+    objmap[indata->getObjName()[i]] = i;
+  }
+
+  QMap<QString, int> varmap;
+  for(int i = 0; i < indata->getVarName().size(); i++){
+    varmap[indata->getVarName()[i]] = i;
+  }
+
+
+  QList<int> aligned_xvarid,  aligned_objid;
 
   for(int i = 0; i < objnames.size(); i++){
-    int ii = _index_of_(indata->getObjName(), objnames[i]);
-    if(ii > -1){
-      aligned_objid.append(ii);
+    auto it = objmap.find(objnames[i]);
+    if(it != objmap.end()){
+        aligned_objid.append(it.value());
     }
     else{
       continue;
     }
   }
 
-  for(int j = 0; j < xvarsel.size(); j++){
-    int jx = _index_of_(indata->getVarName(), xvarsel[j]);
-    if(jx > -1){
-      aligned_xvarid.append(jx);
+  for(int i = 0; i < xvarsel.size(); i++){
+    auto it = varmap.find(xvarsel[i]);
+    if(it != varmap.end()){
+        aligned_xvarid.append(it.value());
     }
     else{
-      aligned_xvarid.append(-1);
+      continue;
     }
   }
 
-  for(int j = 0; j < yvarsel.size(); j++){
-    int jx = _index_of_(indata->getVarName(), yvarsel[j]);
-    if(jx > -1){
-      aligned_yvarid.append(jx);
+
+  //Copy the data
+  for(int i = 0; i < aligned_objid.size(); i++){
+    int ii = aligned_objid[i];
+    for(int j = 0; j < aligned_xvarid.size(); j++){
+      int jx = aligned_xvarid[j];
+      (*x)->data[i][j] = indata->Matrix()->data[ii][jx];
+    }
+
+    if(classes.size() == 2){
+      // contains maybe slow...
+      if(classes[0].objects.contains(indata->getObjName()[ii]) == true){
+        (*y)->data[ii][0] = 1; // TRUE
+      }
+      else{
+        (*y)->data[ii][0] = 0; // FALSE
+      }
     }
     else{
-      aligned_yvarid.append(-1);
+      for(int j = 0; j < classes.size(); j++){
+        if(classes[j].objects.contains(indata->getObjName()[ii]) == true){
+          (*y)->data[ii][j] = 1; // TRUE
+        }
+        else{
+          (*y)->data[ii][j] = 0; // FALSE
+        }
+      }
     }
+    QApplication::processEvents();
   }
-  */
 
+  /*
   for(int i = 0; i < indata->getObjName().size(); i++){
     int ii = _index_of_(objnames, indata->getObjName()[i]);
     if(ii > 0){
@@ -343,6 +370,7 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     }
     QApplication::processEvents();
   }
+  */
 }
 
 void MainWindow::PrepareKFoldClasses(QStringList objects, LABELS kfclasses, uivector **classes)

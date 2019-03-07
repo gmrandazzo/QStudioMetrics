@@ -1,0 +1,124 @@
+set(MOLDESC_C_SRCS version.c
+                   misc.c
+                   periodic_table.c
+                   massanalysis.c
+                   atomanalysis.c
+                   protanalysis.c
+                   atomdesc.c
+                   forcefield.c
+                   fielddesc.c
+                   geomdesc.c
+                   shapedesc.c
+                   miscdesc.c
+                   molecule.c
+                   wfingerprint.c
+                   mol3Daligner.c
+                   mol3Dfields.c)
+
+set(MOLDESC_C_H version.h
+                molecule.h
+                misc.h
+                periodic_table.h
+                massanalysis.h
+                atomanalysis.h
+                protanalysis.h
+                atomdesc.h
+                forcefield.h
+                fielddesc.h
+                geomdesc.h
+                shapedesc.h
+                miscdesc.h
+                wfingerprint.h)
+
+set(CPPWRAP_CPP_SRC cppwrap.cpp
+                    ringsearch.cpp
+                    graphanalysis.cpp)
+
+set(CPPWRAP_CPP_H cppwrap.h
+                  ringsearch.h
+                  graphanalysis.h)
+
+
+set(AFMODEL_SRC bin_src/afmodel.c)
+set(GEN3DDESC_SRC bin_src/gen3Ddesc.c)
+set(FFGEN_SRC bin_src/ffgen.c)
+set(METDBGEN_SRC bin_src/metdbgen.c)
+set(MFIELDSGEN_SRC bin_src/mfieldgen.c)
+set(GENMOLEPOT_SRC bin_src/molepot.c)
+set(GENMOLUFFVDWPOT_SRC bin_src/moluffvdwpot.c)
+set(GENMOLENEGPOT_SRC bin_src/molenegpot.c)
+set(GENMOLGPOT_SRC bin_src/molgpot.c)
+set(GENMOLLJPOT_SRC bin_src/molljpot.c)
+set(MOLEPOT3DDESC_SRC bin_src/molepot3Ddesc.c)
+set(MOLGPOT3DDESC_SRC bin_src/molgpot3Ddesc.c)
+set(MOLLJPOT3DDESC_SRC bin_src/molljpot3Ddesc.c)
+set(MOL2ATFP_SRC bin_src/mol2atfp.c)
+
+
+if(WIN32)
+  message(STATUS "Set mingw options")
+  set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE)
+  set(CMAKE_EXECUTABLE_SUFFIX ".exe")
+  set(CMAKE_STATIC_LIBRARY_SUFFIX ".dll")
+endif()
+
+
+add_library(libcppwrap SHARED ${CPPWRAP_CPP_SRC} ${CPPWRAP_CPP_H})
+#target_link_libraries(libcppwrap m ${RDKIT_LIBRARIES})
+target_link_libraries(libcppwrap m)
+
+
+add_library(libmoldesc SHARED ${MOLDESC_C_SRCS} ${MOLDESC_C_H})
+set_target_properties(libmoldesc PROPERTIES OUTPUT_NAME "moldesc")
+set_property(TARGET libmoldesc PROPERTY LINKER_LANGUAGE C)
+target_link_libraries(libmoldesc m ${LIBSCIENTIFIC_LIBRARY} libcppwrap)
+
+add_executable(metdbgen ${METDBGEN_SRC})
+target_link_libraries(metdbgen libmoldesc)
+
+add_executable(afmodel ${AFMODEL_SRC})
+target_link_libraries(afmodel libmoldesc)
+
+add_executable(gen3Ddesc ${GEN3DDESC_SRC})
+target_link_libraries(gen3Ddesc libmoldesc)
+
+add_executable(ForceFieldGen ${FFGEN_SRC})
+target_link_libraries(ForceFieldGen libmoldesc)
+
+add_executable(MIFieldsGen ${MFIELDSGEN_SRC})
+target_link_libraries(MIFieldsGen libmoldesc)
+
+add_executable(GenMolEPot ${GENMOLEPOT_SRC})
+target_link_libraries(GenMolEPot libmoldesc)
+
+add_executable(GenMolUFFVdWPot ${GENMOLUFFVDWPOT_SRC})
+target_link_libraries(GenMolUFFVdWPot libmoldesc)
+
+add_executable(GenMolEnegPot ${GENMOLENEGPOT_SRC})
+target_link_libraries(GenMolEnegPot libmoldesc)
+
+add_executable(GenMolGPot ${GENMOLGPOT_SRC})
+target_link_libraries(GenMolGPot libmoldesc)
+
+add_executable(GenMolLJPot ${GENMOLLJPOT_SRC})
+target_link_libraries(GenMolLJPot libmoldesc)
+
+add_executable(MolEPot3DDesc ${MOLEPOT3DDESC_SRC})
+target_link_libraries(MolEPot3DDesc libmoldesc)
+
+add_executable(MolGPot3DDesc ${MOLGPOT3DDESC_SRC})
+target_link_libraries(MolGPot3DDesc libmoldesc)
+
+add_executable(MolLJPot3DDesc ${MOLLJPOT3DDESC_SRC})
+target_link_libraries(MolLJPot3DDesc libmoldesc)
+
+add_executable(Mol2AtomTypeFP ${MOL2ATFP_SRC})
+target_link_libraries(Mol2AtomTypeFP libmoldesc)
+
+install(TARGETS libmoldesc LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+                      ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+                      RUNTIME DESTINATION bin)
+
+install(FILES ${MOLDESC_C_H} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/moldesc)
+
+add_subdirectory(tests)
