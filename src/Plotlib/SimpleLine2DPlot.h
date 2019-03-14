@@ -9,7 +9,7 @@
 #include "ui_SimpleLine2DPlot.h"
 
 
-#include "QPlotly/qplotly.h"
+#include "Chart/qplotly.h"
 
 class SimpleLine2DPlot: public QWidget
 {

@@ -19,12 +19,13 @@ public:
 
   SelectionStyleDialog();
   SelectionStyleDialog(QStringList &varname);
-
+  void setSymbolNames(QStringList);
+  
   int ChangeShape();
   ChangeType ChangeColor(); // 0 is no color change, 1 is solid change color, 2 is from min to max change color
   ChangeType ChangeSize(); // 0 is no size change, 1 is solid change size, 2 is from min to max change size
 
-  int getSymbolType(); // 0 = circle; 1 = plus; 2 = cross; 3 = square; 4 = diamond;
+  int getSymbolType(); // 0 = circle; 1 = square; 2 = triangle;
   QColor& getSolidSymbolColor();
   QColor& getMinSymbolColor();
   QColor& getMaxSymbolColor();
@@ -50,4 +51,3 @@ private:
 };
 
 #endif
-

@@ -8,7 +8,7 @@
 #include <QColor>
 #include "ui_BarPlot.h"
 
-#include "QPlotly/qplotly.h"
+#include "Chart/qplotly.h"
 
 #include "qsmdata.h"
 

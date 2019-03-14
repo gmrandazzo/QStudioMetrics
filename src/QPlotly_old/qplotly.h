@@ -4,8 +4,17 @@
 #include <QColor>
 #include <QWidget>
 #include <QString>
+
+#ifdef WEBKIT
+#include <QWebView>
+#include <QNetworkCookieJar>
+#include <QNetworkAccessManager>
+#include <QSettings>
+#else
 #include <QWebEngineView>
 #include <QWebEngineCookieStore>
+#endif
+
 #include <QNetworkCookie>
 #include <QUrl>
 #include <QSize>
@@ -17,10 +26,27 @@
 
 
 #define MAJOR 1
-#define MINOR 1
-#define PATCH 1
+#define MINOR 2
+#define PATCH 0
 
 void QPlotlyVersion(int *major, int *minor, int *patch);
+
+#ifdef WEBKIT
+class CustomNetworkCookieJar : public QNetworkCookieJar
+{
+    Q_OBJECT
+
+public:
+    CustomNetworkCookieJar(QObject *p_pParent = NULL );
+    ~CustomNetworkCookieJar( void );
+
+    bool setCookiesFromUrl(const QList<QNetworkCookie> & p_grCookieList, const QUrl & p_grUrl);
+
+signals:
+    void cookiesChanged(QString cookie);
+
+};
+#endif
 
 enum PLOTTYPE
 {
@@ -34,7 +60,12 @@ class QPlotlyWindow : public QWidget
 public:
     QPlotlyWindow(QWidget *parent = 0);
     ~QPlotlyWindow();
+
+    #ifdef WEBKIT
+    QWebView *weview(){ return wview; }
+    #else
     QWebEngineView *weview(){ return wview; }
+    #endif
 
     void Demo();
 
@@ -77,7 +108,11 @@ public:
     void SaveAsImage(QString imgname);
 
 private slots:
-    void handleCookieAdded(const QNetworkCookie &cookie);
+    #ifdef WEBKIT
+    void WebKithandleCookieAdded(QString cookie);
+    #else
+    void WebEnginehandleCookieAdded(const QNetworkCookie &cookie);
+    #endif
     void close();
 
 private:
@@ -92,8 +127,18 @@ private:
   QString yaxisname;
   QString zaxisname;
   QString plot_title;
+  QUrl page;
+
+  #ifdef WEBKIT
+  QWebView *wview;
+  //QNetworkCookieJar *cookieJar;
+  CustomNetworkCookieJar *cookieJar;
+  QNetworkAccessManager *nam;
+  #else
   QWebEngineView *wview;
   QWebEngineCookieStore *cookie_store;
+  #endif
+
   QTemporaryDir dir;
   QUrl WriteTemporaryPage(QString code);
   void ModifyTemporaryPage(QString code, QList<int> line_ids);
@@ -105,6 +150,7 @@ private:
   QString genJSONBar();
   QString genJSONInteractions();
   int FindPoint(qreal x, qreal y, qreal z, QString name_);
+  void CookieParser(QString cookie);
   QString json;
   int trace_id;
   int xtickangle, ytickangle;

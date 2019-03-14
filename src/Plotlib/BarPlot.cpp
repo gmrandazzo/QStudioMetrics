@@ -6,7 +6,7 @@
 
 #include <unistd.h>
 
-#include "QPlotly/qplotly.h"
+#include "Chart/qplotly.h"
 
 void BarPlot::slotExit()
 {

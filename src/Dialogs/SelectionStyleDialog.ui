@@ -72,22 +72,12 @@
         </item>
         <item>
          <property name="text">
-          <string>Plus</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Cross</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
           <string>Square</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Diamond</string>
+          <string>Triangle</string>
          </property>
         </item>
        </widget>

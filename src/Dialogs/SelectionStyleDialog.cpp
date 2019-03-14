@@ -174,10 +174,18 @@ int SelectionStyleDialog::ChangeShape()
   }
 }
 
+void SelectionStyleDialog::setSymbolNames(QStringList snames)
+{
+  ui.actionSymbolType->clear();
+  for(int i = 0; i < snames.size(); i++){
+    ui.actionSymbolType->addItem(snames[i]);
+  }
+}
+
+
 SelectionStyleDialog::SelectionStyleDialog(): QDialog()
 {
   ui.setupUi(this);
-  ui.ShapeGroupBox->hide();
 
   ui.solidcolor->setChecked(true);
   color1 = QColor(Qt::black);
@@ -211,7 +219,6 @@ SelectionStyleDialog::SelectionStyleDialog(): QDialog()
 SelectionStyleDialog::SelectionStyleDialog(QStringList &varnames_): QDialog()
 {
   ui.setupUi(this);
-  ui.ShapeGroupBox->hide();
 
   ui.solidcolor->setChecked(true);
   color1 = QColor(Qt::black);

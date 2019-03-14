@@ -17,7 +17,7 @@ public:
   SelectByDialog(QStringList objname_, matrix* coordinate_, QList<MATRIX*> *mxlst_, QList<int> mxid_, LABELS *objlabel_, LABELS *varlabel_);
   ~SelectByDialog();
   QList< int > GetSelectedObjID(){ return selectedobjid; }
-  
+
 private slots:
   void UpdateSelectionCounter();
   void selectButton();
@@ -30,7 +30,7 @@ private slots:
   void Abort();
   void OK();
   void Cancel();
-  
+
 private:
   Ui::SelectByDialog ui;
   QStringList selectedobjname;
@@ -46,14 +46,13 @@ private:
   int selectiontype, metric, nobjects, datatype, dataid, layerid;
   QString label;
   QStringList varlist;
-  
+
   void SetSelectionView();
   bool CheckIDSmxlst(QList<int> *ids);
-  
+
   void StartSelectionRun();
   void WaitSelectionRun();
   void StopSelectionRun();
 };
 
 #endif
-

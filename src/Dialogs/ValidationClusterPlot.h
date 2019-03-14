@@ -7,7 +7,7 @@
 #include <QList>
 #include <QColor>
 #include "ui_ValidationClusterPlot.h"
-#include "QPlotly/qplotly.h"
+#include "Chart/qplotly.h"
 
 
 class ValidationClusterPlot: public QDialog

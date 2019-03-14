@@ -22,6 +22,15 @@
 #include "run.h"
 
 
+Graphs* ScatterPlot::NewGraph(PEngine peng)
+{
+  if(peng == PEngine::Qtchart){
+    return new Chart();
+  }
+  else{
+    return new QPlotlyWindow(this);
+  }
+}
 
 void ScatterPlot::StartRun()
 {
@@ -665,11 +674,19 @@ void ScatterPlot::setSelectionStyle()
       varnames.removeDuplicates();
 
       SelectionStyleDialog obj(varnames);
+      obj.setSymbolNames(markersymbls);
       if(obj.exec() == QDialog::Accepted){
         int changeshape = obj.ChangeShape();
         SelectionStyleDialog::ChangeType changecolor = obj.ChangeColor();
         SelectionStyleDialog::ChangeType changesize = obj.ChangeSize();
-        Q_UNUSED(changeshape);
+
+        if(changeshape == 1){
+          MarkerType mtype = MarkerType(obj.getSymbolType());
+          for(int i = 0; i < selectedIDS.size(); i++){
+            chart->getPoint(selectedIDS[i])->setMarkerType(mtype);
+          }
+        }
+
         if(changecolor == SelectionStyleDialog::FIXED){
           // FIXED COLOR CHANGE
           for(int i = 0; i < selectedIDS.size(); i++){
@@ -792,6 +809,7 @@ void ScatterPlot::setSelectionStyle()
     }
     else{
       SelectionStyleDialog obj;
+      obj.setSymbolNames(markersymbls);
       if(obj.exec() == QDialog::Accepted){
         for(int i = 0; i < selectedIDS.size(); i++){
           chart->getPoint(selectedIDS[i])->setRadius(obj.getFixedSymbolSize());
@@ -842,12 +860,18 @@ void ScatterPlot::setSelectionStyle()
     varname.removeAll("Objects");
 
     SelectionStyleDialog obj(varname);
+    obj.setSymbolNames(markersymbls);
     if(obj.exec() == QDialog::Accepted){
       int changeshape = obj.ChangeShape();
       SelectionStyleDialog::ChangeType changecolor = obj.ChangeColor();
       SelectionStyleDialog::ChangeType changesize = obj.ChangeSize();
 
-      Q_UNUSED(changeshape)
+      if(changeshape == 1){
+        MarkerType mtype = MarkerType(obj.getSymbolType());
+        for(int i = 0; i < selectedIDS.size(); i++){
+          chart->getPoint(selectedIDS[i])->setMarkerType(mtype);
+        }
+      }
 
       if(changecolor == SelectionStyleDialog::FIXED){
         for(int i = 0; i < selectedIDS.size(); i++){
@@ -1528,7 +1552,7 @@ void ScatterPlot::ResetPlot()
 void ScatterPlot::PlotUpdate()
 {
   chart->Refresh();
-  chart->update();
+  //chart->update();
 }
 
 void ScatterPlot::UpdatePointPosition()
@@ -1655,21 +1679,25 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QStrin
   pid = mid = mtype -1;
   cwidget = 0;
   ehotel = false;
-
+  markersymbls << "Circle" << "Square" << "Triangle";
 //       chart.setWindowTitle(QObject::tr("chart"));
 //     PlotFromfile(&chart, argv[1]);
 
   //chart = new Chart();
-  chart = new QPlotlyWindow(this);
+  ////chart = new QPlotlyWindow(this);
+
+  axistype = DOUBLEAXIS;
+
+  chart = NewGraph(PEngine::Qtchart);
   chart->setPlotTitle(windowtitle);
-  ui.plotlayout->addWidget(chart);
+  ui.plotlayout->addWidget(chart->weview());
 
   ui.axis3_name->hide();
   ui.axis3->hide();
   ui.progressBar->hide();
   ui.abortButton->hide();
 
-  axistype = DOUBLEAXIS;
+
 
   ui.axis1_name->setText(xaxsisname_);
   ui.axis2_name->setText(yaxsisname_);
@@ -1725,18 +1753,21 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QList<
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
+  markersymbls << "Circle" << "Square" << "Triangle";
 
   //chart = new Chart();
-  chart = new QPlotlyWindow(this);
+  //chart = new QPlotlyWindow(this);
+  axistype = DOUBLEAXIS;
+  chart = NewGraph(PEngine::Qtchart);
   chart->setPlotTitle(windowtitle);
-  ui.plotlayout->addWidget(chart);
+  ui.plotlayout->addWidget(chart->weview());
 
   ui.axis3_name->hide();
   ui.axis3->hide();
   ui.progressBar->hide();
   ui.abortButton->hide();
 
-  axistype = DOUBLEAXIS;
+
 
   ui.axis1_name->setText(xaxsisname_);
   ui.axis2_name->setText(yaxsisname_);
@@ -1797,16 +1828,17 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname,
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
-
+  markersymbls << "Circle" << "Square" << "Cross";
   //chart = new Chart();
-  chart = new QPlotlyWindow(this);
+  //chart = new QPlotlyWindow(this);
+  axistype = TRIPLEAXIS;
+  chart = NewGraph(PEngine::QPlotly);
   chart->setPlotTitle(windowtitle);
-  ui.plotlayout->addWidget(chart);
+  ui.plotlayout->addWidget(chart->weview());
 
   ui.progressBar->hide();
   ui.abortButton->hide();
 
-  axistype = TRIPLEAXIS;
 
   ui.axis1_name->setText(xaxsisname_);
   ui.axis2_name->setText(yaxsisname_);
@@ -1855,8 +1887,8 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname,
   connect(ui.axis3, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));
   connect(ui.abortButton, SIGNAL(clicked(bool)), SLOT(AbortRun()));
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
-  chart->weview()->setContextMenuPolicy(Qt::CustomContextMenu);
-  connect(chart->weview(), SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));
+  this->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));
 }
 
 
@@ -1867,18 +1899,20 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QList<
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
-
+  markersymbls << "Circle" << "Square" << "Triangle";
   //chart = new Chart();
-  chart = new QPlotlyWindow(this);
+  //chart = new QPlotlyWindow(this);
+  axistype = DOUBLEAXIS;
+  chart = NewGraph(PEngine::Qtchart);
   chart->setPlotTitle(windowtitle);
-  ui.plotlayout->addWidget(chart);
+  ui.plotlayout->addWidget(chart->weview());
 
   ui.axis3_name->hide();
   ui.axis3->hide();
   ui.progressBar->hide();
   ui.abortButton->hide();
 
-  axistype = DOUBLEAXIS;
+
 
   ui.axis1_name->setText(xaxsisname_);
   ui.axis2_name->setText(yaxsisname_);
@@ -1931,10 +1965,12 @@ ScatterPlot::ScatterPlot(QList<matrix*> &mx_, QList<matrix*> &my_, dvector* b_, 
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
-
+  markersymbls << "Circle" << "Square" << "Triangle";
   //chart = new Chart();
-  chart = new QPlotlyWindow(this);
-  ui.plotlayout->addWidget(chart);
+  //chart = new QPlotlyWindow(this);
+  axistype = SINGLEAXIS;
+  chart = NewGraph(PEngine::Qtchart);
+  ui.plotlayout->addWidget(chart->weview());
 
   ui.axis1->hide();
   ui.axis2->hide();
@@ -1943,7 +1979,7 @@ ScatterPlot::ScatterPlot(QList<matrix*> &mx_, QList<matrix*> &my_, dvector* b_, 
   ui.progressBar->hide();
   ui.abortButton->hide();
 
-  axistype = SINGLEAXIS;
+
 
   ui.axis1_name->setText(QString("%1 / %2").arg(xaxsisname_).arg(yaxsisname_));
 
@@ -1998,11 +2034,13 @@ ScatterPlot::ScatterPlot(QList<matrix*>& mx_, QList<matrix*>& my_, dvector* b_, 
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
-
+  markersymbls << "Circle" << "Square" << "Triangle";
   //chart = new Chart();
-  chart = new QPlotlyWindow(this);
+  //chart = new QPlotlyWindow(this);
+  axistype = SINGLEAXIS;
+  chart = NewGraph(PEngine::Qtchart);
   chart->setPlotTitle(windowtitle);
-  ui.plotlayout->addWidget(chart);
+  ui.plotlayout->addWidget(chart->weview());
 
   ui.axis1->hide();
   ui.axis2->hide();
@@ -2011,7 +2049,7 @@ ScatterPlot::ScatterPlot(QList<matrix*>& mx_, QList<matrix*>& my_, dvector* b_, 
   ui.progressBar->hide();
   ui.abortButton->hide();
 
-  axistype = SINGLEAXIS;
+
 
   ui.axis3_name->setText(QString("%1 / %2").arg(xaxsisname_).arg(yaxsisname_));
 
@@ -2075,11 +2113,13 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
-
+  markersymbls << "Circle" << "Square" << "Triangle";
   //chart = new Chart();
-  chart = new QPlotlyWindow(this);
+  //chart = new QPlotlyWindow(this);
+  axistype = SINGLEAXIS;
+  chart = NewGraph(PEngine::Qtchart);
   chart->setPlotTitle(windowtitle);
-  ui.plotlayout->addWidget(chart);
+  ui.plotlayout->addWidget(chart->weview());
 
   ui.axis1->hide();
   ui.axis2->hide();
@@ -2088,7 +2128,7 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
   ui.progressBar->hide();
   ui.abortButton->hide();
 
-  axistype = SINGLEAXIS;
+
 
   ui.axis3_name->setText(QString("%1 / %2").arg(xaxsisname_).arg(yaxsisname_));
 
@@ -2145,11 +2185,13 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
-
+  markersymbls << "Circle" << "Square" << "Triangle";
   //chart = new Chart();
-  chart = new QPlotlyWindow(this);
+  //chart = new QPlotlyWindow(this);
+  axistype = SINGLEAXIS;
+  chart = NewGraph(PEngine::Qtchart);
   chart->setPlotTitle(windowtitle);
-  ui.plotlayout->addWidget(chart);
+  ui.plotlayout->addWidget(chart->weview());
 
   ui.axis1->hide();
   ui.axis2->hide();
@@ -2189,7 +2231,7 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
     }
 
     maxcol /= 2;
-    axistype = SINGLEAXIS;
+
     ui.axis3->setMaximum(maxcol);
 
     //Finally render the scene

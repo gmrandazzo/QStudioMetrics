@@ -205,7 +205,7 @@ endif()
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(QStudioMetrics ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS})
-target_link_libraries(QStudioMetrics ${LIBSCIENTIFIC_LIBRARY} libqplotly ${QT5_LIBRARIES})
+target_link_libraries(QStudioMetrics ${LIBSCIENTIFIC_LIBRARY} libchart ${QT5_LIBRARIES})
 
 add_executable(qsm-pca ${QSTUDIOMETRICS_CMDPCA_SRC})
 target_link_libraries(qsm-pca ${LIBSCIENTIFIC_LIBRARY})

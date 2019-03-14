@@ -8,11 +8,13 @@
 #include <QStringList>
 #include <scientific.h>
 
-#include "QPlotly/qplotly.h"
+#include "Chart/chart.h"
+#include "Chart/qplotly.h"
 
 #include "ui_ScatterPlot.h"
 #include "qsmdata.h"
 #include "../Dialogs/FindCorrelationWidget.h"
+
 
 struct QSMPOINT{
   int radius;
@@ -132,7 +134,17 @@ signals:
 
 private:
   Ui::ScatterPlot ui;
-  QPlotlyWindow *chart;
+  enum class PEngine { Qtchart, QPlotly };
+
+  //QPlotlyWindow *chart;
+  // or...
+  //Chart *chart;
+  // or...
+  // WARNING: Plotly give problems on windows with WEBKIT and is extremelly slow
+  // With this workaround i choose between the old plotter and the new qplotly
+  Graphs *NewGraph(PEngine peng);
+  Graphs *chart;
+
   FindCorrelationWidget *cwidget;
   QList <QSMPOINT> p;
   QList< matrix * > curves;
@@ -140,6 +152,7 @@ private:
   QList < QColor > curvecolors;
   QString xaxisname, yaxisname, zaxisname;
   QStringList nameaxisext;
+  QStringList markersymbls;
   QColor color;
   int type;
   QList<MATRIX*> *mxlst;

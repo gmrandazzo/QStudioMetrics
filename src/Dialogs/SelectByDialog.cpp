@@ -3,6 +3,7 @@
 #include <QStringList>
 #include <QStringListModel>
 #include <QApplication>
+#include <QMessageBox>
 
 #include <scientific.h>
 
@@ -57,7 +58,7 @@ bool SelectByDialog::CheckIDSmxlst(QList<int> *ids)
 void SelectByDialog::SetSelectionView()
 {
   QList<QString> selection;
- 
+
   if(ui.variableSelector->isChecked()){
     if(mxid.size() > 0){ // Select by Variable
       bool minok, maxok;
@@ -65,57 +66,32 @@ void SelectByDialog::SetSelectionView()
       double max = ui.maxvaledit->text().toDouble(&maxok);
       int j = ui.varlist->currentIndex();
       if(mxlst != 0 && (*mxlst).size() > 0){
-        if(minok == true){
-          if(maxok == true){
-            for(int k = 0; k < mxid.size(); k++){
-              int id_ = mxid[k];
-              for(uint i = 0; i < (*mxlst)[id_ ]->Matrix()->row; i++){
-                if(getMatrixValue((*mxlst)[id_ ]->Matrix(), i, j) > min && getMatrixValue((*mxlst)[id_ ]->Matrix(), i, j) < max){
-                  selection.append((*mxlst)[id_ ]->getObjName()[i]);
-                }
-                else{
-                  continue;
-                }
+        if(minok == true && maxok == true){
+          for(int k = 0; k < mxid.size(); k++){
+            int id_ = mxid[k];
+            for(uint i = 0; i < (*mxlst)[id_ ]->Matrix()->row; i++){
+              double x = (*mxlst)[id_ ]->Matrix()->data[i][j];
+              if( (x > min || FLOAT_EQ(x, min, EPSILON)) && (x < max || FLOAT_EQ(x, max, EPSILON)) ){
+                selection.append((*mxlst)[id_ ]->getObjName()[i]);
               }
-            }
-          }
-          else{
-            for(int k = 0; k < mxid.size(); k++){
-              int id_  = mxid[k];
-              for(uint i = 0; i < (*mxlst)[id_ ]->Matrix()->row; i++){
-                if(getMatrixValue((*mxlst)[id_]->Matrix(), i, j) > min){
-                  selection.append((*mxlst)[id_]->getObjName()[i]);
-                }
-                else{
-                  continue;
-                }
+              else{
+                continue;
               }
             }
           }
         }
         else{
-          if(maxok == true){
-            for(int k = 0; k < mxid.size(); k++){
-              int id_ = mxid[k];
-              for(uint i = 0; i < (*mxlst)[id_]->Matrix()->row; i++){
-                if(getMatrixValue((*mxlst)[id_]->Matrix(), i, j) < max){
-                  selection.append((*mxlst)[id_]->getObjName()[i]);
-                }
-                else{
-                  continue;
-                }
-              }
-            }
-          }
-          else{
-            for(int k = 0; k < mxid.size(); k++){
-              int id_ = mxid[k];
-              for(uint i = 0; i < (*mxlst)[id_]->Matrix()->row; i++){
-                selection.append((*mxlst)[id_]->getObjName()[i]);
-              }
-            }
-          }
+          QMessageBox::warning(this, tr("Select by matrix value"),
+                               tr("Unable to select by matrix value\n"
+                                  "Wrong min/max value. Please type valid numbers."),
+                               QMessageBox::Ok);
         }
+      }
+      else{
+        QMessageBox::warning(this, tr("Select by matrix value"),
+                             tr("Unable to select by matrix value\n"
+                                "No input data matrix found."),
+                             QMessageBox::Ok);
       }
     }
   }
@@ -125,12 +101,12 @@ void SelectByDialog::SetSelectionView()
         matrix *m;
         uivector *selected;
         RUN obj;
-        
+
         if(datatype == 1){
           NewMatrix(&m, (*mxlst)[dataid]->Matrix()->row, varlist.size());
           QStringList varnames = (*mxlst)[dataid]->getVarName();
           varnames.removeAll("Object Names");
-          
+
           int col = 0;
           for(int j = 0; j < varlist.size(); j++){
             int colindex = varnames.indexOf(varlist[j]);
@@ -149,13 +125,13 @@ void SelectByDialog::SetSelectionView()
         else{
           obj.setMatrix(coordinate);
         }
-        
+
         initUIVector(&selected);
-        
+
         obj.setUIVector(selected);
         obj.setMetric(metric);
         obj.setNumberOfObject(nobjects);
-        
+
         StartSelectionRun();
         QFuture<void> future;
         if(selectiontype == MOSTDESCRIPTIVECOMPOUND){
@@ -163,9 +139,9 @@ void SelectByDialog::SetSelectionView()
         }
         else{
           future = obj.RunMaxDisSelection();
-          
+
         }
-        
+
         while(!future.isFinished()){
           if(abort == true){
             obj.AbortRun();
@@ -175,7 +151,7 @@ void SelectByDialog::SetSelectionView()
             QApplication::processEvents();
           }
         }
-        
+
         if(abort == false){
           WaitSelectionRun();
           if(datatype == 1){
@@ -190,7 +166,7 @@ void SelectByDialog::SetSelectionView()
             }
           }
         }
-        
+
         DelUIVector(&selected);
         StopSelectionRun();
       }
@@ -202,9 +178,9 @@ void SelectByDialog::SetSelectionView()
       if(nobjects != -1 && ((datatype == 1 && dataid != -1) || datatype == 0)){
         uivector *selected;
         RUN obj;
-        
+
         initUIVector(&selected);
-        
+
         obj.setUIVector(selected);
         obj.setNumberOfObject(nobjects);
         if(datatype == 1){
@@ -213,10 +189,10 @@ void SelectByDialog::SetSelectionView()
         else{
           obj.setNumberMaxOfObject(coordinate->row);
         }
-        
+
         StartSelectionRun();
         QFuture<void> future = obj.RunRandomSelection();;
-        
+
         while(!future.isFinished()){
           if(abort == true){
             obj.AbortRun();
@@ -226,14 +202,14 @@ void SelectByDialog::SetSelectionView()
             QApplication::processEvents();
           }
         }
-        
+
         if(abort == false){
           WaitSelectionRun();
           for(uint i = 0; i < selected->size; i++){
             selection.append(objname[getUIVectorValue(selected, i)]);
           }
         }
-        
+
         DelUIVector(&selected);
         StopSelectionRun();
       }
@@ -263,9 +239,9 @@ void SelectByDialog::SetSelectionView()
       }
     }
   }
-  
+
   if(append == true){
-    for(int i = 0; i < selection.size(); i++){  
+    for(int i = 0; i < selection.size(); i++){
       int id = objname.indexOf(selection[i]);
       if(id != -1){
         ui.objnamelistView->selectionModel()->select(ui.objnamelistView->model()->index(id, 0), QItemSelectionModel::Select);
@@ -274,7 +250,7 @@ void SelectByDialog::SetSelectionView()
   }
   else{
     ui.objnamelistView->selectionModel()->clear();
-    for(int i = 0; i < selection.size(); i++){  
+    for(int i = 0; i < selection.size(); i++){
       int id = objname.indexOf(selection[i]);
       if(id != -1){
         ui.objnamelistView->selectionModel()->select(ui.objnamelistView->model()->index(id, 0), QItemSelectionModel::Select);
@@ -398,7 +374,7 @@ void SelectByDialog::SetSelectionList()
     ui.maxvaledit->setEnabled(false);
   }
 }
-  
+
 void SelectByDialog::OK()
 {
   for(int i = 0; i < ui.objnamelistView->model()->rowCount(); i++){
@@ -421,7 +397,7 @@ void SelectByDialog::Cancel()
 SelectByDialog::SelectByDialog(QStringList objname_,  matrix* coordinate_, QList<MATRIX*> *mxlst_, QList<int> mxid_, LABELS *objlabel_, LABELS *varlabel_): QDialog()
 {
   ui.setupUi(this);
-  
+
   abort = false;
   objname = objname_;
   initMatrix(&coordinate);
@@ -430,22 +406,22 @@ SelectByDialog::SelectByDialog(QStringList objname_,  matrix* coordinate_, QList
   objlabel = objlabel_;
   varlabel = varlabel_;
   mxid = mxid_;
-  
+
   selectiontype = metric = nobjects = dataid = layerid = -1;
-  
+
   StopSelectionRun();
   append = false;
-  
+
   ui.objnamelistView->setModel(new QStringListModel(objname));
-  
+
   SetSelectionList();
   UpdateSelectionCounter();
-  
+
   connect(ui.objnamelistView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(UpdateSelectionCounter()));
-  
+
   connect(ui.variableSelector, SIGNAL(clicked(bool)), SLOT(SetSelectionList()));
   connect(ui.advancedSelector, SIGNAL(clicked(bool)), SLOT(SetSelectionList()));
-  
+
   connect(ui.openSelectorButton, SIGNAL(clicked(bool)), SLOT(OpenSelectorButton()));
   connect(ui.selectButton, SIGNAL(clicked(bool)), SLOT(selectButton()));
   connect(ui.invertselectButton, SIGNAL(clicked(bool)), SLOT(invertselectButton()));
@@ -461,4 +437,3 @@ SelectByDialog::~SelectByDialog()
 {
   DelMatrix(&coordinate);
 }
-

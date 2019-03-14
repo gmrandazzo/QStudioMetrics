@@ -107,5 +107,5 @@ include_directories(
 )
 
 
-add_subdirectory(src/QPlotly)
+add_subdirectory(src/Chart)
 add_subdirectory (src)

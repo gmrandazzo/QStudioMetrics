@@ -134,10 +134,10 @@ int main(int argc, char *argv[])
   int major, minor, patch;
   QPlotlyVersion(&major, &minor, &patch);
   printf("QPlotly Version %d.%d.%d\n", major, minor, patch);
-  //_2DScattePlotExample(&chart);
+  _2DScattePlotExample(&chart);
   //_2DScattePlotExampleBIS(&chart);
   //_BarPlotExample(&chart);
-  _3DRandomPlotExample(&chart);
+  //_3DRandomPlotExample(&chart);
   //_CurvePlotExample(&chart);
   chart.Plot();
   chart.show();

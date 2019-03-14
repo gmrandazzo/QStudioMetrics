@@ -260,7 +260,6 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     }
     QApplication::processEvents();
   }
-  PrintMatrix((*x));
 }
 
 void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix **x, matrix **y)
