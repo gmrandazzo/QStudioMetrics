@@ -7,9 +7,9 @@ void VariablePlotDialog::GenDataViewAndLabelView(QModelIndex current)
   if(current.isValid() && current.row() < projects->keys().size()){
     // set project
     pid = pids[current.row()];
-    
+
     tab2->clear();
-    
+
     QList<QStandardItem*> dataname;
     for(int i = 0; i < projects->value(pid)->MatrixCount(); i++){
       dataname.clear();
@@ -17,20 +17,20 @@ void VariablePlotDialog::GenDataViewAndLabelView(QModelIndex current)
       dataname.append(new QStandardItem(QString("Matrix")));
       tab2->appendRow(dataname);
     }
-    
+
     for(int i = 0; i < projects->value(pid)->ArrayCount(); i++){
       dataname.clear();
       dataname.append(new QStandardItem(projects->value(pid)->getArray(i)->getName()));
       dataname.append(new QStandardItem(QString("Array")));
       tab2->appendRow(dataname);
     }
-    
+
     tab3->clear();
-    
+
     QList<QStandardItem*> labelaname;
     labelaname.append(new QStandardItem("All Objects"));
     tab3->appendRow(labelaname);
-    
+
     for(int i = 0; i < projects->value(pid)->getObjectLabels().size(); i++){
       labelaname.clear();
       labelaname.append(new QStandardItem(projects->value(pid)->getObjectLabels()[i].name));
@@ -47,9 +47,9 @@ void VariablePlotDialog::GenDataViewAndLabelView(QModelIndex current)
 void VariablePlotDialog::GenVariableViewAndSetHash()
 {
   bool status = true;
-  
+
   QModelIndexList indexes = ui.dataView->selectionModel()->selectedIndexes();
-  
+
   if(pid > -1 && projects->keys().contains(pid) == true && indexes.size() > 0){
     hash.clear();
     QModelIndex current;
@@ -62,7 +62,7 @@ void VariablePlotDialog::GenVariableViewAndSetHash()
       else
         continue;
     }
-    
+
     //check if the number of variable differ betweeen more matrix/array differ;
     if(nmx > 0){// are matrix
       vtype = MATRIXDATA;
@@ -89,7 +89,8 @@ void VariablePlotDialog::GenVariableViewAndSetHash()
         tab4->clear();
 
         for(int i = 0; i < projects->value(pid)->getMatrix(hash[0])->getVarName().size(); i++){
-          if(projects->value(pid)->getMatrix(hash[0])->getVarName()[i].compare("Object Names") == 0){
+          if(projects->value(pid)->getMatrix(hash[0])->getVarName()[i].compare("Object Names") == 0 ||
+             projects->value(pid)->getMatrix(hash[0])->getVarName()[i].compare("Objects") == 0){
             continue;
           }
           else{
@@ -126,7 +127,7 @@ void VariablePlotDialog::setVariableID2(QModelIndex current)
     varid2 = current.row();
     //ui.okButton->setEnabled(EnableOKButton());
   }
-  
+
 }
 
 void VariablePlotDialog::setVariableID1(QModelIndex current)
@@ -198,27 +199,27 @@ bool VariablePlotDialog::checkOK()
     QMessageBox::warning(this, tr("Warning!"), tr("No Project found!\n"), QMessageBox::Close);
     return false;
   }
-  
+
   if(projects->keys().contains(pid) == false){
     QMessageBox::warning(this, tr("Warning!"), tr("No Project found!\n"), QMessageBox::Close);
     return false;
   }
-  
+
   int nobj = 0;
   for(int i = 0; i < objects.size(); i++){
     nobj += objects[i].size();
   }
-  
+
   if(nobj == 0){
     QMessageBox::warning(this, tr("Warning!"), tr("The selected object lists are empty!\n"), QMessageBox::Close);
     return false;
   }
-  
+
   if(hash.size() == 0){
     QMessageBox::warning(this, tr("Warning!"), tr("No matrix Selected!\n"), QMessageBox::Close);
     return false;
   }
-  
+
   if(windowtype == VariableDistribution && varid1 == -1){
     QMessageBox::warning(this, tr("Warning!"), tr("No variable selected!\n"), QMessageBox::Close);
     return false;
@@ -227,7 +228,7 @@ bool VariablePlotDialog::checkOK()
     QMessageBox::warning(this, tr("Warning!"), tr("No variable selected!\n"), QMessageBox::Close);
     return false;
   }
-      
+
   return true;
 }
 
@@ -235,8 +236,8 @@ bool VariablePlotDialog::checkOK()
 bool VariablePlotDialog::EnableOKButton()
 {
   if(projects->size() > 0){
-    if(projects->keys().contains(pid) == true 
-      && (vtype == MATRIXDATA || vtype == ARRAYDATA) 
+    if(projects->keys().contains(pid) == true
+      && (vtype == MATRIXDATA || vtype == ARRAYDATA)
       && objects.size() > 0 && objects.first().size() > 0 && hash.size() > 0){
       if(windowtype == VariableDistribution && varid1 > -1){
         return true;
@@ -276,7 +277,7 @@ void VariablePlotDialog::OK()
           return;
         }
       }
-      
+
       if(nhashok == hash.size() && ui.variableView->selectionModel()->selectedIndexes().size() > 0){
         accept();
       }
@@ -287,7 +288,7 @@ void VariablePlotDialog::OK()
     else if(windowtype == VariableVSVariable && hash.size() > 0){
       int nhashok = 0;
       for(int i = 0; i < hash.size(); i++){
-        if(varid1 < (int)projects->value(pid)->getMatrix(hash[i])->Matrix()->col 
+        if(varid1 < (int)projects->value(pid)->getMatrix(hash[i])->Matrix()->col
           && varid2 < (int)projects->value(pid)->getMatrix(hash[i])->Matrix()->col){
           nhashok++;
         }
@@ -296,7 +297,7 @@ void VariablePlotDialog::OK()
           return;
         }
       }
-      
+
       if(nhashok == hash.size() && ui.variableView->selectionModel()->selectedIndexes().size() > 0 && ui.variableView_2->selectionModel()->selectedIndexes().size() > 0){
         accept();
       }
@@ -317,39 +318,39 @@ void VariablePlotDialog::OK()
 VariablePlotDialog::VariablePlotDialog(PROJECTS* projects_, int windowtype_): QDialog()
 {
   ui.setupUi(this);
-    
+
   projects = projects_;
-  
+
   windowtype = windowtype_;
-  
+
   if(projects->size() > 0)
     pid = 0;
   else
     pid = -1;
-  
+
   vtype = varid1 =  varid2 = -1;
-  
+
   tab1 = new QStandardItemModel();
   tab2 = new QStandardItemModel();
   tab3 = new QStandardItemModel();
   tab4 = new QStandardItemModel();
-  
+
   ui.projectView->setModel(tab1);
   ui.dataView->setModel(tab2);
   ui.objectsView->setModel(tab3);
   ui.variableView->setModel(tab4);
-  
+
   if(windowtype == 0){
-    ui.variablegroupBox_2->hide();  
+    ui.variablegroupBox_2->hide();
     tab5 = 0;
   }
   else{
     tab5 = new QStandardItemModel();
     ui.variableView_2->setModel(tab5);
   }
-  
+
   resize(minimumSize());
-  
+
   //Fill the table with data
   QList<QStandardItem*> projectsname;
   for(int i = 0; i < projects_->keys().size(); i++){
@@ -357,15 +358,15 @@ VariablePlotDialog::VariablePlotDialog(PROJECTS* projects_, int windowtype_): QD
     pids.append(projects_->keys()[i]);
   }
   tab1->appendColumn(projectsname);
-  
-  
+
+
   connect(ui.okButton, SIGNAL(clicked(bool)), SLOT(OK()));
   connect(ui.cancelButton, SIGNAL(clicked(bool)), SLOT(Cancel()));
   connect(ui.projectView->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(GenDataViewAndLabelView(QModelIndex)));
   connect(ui.dataView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(GenVariableViewAndSetHash()));
-  
+
   connect(ui.objectsView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(getObjectNames()));
-  
+
   if(windowtype == 0){
     connect(ui.variableView->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setVariableID1(QModelIndex)));
   }
@@ -381,7 +382,7 @@ VariablePlotDialog::~VariablePlotDialog()
   delete tab1;
   delete tab2;
   delete tab3;
-  
+
   if(tab5){
     delete tab4;
     delete tab5;
