@@ -107,7 +107,7 @@ add_library(libchart SHARED ${CHART_SRC} ${CHART_H} ${icon_RCC_SRCS} ${CHART_MOC
 #add_library(libchart SHARED ${CHART_SRC} ${CHART_H})
 
 #add_library(libchart STATIC ${CHART_SRC} ${CHART_H})
-set_target_properties(libchart PROPERTIES OUTPUT_NAME "qplotly")
+set_target_properties(libchart PROPERTIES OUTPUT_NAME "chart")
 
 if(WIN32)
   target_link_libraries(libchart  ${QT5_LIBRARIES} Qt5::WinMain "-mwindows")
