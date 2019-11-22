@@ -3,7 +3,7 @@
  <class>ImportFileDialog</class>
  <widget class="QDialog" name="ImportFileDialog">
   <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
+   <enum>Qt::NonModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -216,7 +216,7 @@
            </size>
           </property>
           <property name="text">
-           <string>Skip Column with missin value over</string>
+           <string>Skip Column with missing values over</string>
           </property>
           <property name="checked">
            <bool>false</bool>

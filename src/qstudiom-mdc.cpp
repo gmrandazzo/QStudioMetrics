@@ -24,7 +24,8 @@ int main(int argc, char **argv)
       MDC(x, 0, 0, &idsel, nthreads , NULL);
     }
     else{
-      MDC(x, atoi(argv[3]), 0, &idsel, nthreads, NULL);
+      //MDC(x, atoi(argv[3]), 0, &idsel, nthreads, NULL);
+      MaxDis(x, atoi(argv[3]), 0, &idsel, nthreads, NULL);
     }
     DATAIO::WriteUIvector(argv[2], idsel);
     DelMatrix(&x);

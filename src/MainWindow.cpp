@@ -3467,7 +3467,7 @@ void MainWindow::showDescrpitiveStatistics()
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       QStringList colname;
-      colname << "Variables"<< "Average" << "Median" << "Armonic average" << "Var Pop." << "Var Sample" << "SD Pop." << "SD Sample" << "CV Pop. %" << "CV Sample %" << "Min value" << "Max value" << "N. zeros";
+      colname << "Variables"<< "Average" << "Median" << "Armonic average" << "Var Pop." << "Var Sample" << "SD Pop." << "SD Sample" << "CV Pop. %" << "CV Sample %" << "Min value" << "Max value" << "N. zeros" << "N. Missing values";
       child->newTable(tabname, stats);
       child->getTable()->setPID(pid);
       child->getTable()->setObjLabels(&projects->value(pid)->getVariableLabels());

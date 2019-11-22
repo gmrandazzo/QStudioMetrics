@@ -70,7 +70,8 @@ public:
       array_.append(qMakePair(objname[i], i));
     }
     // Ordering ascending
-    qSort(array_.begin(), array_.end(), QPairComparerAscending());
+    //qSort(array_.begin(), array_.end(), QPairComparerAscending()); DEPRECATED
+    std::sort(array_.begin(), array_.end(), QPairComparerAscending());
 
     dvector *tmp;
     initDVector(&tmp);
@@ -115,7 +116,8 @@ public:
       array_.append(qMakePair(objname[i], i));
     }
     // Ordering ascending
-    qSort(array_.begin(), array_.end(), QPairComparerAscending());
+    //qSort(array_.begin(), array_.end(), QPairComparerAscending()); DEPRECATED
+    std::sort(array_.begin(), array_.end(), QPairComparerAscending());
 
     matrix *tmp;
     initMatrix(&tmp);
@@ -165,8 +167,8 @@ public:
       array_.append(qMakePair(objname[i], i));
     }
     // Ordering ascending
-    qSort(array_.begin(), array_.end(), QPairComparerAscending());
-
+    //qSort(array_.begin(), array_.end(), QPairComparerAscending()); DEPRECATED
+    std::sort(array_.begin(), array_.end(), QPairComparerAscending());
 
     initTensor(&atmp);
     TensorCopy(a, &atmp);

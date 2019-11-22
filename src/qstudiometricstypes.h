@@ -7,7 +7,7 @@
 #include <QPixmap>
 #include <scientific.h>
 
-#define DEFAULT_EMTPY_VALUE -9999.
+#define DEFAULT_EMTPY_VALUE missing_value()
 
 enum{
   MATRIXDATA = 0,

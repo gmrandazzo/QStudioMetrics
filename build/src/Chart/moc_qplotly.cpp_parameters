@@ -1,0 +1,10 @@
+-I/Users/marco/projects/QStudioMetrics/build
+-I/Users/marco/projects/QStudioMetrics/src
+-I/Users/marco/projects/QStudioMetrics/build
+-I/Users/marco/projects/QStudioMetrics
+-I/usr/local/include
+-I/Users/marco/projects/QStudioMetrics/src/Chart
+-I/Users/marco/projects/QStudioMetrics/build/src/Chart
+-o
+/Users/marco/projects/QStudioMetrics/build/src/Chart/moc_qplotly.cpp
+/Users/marco/projects/QStudioMetrics/src/Chart/qplotly.h
