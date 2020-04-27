@@ -306,7 +306,6 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     }
   }
 
-
   //Copy the data
   for(int i = 0; i < aligned_objid.size(); i++){
     int ii = aligned_objid[i];
@@ -318,19 +317,19 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     if(classes.size() == 2){
       // contains maybe slow...
       if(classes[0].objects.contains(indata->getObjName()[ii]) == true){
-        (*y)->data[ii][0] = 1; // TRUE
+        (*y)->data[i][0] = 1; // TRUE
       }
       else{
-        (*y)->data[ii][0] = 0; // FALSE
+        (*y)->data[i][0] = 0; // FALSE
       }
     }
     else{
       for(int j = 0; j < classes.size(); j++){
         if(classes[j].objects.contains(indata->getObjName()[ii]) == true){
-          (*y)->data[ii][j] = 1; // TRUE
+          (*y)->data[i][j] = 1; // TRUE
         }
         else{
-          (*y)->data[ii][j] = 0; // FALSE
+          (*y)->data[i][j] = 0; // FALSE
         }
       }
     }
