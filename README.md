@@ -59,6 +59,7 @@ Binary releases for Windows and OSX at <https://github.com/gmrandazzo/QStudioMet
 
 ## Acknowledgments
 
-Plotly Javascript - QStudioMetrics use as plot engine plotly.js 
+[Plotly Javascript](https://plotly.com/javascript/) - QStudioMetrics use plot.js as plot engine.
+ 
 
 
