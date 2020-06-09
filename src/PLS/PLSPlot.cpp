@@ -340,7 +340,9 @@ void PLSPlot::BetaCoefficients(BarPlot **betas_bar)
   //meanY - meanX*beta
   PrintDVector(betas);
 
-  (*betas_bar) = new BarPlot(betas, varnames, QString("Betas Model - %1 LV %2").arg(projects->value(pid)->getPLSModel(mid)->getName()).arg(QString::number(nlv)), "Variables", "Betas");
+  (*betas_bar) = new BarPlot(betas,
+                             varnames,
+                             QString("Betas Model - %1 LV %2").arg(projects->value(pid)->getPLSModel(mid)->getName()).arg(QString::number(nlv)));
 
   DelDVector(&betas);
 }
@@ -1533,7 +1535,17 @@ void PLSPlot::T_ScorePlot3D(ScatterPlot **plot3D)
   objname.append(projects->value(pid)->getPLSModel(mid)->getObjName());
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
-  (*plot3D) = new ScatterPlot(mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("%1 - %2 - PLS T Score Plot").arg(projectname).arg(modelname), "t", "t", "t", ScatterPlot::SCORES);
+  (*plot3D) = new ScatterPlot(mxlst,
+                              objname,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), 
+                              "t",
+                              "t",
+                              "t",
+                              QString("%1 - %2 - PLS T Score Plot").arg(projectname).arg(modelname),
+                              ScatterPlot::SCORES);
   (*plot3D)->setPID(pid);
 }
 
@@ -1548,7 +1560,18 @@ void PLSPlot::P_LoadingsPlot3D(ScatterPlot **plot3D)
   objname.append(varname);
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
-  (*plot3D) = new ScatterPlot(mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("%1 - %2 - PLS P Loadings Plot").arg(projectname).arg(modelname), "p", "p", "p", ScatterPlot::LOADINGS);
+  (*plot3D) = new ScatterPlot(mxlst,
+                              objname,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "p",
+                              "p",
+                              "p",
+                              QString("%1 - %2 - PLS P Loadings Plot").arg(projectname).arg(modelname),
+                              ScatterPlot::LOADINGS);
   (*plot3D)->setPID(pid);
   /*ScatterPlot *plt3D = new ScatterPlot(mxlst, objname, &projects->value(pid)->getVariableLabels(), projectname + modelname +" - PLS Loadings Plot", ScatterPlot::VARIABLELABELS);*/
 }
@@ -1605,7 +1628,17 @@ void PLSPlot::WeightsPlot3D(ScatterPlot **plot3D)
 
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
-  (*plot3D) = new ScatterPlot(mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("%1 - %2 - PLS W Weights Plot").arg(projectname).arg(modelname), "w", "w", "w", ScatterPlot::LOADINGS);
+  (*plot3D) = new ScatterPlot(mxlst,
+                              objnamelst,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "w",
+                              "w",
+                              "w",
+                              QString("%1 - %2 - PLS W Weights Plot").arg(projectname).arg(modelname), ScatterPlot::LOADINGS);
   /*ScatterPlot *plt3D = new ScatterPlot(mxlst, objname, &projects->value(pid)->getVariableLabels(), projectname + modelname +" - W/W/W Loadings Plot", ScatterPlot::VARIABLELABELS);*/
   (*plot3D)->setPID(pid);
   DelMatrix(&yloadingsbis);
@@ -1622,7 +1655,18 @@ void PLSPlot::U_ScorePlot3D(ScatterPlot **plot3D)
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
   yhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
-  (*plot3D) = new ScatterPlot(mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("%1 - %2 - PLS U Score Plot").arg(projectname).arg(modelname), "u", "u", "u", ScatterPlot::SCORES);
+  (*plot3D) = new ScatterPlot(mxlst,
+                              objname,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "u",
+                              "u",
+                              "u",
+                              QString("%1 - %2 - PLS U Score Plot").arg(projectname).arg(modelname),
+                              ScatterPlot::SCORES);
   (*plot3D)->setPID(pid);
 }
 
@@ -1639,7 +1683,17 @@ void PLSPlot::Q_LoadingsPlot3D(ScatterPlot **plot3D)
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
   yhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
-  (*plot3D) = new ScatterPlot(mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("%1 - %2 - PLS Q Loadings Plot").arg(projectname).arg(modelname), "q", "q", "q", ScatterPlot::LOADINGS);
+  (*plot3D) = new ScatterPlot(mxlst,
+                              objname,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "q",
+                              "q",
+                              "q",
+                              QString("%1 - %2 - PLS Q Loadings Plot").arg(projectname).arg(modelname), ScatterPlot::LOADINGS);
   /*
   ScatterPlot *plt3D = new ScatterPlot(mxlst, objname, &projects->value(pid)->getVariableLabels(), projectname + modelname +" - Q/Q/Q Loadings Plot", ScatterPlot::VARIABLELABELS);*/
   (*plot3D)->setPID(pid);
@@ -1659,7 +1713,18 @@ void PLSPlot::T_ScorePlotPrediction3D(ScatterPlot **plot3D)
   xhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
   xhash.append(projects->value(pid)->getPLSModel(mid)->getPLSPrediction(predid)->getDataHash());
   yhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
-  (*plot3D) = new ScatterPlot(mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), QString("%1 - %2 - PLS T Score Plot Predicion").arg(projectname).arg(modelname), "t", "t", "t", ScatterPlot::SCORES);
+  (*plot3D) = new ScatterPlot(mxlst,
+                              objname,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "t",
+                              "t",
+                              "t",
+                              QString("%1 - %2 - PLS T Score Plot Predicion").arg(projectname).arg(modelname),
+                              ScatterPlot::SCORES);
   (*plot3D)->setPID(pid);
 }
 

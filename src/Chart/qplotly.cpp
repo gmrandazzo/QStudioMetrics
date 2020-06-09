@@ -839,8 +839,6 @@ QString QPlotlyWindow::genJSON3DScatter()
   }
 
 
-
-
   json += QString("var id%1 = { %2, %3, %4, %5, mode: 'markers', marker: { size: 5, opacity: 0.9, %6, %7 }, type: 'scatter3d' };").arg(trace_id).arg(x).arg(y).arg(z).arg(text).arg(color).arg(symbol);
   trace_id++;
 

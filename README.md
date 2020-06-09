@@ -56,3 +56,9 @@ make
 ## Install binary release
 
 Binary releases for Windows and OSX at <https://github.com/gmrandazzo/QStudioMetrics/releases>.
+
+## Acknowledgments
+
+Plotly Javascript - QStudioMetrics use as plot engine plotly.js 
+
+

@@ -13,7 +13,12 @@ void BarPlot::slotExit()
   qApp->exit();
 }
 
-void BarPlot::genBars(dvector *v, int split, double min, double max, QVector<qreal> *bval, QStringList *bnames)
+void BarPlot::genBars(dvector *v,
+                      int split,
+                      double min,
+                      double max,
+                      QVector<qreal> *bval,
+                      QStringList *bnames)
 {
   int i, j;
   double step, x;
@@ -42,8 +47,43 @@ void BarPlot::genBars(dvector *v, int split, double min, double max, QVector<qre
   }
 }
 
-BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle, QString xaxestitle, QString yaxestitle, QWidget *parent) : QWidget(parent)
+BarPlot::BarPlot(dvector *v_,
+                 QStringList varnames,
+                 QString windowtitle,
+                 QWidget *parent) : QWidget(parent)
 {
+    ui.setupUi(this);
+    setWindowTitle(windowtitle);
+    chart = new QPlotlyWindow(this);
+    chart->setXaxisName("");
+    chart->setYaxisName("");
+    chart->setPlotTitle(windowtitle);
+    
+    QStringList bnames;
+    QVector<qreal> y;
+    for(size_t i = 0; i < v_->size; i++){
+        y << v_->data[i];
+    }
+    
+    chart->addBars(varnames, y, varnames, Qt::black);
+    
+    QVBoxLayout *plotLayout = new QVBoxLayout();
+    plotLayout->addWidget(chart);
+    ui.widget->setLayout(plotLayout);
+    //Finally render the scene
+    chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
+    chart->Refresh();
+    connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
+}
+
+BarPlot::BarPlot(dvector *v_,
+                 QStringList varnames,
+                 QString windowtitle,
+                 QString xaxestitle,
+                 QString yaxestitle,
+                 QWidget *parent) : QWidget(parent)
+{
+  qDebug() << "Call this";
   ui.setupUi(this);
   setWindowTitle(windowtitle);
   chart = new QPlotlyWindow(this);
@@ -61,7 +101,6 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle, QString
   chart->addBars(bnames, y, bnames, Qt::black);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
-  chart = new QPlotlyWindow(this);
   plotLayout->addWidget(chart);
   ui.widget->setLayout(plotLayout);
   //Finally render the scene

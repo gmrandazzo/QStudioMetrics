@@ -11,7 +11,17 @@ void PCAPlot::ScorePlot2D(ScatterPlot** plot2D)
   objnamelst.append(projects->value(pid)->getPCAModel(mid)->getObjName());
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
-  (*plot2D) = new ScatterPlot(mxlst, objnamelst,  &projects->value(pid)->getMATRIXList(), xhash, yhash,  &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "PC", "PC", QString(projectname + modelname + " - PCA Score Plot"), ScatterPlot::SCORES);
+  (*plot2D) = new ScatterPlot(mxlst,
+                              objnamelst, 
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash, 
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "PC",
+                              "PC",
+                              QString(projectname + modelname + " - PCA Score Plot"),
+                              ScatterPlot::SCORES);
   (*plot2D)->setHotellingConfidenceEllipse(true);
   (*plot2D)->setPID(pid);
 }
@@ -29,7 +39,17 @@ void PCAPlot::ScorePlotPrediction2D(ScatterPlot **plot2D)
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
   xhash.append(projects->value(pid)->getPCAModel(mid)->getPCAPrediction(predid)->getDataHash());
-  (*plot2D) = new ScatterPlot(mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "PC", "PC", QString(projectname + modelname +" - PCA Score Plot Prediction"), ScatterPlot::SCORES);
+  (*plot2D) = new ScatterPlot(mxlst,
+                              objnamelst,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "PC",
+                              "PC",
+                              QString(projectname + modelname +" - PCA Score Plot Prediction"),
+                              ScatterPlot::SCORES);
   (*plot2D)->setHotellingConfidenceEllipse(true);
   (*plot2D)->setPID(pid);
 }
@@ -48,7 +68,17 @@ void PCAPlot::LoadingsPlot2D(ScatterPlot **plot2D)
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
 
-  (*plot2D) = new ScatterPlot(mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "PC", "PC",  projectname + modelname + " - PCA Loadings Plot", ScatterPlot::LOADINGS);
+  (*plot2D) = new ScatterPlot(mxlst,
+                              objnamelst,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "PC",
+                              "PC",
+                              projectname + modelname + " - PCA Loadings Plot",
+                              ScatterPlot::LOADINGS);
   (*plot2D)->setPID(pid);
   (*plot2D)->setMID(mid);
   (*plot2D)->setModelType(PCA_);
@@ -89,7 +119,11 @@ void PCAPlot::ExpVarPlot(SimpleLine2DPlot **plot2D)
   qDebug() << "Final Matrix";
   PrintMatrix(m);
   #endif
-  (*plot2D) = new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - Explained Variance Plot").arg(projectname).arg(modelname), "PC", "Exp. Var.");
+  (*plot2D) = new SimpleLine2DPlot(m,
+                                   curvenames,
+                                   QString(" %1 - %2 - Explained Variance Plot").arg(projectname).arg(modelname),
+                                   "PC",
+                                   "Exp. Var.");
   DelMatrix(&m);
 }
 
@@ -195,7 +229,18 @@ void PCAPlot::LoadingsMVANormDistrib(ScatterPlot **plot2D)
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
 
-    (*plot2D) = new ScatterPlot(mx, my, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,  &projects->value(pid)->getVariableTabLabels(), &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "PC", "Prob PC", projectname + modelname + " - PCA Loadings Multivariate Normal Distribution", ScatterPlot::LOADINGS);
+    (*plot2D) = new ScatterPlot(mx,
+                                my,
+                                objnamelst,
+                                &projects->value(pid)->getMATRIXList(),
+                                xhash,
+                                yhash,
+                                &projects->value(pid)->getVariableTabLabels(),
+                                &projects->value(pid)->getObjectLabels(),
+                                &projects->value(pid)->getVariableLabels(),
+                                "PC",
+                                "Prob PC",
+                                projectname + modelname + " - PCA Loadings Multivariate Normal Distribution", ScatterPlot::LOADINGS);
     (*plot2D)->setPID(pid);
     DelTensor(&classvar);
   }
@@ -213,7 +258,18 @@ void PCAPlot::ScorePlot3D(ScatterPlot **plot3D)
   objname.append(projects->value(pid)->getPCAModel(mid)->getObjName());
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
-  (*plot3D) = new ScatterPlot(mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "PC", "PC", "PC", QString("%1 - %2 - PCA Score Plot").arg(projectname).arg(modelname), ScatterPlot::SCORES);
+  (*plot3D) = new ScatterPlot(mxlst,
+                              objname,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "PC",
+                              "PC",
+                              "PC",
+                              QString("%1 - %2 - PCA Score Plot").arg(projectname).arg(modelname),
+                              ScatterPlot::SCORES);
   (*plot3D)->setPID(pid);
 }
 
@@ -228,7 +284,17 @@ void PCAPlot::LoadingsPlot3D(ScatterPlot **plot3D)
   objname.append(varname);
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
-  (*plot3D) = new ScatterPlot(mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "PC", "PC", "PC", QString("%1 - %2 - PCA Loadings Plot").arg(projectname).arg(modelname), ScatterPlot::LOADINGS);
+  (*plot3D) = new ScatterPlot(mxlst,
+                              objname,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "PC",
+                              "PC",
+                              "PC",
+                              QString("%1 - %2 - PCA Loadings Plot").arg(projectname).arg(modelname), ScatterPlot::LOADINGS);
   (*plot3D)->setPID(pid);
 }
 
@@ -245,7 +311,17 @@ void PCAPlot::ScorePlotPrediction3D(ScatterPlot **plot3D)
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
   xhash.append(projects->value(pid)->getPCAModel(mid)->getPCAPrediction(predid)->getDataHash());
-  (*plot3D) = new ScatterPlot(mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "PC", "PC", "PC", QString("%1 - %2 - PCA Score Plot Prediction").arg(projectname).arg(modelname), ScatterPlot::SCORES);
+  (*plot3D) = new ScatterPlot(mxlst,
+                              objname,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "PC",
+                              "PC",
+                              "PC",
+                              QString("%1 - %2 - PCA Score Plot Prediction").arg(projectname).arg(modelname), ScatterPlot::SCORES);
   (*plot3D)->setPID(pid);
 }
 
