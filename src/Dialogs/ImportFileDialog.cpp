@@ -336,7 +336,7 @@ void ImportFileDialog::ImportType0()
     AssignName(m->getVarName(), "Objects");
     QStringList header;
     int header_line = getHeader(&header);
-    for(int j = 1; j < header.size(); j++){
+    for(int j = 0; j < header.size(); j++){
       AssignName(m->getVarName(), header[j]);
     }
 
@@ -432,7 +432,7 @@ void ImportFileDialog::ImportType1()
     AssignName(m->getVarName(), "Objects");
     QStringList header;
     int header_line = getHeader(&header);
-    for(int j = 1; j < header.size(); j++){
+    for(int j = 0; j < header.size(); j++){
       AssignName(m->getVarName(), header[j]);
     }
     //add header line to the lines to skip
