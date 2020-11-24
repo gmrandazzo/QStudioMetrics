@@ -24,7 +24,6 @@ private slots:
   void genListView();
   void setProjectID(QModelIndex current);
   void set_unset_MatrixID(QModelIndex current);
-
   
 private:
   Ui::MergeDataDialog ui;

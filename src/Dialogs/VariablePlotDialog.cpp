@@ -88,12 +88,13 @@ void VariablePlotDialog::GenVariableViewAndSetHash()
         }
         tab4->clear();
 
-        for(int i = 0; i < projects->value(pid)->getMatrix(hash[0])->getVarName().size(); i++){
+        for(int i = 1; i < projects->value(pid)->getMatrix(hash[0])->getVarName().size(); i++){ // First item is aways the name of the object that we do not whant to plot...
+	  /*
           if(projects->value(pid)->getMatrix(hash[0])->getVarName()[i].compare("Object Names") == 0 ||
              projects->value(pid)->getMatrix(hash[0])->getVarName()[i].compare("Objects") == 0){
             continue;
           }
-          else{
+          else{*/
             QList<QStandardItem*> varname1, varname2;
             if(tab5){
               varname1.clear();
@@ -108,7 +109,7 @@ void VariablePlotDialog::GenVariableViewAndSetHash()
               varname1.append(new QStandardItem(QString("%1").arg(projects->value(pid)->getMatrix(hash[0])->getVarName()[i])));
               tab4->appendRow(varname1);
             }
-          }
+          /*}*/
         }
 //           ui.okButton->setEnabled(status);
       }

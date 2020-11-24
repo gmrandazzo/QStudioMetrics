@@ -1,6 +1,16 @@
 #include "MergeDataDialog.h"
 
-
+/*
+ * Merge along columns
+ * This means that the two matrix share the 
+ * same columns
+ *
+ * OR
+ * 
+ * Merge along rows
+ * This means that the matrix do not share same column
+ * but share same object names
+ */
 void MergeDataDialog::OK()
 {
  // Merge and Exit
@@ -8,12 +18,15 @@ void MergeDataDialog::OK()
   QStringList varnames;
   for(int i = 0; i < mxids.size(); i++){
     objnames.append(projects->value(pid)->getMatrix(mxids[i])->getObjName());
-    varnames.append(projects->value(pid)->getMatrix(mxids[i])->getVarName());
+    /* we start from 1 because at 0 there is the standard sample name "Objects" */
+    for(int j = 1; j < projects->value(pid)->getMatrix(mxids[i])->getVarName().size(); j++){
+        varnames.append(projects->value(pid)->getMatrix(mxids[i])->getVarName()[j]);
+    }
   }
 
   objnames.removeDuplicates();
   varnames.removeDuplicates();
-  varnames.removeFirst();
+  
 
   if(ui.mergematchcol->isChecked()){
     QStringList matchvarnames;
@@ -41,24 +54,22 @@ void MergeDataDialog::OK()
   }
 
   mx->MatrixResize(objnames.size(), varnames.size());
-  int cc = 0;
-  for(int k = 0; k < objnames.size(); k++){
-    for(int i = 0; i < mxids.size(); i++){
-      int indxobj = projects->value(pid)->getMatrix(mxids[i])->getObjName().indexOf(objnames[k]);
-      if(indxobj > -1){
-        for(int j = 0; j < varnames.size(); j++){
-          int colindx = projects->value(pid)->getMatrix(mxids[i])->getVarName().indexOf(varnames[j])-1; // -1 because first column is the default column name...
+  for(int i = 0; i < objnames.size(); i++){
+    for(int j = 0; j < varnames.size(); j++){
+      for(int k = 0; k < mxids.size(); k++){
+        int indxobj = projects->value(pid)->getMatrix(mxids[k])->getObjName().indexOf(objnames[i]);
+        if(indxobj > -1){
+          int colindx = projects->value(pid)->getMatrix(mxids[k])->getVarName().indexOf(varnames[j])-1;
           if(colindx > -1){
-            mx->Matrix()->data[cc][j] = projects->value(pid)->getMatrix(mxids[i])->Matrix()->data[indxobj][colindx];
+            mx->Matrix()->data[i][j] = projects->value(pid)->getMatrix(mxids[k])->Matrix()->data[indxobj][colindx];
           }
-          else
+          else{
             continue;
+          }
         }
-        cc++;
-        break;
-      }
-      else{
-        continue;
+        else{
+          continue;
+        }
       }
     }
   }

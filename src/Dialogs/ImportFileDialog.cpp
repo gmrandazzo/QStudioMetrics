@@ -336,7 +336,7 @@ void ImportFileDialog::ImportType0()
     AssignName(m->getVarName(), "Objects");
     QStringList header;
     int header_line = getHeader(&header);
-    for(int j = 0; j < header.size(); j++){
+    for(int j = 1; j < header.size(); j++){
       AssignName(m->getVarName(), header[j]);
     }
 
@@ -371,51 +371,6 @@ void ImportFileDialog::ImportType0()
     f.close();
   }
 }
-
-/* slow version
-void ImportFileDialog::ImportType0()
-{
-  QFileInfo info(ui.file->text());
-  if(info.exists()){
-    QFile f(ui.file->text());
-    if(!f.open(QIODevice::ReadOnly | QIODevice::Text))
-      return;
-
-    AssignName(m->getVarName(), "Object Names");
-    size_t row = 0;
-    QString skipchar = getSkipChar();
-    QString sep = getSeparator();
-    QTextStream in(&f);
-    while(!in.atEnd()){
-      QString line = in.readLine();
-      // skip line empty or starting with a skip char
-      if(QString(line[0]).compare(skipchar, Qt::CaseInsensitive) == 0 || line.isEmpty()){
-        continue;
-      }
-      else{
-        if(row == 0){
-          QStringList items = line.split(sep);
-          for(int j = 1; j < items.size(); j++){
-            AssignName(m->getVarName(), items[j]);
-          }
-        }
-        else{
-          QStringList items = line.split(sep);
-          AssignName(m->getObjName(), items[0]);
-          for(int j = 1; j < items.size(); j++){
-            bool converted;
-            double val = items[j].replace(",",".").toDouble(&converted);
-            m->Matrix()->data[row-1][j-1] = (converted == true) ? val : DEFAULT_EMTPY_VALUE;
-          }
-        }
-        row++;
-      }
-    }
-    f.close();
-  }
-}
-*/
-
 
 // if(ui.firstrowvarname->isChecked() == true && ui.firstcolobjname->isChecked() == false)
 void ImportFileDialog::ImportType1()

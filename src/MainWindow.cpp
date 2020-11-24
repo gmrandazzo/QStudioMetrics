@@ -2343,7 +2343,6 @@ void MainWindow::showEPLSValidatedPrediction()
     child->getTable()->model()->setObjNames(varname);
     QStringList header;
     header << "Objects";
-
     for(size_t i = 0; i < projects->value(pid)->getEPLSModel(mid)->Model()->nlv; i++){
       for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->Model()->ny; j++){
         header << QString("y %1 (PC %2)").arg(QString::number(j+1)).arg(QString::number(i+1));
