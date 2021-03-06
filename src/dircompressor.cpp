@@ -69,18 +69,18 @@ void DirCompressor::WriteFile(QStringList flist, char *path_){
   QDir path(QString::fromUtf8(path_));
   if(flist.size() > 0 && path.exists()){
     QString relfilepath = QString::fromUtf8(flist.first().split("@").last().toUtf8());
-    
+
     /*qDebug() << QString::fromUtf8(relfilepath.toUtf8());*/
     QString fname = QString("%1/%2").arg(QString::fromUtf8(path.absolutePath().toUtf8())).arg(QString::fromUtf8(relfilepath.trimmed().toUtf8()));
-    
+
     /*qDebug() << "WriteFile " << QString::fromUtf8(fname.toUtf8()) << " " << QString::fromUtf8(path_);*/
-    
+
     QFileInfo finfo(QString::fromUtf8(fname.toUtf8()));
     if(!finfo.absoluteDir().exists()){
       /*qDebug() << " Make Path... " << QString::fromUtf8(finfo.absolutePath().toUtf8());*/
       path.mkpath(QString::fromUtf8(finfo.absolutePath().toUtf8()));
     }
-    
+
     if(fname.toLower().endsWith(".jpg") == true
       || fname.toLower().endsWith(".jpeg") == true
       || fname.toLower().endsWith(".png") == true
@@ -88,29 +88,28 @@ void DirCompressor::WriteFile(QStringList flist, char *path_){
       || fname.toLower().endsWith(".ppm") == true
       || fname.toLower().endsWith(".xbp") == true
       || fname.toLower().endsWith(".xmp") == true){
-  
-  
-      QString decoded = QString(flist[1]);
-      QByteArray ba; ba.append(decoded);
+
+
+      QString ba = QString(flist[1]);
       QImage simage;
-    
+
       if(fname.toLower().endsWith(".jpg") == true || fname.toLower().endsWith(".jpeg") == true)
-        simage.loadFromData(QByteArray::fromBase64(ba), "JPG");
+        simage.loadFromData(QByteArray::fromBase64(ba.toUtf8()), "JPG");
       else if(fname.toLower().endsWith(".png") == true)
-        simage.loadFromData(QByteArray::fromBase64(ba), "PNG");
+        simage.loadFromData(QByteArray::fromBase64(ba.toUtf8()), "PNG");
       else if(fname.toLower().endsWith(".bmp") == true)
-        simage.loadFromData(QByteArray::fromBase64(ba), "BMP");
+        simage.loadFromData(QByteArray::fromBase64(ba.toUtf8()), "BMP");
       else if(fname.toLower().endsWith(".ppm") == true)
-        simage.loadFromData(QByteArray::fromBase64(ba), "PPM");
+        simage.loadFromData(QByteArray::fromBase64(ba.toUtf8()), "PPM");
       else if(fname.toLower().endsWith(".xbp") == true)
-        simage.loadFromData(QByteArray::fromBase64(ba), "XBP");
+        simage.loadFromData(QByteArray::fromBase64(ba.toUtf8()), "XBP");
       else if (fname.toLower().endsWith(".xmp") == true)
-        simage.loadFromData(QByteArray::fromBase64(ba), "XPM");
+        simage.loadFromData(QByteArray::fromBase64(ba.toUtf8()), "XPM");
       else
         return;
-      
+
 //       simage.save(QString::fromUtf8(fname.toUtf8()), "JPG");
-      
+
       QFile imgfile(fname.toUtf8());
       imgfile.open(QIODevice::WriteOnly);
       simage.save(&imgfile, "JPG");
@@ -139,12 +138,12 @@ void DirCompressor::ReadFileToString(char *fname, QStringList *filemem)
     || fname_.toLower().endsWith(".ppm") == true
     || fname_.toLower().endsWith(".xbp") == true
     || fname_.toLower().endsWith(".xmp") == true){
-    
+
     QFileInfo finfo(fname_);
     QPixmap image(finfo.absoluteFilePath());
     #ifdef DEBUG
     qDebug() << "DirCompressor::ReadFileToString path: " << finfo.absoluteFilePath();
-    #endif 
+    #endif
     QByteArray ba;
     QBuffer buffer(&ba);
     buffer.open(QIODevice::WriteOnly);
@@ -167,7 +166,7 @@ void DirCompressor::ReadFileToString(char *fname, QStringList *filemem)
     else
       image.load(fname_);
     */
-  
+
     (*filemem).append(encoded);
     (*filemem).append("\n");
   }
@@ -202,7 +201,7 @@ void DirCompressor::ScanDir(QDir dir, QFileInfoList *list)
 
 /*
 int DirCompressor::compress()
-{ 
+{
   printf("compress %s as %s\n", dirorfile.toUtf8().data(), out.toUtf8().data());
   if(dirorfile.isEmpty() == false && out.isEmpty() == false){
 
@@ -210,7 +209,7 @@ int DirCompressor::compress()
       QDir dir(QString::fromUtf8(dirorfile.toUtf8()));
       QFileInfoList filelist;
       ScanDir(dir, &filelist);
-      
+
       QString dircontent;
       for(int i = 0; i < filelist.size(); i++){
 //         printf("Compress %s\n", filelist[i].absoluteFilePath().toUtf8().data());
@@ -219,12 +218,12 @@ int DirCompressor::compress()
         dircontent.append(QString("FILE@%1\n").arg(QString::fromUtf8(filepath.toUtf8().data())));
         ReadFileToString(filelist[i].absoluteFilePath().toUtf8().data(), &dircontent);
       }
-      
+
       QFile outfile(QString::fromUtf8(out.toUtf8()));
-      
+
       if(!outfile.open(QIODevice::WriteOnly))
         return -1;
-      
+
       QByteArray compressedData = qCompress(dircontent.toUtf8());
       outfile.write(compressedData);
       outfile.close();
@@ -235,7 +234,7 @@ int DirCompressor::compress()
 
       if(!infile.open(QIODevice::ReadOnly))
         return -1;
-      
+
       if(!outfile.open(QIODevice::WriteOnly))
         return -1;
 
@@ -256,7 +255,7 @@ int DirCompressor::compress()
 */
 
 int DirCompressor::compress()
-{ 
+{
   printf("compress %s as %s\n", dirorfile.toUtf8().data(), out.toUtf8().data());
   if(dirorfile.isEmpty() == false && out.isEmpty() == false){
     /*qDebug() << "Compress";*/
@@ -265,7 +264,7 @@ int DirCompressor::compress()
       QDir dir(QString::fromUtf8(dirorfile.toUtf8()));
       QFileInfoList filelist;
       ScanDir(dir, &filelist);
-      
+
 //       QString dircontent;
       QStringList dircontent;
       for(int i = 0; i < filelist.size(); i++){
@@ -277,15 +276,15 @@ int DirCompressor::compress()
         ReadFileToString(filelist[i].absoluteFilePath().toUtf8().data(), &dircontent);
 //         dircontent.append("END\n"); USED IN THE SECOND TYPE
       }
-      
+
       QFile outfile(QString::fromUtf8(out.toUtf8()));
       /*qDebug() << outfile.fileName();*/
-      
+
       if(!outfile.open(QIODevice::WriteOnly))
         return -1;
- 
+
       QByteArray alldata;
-      alldata.append(dircontent.join(""));
+      alldata.append(dircontent.join("").toUtf8());
       QByteArray compressedData = qCompress(alldata);
 //       QTextCodec *codec = QTextCodec::codecForName("UTF-8");
 //       QByteArray compressedData = qCompress(codec->fromUnicode(dircontent.join("\n")));
@@ -298,7 +297,7 @@ int DirCompressor::compress()
 
       if(!infile.open(QIODevice::ReadOnly))
         return -1;
-      
+
       if(!outfile.open(QIODevice::WriteOnly))
         return -1;
 
@@ -320,26 +319,26 @@ int DirCompressor::compress()
 /*
 int DirCompressor::decompress()
 {
-  
+
 //   qDebug() << "Decompress";
 //   printf("extract file %s to %s\n", dirorfile.toUtf8().data(), extrpath.toUtf8().data());
-  
+
   QFileInfo f(QString::fromUtf8(dirorfile.toUtf8().data()));
-  
+
   if(dirorfile.isEmpty() == false && f.isFile() && extrpath.isEmpty() == false){
     QFile infile(QString::fromUtf8(dirorfile.toUtf8().data()));
     if(!infile.open(QIODevice::ReadOnly))
       return -1;
-    
+
     QByteArray compressedData = infile.readAll();
     QString uncompressedData;
     if(compressedData.size() > 0)
       uncompressedData = QString(qUncompress(compressedData));
     else
       return -1;
-    
+
     infile.close();
-    
+
     //wirte temporaryfile
     QDir dir(QString::fromUtf8(extrpath.toUtf8().data()));
     QString tmp;
@@ -349,7 +348,7 @@ int DirCompressor::decompress()
     QFile file(QString::fromUtf8(fname.toUtf8()));
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
       return -1;
-    
+
     QTextStream out(&file);
     out << uncompressedData;
     file.close();
@@ -358,7 +357,7 @@ int DirCompressor::decompress()
     QFile file2(QString::fromUtf8(fname.toUtf8()));
     if(!file2.open(QIODevice::ReadOnly | QIODevice::Text))
       return -1;
-    
+
     while(!file2.atEnd()){
       QString line = file2.readLine();
       if(line.trimmed().compare("END", Qt::CaseSensitive) == 0){
@@ -370,7 +369,7 @@ int DirCompressor::decompress()
       }
     }
     file2.close();
-    
+
     //write the last file...
     WriteFile(flist, dir.absolutePath().toUtf8().data());
     file2.remove();
@@ -386,27 +385,27 @@ int DirCompressor::decompress()
 {
 
 //   qDebug() << "Decompress";
-  
+
 //   printf("extract file %s to %s\n", dirorfile.toUtf8().data(), extrpath.toUtf8().data());
-  
+
   QFileInfo f(QString::fromUtf8(dirorfile.toUtf8().data()));
-  
+
 //   qDebug() << f.isFile() << " " << QString::fromUtf8(f.absoluteFilePath().toUtf8().data());
-  
+
   if(dirorfile.isEmpty() == false && f.isFile() && extrpath.isEmpty() == false){
     QFile infile(QString::fromUtf8(dirorfile.toUtf8().data()));
     if(!infile.open(QIODevice::ReadOnly))
       return -1;
-    
+
     QByteArray compressedData = infile.readAll();
     QString uncompressedData;
     if(compressedData.size() > 0)
       uncompressedData = QString(qUncompress(compressedData));
     else
       return -1;
-    
+
     infile.close();
-    
+
     //wirte temporaryfile
     QDir dir(QString::fromUtf8(extrpath.toUtf8().data()));
     QString tmp;
@@ -416,7 +415,7 @@ int DirCompressor::decompress()
     QFile file(QString::fromUtf8(fname.toUtf8()));
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
       return -1;
-    
+
     QTextStream out(&file);
     out << uncompressedData;
     file.close();
@@ -426,7 +425,7 @@ int DirCompressor::decompress()
     bool firstline = true;
     if(!file2.open(QIODevice::ReadOnly | QIODevice::Text))
       return -1;
-    
+
     while(!file2.atEnd()){
       QString line = file2.readLine();
       if(line.contains("FILE@") == true && firstline == false){
@@ -446,7 +445,7 @@ int DirCompressor::decompress()
       }
     }
     file2.close();
-    
+
     //write the last file...
     WriteFile(flist, dir.absolutePath().toUtf8().data());
     file2.remove();
@@ -484,4 +483,3 @@ void DirCompressor::setOutput(const char *out_)
 {
   out = QString::fromUtf8(out_);
 }
-

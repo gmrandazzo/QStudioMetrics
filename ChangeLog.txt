@@ -1,0 +1,38 @@
+# Changelog
+
+## [2.0.3] - 2021-05-01
+### Added
+- Added support to modify with custom text/size the "axis name, title on 2D plots"
+
+### Changed
+- Fixed 'QByteArray& QByteArray::append(const QString&)' is deprecated from dircompressor.cpp
+- Fixed column header assign to variable name by [@gernot-hochmuth](https://github.com/gmrandazzo/QStudioMetrics/pull/2)
+- Fixed Data Merge "Advanced pretreatment" [issue](https://github.com/gmrandazzo/QStudioMetrics/issues/3)
+- Fixed warning: format 'size_t' from %lu to %llu in qstudiom-pls.cpp
+- Fixed deprecated functions into chart.cpp
+
+
+## [2.0.2] - 2019-03-14
+### Added
+- Added a new Chart library (v1.2.1) wich plot in 2D using Qt and 3D using plotly.
+- Added more symbols to 2D and 3D plot
+
+### Changed
+- Fixed minor bugs related to the selection by matrix value
+
+
+## [2.0.0] - 2019-02-28
+
+### Changed
+- First official binary release for windows 64bit users
+- First official binary release for OSX Mojave
+
+
+## [1.8.0] - 2016-09-27
+### Added
+- Source code release
+
+
+## [0.0.1] - 2011
+### Added
+- Starting the QStudioMetrics development at University of Perugia

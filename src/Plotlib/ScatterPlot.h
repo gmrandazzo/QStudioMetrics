@@ -167,6 +167,7 @@ public slots:
   void setOnOffHotellingEllipse();
   void SavePlotImage();
   void SaveSelection();
+  void OpenPlotSettingsDialog();
   void UpdatePointPosition();
   void PlotUpdate();
   void ResetPlot();

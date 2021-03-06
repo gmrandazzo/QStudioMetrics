@@ -19,6 +19,7 @@
 #include "../Dialogs/DoClusterAnalysisDialog.h"
 #include "../Dialogs/FindCorrelationWidget.h"
 #include "../Dialogs/ValidationClusterPlot.h"
+#include "../Dialogs/PlotSettingsDialog.h"
 #include "run.h"
 
 
@@ -468,10 +469,12 @@ void ScatterPlot::initPoint(QList<matrix*> mx, QList<QStringList> name)
   if(axistype == SINGLEAXIS){
     x = (uint) 0 + (2*ui.axis3->value()-2);
     y = (uint) 1 + (2*ui.axis3->value()-2);
+    z = 0;
   }
   else if(axistype == DOUBLEAXIS){
     x = (uint) ui.axis1->value()-1;
     y = (uint) ui.axis2->value()-1;
+    z = 0;
   }
   else{
     x = (uint) ui.axis1->value()-1;
@@ -1007,6 +1010,44 @@ void ScatterPlot::hidePointLabels()
   PlotUpdate();
 }
 
+void ScatterPlot::OpenPlotSettingsDialog()
+{
+  double xmin, xmax, ymin, ymax;
+  int xtick, ytick;
+  chart->getXminXmaxXTick(&xmin, &xmax, &xtick);
+  chart->getYminYmaxYTick(&ymin, &ymax, &ytick);
+
+  PlotSettingsDialog psettings(xmin, xmax, xtick, ymin, ymax, ytick);
+  if(psettings.exec() == QDialog::Accepted){
+    int titlesize = psettings.getPlotTitleSize();
+    int axisvaluesize = psettings.getAxisValueSize();
+
+    int xlabelsize = psettings.getXlabelSize();
+    double xmin = psettings.getXmin();
+    double xmax = psettings.getXmax();
+    int xtick = psettings.getXTick();
+
+    int ylabelsize = psettings.getYlabelSize();
+    double ymin = psettings.getYmin();
+    double ymax = psettings.getYmax();
+    int ytick = psettings.getYTick();
+    QString qdb = QString(" ScatterPlot::OpenPlotSettingsDialog title size %1 axis val size %2 xlbl size %3  ylbl size %4 xtick %5 ytick %6").arg(titlesize).arg(axisvaluesize).arg(xlabelsize).arg(ylabelsize).arg(xtick).arg(ytick);
+    qDebug() << qdb;
+    chart->setPlotTitleSize(titlesize);
+    chart->setAxisValueSize(axisvaluesize);
+
+    chart->setXLabelSize(xlabelsize);
+    chart->setXminXmaxXTick(xmin, xmax, xtick);
+
+    chart->setYLabelSize(ylabelsize);
+    chart->setYminYmaxYTick(ymin, ymax, ytick);
+    PlotUpdate();
+  }
+  else{
+    return;
+  }
+}
+
 void ScatterPlot::SaveSelection()
 {
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save Selection to..."), "", tr("TXT (*.txt);;All Files (*)"));
@@ -1489,6 +1530,9 @@ void ScatterPlot::ShowContextMenu(const QPoint& pos)
   else{
     menu.actions().last()->setEnabled(false);
   }
+
+  menu.addSeparator();
+  menu.addAction("&Plot Settings", this, SLOT(OpenPlotSettingsDialog()));
 
   menu.addAction("&Reset Plot", this, SLOT(ResetPlot()));
   menu.exec(globalPos);

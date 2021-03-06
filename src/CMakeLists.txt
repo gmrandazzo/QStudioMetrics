@@ -47,6 +47,7 @@ set(QSTUDIOMETRICS_SRC
     Dialogs/SearchOnTableDialog.cpp
     Dialogs/HighlightTableVarDialog.cpp
     Dialogs/GenericProgressDialog.cpp
+    Dialogs/PlotSettingsDialog.cpp
     Table.cpp
     Dialogs/ExportTableDialog.cpp
     Dialogs/ExtractDataDialog.cpp
@@ -105,6 +106,7 @@ set(QSTUDIOMETRICS_H
     Dialogs/SearchOnTableDialog.h
     Dialogs/HighlightTableVarDialog.h
     Dialogs/GenericProgressDialog.h
+    Dialogs/PlotSettingsDialog.h
     Table.h
     Dialogs/ExportTableDialog.h
     Dialogs/ExtractDataDialog.h
@@ -150,6 +152,7 @@ set(QSTUDIOMETRICS_UIS
     Dialogs/SearchOnTableDialog.ui
     Dialogs/HighlightTableVarDialog.ui
     Dialogs/GenericProgressDialog.ui
+    Dialogs/PlotSettingsDialog.ui
     Table.ui
     Dialogs/ExportTableDialog.ui
     Dialogs/ExtractDataDialog.ui

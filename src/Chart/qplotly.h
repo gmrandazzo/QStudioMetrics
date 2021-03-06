@@ -1,7 +1,7 @@
 #ifndef QPLOTLY_H
 #define QPLOTLY_H
 
-#include "plotinfo.h"
+#include "graph.h"
 
 #include <QColor>
 #include <QWidget>
@@ -67,6 +67,16 @@ public:
     void setYaxisName(QString yaxisname_);
     void setZaxisName(QString zaxisname_);
     void setPlotTitle(QString plot_title_);
+    void setPlotTitleSize(int size);
+    void setAxisValueSize(int size);
+
+    void setXLabelSize(int size);
+    void setXminXmaxXTick(double xmin, double xmax, int xtick);
+    void getXminXmaxXTick(double *xmin, double *xmax, int *xtick);
+
+    void setYLabelSize(int size);
+    void setYminYmaxYTick(double ymin, double ymax, int ytick);
+    void getYminYmaxYTick(double *ymin, double *ymax, int *ytick);
 
     // 2D Scatter plot
     void addPoint(qreal x, qreal y, QString name);

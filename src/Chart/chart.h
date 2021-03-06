@@ -1,7 +1,7 @@
 #ifndef CHART_H
 #define CHART_H
 // ONLY 2D SCATTER PLOTS
-#include "plotinfo.h"
+#include "graph.h"
 #include <QMap>
 #include <QPixmap>
 #include <QMap>
@@ -31,10 +31,17 @@ public:
     void setZaxisName(QString yaxisname){}; // not working!
 
     void setPlotTitle(QString plottitle);
+    void setPlotTitleSize(int size);
     void setLabelDetail(bool);
+    void setAxisValueSize(int size);
 
+    void setXLabelSize(int size);
     void setXminXmaxXTick(double xmin, double xmax, int xtick);
+    void getXminXmaxXTick(double *xmin, double *xmax, int *xtick);
+
+    void setYLabelSize(int size);
     void setYminYmaxYTick(double ymin, double ymax, int ytick);
+    void getYminYmaxYTick(double *ymin, double *ymax, int *ytick);
 
     void Refresh();
 
@@ -109,6 +116,11 @@ private:
     QPixmap pixmap;
     QString m_xaxisname, m_yaxisname, m_plottitle;
     bool antialiasing;
+
+    int titleSize;
+    int axisValueSize;
+    int xLabelSize;
+    int yLabelSize;
 };
 
 class PlotSettings
@@ -120,6 +132,7 @@ public:
     void adjust();
     double spanX() const { return maxX - minX; }
     double spanY() const { return maxY - minY; }
+
 
     double minX;
     double maxX;

@@ -3,6 +3,7 @@
 #include <QToolButton>
 #include <QtPrintSupport/QPrinter>
 #include <QMessageBox>
+#include <QPageLayout>
 #include <QStylePainter>
 #include <QStyleOptionFocusRect>
 #include <cmath>
@@ -53,6 +54,10 @@ Chart::Chart(QWidget *parent) : QWidget(parent)
 
   m_xaxisname = "x";
   m_yaxisname = "y";
+  titleSize = 1;
+  axisValueSize = 1;
+  xLabelSize = 1;
+  yLabelSize = 1;
   setPlotSettings(PlotSettings());
 }
 
@@ -183,6 +188,14 @@ void Chart::setPlotTitle(QString plottitle)
   m_plottitle = plottitle;
 }
 
+void Chart::setPlotTitleSize(int size)
+{
+  #ifdef DEBUG
+  printf("Chart::setPlotTitleSize\n");
+  #endif
+  titleSize = size;
+}
+
 void Chart::setLabelDetail(bool labeldetail_)
 {
   #ifdef DEBUG
@@ -191,17 +204,53 @@ void Chart::setLabelDetail(bool labeldetail_)
   labeldetail = labeldetail_;
 }
 
+void Chart::setAxisValueSize(int size)
+{
+  axisValueSize = size;
+}
+
+void Chart::setXLabelSize(int size)
+{
+  xLabelSize = size;
+}
+
+
 void Chart::setXminXmaxXTick(double xmin, double xmax, int xtick)
 {
   #ifdef DEBUG
   printf("Chart::setXminXmaxXTick\n");
   #endif
   if(zoomStack.size() > 0 && curZoom < zoomStack.size()){
+    //QString qdb = QString("Chart::setXminXmaxXTick %1 %2 %3").arg(xmin).arg(xmax).arg(xtick);
+    //qDebug() << qdb;
     zoomStack[curZoom].minX = xmin;
     zoomStack[curZoom].maxX = xmax;
     zoomStack[curZoom].numXTicks = xtick;
     zoomStack[curZoom].adjust();
   }
+  else{
+    return;
+  }
+}
+
+void Chart::getXminXmaxXTick(double *xmin, double *xmax, int *xtick)
+{
+  #ifdef DEBUG
+  printf("Chart::getXminXmaxXTick\n");
+  #endif
+  if(zoomStack.size() > 0 && curZoom < zoomStack.size()){
+    (*xmin) = zoomStack[curZoom].minX;
+    (*xmax) = zoomStack[curZoom].maxX;
+    (*xtick) = zoomStack[curZoom].numXTicks;
+  }
+  else{
+    (*xmin) = (*xmax) = (*xtick) = 0;
+  }
+}
+
+void Chart::setYLabelSize(int size)
+{
+  yLabelSize = size;
 }
 
 
@@ -215,6 +264,21 @@ void Chart::setYminYmaxYTick(double ymin, double ymax, int ytick)
     zoomStack[curZoom].maxY = ymax;
     zoomStack[curZoom].numXTicks = ytick;
     zoomStack[curZoom].adjust();
+  }
+}
+
+void Chart::getYminYmaxYTick(double *ymin, double *ymax, int *ytick)
+{
+  #ifdef DEBUG
+  printf("Chart::getXminXmaxXTick\n");
+  #endif
+  if(zoomStack.size() > 0 && curZoom < zoomStack.size()){
+    (*ymin) = zoomStack[curZoom].minX;
+    (*ymax) = zoomStack[curZoom].maxX;
+    (*ytick) = zoomStack[curZoom].numXTicks;
+  }
+  else{
+    (*ymin) = (*ymax) = (*ytick) = 0;
   }
 }
 
@@ -248,10 +312,6 @@ void Chart::SelectAll()
   printf("Chart::SelectAll\n");
   #endif
   Select(0, p.size());
-  /*
-  for(int i = 0; i < p.size(); i++)
-    p[i]->setSelection(true);
-  */
   refreshPixmap();
 }
 
@@ -289,13 +349,6 @@ void Chart::ClearSelection()
   #endif
   /* Unselection by divide and conqueror technique*/
   Unselect(0, p.size());
-  /*for(int i = 0; i < p.size(); i++){
-    if(p[i]->isSelected() == true){
-       p[i]->setSelection(false);
-       pforward.append(i);
-    }
-  }*/
-
   refreshPixmap();
 }
 
@@ -505,8 +558,8 @@ void Chart::SaveAsImage(QString imgname)
     printer.setResolution(300); //override to 300dpi
     printer.setFontEmbeddingEnabled(true);
     printer.setColorMode(QPrinter::Color);
-    printer.setOrientation(QPrinter::Portrait);
-    printer.setPaperSize(size(), QPrinter::DevicePixel);
+    printer.setPageOrientation(QPageLayout::Portrait);
+    printer.setPageSize(QPageSize(size()));
     printer.setFullPage(true);
     QPainter painter(&printer);
     painter.setRenderHint(QPainter::Antialiasing, antialiasing);
@@ -707,15 +760,24 @@ void Chart::wheelEvent(QWheelEvent *event)
   #ifdef DEBUG
   printf("Chart::wheelEvent\n");
   #endif
-  int numDegrees = event->delta() / 8;
-  int numTicks = numDegrees / 15;
+
+  QPoint numDegrees = event->angleDelta() / 8;
+  int numTicks = numDegrees.y() / 15;
+
+   // For the moment only y scrolling available.
+   // to implement x scroll numTicks became like this
+   // int numTicks = numDegrees.x() / 15;
+
+  zoomStack[curZoom].scroll(0, numTicks);
+  /*
+  orientation() is deprecated!!
 
   if(event->orientation() == Qt::Horizontal){
     zoomStack[curZoom].scroll(numTicks, 0);
   }
   else{
     zoomStack[curZoom].scroll(0, numTicks);
-  }
+  }*/
 
   refreshPixmap();
 }
@@ -744,7 +806,7 @@ void Chart::refreshPixmap()
   /*pixmap.fill(this, 0, 0); OBSOLETE FUNCTION in qt5 */
 
   QPainter painter(&pixmap);
-  painter.initFrom(this);
+  // painter.begin(painter.device());
   painter.setRenderHint(QPainter::Antialiasing, antialiasing);
   painter.setRenderHint(QPainter::TextAntialiasing, antialiasing);
 
@@ -843,17 +905,25 @@ void Chart::drawGrid(QPainter *painter)
   //stepx = 0.5;
   min = floor(settings.minX);
   max = ceil(settings.maxX);
-  stepx = (max-min)/10.f;
+  //stepx = (max-min)/10.f;
+  stepx = (max-min)/(double)settings.numXTicks;
   //printf("PRE stepx: %f min: %f max: %f\n", stepx, min, max);
   if(stepx > 1.f){
     stepx = ceil(stepx);
   }
+
+  //QString qdb = QString("Chart::drawGrid %1 xmin %2 xmax %3 xtick %4 stepx %5").arg(curZoom).arg(min).arg(max).arg(settings.numXTicks).arg(stepx);
+  //qDebug() << qdb;
+
   //printf("FINAL stepx: %f min: %f max: %f\n", stepx, min, max);
   //float factor = rect.width() / painter->fontMetrics().width("-20");
+  // Factor to "automatically" Enlarge/reduce the text with the window...
+  // However is preferable to manage manually this setting
+  //qreal factor = rect.width()/480.;
+  //  factor is DEPRECATED in favour of the possibility of produce custom size
 
-  qreal factor = rect.width()/480.;
   QFont font("SansSerif", 5);
-  font.setPointSizeF(font.pointSizeF()*factor);
+  font.setPointSizeF(font.pointSizeF()*axisValueSize);
   font.setStyleStrategy(QFont::ForceOutline);
   painter->setFont(font);
 
@@ -897,7 +967,8 @@ void Chart::drawGrid(QPainter *painter)
   */
   min = floor(settings.minY);
   max = ceil(settings.maxY);
-  stepy = (max-min)/10.f;
+  //stepy = (max-min)/10.f;
+  stepy = (max-min)/(double)settings.numYTicks;
   if(stepy > 1.f){
     stepy = ceil(stepy);
   }
@@ -951,26 +1022,29 @@ void Chart::drawGrid(QPainter *painter)
                 QString::number(0));
   }
 
-  // Draw Axis names...
-  //factor = rect.height()/640.;
-  font.setPointSize(10);
-  font.setPointSizeF(font.pointSizeF()*factor);
+  // Draw Axis names, titles and ticks.
+  font.setPointSize(10); // Standard size
+  font.setPointSizeF(font.pointSizeF()*xLabelSize); // Then we multiply by a factor!
   painter->setFont(font);
   QFontMetrics fm(font);
-  qreal xmarkTextWidth = fm.width(m_xaxisname);
+  qreal xmarkTextWidth = (qreal)fm.horizontalAdvance(m_xaxisname);
   // qreal markTextHeight = fm.height();
   x = Margin + (rect.right() -rect.left())/2. - xmarkTextWidth/2.;
 
   painter->drawText(x, rect.bottom() + Margin/2., m_xaxisname);
 
   // draw top title.
-  xmarkTextWidth = fm.width(m_plottitle);
+  font.setPointSize(10); // Standard size
+  font.setPointSizeF(font.pointSizeF()*titleSize);
+  xmarkTextWidth = (qreal)fm.horizontalAdvance(m_plottitle);
   x = Margin + (rect.right() -rect.left())/2. - xmarkTextWidth/2.;
   painter->drawText(x, rect.top() - Margin/2., m_plottitle);
 
   // write y axis name vertically
+  font.setPointSize(10); // Standard size
+  font.setPointSizeF(font.pointSizeF()*yLabelSize);
   painter->save();
-  qreal ymarkTextWidth = fm.width(m_yaxisname);
+  qreal ymarkTextWidth = (qreal)fm.horizontalAdvance(m_yaxisname);
   y = Margin + (rect.bottom() - rect.top())/2. + ymarkTextWidth/2.;
   // painter->translate(rect.left() - (Margin+40), y + 160);
   painter->translate(rect.left() - Margin/2., y);
@@ -1139,8 +1213,10 @@ void Chart::drawScatters(QPainter *painter)
   painter->setRenderHint(QPainter::TextAntialiasing, antialiasing);
 
   PlotSettings settings = zoomStack[curZoom];
-  QRect rect(Margin, Margin,
-              width() - 2 * Margin, height() - 2 * Margin);
+  QRect rect(Margin,
+             Margin,
+             width() - 2 * Margin,
+             height() - 2 * Margin);
   if(!rect.isValid())
       return;
 
@@ -1234,9 +1310,9 @@ void Chart::drawScatters(QPainter *painter)
         QFontMetrics fm(font);
         qreal markTextWidth;
         if(labeldetail == true)
-          markTextWidth = fm.width(QString("%1 (%2 ; %3)").arg(p[i]->name()).arg(p[i]->x()).arg(p[i]->y()));
+          markTextWidth = (qreal)fm.horizontalAdvance(QString("%1 (%2 ; %3)").arg(p[i]->name()).arg(p[i]->x()).arg(p[i]->y()));
         else
-          markTextWidth = fm.width(QString("%1").arg(p[i]->name()));
+          markTextWidth = (qreal)fm.horizontalAdvance(QString("%1").arg(p[i]->name()));
         qreal markTextHeight = fm.height();
         QRectF trect;
 

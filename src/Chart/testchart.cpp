@@ -4,6 +4,7 @@
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
 #include <QRandomGenerator>
 #endif
+#include "plotinfo.h"
 #include "chart.h"
 #include <cmath>
 
@@ -29,16 +30,15 @@ void PlotFromfile(Chart *chart, const QString &fileName)
   chart->Refresh();
 }
 
-double uniform0to1Random() {
-    double r = qrand();
+double uniform0to1Random(QRandomGenerator rndgen) {
+    double r = rndgen.generateDouble();
     return r / ((double)RAND_MAX + 1);
 }
 
 // Returns uniformly distributed random numbers from [-10.0, 10.0].
-double randnum(double low, double high){
-  return (high-low) * uniform0to1Random() - high;
+double randnum(double low, double high, QRandomGenerator rndgen){
+  return (high-low) * uniform0to1Random(rndgen) - high;
 }
-
 
 void _2DScattePlotExample(Chart *chart)
 {
@@ -91,14 +91,14 @@ void _2DScattePlotExample(Chart *chart)
 void _2DScattePlotExampleBIS(Chart *chart)
 {
   int n_points = 100000;
-
+  QRandomGenerator rndgen(n_points);
   for(int i = 0; i < n_points; i++){
     #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
     qreal x = QRandomGenerator::global()->generateDouble();
     qreal y = QRandomGenerator::global()->generateDouble();
     #else
-    qreal x = randnum(-10,10);
-    qreal y = randnum(-10,10);
+    qreal x = randnum(-10,10,rndgen);
+    qreal y = randnum(-10,10,rndgen);
     #endif
     QString name = QString("Obj%1").arg(i);
     chart->addPoint(x, y, name);

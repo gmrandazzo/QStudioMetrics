@@ -120,6 +120,41 @@ void QPlotlyWindow::ModifyTemporaryPage(QString code, QList<int> line_ids)
   return;
 }
 
+void QPlotlyWindow::setAxisValueSize(int size)
+{
+  return;
+}
+
+void QPlotlyWindow::setXLabelSize(int size)
+{
+  return;
+}
+
+void QPlotlyWindow::setXminXmaxXTick(double xmin, double xmax, int xtick)
+{
+  return;
+}
+
+void QPlotlyWindow::getXminXmaxXTick(double *xmin, double *xmax, int *xtick)
+{
+  return;
+}
+
+void QPlotlyWindow::setYLabelSize(int size)
+{
+  return;
+}
+
+void QPlotlyWindow::setYminYmaxYTick(double ymin, double ymax, int ytick)
+{
+  return;
+}
+
+void QPlotlyWindow::getYminYmaxYTick(double *ymin, double *ymax, int *ytick)
+{
+  return;
+}
+
 void QPlotlyWindow::setXaxisName(QString xaxisname_)
 {
   xaxisname = xaxisname_;
@@ -138,6 +173,11 @@ void QPlotlyWindow::setZaxisName(QString zaxisname_)
 void QPlotlyWindow::setPlotTitle(QString plot_title_)
 {
   plot_title = plot_title_;
+}
+
+void QPlotlyWindow::setPlotTitleSize(int size)
+{
+  return;
 }
 
 void QPlotlyWindow::addPoint(qreal x, qreal y, QString name)
