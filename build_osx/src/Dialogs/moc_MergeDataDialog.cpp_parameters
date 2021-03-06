@@ -1,0 +1,10 @@
+-I/Users/marco/Seafile/Software/QStudioMetrics/build_osx
+-I/Users/marco/Seafile/Software/QStudioMetrics/src
+-I/Users/marco/Seafile/Software/QStudioMetrics/build_osx
+-I/Users/marco/Seafile/Software/QStudioMetrics
+-I/usr/local/include
+-I/Users/marco/Seafile/Software/QStudioMetrics/src
+-I/Users/marco/Seafile/Software/QStudioMetrics/build_osx/src
+-o
+/Users/marco/Seafile/Software/QStudioMetrics/build_osx/src/Dialogs/moc_MergeDataDialog.cpp
+/Users/marco/Seafile/Software/QStudioMetrics/src/Dialogs/MergeDataDialog.h

@@ -43,6 +43,7 @@ public:
     void setYminYmaxYTick(double ymin, double ymax, int ytick);
     void getYminYmaxYTick(double *ymin, double *ymax, int *ytick);
 
+    void Center();
     void Refresh();
 
     void SelectAll();
@@ -101,7 +102,6 @@ private:
     void DoSelection(int low, int high);
 
     enum { Margin = 80 };
-    qreal rescalefactor;
     QToolButton *zoomInButton;
     QToolButton *zoomOutButton;
 

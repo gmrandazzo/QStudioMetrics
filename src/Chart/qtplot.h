@@ -59,7 +59,7 @@ public:
     // QVector<DataCurve> getCurves();
     void RemoveCurveAt(int cid);
     void RemoveAllCurves();
-
+    void Center();
     void Refresh();
     void SelectAll();
     void ClearSelection();

@@ -1,83 +1,135 @@
 #include "MergeDataDialog.h"
+// // 
+/* 
+* Merge along rows
+* This means that the matrix do not share same column
+* but share same object names
+*/
+
+void MergeDataDialog::MergeType0()
+{
+  // Merge and Exit
+  /*Create a map of objectname, matrix id, and row position*/
+  QMap<QString, QList<QPair<int, int>>> objmap;
+  QStringList varnames;
+  for(int i = 0; i < mxids.size(); i++){
+    for(int j = 0; j < projects->value(pid)->getMatrix(mxids[i])->getObjName().size(); j++){
+      QString objname = projects->value(pid)->getMatrix(mxids[i])->getObjName()[j];
+      QPair<int, int> p;
+      p.first = i;
+      p.second = j;
+      objmap[objname].append(p);
+    }
+    /* we start from 1 because at 0 there is the standard sample name "Objects" */
+    for(int j = 1; j < projects->value(pid)->getMatrix(mxids[i])->getVarName().size(); j++){
+      varnames.append(projects->value(pid)->getMatrix(mxids[i])->getVarName()[j]);
+    }
+  }
+  
+  /*
+   * Remove items that do not contains the row object in all the matrix in question
+   */
+  int i = 0;
+  while(i < objmap.size()){
+    if(objmap.values()[i].size() == mxids.size()){
+      i++;
+    }
+    else{
+      QString key = objmap.keys()[i];
+      objmap.remove(key);
+    }
+  }
+  
+  mx->MatrixResize(objmap.size(), varnames.size());
+  for(int i = 0; i < objmap.size(); i++){
+    mx->getObjName() << objmap.keys()[i];
+    int c = 0;
+    for(int k = 0; k < objmap.values()[i].size(); k++){
+      int mxpos = objmap.values()[i][k].first;
+      int mxrow = objmap.values()[i][k].second;
+      for(int j = 1; j < projects->value(pid)->getMatrix(mxpos)->getVarName().size(); j++){
+        mx->Matrix()->data[i][c] = projects->value(pid)->getMatrix(mxpos)->Matrix()->data[mxrow][j-1];
+        c+=1;
+      }
+    }
+  }
+  
+  mx->getVarName().append("Object Names");
+  mx->getVarName().append(varnames);
+  mx->setName(ui.dataname->text());
+}
 
 /*
  * Merge along columns
  * This means that the two matrix share the 
  * same columns
- *
- * OR
- * 
- * Merge along rows
- * This means that the matrix do not share same column
- * but share same object names
  */
-void MergeDataDialog::OK()
+void MergeDataDialog::MergeType1()
 {
- // Merge and Exit
-  QStringList objnames;
   QStringList varnames;
+  QStringList objnames;
   for(int i = 0; i < mxids.size(); i++){
-    objnames.append(projects->value(pid)->getMatrix(mxids[i])->getObjName());
+    objnames << projects->value(pid)->getMatrix(mxids[i])->getObjName();
     /* we start from 1 because at 0 there is the standard sample name "Objects" */
     for(int j = 1; j < projects->value(pid)->getMatrix(mxids[i])->getVarName().size(); j++){
-        varnames.append(projects->value(pid)->getMatrix(mxids[i])->getVarName()[j]);
+      varnames.append(projects->value(pid)->getMatrix(mxids[i])->getVarName()[j]);
     }
+    QApplication::processEvents();
   }
-
-  objnames.removeDuplicates();
   varnames.removeDuplicates();
   
-
-  if(ui.mergematchcol->isChecked()){
-    QStringList matchvarnames;
-    for(int i = 0; i < varnames.size(); i++){
-      bool add = true;
-      for(int j = 0; j < mxids.size(); j++){
-        if(projects->value(pid)->getMatrix(mxids[j])->getVarName().contains(varnames[i]) == true ){
-          continue;
-        }
-        else{
-          add = false;
-          break;
-        }
+  QMap<QString, QList<int>> varmap;
+  for(int i = 0; i < varnames.size(); i++){
+    QList<int> cids;
+    for(int j = 0; j < mxids.size(); j++){
+      /*-1 because first name of getVarName() is "Object Names" */
+      int vindx = projects->value(pid)->getMatrix(mxids[j])->getVarName().indexOf(varnames[i])-1;
+      if(vindx > -1){
+        cids.append(vindx);
       }
-
-      if(add == true){
-        matchvarnames.append(varnames[i]);
+      else{
+        break; // Not all matrix contains this column and we can skip
+      }
+      if(cids.size() == mxids.size()){
+        varmap[varnames[i]] = cids;
       }
       else{
         continue;
       }
     }
-    varnames.clear();
-    varnames.append(matchvarnames);
+    QApplication::processEvents();
   }
-
-  mx->MatrixResize(objnames.size(), varnames.size());
-  for(int i = 0; i < objnames.size(); i++){
-    for(int j = 0; j < varnames.size(); j++){
-      for(int k = 0; k < mxids.size(); k++){
-        int indxobj = projects->value(pid)->getMatrix(mxids[k])->getObjName().indexOf(objnames[i]);
-        if(indxobj > -1){
-          int colindx = projects->value(pid)->getMatrix(mxids[k])->getVarName().indexOf(varnames[j])-1;
-          if(colindx > -1){
-            mx->Matrix()->data[i][j] = projects->value(pid)->getMatrix(mxids[k])->Matrix()->data[indxobj][colindx];
-          }
-          else{
-            continue;
-          }
-        }
-        else{
-          continue;
-        }
+  
+  mx->MatrixResize(objnames.size(), varmap.size());
+  int r = 0;
+  for(int k = 0; k < mxids.size(); k++){
+    for(int i = 0; i < projects->value(pid)->getMatrix(mxids[k])->getObjName().size(); i++){
+      for(int j = 0; j < varmap.size(); j++){
+        QString key = varmap.keys()[j];
+        int c = varmap[key][k];
+        mx->Matrix()->data[r][j] = projects->value(pid)->getMatrix(mxids[k])->Matrix()->data[i][c];
       }
+      r++;
     }
   }
-
-  mx->getVarName().append("Object Names");
-  mx->getVarName().append(varnames);
+  
   mx->getObjName().append(objnames);
+  mx->getVarName().append("Object Names");
+  for(int j = 0; j < varmap.size(); j++){
+    mx->getVarName().append(varmap.keys()[j]);
+  }
   mx->setName(ui.dataname->text());
+}
+
+void MergeDataDialog::OK()
+{
+  // Merge and Exit
+  if(ui.mergematchcol->isChecked()){
+    MergeType1();
+  }
+  else{
+    MergeType0();
+  }
   accept();
 }
 

@@ -320,6 +320,11 @@ void QPlotlyWindow::RemoveAllCurves()
   c.clear();
 }
 
+void QPlotlyWindow::Center()
+{
+  return;
+}
+
 void QPlotlyWindow::Refresh()
 {
   //printf("Refresh\n");

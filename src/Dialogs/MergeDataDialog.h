@@ -32,6 +32,8 @@ private:
   QStandardItemModel *tab1, *tab2;
   QList <int> pids, mxids;
   int pid;
+  void MergeType0();
+  void MergeType1();
 };
 
 

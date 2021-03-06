@@ -26,7 +26,6 @@ Chart::Chart(QWidget *parent) : QWidget(parent)
   printf("Chart::Chart\n");
   #endif
   antialiasing = true;
-  rescalefactor = 0.25;
   labeldetail = false;
 
   QPalette Pal(palette());
@@ -84,11 +83,9 @@ void Chart::Plot()
   Refresh();
 }
 
-void Chart::Refresh()
+void Chart::Center()
 {
-  #ifdef DEBUG
-  printf("Chart::Refresh\n");
-  #endif
+  qreal rescalefactor = 0.25;
   if(zoomStack.size() > 0 && p.size() > 0){
     qreal minX, maxX, minY, maxY;
     // search min max between scatters
@@ -98,64 +95,71 @@ void Chart::Refresh()
       if(p[i]->x() < minX){
         minX = p[i]->x();
       }
-
+      
       if(p[i]->x() > maxX){
         maxX = p[i]->x();
       }
-
+      
       if(p[i]->y() < minY){
         minY = p[i]->y();
       }
-
+      
       if(p[i]->y() > maxY){
         maxY = p[i]->y();
       }
     }
-
+    
     // search min max between curves
     for(int i = 0; i < curveMap.size(); i++){
       for(int j = 0; j < curveMap[i].getPoints().size(); j++){
         if(curveMap[i].getPoints()[j].x() < minX){
           minX = curveMap[i].getPoints()[j].x();
         }
-
+        
         if(curveMap[i].getPoints()[j].x() > maxX){
           maxX = curveMap[i].getPoints()[j].x();
         }
-
+        
         if(curveMap[i].getPoints()[j].y() < minY){
           minY = curveMap[i].getPoints()[j].y();
         }
-
+        
         if(curveMap[i].getPoints()[j].y() > maxY){
           maxY = curveMap[i].getPoints()[j].y();
         }
       }
     }
-
-
-    zoomStack.first().minX = (minX - fabs(minX*rescalefactor));
-    zoomStack.first().maxX = (maxX + fabs(maxX*rescalefactor));
-    zoomStack.first().minY = (minY - fabs(minY*rescalefactor));
-    zoomStack.first().maxY = (maxY + fabs(maxY*rescalefactor));
-
-//     zoomStack.first().numXTicks =  zoomStack.first().spanX();
-//     zoomStack.first().numYTicks =  zoomStack.first().spanY();
-
+    
+     zoomStack.first().minX = (minX - fabs(minX*rescalefactor));
+     zoomStack.first().maxX = (maxX + fabs(maxX*rescalefactor));
+     zoomStack.first().minY = (minY - fabs(minY*rescalefactor));
+     zoomStack.first().maxY = (maxY + fabs(maxY*rescalefactor));
+     
+    //     zoomStack.first().numXTicks =  zoomStack.first().spanX();
+    //     zoomStack.first().numYTicks =  zoomStack.first().spanY();
+    
     /*maxX = zoomStack.first().maxX - (int)zoomStack.first().spanX() % zoomStack.first().numXTicks;
-
-    if(FLOAT_EQ(maxX, 0, EPSILON))
-      zoomStack.first().maxX = 1;
-    else
-      zoomStack.first().maxX = maxX;
-
-    maxY = zoomStack.first().maxY - (int)zoomStack.first().spanY() % zoomStack.first().numYTicks;
-    if(FLOAT_EQ(maxY, 0, EPSILON))
-      zoomStack.first().maxY = 1;
-    else
-      zoomStack.first().maxY = maxY;
-    */
+     * 
+     * if(FLOAT_EQ(maxX, 0, EPSILON))
+     *   zoomStack.first().maxX = 1;
+     * else
+     *   zoomStack.first().maxX = maxX;
+     * 
+     * maxY = zoomStack.first().maxY - (int)zoomStack.first().spanY() % zoomStack.first().numYTicks;
+     * if(FLOAT_EQ(maxY, 0, EPSILON))
+     *   zoomStack.first().maxY = 1;
+     * else
+     *   zoomStack.first().maxY = maxY;
+     */
   }
+  
+}
+
+void Chart::Refresh()
+{
+  #ifdef DEBUG
+  printf("Chart::Refresh\n");
+  #endif
   refreshPixmap();
 }
 
@@ -221,8 +225,6 @@ void Chart::setXminXmaxXTick(double xmin, double xmax, int xtick)
   printf("Chart::setXminXmaxXTick\n");
   #endif
   if(zoomStack.size() > 0 && curZoom < zoomStack.size()){
-    //QString qdb = QString("Chart::setXminXmaxXTick %1 %2 %3").arg(xmin).arg(xmax).arg(xtick);
-    //qDebug() << qdb;
     zoomStack[curZoom].minX = xmin;
     zoomStack[curZoom].maxX = xmax;
     zoomStack[curZoom].numXTicks = xtick;
@@ -273,9 +275,9 @@ void Chart::getYminYmaxYTick(double *ymin, double *ymax, int *ytick)
   printf("Chart::getXminXmaxXTick\n");
   #endif
   if(zoomStack.size() > 0 && curZoom < zoomStack.size()){
-    (*ymin) = zoomStack[curZoom].minX;
-    (*ymax) = zoomStack[curZoom].maxX;
-    (*ytick) = zoomStack[curZoom].numXTicks;
+    (*ymin) = zoomStack[curZoom].minY;
+    (*ymax) = zoomStack[curZoom].maxY;
+    (*ytick) = zoomStack[curZoom].numYTicks;
   }
   else{
     (*ymin) = (*ymax) = (*ytick) = 0;
@@ -880,6 +882,8 @@ void Chart::drawGrid(QPainter *painter)
   if(!rect.isValid())
       return;
 
+  qDebug() << "curZoom " << curZoom;
+  
   PlotSettings settings = zoomStack[curZoom];
 
   QPen gridpen = QPen(QColor(200, 200, 255, 125));
@@ -907,13 +911,14 @@ void Chart::drawGrid(QPainter *painter)
   max = ceil(settings.maxX);
   //stepx = (max-min)/10.f;
   stepx = (max-min)/(double)settings.numXTicks;
-  //printf("PRE stepx: %f min: %f max: %f\n", stepx, min, max);
+  printf("PRE stepx: %f min: %f max: %f\n", stepx, min, max);
+  // The problem is here... we prevent to have "step < of 0 because after we need to deal with floating  numbers"
   if(stepx > 1.f){
     stepx = ceil(stepx);
   }
 
-  //QString qdb = QString("Chart::drawGrid %1 xmin %2 xmax %3 xtick %4 stepx %5").arg(curZoom).arg(min).arg(max).arg(settings.numXTicks).arg(stepx);
-  //qDebug() << qdb;
+  QString qdb = QString("Chart::drawGrid %1 xmin %2 xmax %3 xtick %4 stepx %5").arg(curZoom).arg(min).arg(max).arg(settings.numXTicks).arg(stepx);
+  qDebug() << qdb;
 
   //printf("FINAL stepx: %f min: %f max: %f\n", stepx, min, max);
   //float factor = rect.width() / painter->fontMetrics().width("-20");

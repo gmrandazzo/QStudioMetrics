@@ -1776,6 +1776,7 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QStrin
   ui.axis2->setMaximum(maxcol);
 
   //Finally render the scene
+  chart->Center();
   chart->Refresh();
 
   // Set up action signals and slots
@@ -1850,6 +1851,7 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QList<
   ui.axis2->setMaximum(maxcol);
 
   //Finally render the scene
+  chart->Center();
   chart->Refresh();
   // Set up action signals and slots
   connect(ui.axis1, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));
@@ -1924,6 +1926,7 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname,
   ui.axis3->setMaximum(maxcol);
 
   //Finally render the scene
+  chart->Center();
   chart->Refresh();
   // Set up action signals and slots
   connect(ui.axis1, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));
@@ -1991,6 +1994,7 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QList<
   ui.axis2->setMaximum(maxcol);
 
   //Finally render the scene
+  chart->Center();
   chart->Refresh();
 
   // Set up action signals and slots
@@ -2058,6 +2062,7 @@ ScatterPlot::ScatterPlot(QList<matrix*> &mx_, QList<matrix*> &my_, dvector* b_, 
     BuildLine(acoeff.first());
 
     //Finally render the scene
+    chart->Center();
     chart->Refresh();
 
     // Set up action signals and slots
@@ -2134,6 +2139,7 @@ ScatterPlot::ScatterPlot(QList<matrix*>& mx_, QList<matrix*>& my_, dvector* b_, 
     BuildLine(acoeff.first());
 
     //Finally render the scene
+    chart->Center();
     chart->Refresh();
 
     // Set up action signals and slots
@@ -2209,6 +2215,7 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
     ui.axis3->setMaximum(maxcol);
 
     //Finally render the scene
+    chart->Center();
     chart->Refresh();
 
     // Set up action signals and slots
@@ -2279,6 +2286,7 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
     ui.axis3->setMaximum(maxcol);
 
     //Finally render the scene
+    chart->Center();
     chart->Refresh();
 
     // Set up action signals and slots

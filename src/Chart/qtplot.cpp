@@ -185,6 +185,11 @@ void QPlotWindow::RemoveAllCurves()
   c.clear();
 }
 
+void QPlotWindow::Center()
+{
+  return;
+}
+
 void QPlotWindow::Refresh()
 {
   //printf("Refresh\n");

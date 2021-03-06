@@ -56,6 +56,7 @@ public:
   virtual void setYLabelSize(int size) = 0;
   virtual void setYminYmaxYTick(double ymin, double ymax, int ytick) = 0;
   virtual void getYminYmaxYTick(double *ymin, double *ymax, int *ytick) = 0;
+  virtual void Center() = 0;
   virtual void Refresh() = 0;
   virtual void SelectAll() = 0;
   virtual void ClearSelection() = 0;
