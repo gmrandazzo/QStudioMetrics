@@ -40,7 +40,7 @@ void PLSPREDICTION::WritePLSPredictionInfo(char *path){
     return;
 
   QTextStream out(&file);
-  out << "PREDICTION DATA MATRIX HASH\t" << hash << endl;
+  out << "PREDICTION DATA MATRIX HASH\t" << hash << Qt::endl;
   file.close();
 }
 
@@ -137,11 +137,11 @@ void PLSModel::WritePLSModelInfo(char *path){
     return;
 
   QTextStream out(&file);
-  out << "NUMBER OF COMPONENT\t" << npc << endl;
-  out << "XSCALINGTYPE\t" << xscaling << endl;
-  out << "YSCALINGTYPE\t" << yscaling << endl;
-  out << "INPUT MATRIX HASH\t" << hash << endl;
-  out << "VALIDATION\t" << validation << endl;
+  out << "NUMBER OF COMPONENT\t" << npc << Qt::endl;
+  out << "XSCALINGTYPE\t" << xscaling << Qt::endl;
+  out << "YSCALINGTYPE\t" << yscaling << Qt::endl;
+  out << "INPUT MATRIX HASH\t" << hash << Qt::endl;
+  out << "VALIDATION\t" << validation << Qt::endl;
   file.close();
 }
 

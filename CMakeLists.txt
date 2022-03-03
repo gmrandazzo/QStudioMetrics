@@ -1,5 +1,5 @@
 project(QStudioMetrics)
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.22)
 set(VERSION "1.9.0")
 set(AUTHOR "Giuseppe Marco Randazzo")
 cmake_policy(VERSION 2.4)
@@ -36,12 +36,12 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
 #    OpenGL)
 
 
-set(_components Core Gui Widgets Sql PrintSupport Concurrent)
+set(_components Core Core5Compat Gui Widgets WebEngineWidgets Sql PrintSupport Concurrent Charts)
 foreach(_component ${_components})
-  find_package(Qt5${_component} REQUIRED)
-  list(APPEND QT5_LIBRARIES ${Qt5${_component}_LIBRARIES})
+  find_package(Qt6 COMPONENTS ${_component} REQUIRED)
+  list(APPEND QT6_LIBRARIES ${Qt6${_component}_LIBRARIES})
   if(cmake_build_type_tolower STREQUAL "release")
-    set_target_properties(${Qt5${_component}_LIBRARIES} PROPERTIES MAP_IMPORTED_CONFIG_COVERAGE "RELEASE")
+    set_target_properties(${Qt6${_component}_LIBRARIES} PROPERTIES MAP_IMPORTED_CONFIG_COVERAGE "RELEASE")
   endif()
 endforeach()
 
@@ -96,7 +96,7 @@ endif(WIN32)
 
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 
-add_definitions(${QT5_DEFINITIONS})
+add_definitions(${QT6_DEFINITIONS})
 
 include_directories(
   ${PROJECT_BINARY_DIR}

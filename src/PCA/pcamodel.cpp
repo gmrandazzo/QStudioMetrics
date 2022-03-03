@@ -41,7 +41,7 @@ void PCAPREDICTION::WritePCAPredictionInfo(char *path){
     return;
 
   QTextStream out(&file);
-  out << "PREDICTION MATRIX HASH\t" << hash << endl;
+  out << "PREDICTION MATRIX HASH\t" << hash << Qt::endl;
   file.close();
 }
 
@@ -120,9 +120,9 @@ void PCAModel::WritePCAModelInfo(char *path){
     return;
 
   QTextStream out(&file);
-  out << "NUMBER OF COMPONENT\t" << npc << endl;
-  out << "SCALINGTYPE\t" << xscaling << endl;
-  out << "INPUT MATRIX HASH\t" << hash << endl;
+  out << "NUMBER OF COMPONENT\t" << npc << Qt::endl;
+  out << "SCALINGTYPE\t" << xscaling << Qt::endl;
+  out << "INPUT MATRIX HASH\t" << hash << Qt::endl;
   file.close();
 }
 

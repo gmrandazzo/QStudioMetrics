@@ -44,6 +44,7 @@ ScatterPlot* VariablePlot::VariableVSVariable()
           }
         }
       }
+      
       NewMatrix(&mxlst.last(), nobj, 2);
 
 //       NewMatrix(&mxlst.last(), objects_[i].size(), 2);

@@ -27,6 +27,7 @@ Graphs* ScatterPlot::NewGraph(PEngine peng)
 {
   if(peng == PEngine::Qtchart){
     return new Chart();
+    //return new ChartQt(); // Low performance
   }
   else{
     return new QPlotlyWindow(this);
@@ -673,7 +674,7 @@ void ScatterPlot::setSelectionStyle()
       for(int i = 0; i < (*vartablabels).size(); i++){
         varnames.append((*vartablabels)[i]->getFeaturesName());
       }
-      varnames.removeAll("Objects");
+      varnames.removeAll("Object Names");
       varnames.removeDuplicates();
 
       SelectionStyleDialog obj(varnames);
@@ -860,7 +861,7 @@ void ScatterPlot::setSelectionStyle()
       //varname.removeAll("Labels");
     }
 
-    varname.removeAll("Objects");
+    varname.removeAll("Object Names");
 
     SelectionStyleDialog obj(varname);
     obj.setSymbolNames(markersymbls);
@@ -1777,7 +1778,7 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QStrin
 
   //Finally render the scene
   chart->Center();
-  chart->Refresh();
+  chart->Plot();
 
   // Set up action signals and slots
   connect(ui.axis1, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));
@@ -1852,7 +1853,7 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QList<
 
   //Finally render the scene
   chart->Center();
-  chart->Refresh();
+  chart->Plot();
   // Set up action signals and slots
   connect(ui.axis1, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));
   connect(ui.axis2, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));
@@ -1927,7 +1928,8 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname,
 
   //Finally render the scene
   chart->Center();
-  chart->Refresh();
+  //chart->Refresh();
+  chart->Plot();
   // Set up action signals and slots
   connect(ui.axis1, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));
   connect(ui.axis2, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));
@@ -1995,7 +1997,7 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QList<
 
   //Finally render the scene
   chart->Center();
-  chart->Refresh();
+  chart->Plot();
 
   // Set up action signals and slots
   connect(ui.axis1, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));
@@ -2063,7 +2065,7 @@ ScatterPlot::ScatterPlot(QList<matrix*> &mx_, QList<matrix*> &my_, dvector* b_, 
 
     //Finally render the scene
     chart->Center();
-    chart->Refresh();
+    chart->Plot();
 
     // Set up action signals and slots
     connect(ui.axis3, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));
@@ -2140,7 +2142,7 @@ ScatterPlot::ScatterPlot(QList<matrix*>& mx_, QList<matrix*>& my_, dvector* b_, 
 
     //Finally render the scene
     chart->Center();
-    chart->Refresh();
+    chart->Plot();
 
     // Set up action signals and slots
     connect(ui.axis3, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));
@@ -2216,7 +2218,7 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
 
     //Finally render the scene
     chart->Center();
-    chart->Refresh();
+    chart->Plot();
 
     // Set up action signals and slots
     connect(ui.axis3, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));
@@ -2287,7 +2289,7 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
 
     //Finally render the scene
     chart->Center();
-    chart->Refresh();
+    chart->Plot();
 
     // Set up action signals and slots
     connect(ui.axis3, SIGNAL(valueChanged(int)), SLOT(UpdatePointPosition()));

@@ -15,7 +15,7 @@ void PlotFromfile(Chart *chart, const QString &fileName)
     QTextStream in(&file);
     while (!in.atEnd()) {
       QString line = in.readLine();
-      QStringList fields = line.split(';', QString::SkipEmptyParts);
+      QStringList fields = line.split(';'); //, QString::SkipEmptyParts);
       qreal x = fields[1].toDouble();
       qreal y = fields[2].toDouble();
       QString name = fields[0];
@@ -130,6 +130,7 @@ int main(int argc, char *argv[])
   int major, minor, patch;
   QPlotVersion(&major, &minor, &patch);
   printf("QPlot Version %d.%d.%d\n", major, minor, patch);
+  //PlotFromfile(&chart, argv[1]);
   _2DScattePlotExample(&chart);
   //_2DScattePlotExampleBIS(&chart);
   //_BarPlotExample(&chart);

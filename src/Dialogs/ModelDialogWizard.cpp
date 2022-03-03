@@ -1,7 +1,7 @@
 #include "ModelDialogWizard.h"
 #include "addLabelDialog.h"
 
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QModelIndex>
 #include <QStandardItem>
 #include <QStandardItemModel>
@@ -17,7 +17,9 @@
 void ModelDialogWizard::WindowAdjust()
 {
   adjustSize();
-  this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
+  QScreen *screen = QGuiApplication::primaryScreen();
+  QRect screenGeometry = screen->geometry();
+  this->move(screenGeometry.center() - this->rect().center());
 }
 
 int ModelDialogWizard::CheckClassLabelAndObject(QString label, QString objectname)

@@ -60,7 +60,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename, QString windowt
     //chart->addCurve(curve, QString("%1").arg(curvenames[j-1]), Qt::red); Mediane
   }
 
-  chart->Refresh();
+  chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
 }
@@ -102,7 +102,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString wi
     chart->setCurveStyle(j-1, LM);
   }
 
-  chart->Refresh();
+  chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
 }
@@ -143,7 +143,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(QList< matrix* > mlst, QStringList curvenames
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
 
-  chart->Refresh();
+  chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
 }

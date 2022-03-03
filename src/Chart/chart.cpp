@@ -31,7 +31,7 @@ Chart::Chart(QWidget *parent) : QWidget(parent)
   QPalette Pal(palette());
 
   // set black background
-  Pal.setColor(QPalette::Background, Qt::white);
+  Pal.setColor(QPalette::Window, Qt::white);
   setBackgroundRole(QPalette::Light);
   setAutoFillBackground(true);
   setPalette(Pal);
@@ -95,56 +95,56 @@ void Chart::Center()
       if(p[i]->x() < minX){
         minX = p[i]->x();
       }
-      
+
       if(p[i]->x() > maxX){
         maxX = p[i]->x();
       }
-      
+
       if(p[i]->y() < minY){
         minY = p[i]->y();
       }
-      
+
       if(p[i]->y() > maxY){
         maxY = p[i]->y();
       }
     }
-    
+
     // search min max between curves
     for(int i = 0; i < curveMap.size(); i++){
       for(int j = 0; j < curveMap[i].getPoints().size(); j++){
         if(curveMap[i].getPoints()[j].x() < minX){
           minX = curveMap[i].getPoints()[j].x();
         }
-        
+
         if(curveMap[i].getPoints()[j].x() > maxX){
           maxX = curveMap[i].getPoints()[j].x();
         }
-        
+
         if(curveMap[i].getPoints()[j].y() < minY){
           minY = curveMap[i].getPoints()[j].y();
         }
-        
+
         if(curveMap[i].getPoints()[j].y() > maxY){
           maxY = curveMap[i].getPoints()[j].y();
         }
       }
     }
-    
+
      zoomStack.first().minX = (minX - fabs(minX*rescalefactor));
      zoomStack.first().maxX = (maxX + fabs(maxX*rescalefactor));
      zoomStack.first().minY = (minY - fabs(minY*rescalefactor));
      zoomStack.first().maxY = (maxY + fabs(maxY*rescalefactor));
-     
+
     //     zoomStack.first().numXTicks =  zoomStack.first().spanX();
     //     zoomStack.first().numYTicks =  zoomStack.first().spanY();
-    
+
     /*maxX = zoomStack.first().maxX - (int)zoomStack.first().spanX() % zoomStack.first().numXTicks;
-     * 
+     *
      * if(FLOAT_EQ(maxX, 0, EPSILON))
      *   zoomStack.first().maxX = 1;
      * else
      *   zoomStack.first().maxX = maxX;
-     * 
+     *
      * maxY = zoomStack.first().maxY - (int)zoomStack.first().spanY() % zoomStack.first().numYTicks;
      * if(FLOAT_EQ(maxY, 0, EPSILON))
      *   zoomStack.first().maxY = 1;
@@ -152,7 +152,7 @@ void Chart::Center()
      *   zoomStack.first().maxY = maxY;
      */
   }
-  
+
 }
 
 void Chart::Refresh()
@@ -882,8 +882,8 @@ void Chart::drawGrid(QPainter *painter)
   if(!rect.isValid())
       return;
 
-  qDebug() << "curZoom " << curZoom;
-  
+  //qDebug() << "curZoom " << curZoom;
+
   PlotSettings settings = zoomStack[curZoom];
 
   QPen gridpen = QPen(QColor(200, 200, 255, 125));
@@ -911,15 +911,15 @@ void Chart::drawGrid(QPainter *painter)
   max = ceil(settings.maxX);
   //stepx = (max-min)/10.f;
   stepx = (max-min)/(double)settings.numXTicks;
-  printf("PRE stepx: %f min: %f max: %f\n", stepx, min, max);
+  //printf("PRE stepx: %f min: %f max: %f\n", stepx, min, max);
   // The problem is here... we prevent to have "step < of 0 because after we need to deal with floating  numbers"
   if(stepx > 1.f){
     stepx = ceil(stepx);
   }
-
+  /*
   QString qdb = QString("Chart::drawGrid %1 xmin %2 xmax %3 xtick %4 stepx %5").arg(curZoom).arg(min).arg(max).arg(settings.numXTicks).arg(stepx);
   qDebug() << qdb;
-
+  */
   //printf("FINAL stepx: %f min: %f max: %f\n", stepx, min, max);
   //float factor = rect.width() / painter->fontMetrics().width("-20");
   // Factor to "automatically" Enlarge/reduce the text with the window...

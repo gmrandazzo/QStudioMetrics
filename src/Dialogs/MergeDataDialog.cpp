@@ -20,7 +20,7 @@ void MergeDataDialog::MergeType0()
       p.second = j;
       objmap[objname].append(p);
     }
-    /* we start from 1 because at 0 there is the standard sample name "Objects" */
+    /* we start from 1 because at 0 there is the standard sample name "Object Names" */
     for(int j = 1; j < projects->value(pid)->getMatrix(mxids[i])->getVarName().size(); j++){
       varnames.append(projects->value(pid)->getMatrix(mxids[i])->getVarName()[j]);
     }
@@ -70,7 +70,7 @@ void MergeDataDialog::MergeType1()
   QStringList objnames;
   for(int i = 0; i < mxids.size(); i++){
     objnames << projects->value(pid)->getMatrix(mxids[i])->getObjName();
-    /* we start from 1 because at 0 there is the standard sample name "Objects" */
+    /* we start from 1 because at 0 there is the standard sample name "Object Names" */
     for(int j = 1; j < projects->value(pid)->getMatrix(mxids[i])->getVarName().size(); j++){
       varnames.append(projects->value(pid)->getMatrix(mxids[i])->getVarName()[j]);
     }

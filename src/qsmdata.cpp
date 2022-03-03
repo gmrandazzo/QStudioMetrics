@@ -74,7 +74,7 @@ void DATA::ImportColumns(QString fname, QString separator, QStringList &collst)
 
   QTextStream in(&file);
   while(!in.atEnd()){
-    QStringList list = in.readLine().trimmed().split(separator, QString::SkipEmptyParts);
+    QStringList list = in.readLine().trimmed().split(separator, Qt::SkipEmptyParts);
     for(int i = 0; i < list.size(); i++)
       if(list[i].isEmpty())
         continue;
@@ -384,7 +384,7 @@ void DATA::OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *m
     QFileInfoList list = imgdir.entryInfoList();
     for(int i = 0; i < list.size(); i++){
       QFileInfo fileInfo = list.at(i);
-      QStringList split = fileInfo.fileName().split(".", QString::SkipEmptyParts);
+      QStringList split = fileInfo.fileName().split(".", Qt::SkipEmptyParts);
       if(!split.isEmpty()){
         if(split.last().toLower().compare("jpg") == 0 ||
           split.last().toLower().compare("jpeg") == 0 ||
@@ -408,7 +408,7 @@ void DATA::OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *m
 
           if(duplicate == false){
             getImages().append(IMAGE());
-            getImages().last().name = fileInfo.fileName().split(".", QString::SkipEmptyParts).first();
+            getImages().last().name = fileInfo.fileName().split(".", Qt::SkipEmptyParts).first();
             getImages().last().filepath = fileInfo.absoluteFilePath();
             getImages().last().image = QPixmap(fileInfo.absoluteFilePath());
           }

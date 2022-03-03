@@ -333,7 +333,7 @@ void ImportFileDialog::ImportType0()
     QString sep = getSeparator();
     // Assign header to matrix
     Clean_rnames();
-    AssignName(m->getVarName(), "Objects");
+    AssignName(m->getVarName(), "Object Names");
     QStringList header;
     int header_line = getHeader(&header);
     for(int j = 1; j < header.size(); j++){
@@ -384,7 +384,7 @@ void ImportFileDialog::ImportType1()
     QString sep = getSeparator();
     // Assign header to matrix
     Clean_rnames();
-    AssignName(m->getVarName(), "Objects");
+    AssignName(m->getVarName(), "Object Names");
     QStringList header;
     int header_line = getHeader(&header);
     for(int j = 0; j < header.size(); j++){
@@ -436,7 +436,7 @@ void ImportFileDialog::ImportType2()
       return;
 
     Clean_rnames();
-    AssignName(m->getVarName(), "Objects");
+    AssignName(m->getVarName(), "Object Names");
     size_t lnum = 0;
     size_t row = 0;
     QTextStream in(&f);
@@ -477,7 +477,7 @@ void ImportFileDialog::ImportType3()
       return;
 
     Clean_rnames();
-    AssignName(m->getVarName(), "Objects");
+    AssignName(m->getVarName(), "Object Names");
     size_t row = 0;
     size_t lnum = 0;
     QTextStream in(&f);
@@ -512,22 +512,26 @@ void ImportFileDialog::BuildMatrix()
 
   // Import the matrix
   if(ui.firstrowvarname->isChecked() == true && ui.firstcolobjname->isChecked() == true){
-    QFuture<void> future = QtConcurrent::run(this, &ImportFileDialog::ImportType0);
+    QFuture<void> future = QtConcurrent::run([this]{ ImportFileDialog::ImportType0(); });
+    //QFuture<void> future = QtConcurrent::run(this, &ImportFileDialog::ImportType0);
     future.waitForFinished();
     //ImportType0();
   }
   else if(ui.firstrowvarname->isChecked() == true && ui.firstcolobjname->isChecked() == false){
-    QFuture<void> future = QtConcurrent::run(this, &ImportFileDialog::ImportType1);
+    QFuture<void> future = QtConcurrent::run([this]{ ImportFileDialog::ImportType1(); });
+    //QFuture<void> future = QtConcurrent::run(this, &ImportFileDialog::ImportType1);
     future.waitForFinished();
     //ImportType1();
   }
   else if(ui.firstrowvarname->isChecked() == false && ui.firstcolobjname->isChecked() == true){
-    QFuture<void> future = QtConcurrent::run(this, &ImportFileDialog::ImportType2);
+    QFuture<void> future = QtConcurrent::run([this]{ ImportFileDialog::ImportType2(); });
+    //QFuture<void> future = QtConcurrent::run(this, &ImportFileDialog::ImportType2);
     future.waitForFinished();
     //ImportType2();
   }
   else{ //ui.firstrowvarname->isChecked() == false && ui.firstcolobjname->isChecked() == false
-    QFuture<void> future = QtConcurrent::run(this, &ImportFileDialog::ImportType3);
+    QFuture<void> future = QtConcurrent::run([this] { ImportFileDialog::ImportType3(); });
+    //QFuture<void> future = QtConcurrent::run(this, &ImportFileDialog::ImportType3);
     future.waitForFinished();
     //ImportType3();
   }
@@ -992,7 +996,7 @@ void ImportFileDialog::Preview()
     return;
 
   QStringList objnames, varnames;
-  varnames << "Objects";
+  varnames << "Object Names";
 
   size_t row = 0, max_row = 10;
   QTextStream in(&f);
@@ -1243,7 +1247,7 @@ void ImportFileDialog::Open()
     path = last.absoluteFilePath();
   }
 
-  QStringList list = ui.file->text().split("/", QString::SkipEmptyParts);
+  QStringList list = ui.file->text().split("/", Qt::SkipEmptyParts);
   if(list.size() > 0){
     list.last().remove(".txt", Qt::CaseInsensitive);
     list.last().remove(".csv", Qt::CaseInsensitive);

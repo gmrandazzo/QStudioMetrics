@@ -24,8 +24,8 @@ void ImportLabelListDialog::Open(){
     QFileInfo last(ui.file->text());
     path = last.absoluteFilePath();
   }
-  
-  QStringList list = ui.file->text().split("/", QString::SkipEmptyParts);
+
+  QStringList list = ui.file->text().split("/", Qt::SkipEmptyParts);
   if(list.size() > 0){
     list.last().remove(".txt");
     list.last().remove(".csv");
@@ -42,8 +42,8 @@ void ImportLabelListDialog::Open(){
     QFileInfo last(ui.file->text());
     path = last.absoluteFilePath();
   }
-  
-  QStringList list = ui.file->text().split("/", QString::SkipEmptyParts);
+
+  QStringList list = ui.file->text().split("/", Qt::SkipEmptyParts);
   if(list.size() > 0){
     list.last().remove(".txt", Qt::CaseInsensitive);
     list.last().remove(".csv", Qt::CaseInsensitive);

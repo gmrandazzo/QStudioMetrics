@@ -1,7 +1,7 @@
 #include "MDIChild.h"
 #include <QProgressDialog>
 #include <QStringListModel>
-#include <QDesktopWidget>
+#include <QScreen>
 #include "ListView.h"
 
 void MDIChild::newModelInfo()

@@ -1473,7 +1473,7 @@ void MainWindow::UpdateImageWindow(ImageSignal is)
 //         img->setPixmap(QPixmap(projects->value(is.pid)->getImages()[i].filepath));
         img->setPixmap(projects->value(is.pid)->getImages()[i].image);
         img->setScaledContents(true);
-        img->pixmap()->scaled(247, 170, Qt::KeepAspectRatioByExpanding);
+        img->pixmap().scaled(247, 170, Qt::KeepAspectRatioByExpanding);
 
         ui.tabWidget->addTab(img, projects->value(is.pid)->getImages()[i].name);
       }
@@ -2342,7 +2342,7 @@ void MainWindow::showEPLSValidatedPrediction()
     QStringList varname = projects->value(pid)->getEPLSModel(mid)->getObjName();
     child->getTable()->model()->setObjNames(varname);
     QStringList header;
-    header << "Objects";
+    header << "Object Names";
     for(size_t i = 0; i < projects->value(pid)->getEPLSModel(mid)->Model()->nlv; i++){
       for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->Model()->ny; j++){
         header << QString("y %1 (PC %2)").arg(QString::number(j+1)).arg(QString::number(i+1));
@@ -2520,7 +2520,7 @@ void MainWindow::showPLSValidatedPrediction()
     QStringList varname = projects->value(pid)->getPLSModel(mid)->getObjName();
     child->getTable()->model()->setObjNames(varname);
     QStringList header;
-    header << "Objects";
+    header << "Object Names";
 
     for(int i = 0; i < projects->value(pid)->getPLSModel(mid)->getNPC(); i++){
       for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->yloadings->row; j++){
@@ -3838,7 +3838,7 @@ int MainWindow::ProjectOpen(QString fproject)
   projects->insert(pid_, new DATA());
   projects->value(pid_)->setProjectID(pid_);
   projects->value(pid_)->setProjectPath(fproject);
-  QString projectename = info.absoluteFilePath().split("/", QString::SkipEmptyParts).last().remove(".qsm");
+  QString projectename = info.absoluteFilePath().split("/", Qt::SkipEmptyParts).last().remove(".qsm");
   updateLog(QString("Importing Project: %1\n").arg(projectename));
   QTreeWidgetItem *item = new QTreeWidgetItem;
   item->setText(0, projectename);

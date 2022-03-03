@@ -1,5 +1,5 @@
 #include "GenericProgressDialog.h"
-#include <QDesktopWidget>
+#include <QScreen>
 
 void GenericProgressDialog::setValue(int value)
 {
@@ -41,7 +41,9 @@ GenericProgressDialog::GenericProgressDialog(): QDialog()
   ui.setupUi(this);
   setWindowFlags(((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowCloseButtonHint));
   setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  const QRect screen = QApplication::desktop()->screenGeometry();
-  this->move(screen.center() - this->rect().center());
+
+  QScreen *screen = QGuiApplication::primaryScreen();
+  QRect screenGeometry = screen->geometry();
+  this->move(screenGeometry.center() - this->rect().center());
   connect(ui.cancelButton, SIGNAL(clicked(bool)), SLOT(Cancel()));
 }

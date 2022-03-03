@@ -41,7 +41,7 @@ void LDAPREDICTION::WriteLDAPredictionInfo(char *path){
     return;
 
   QTextStream out(&file);
-    out << "PREDICTION ARRAY HASH\t" << hash << endl;
+    out << "PREDICTION ARRAY HASH\t" << hash << Qt::endl;
   file.close();
 }
 
@@ -147,8 +147,8 @@ void LDAModel::WriteLDAModelInfo(char *path)
     return;
 
   QTextStream out(&file);
-  out << "INPUT MATRIX HASH\t" << hash << endl;
-  out << "VALIDATION\t" << validation << endl;
+  out << "INPUT MATRIX HASH\t" << hash << Qt::endl;
+  out << "VALIDATION\t" << validation << Qt::endl;
   file.close();
 }
 

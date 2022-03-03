@@ -39,7 +39,7 @@ int AddFileDialog::CountNumberRow(QString file_)
     }
     else if(line.size() == 1 && line.compare("-", Qt::CaseInsensitive) == true){
       break;
-    } 
+    }
     else{
       nrow++;
     }
@@ -55,7 +55,7 @@ QStringList AddFileDialog::ListRead(QString file_)
   file.open(QIODevice::ReadOnly | QIODevice::Text);
   QTextStream in(&file);
   while(!in.atEnd()){
-    lst.append(in.readLine().trimmed().split(getSeparator(), QString::SkipEmptyParts));
+    lst.append(in.readLine().trimmed().split(getSeparator(), Qt::SkipEmptyParts));
   }
   file.close();
   return lst;
@@ -68,7 +68,7 @@ void AddFileDialog::setSimpleOpen()
   ui.splitlineby->hide();
   ui.label_3->hide();
   ui.horizontalSpacer->changeSize(0,0, QSizePolicy::Fixed, QSizePolicy::Fixed);
-  ui.horizontalSpacer_3->changeSize(0,0, QSizePolicy::Fixed, QSizePolicy::Fixed);  
+  ui.horizontalSpacer_3->changeSize(0,0, QSizePolicy::Fixed, QSizePolicy::Fixed);
   ui.ignorelinebychar->hide();
   ui.file_varname->hide();
   ui.filevarname->hide();
@@ -90,7 +90,7 @@ QString AddFileDialog::getSeparator()
     return ";";
   else // PERSONAL
     return ui.splitlineby->currentText();
-  
+
 }
 
 QString AddFileDialog::getLabel()
@@ -148,8 +148,8 @@ void AddFileDialog::Open()
     QFileInfo last(ui.file->text());
     path = last.absoluteFilePath();
   }
-  
-  QStringList list = ui.file->text().split("/", QString::SkipEmptyParts);
+
+  QStringList list = ui.file->text().split("/", Qt::SkipEmptyParts);
   if(list.size() > 0){
     list.last().remove(".txt", Qt::CaseInsensitive);
     list.last().remove(".csv", Qt::CaseInsensitive);
@@ -197,25 +197,25 @@ void AddFileDialog::Accept()
 void AddFileDialog::Preview()
 {
   if(!ui.file->text().isEmpty()){
-    
+
     model->clear();
-    
+
     QFile file(ui.file->text());
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
       return;
-    
+
     int file_nrow = CountNumberRow(ui.file->text());
     int file_ncol = CountNumberColum(ui.file->text());
-    
+
     QStringList objname;
     if(!getFileObjName().isEmpty()){
       objname = ListRead(getFileObjName());
-       
+
       if(file_nrow != objname.size()){
         QMessageBox::warning(this, tr("Import Warning!!"), tr("Object name size and data row differ.\n Please check your data."), QMessageBox::Ok);
       }
     }
-    
+
     int row = 0;
     QTextStream in(&file);
     while(!in.atEnd()){
@@ -227,16 +227,16 @@ void AddFileDialog::Preview()
         break;
       }
       else{
-        QStringList value =  line_.split(getSeparator(), QString::SkipEmptyParts);
+        QStringList value =  line_.split(getSeparator(), Qt::SkipEmptyParts);
         if(row == 0){
           if(ui.filevarname->isChecked() && !ui.file_varname->text().isEmpty()){
             model->setHorizontalHeaderItem(0, new QStandardItem(QString("Object Names")));
             QStringList varname = ListRead(getFileVarName());
-            
+
             if(file_ncol != varname.size()){
               QMessageBox::warning(this, tr("Import Warning!!"), tr("Variable name size and data column differ.\n Please check your data or variable file."), QMessageBox::Ok);
             }
-            
+
             if(varname.size() < 10){ // is the max number of column
               for(int i = 0; i < varname.size(); i++){
                 model->setHorizontalHeaderItem(i+1, new QStandardItem(varname[i]));
@@ -251,7 +251,7 @@ void AddFileDialog::Preview()
           }
           else{
             model->setHorizontalHeaderItem(0, new QStandardItem(QString("Object Names")));
-            
+
             if(value.size() < 10){ // is the max number of column
               for(int c = 0; c < value.size(); c++){
                 model->setHorizontalHeaderItem(c+1, new QStandardItem(QString("Column %0" ).arg(c+1)));
@@ -265,8 +265,8 @@ void AddFileDialog::Preview()
             }
           }
           QList<QStandardItem*> line;
-          
-          if(objname.isEmpty()){          
+
+          if(objname.isEmpty()){
             line.append(new QStandardItem(QString("obj%0" ).arg(row+1)));
           }
           else{
@@ -277,7 +277,7 @@ void AddFileDialog::Preview()
               line.append(new QStandardItem(QString("obj%0" ).arg(row+1)));
             }
           }
-          
+
           if(value.size() < 10){
             for(int c = 0; c < value.size(); c++){
               line.append(new QStandardItem(value[c]));
@@ -310,7 +310,7 @@ void AddFileDialog::Preview()
         }
         else{
           QList<QStandardItem*> line;
-          if(objname.isEmpty()){          
+          if(objname.isEmpty()){
             line.append(new QStandardItem(QString("obj%0" ).arg(row+1)));
           }
           else{
@@ -321,7 +321,7 @@ void AddFileDialog::Preview()
               line.append(new QStandardItem(QString("obj%0" ).arg(row+1)));
             }
           }
-          
+
           if(value.size() < 10){
             for(int c = 0; c < value.size(); c++){
               line.append(new QStandardItem(value[c]));
@@ -340,23 +340,23 @@ void AddFileDialog::Preview()
     }
     file.close();
   }
-  
+
 }
 
 AddFileDialog::AddFileDialog()
 {
   ui.setupUi(this);
-  
+
   model = new QStandardItemModel();
-  
+
   ui.tableView->setModel(model);
-  
+
   connect(ui.ok, SIGNAL(clicked(bool)), SLOT(Accept()));
   connect(ui.cancel, SIGNAL(clicked(bool)), SLOT(reject()));
   connect(ui.buttonBox->button(QDialogButtonBox::Open), SIGNAL(clicked(bool)), this, SLOT(Open()));
   connect(ui.openbutton, SIGNAL(clicked(bool)), this, SLOT(OpenFileObjName()));
   connect(ui.openbutton_2, SIGNAL(clicked(bool)), this, SLOT(OpenFileVarName()));
-  
+
   connect(ui.file, SIGNAL(textChanged(QString)), SLOT(Preview()));
   connect(ui.splitlineby, SIGNAL(currentIndexChanged(int)), SLOT(Preview()));
   connect(ui.ignorelinebychar, SIGNAL(textChanged(QString)), SLOT(Preview()));
@@ -370,4 +370,3 @@ AddFileDialog::~AddFileDialog()
 {
   delete model;
 }
-

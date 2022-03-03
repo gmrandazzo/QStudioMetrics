@@ -19,7 +19,6 @@
 #endif
 
 
-
 #include "qsmdata.h"
 #include "run.h"
 
@@ -169,7 +168,7 @@ QVariant Model::data(const QModelIndex& index, int role) const
         return QVariant();
       }
     }
-    else if(role == Qt::BackgroundColorRole){
+    else if(role == Qt::BackgroundRole){
       if(m != 0){
         if(std::abs(minval) == std::abs(maxval)){
           return QVariant();
@@ -491,8 +490,7 @@ void Table::copy()
   }
   else{ // copy more cell and row
     //Sort the indexes list maintain the relative order of column by row ascening
-    qStableSort(indexes.begin(), indexes.end(), indexesByRow );
-  //   qSort(indexes.begin(), indexes.end());
+    std::stable_sort(indexes.begin(), indexes.end(), indexesByRow );
 
     // get a pair of indexes to find the row changes
     QModelIndex previous = indexes.first();
@@ -981,9 +979,9 @@ void Table::SortByColumn(int col)
     }
     // Ordering ascending
     if(ui.tableView->horizontalHeader()->sortIndicatorOrder() == Qt::AscendingOrder)
-      qSort(array_.begin(), array_.end(), QPairComparerAscending());
+      std::sort(array_.begin(), array_.end(), QPairComparerAscending());
     else
-      qSort(array_.begin(), array_.end(), QPairComparerDescending());
+      std::sort(array_.begin(), array_.end(), QPairComparerDescending());
 
 
     matrix *tmp;
@@ -1011,9 +1009,9 @@ void Table::SortByColumn(int col)
     }
 
     if(ui.tableView->horizontalHeader()->sortIndicatorOrder() == Qt::AscendingOrder)
-      qSort(array_.begin(), array_.end(), QPairComparerAscending());
+      std::sort(array_.begin(), array_.end(), QPairComparerAscending());
     else
-      qSort(array_.begin(), array_.end(), QPairComparerDescending());
+      std::sort(array_.begin(), array_.end(), QPairComparerDescending());
 
     matrix *tmp;
     initMatrix(&tmp);
@@ -1311,7 +1309,7 @@ Table::Table(QStringList names, QList<QPixmap> images, QList<QColor> colors, QWi
         image->resize(50, 50);
         image->setPixmap(images[k]);
         image->setScaledContents(true);
-        image->pixmap()->scaled(50, 50, Qt::KeepAspectRatioByExpanding);
+        image->pixmap().scaled(50, 50, Qt::KeepAspectRatioByExpanding);
 
         QLabel *label = new QLabel;
         /*QPalette pal = label->palette();

@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "Chart/qplotly.h"
+#include "Chart/chartqt.h"
 
 void BarPlot::slotExit()
 {
@@ -54,7 +55,7 @@ BarPlot::BarPlot(dvector *v_,
 {
     ui.setupUi(this);
     setWindowTitle(windowtitle);
-    chart = new QPlotlyWindow(this);
+    chart = new ChartQt(this);
     chart->setXaxisName("");
     chart->setYaxisName("");
     chart->setPlotTitle(windowtitle);
@@ -86,7 +87,7 @@ BarPlot::BarPlot(dvector *v_,
   qDebug() << "Call this";
   ui.setupUi(this);
   setWindowTitle(windowtitle);
-  chart = new QPlotlyWindow(this);
+  chart = new ChartQt(this);
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
   chart->setPlotTitle(windowtitle);
@@ -114,7 +115,7 @@ BarPlot::BarPlot(QList<dvector*> vlst_, QString windowtitle, QString xaxestitle,
   ui.setupUi(this);
 
   setWindowTitle(windowtitle);
-  chart = new QPlotlyWindow(this);
+  chart = new ChartQt(this);
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
   chart->setPlotTitle(windowtitle);

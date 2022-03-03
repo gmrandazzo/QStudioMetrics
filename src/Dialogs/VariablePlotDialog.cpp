@@ -90,8 +90,7 @@ void VariablePlotDialog::GenVariableViewAndSetHash()
 
         for(int i = 1; i < projects->value(pid)->getMatrix(hash[0])->getVarName().size(); i++){ // First item is aways the name of the object that we do not whant to plot...
 	  /*
-          if(projects->value(pid)->getMatrix(hash[0])->getVarName()[i].compare("Object Names") == 0 ||
-             projects->value(pid)->getMatrix(hash[0])->getVarName()[i].compare("Objects") == 0){
+          if(projects->value(pid)->getMatrix(hash[0])->getVarName()[i].compare("Object Names") == 0){
             continue;
           }
           else{*/

@@ -183,7 +183,7 @@ void ProjectManager::AddImagesAsRGB()
 {
   QFileDialog fimgdialog;
 
-  fimgdialog.setFileMode(QFileDialog::DirectoryOnly);
+  fimgdialog.setFileMode(QFileDialog::Directory);
   fimgdialog.setOptions(QFileDialog::ShowDirsOnly);
   fimgdialog.setDirectory(lastpath);
   fimgdialog.setWindowTitle(tr("Open Image Directory"));
@@ -206,7 +206,7 @@ void ProjectManager::AddImagesAsRGB()
       QFileInfoList list = dir.entryInfoList();
       for(int i = 0; i < list.size(); i++){
         QFileInfo fileInfo = list.at(i);
-        QStringList split = fileInfo.fileName().split(".", QString::SkipEmptyParts);
+        QStringList split = fileInfo.fileName().split(".", Qt::SkipEmptyParts);
         if(!split.isEmpty()){
           if(split.last().toLower().compare("jpg") == 0 ||
             split.last().toLower().compare("jpeg") == 0 ||
@@ -262,7 +262,7 @@ void ProjectManager::AddImagesAsRGB()
             _m_->data[i][j] = imgmx[i][j];
           }
         }
-        data->getMATRIXList().last()->getVarName().append("Objects");
+        data->getMATRIXList().last()->getVarName().append("Object Names");
         for(uint i = 0; i < _m_->col; i++){
           data->getMATRIXList().last()->getVarName().append(QString("pixel%1").arg(i+1));
         }
@@ -283,7 +283,7 @@ void ProjectManager::AddImageList()
 {
   QFileDialog fimgdialog;
 
-  fimgdialog.setFileMode(QFileDialog::DirectoryOnly);
+  fimgdialog.setFileMode(QFileDialog::Directory);
   fimgdialog.setOptions(QFileDialog::ShowDirsOnly);
   fimgdialog.setDirectory(lastpath);
   fimgdialog.setWindowTitle(tr("Open Image Directory"));
@@ -304,7 +304,7 @@ void ProjectManager::AddImageList()
       QFileInfoList list = dir.entryInfoList();
       for(int i = 0; i < list.size(); i++){
         QFileInfo fileInfo = list.at(i);
-        QStringList split = fileInfo.fileName().split(".", QString::SkipEmptyParts);
+        QStringList split = fileInfo.fileName().split(".", Qt::SkipEmptyParts);
         if(!split.isEmpty()){
           if(split.last().toLower().compare("jpg") == 0 ||
             split.last().toLower().compare("jpeg") == 0 ||

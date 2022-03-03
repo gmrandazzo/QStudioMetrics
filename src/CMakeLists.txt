@@ -181,10 +181,10 @@ set(icon_RCC icons/icons.qrc)
 
 # start building interface from moc
 #set(AUTOMOC_MOC_OPTIONS PROPERTIES FOLDER CMakeAutomocTargets)
-QT5_WRAP_CPP(QSTUDIOMETRICS_MOC_H ${QSTUDIOMETRICS_H})
-QT5_WRAP_UI(QSTUDIOMETRICS_UIS_H ${QSTUDIOMETRICS_UIS})
+QT6_WRAP_CPP(QSTUDIOMETRICS_MOC_H ${QSTUDIOMETRICS_H})
+QT6_WRAP_UI(QSTUDIOMETRICS_UIS_H ${QSTUDIOMETRICS_UIS})
 # generate rules for building source files from the resources
-QT5_ADD_RESOURCES(icon_RCC_SRCS ${icon_RCC})
+QT6_ADD_RESOURCES(icon_RCC_SRCS ${icon_RCC})
 
 
 source_group("Resources" FILES
@@ -208,46 +208,46 @@ endif()
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(QStudioMetrics ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS})
-target_link_libraries(QStudioMetrics ${LIBSCIENTIFIC_LIBRARY} libchart ${QT5_LIBRARIES})
+target_link_libraries(QStudioMetrics PRIVATE ${LIBSCIENTIFIC_LIBRARY} libchart ${QT6_LIBRARIES})
 
 add_executable(qsm-pca ${QSTUDIOMETRICS_CMDPCA_SRC})
-target_link_libraries(qsm-pca ${LIBSCIENTIFIC_LIBRARY})
+target_link_libraries(qsm-pca PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 add_executable(qsm-pls ${QSTUDIOMETRICS_CMDPLS_SRC})
-target_link_libraries(qsm-pls ${LIBSCIENTIFIC_LIBRARY})
+target_link_libraries(qsm-pls PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 add_executable(qsm-mlr ${QSTUDIOMETRICS_CMDMLR_SRC})
-target_link_libraries(qsm-mlr ${LIBSCIENTIFIC_LIBRARY})
+target_link_libraries(qsm-mlr PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 add_executable(qsm-mdc ${QSTUDIOMETRICS_CMDMDC_SRC})
-target_link_libraries(qsm-mdc ${LIBSCIENTIFIC_LIBRARY})
+target_link_libraries(qsm-mdc PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 add_executable(qsm-kmeans ${QSTUDIOMETRICS_CMDKMEANS_SRC})
-target_link_libraries(qsm-kmeans ${LIBSCIENTIFIC_LIBRARY})
+target_link_libraries(qsm-kmeans PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 add_executable(qsm-hgm ${QSTUDIOMETRICS_CMDHGM_SRC})
-target_link_libraries(qsm-hgm ${LIBSCIENTIFIC_LIBRARY})
+target_link_libraries(qsm-hgm PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 #add_executable(qsm-objselector qsmcompselector.cpp DATAIO.cpp)
-#target_link_libraries(qsm-objselector ${LIBSCIENTIFIC_LIBRARY})
+#target_link_libraries(qsm-objselector PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 #add_executable(qsm-mlr ${QSTUDIOMETRICS_CMDMLR_SRC})
-#target_link_libraries(qsm-mlr ${LIBSCIENTIFIC_LIBRARY})
+#target_link_libraries(qsm-mlr PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 #add_executable(qsm-lda ${QSTUDIOMETRICS_CMDLDA_SRC})
-#target_link_libraries(qsm-lda ${LIBSCIENTIFIC_LIBRARY})s
+#target_link_libraries(qsm-lda PRIVATE ${LIBSCIENTIFIC_LIBRARY})s
 
 #add_executable(qsm-upca ${QSTUDIOMETRICS_CMDUPCA_SRC})
-#target_link_libraries(qsm-upca ${LIBSCIENTIFIC_LIBRARY})
+#target_link_libraries(qsm-upca PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 #add_executable(qsm-upls ${QSTUDIOMETRICS_CMDUPLS_SRC})
-#target_link_libraries(qsm-upls ${LIBSCIENTIFIC_LIBRARY})
+#target_link_libraries(qsm-upls PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 #add_executable(qsm-bintest ${QSTUDIOMETRICS_CMDBINTEST_SRC})
-#target_link_libraries(qsm-bintest ${LIBSCIENTIFIC_LIBRARY})
+#target_link_libraries(qsm-bintest PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 #add_executable(qsm-doe ${QSTUDIOMETRICS_CMDDOE_SRC})
-#target_link_libraries(qsm-doe ${LIBSCIENTIFIC_LIBRARY})
+#target_link_libraries(qsm-doe PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 
 #install(TARGETS QStudioMetrics RUNTIME DESTINATION bin ${QSM_INSTALL_DESTINATIONS_ARGS})
@@ -264,5 +264,5 @@ if(cmake_build_type_tolower STREQUAL "debug")
   target_link_libraries(testimportmatrix ${LIBSCIENTIFIC_LIBRARY})
   target_link_libraries(testimportarray ${LIBSCIENTIFIC_LIBRARY})
   target_link_libraries(testimportpcamodel ${LIBSCIENTIFIC_LIBRARY})
-  target_link_libraries(qsmprojectcompressor ${QT5_LIBRARIES})
+  target_link_libraries(qsmprojectcompressor ${QT6_LIBRARIES})
 endif()

@@ -508,6 +508,7 @@ QString QPlotlyWindow::genJSONScatter()
   //Simple point selected
   QString xs = "x: [", ys = "y: [", texts = "text: [", colors = "color: [", msizes = "size: [", msymbols = "symbol: [";
 
+  /* MULTITHREAD
   int nth = QThread::idealThreadCount();
   int step = (int)ceil((p.size()-1)/(double)nth);
 
@@ -519,7 +520,9 @@ QString QPlotlyWindow::genJSONScatter()
   QList<QFuture<QStringList>> futures;
   int from = 0, to = step;
   for(int i = 0; i < nth; i++){
-    futures.append(QtConcurrent::run(this, &QPlotlyWindow::JSonScatterWorker, from, to));
+    futures.append(QFuture<QStringList>());
+    //futures.append(QtConcurrent::run([=](int from, int to){ QPlotlyWindow::JSonScatterWorker(from, to); }));
+    //futures.append(QtConcurrent::run([this]{ QPlotlyWindow::JSonScatterWorker(from, to); } ));
     from = to;
     if(from+step > p.size()-1){
       to = p.size()-1;
@@ -552,8 +555,11 @@ QString QPlotlyWindow::genJSONScatter()
     msymbols += r[17];
   }
 
-  /* SINGLE THREAD IMPLEMENTATION
-  for(i = 0; i < p.size()-1; i++){
+  END MULTITHREAD IMPLEMENTATION*/
+
+
+  /* SINGLE THREAD IMPLEMENTATION */
+  for(int i = 0; i < p.size()-1; i++){
     int r_, g_, b_, a_;
     r_ = p[i]->getColor().red();
     g_ = p[i]->getColor().green();
@@ -588,7 +594,8 @@ QString QPlotlyWindow::genJSONScatter()
     else{
       continue;
     }
-  }*/
+  }
+  /* END SINGLE THREAD IMPLEMENTATION */
 
   int last_id = p.size()-1;
 
@@ -795,7 +802,7 @@ QString QPlotlyWindow::genJSON3DScatter()
   QString json;
   QString x = "x:[", y = "y:[", z = "z:[", text = "text:[", color = "color:[", symbol = "symbol: [";
 
-
+  /* MULTITHREAD
   int nth = QThread::idealThreadCount();
   int step = (int)ceil((p.size()-1)/(double)nth);
 
@@ -807,7 +814,8 @@ QString QPlotlyWindow::genJSON3DScatter()
   QList<QFuture<QStringList>> futures;
   int from = 0, to = step;
   for(int i = 0; i < nth; i++){
-    futures.append(QtConcurrent::run(this, &QPlotlyWindow::JSon3DScatterWorker, from, to));
+    futures.append(QtConcurrent::run(qOverload<QStringList>(&QPlotlyWindow::JSon3DScatterWorker), from, to));
+    //futures.append(QtConcurrent::run([&](int from, int to){ &QPlotlyWindow::JSon3DScatterWorker(from, to); }));
     from = to;
     if(from+step > p.size()-1){
       to = p.size()-1;
@@ -827,8 +835,9 @@ QString QPlotlyWindow::genJSON3DScatter()
     color += r[4];
     symbol += r[5];
   }
+  */
 
-  /* SINGLE THREAD IMPLEMENTATION
+  /* SINGLE THREAD IMPLEMENTATION */
   for(int i = 0; i < p.size()-1; i++){
     if(p[i]->isVisible() == true){
       int r_, g_, b_, a_;
@@ -859,7 +868,8 @@ QString QPlotlyWindow::genJSON3DScatter()
     else{
       continue;
     }
-  }*/
+  }
+  /*END SINGLE THREAD */
 
   size_t last_id = p.size()-1;
   int r_, g_, b_, a_;

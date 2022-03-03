@@ -410,103 +410,122 @@ void RUN::DoPCA()
 
 QFuture< void > RUN::RunClusterValidation()
 {
-  return QtConcurrent::run(this, &RUN::DoClusterValidation);
+  return QtConcurrent::run([this]{ RUN::DoClusterValidation(); });
+  //return QtConcurrent::run(this, &RUN::DoClusterValidation);
 }
 
 QFuture< void > RUN::RunClustering()
 {
-  return QtConcurrent::run(this, &RUN::DoClustering);
+  return QtConcurrent::run([this]{ RUN::DoClustering(); });
+  //return QtConcurrent::run(this, &RUN::DoClustering);
 }
 
 QFuture< void > RUN::RunRandomSelection()
 {
-  return QtConcurrent::run(this, &RUN::DoRandomSelection);
+  return QtConcurrent::run([this]{ RUN::DoRandomSelection(); });
+  //return QtConcurrent::run(this, &RUN::DoRandomSelection);
 }
 
 QFuture< void > RUN::RunMaxDisSelection()
 {
-  return QtConcurrent::run(this, &RUN::DoMaxDisSelection);
+  return QtConcurrent::run([this]{ RUN::DoMaxDisSelection(); } );
+  //return QtConcurrent::run(this, &RUN::DoMaxDisSelection);
 }
 
 QFuture< void > RUN::RunMDCSelection()
 {
-  return QtConcurrent::run(this, &RUN::DoMDCSelection);
+  return QtConcurrent::run([this]{ RUN::DoMDCSelection(); });
+  //return QtConcurrent::run(this, &RUN::DoMDCSelection);
 }
 
 QFuture< void > RUN::RunLDAPrediction()
 {
-  return QtConcurrent::run(this, &RUN::DoLDAPrediction);
+  return QtConcurrent::run([this]{ RUN::DoLDAPrediction(); });
+  //return QtConcurrent::run(this, &RUN::DoLDAPrediction);
 }
 
 QFuture< void > RUN::RunLDAValidation()
 {
-  return QtConcurrent::run(this, &RUN::DoLDAValidation);
+  return QtConcurrent::run([this]{ RUN::DoLDAValidation(); });
+  //return QtConcurrent::run(this, &RUN::DoLDAValidation);
 }
 
 QFuture< void > RUN::RunLDA()
 {
-  return QtConcurrent::run(this, &RUN::DoLDA);
+  return QtConcurrent::run([this]{ RUN::DoLDA(); });
+  //return QtConcurrent::run(this, &RUN::DoLDA);
 }
 
 QFuture< void > RUN::RunMLRPrediction()
 {
-  return QtConcurrent::run(this, &RUN::DoMLRPrediction);
+  return QtConcurrent::run([this]{ RUN::DoMLRPrediction(); });
+  //return QtConcurrent::run(this, &RUN::DoMLRPrediction);
 }
 
 QFuture< void > RUN::RunMLRValidation()
 {
-  return QtConcurrent::run(this, &RUN::DoMLRValidation);
+  return QtConcurrent::run([this]{ RUN::DoMLRValidation(); });
+  //return QtConcurrent::run(this, &RUN::DoMLRValidation);
 }
 
 QFuture< void > RUN::RunMLR()
 {
-  return QtConcurrent::run(this, &RUN::DoMLR);
+  return QtConcurrent::run([this]{ RUN::DoMLR(); });
+  //return QtConcurrent::run(this, &RUN::DoMLR);
 }
 
 QFuture< void > RUN::RunEPLSPrediction(CombinationRule crule_)
 {
   crule = crule_;
-  return QtConcurrent::run(this, &RUN::DoEPLSPrediction);
+  return QtConcurrent::run([this]{ RUN::DoEPLSPrediction(); });
+  //return QtConcurrent::run(this, &RUN::DoEPLSPrediction);
 }
 
 QFuture< void > RUN::RunEPLSValidation(int algtype_, CombinationRule crule_)
 {
   algtype = algtype_;
   crule = crule_;
-  return QtConcurrent::run(this, &RUN::DoEPLSValidation);
+  return QtConcurrent::run([this]{ RUN::DoEPLSValidation(); });
+  //return QtConcurrent::run(this, &RUN::DoEPLSValidation);
 }
 
 QFuture< void > RUN::RunEPLS(int algtype_)
 {
   algtype = algtype_;
-  return QtConcurrent::run(this, &RUN::DoEPLS);
+  return QtConcurrent::run([this]{ RUN::DoEPLS(); });
+  //return QtConcurrent::run(this, &RUN::DoEPLS);
 }
 
 QFuture< void > RUN::RunPLSPrediction()
 {
-  return QtConcurrent::run(this, &RUN::DoPLSPrediction);
+  return QtConcurrent::run([this]{ RUN::DoPLSPrediction(); });
+  //return QtConcurrent::run(this, &RUN::DoPLSPrediction);
 }
 
 QFuture< void > RUN::RunPLSValidation(int algtype_)
 {
   algtype = algtype_;
-  return QtConcurrent::run(this, &RUN::DoPLSValidation);
+  return QtConcurrent::run([this]{ RUN::DoPLSValidation(); });
+  //return QtConcurrent::run(this, &RUN::DoPLSValidation);
 }
 
 QFuture< void > RUN::RunPLS(int algtype_)
 {
   algtype = algtype_;
-  return QtConcurrent::run(this, &RUN::DoPLS);
+  return QtConcurrent::run([this]{ RUN::DoPLS(); });
+  //return QtConcurrent::run(this, &RUN::DoPLS);
 }
 
 QFuture< void > RUN::RunPCAPrediction()
 {
-  return QtConcurrent::run(this, &RUN::DoPCAPrediction);
+  return QtConcurrent::run([this]{ RUN::DoPCAPrediction(); });
+  //return QtConcurrent::run(this, &RUN::DoPCAPrediction);
 }
 
 QFuture< void > RUN::RunPCA()
 {
-  return QtConcurrent::run(this, &RUN::DoPCA);
+  return QtConcurrent::run([this]{ RUN::DoPCA(); });
+  //return QtConcurrent::run(this, &RUN::DoPCA);
 }
 
 void RUN::setNMaxClusters(int nmaxclusters_)

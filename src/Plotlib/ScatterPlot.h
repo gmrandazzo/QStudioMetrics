@@ -8,6 +8,7 @@
 #include <QStringList>
 #include <scientific.h>
 
+//#include "Chart/chartqt.h"
 #include "Chart/chart.h"
 #include "Chart/qplotly.h"
 

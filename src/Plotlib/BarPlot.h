@@ -9,6 +9,7 @@
 #include "ui_BarPlot.h"
 
 #include "Chart/qplotly.h"
+#include "Chart/chartqt.h"
 
 #include "qsmdata.h"
 
@@ -48,7 +49,8 @@ private slots:
 
 private:
   Ui::BarPlot ui;
-  QPlotlyWindow *chart;
+  //QPlotlyWindow *chart;
+  ChartQt *chart;
   void genBars(dvector *v, int split, double min, double max, QVector<qreal> *bval, QStringList *bnames);
 };
 
