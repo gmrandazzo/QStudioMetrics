@@ -264,7 +264,7 @@ void Chart::setYminYmaxYTick(double ymin, double ymax, int ytick)
   if(zoomStack.size() > 0 && curZoom < zoomStack.size()){
     zoomStack[curZoom].minY = ymin;
     zoomStack[curZoom].maxY = ymax;
-    zoomStack[curZoom].numXTicks = ytick;
+    zoomStack[curZoom].numYTicks = ytick;
     zoomStack[curZoom].adjust();
   }
 }
@@ -272,7 +272,7 @@ void Chart::setYminYmaxYTick(double ymin, double ymax, int ytick)
 void Chart::getYminYmaxYTick(double *ymin, double *ymax, int *ytick)
 {
   #ifdef DEBUG
-  printf("Chart::getXminXmaxXTick\n");
+  printf("Chart::getYminYmaxYTick\n");
   #endif
   if(zoomStack.size() > 0 && curZoom < zoomStack.size()){
     (*ymin) = zoomStack[curZoom].minY;
