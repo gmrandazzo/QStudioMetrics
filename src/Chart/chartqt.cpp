@@ -1,7 +1,7 @@
 #include "chartqt.h"
 #include "datapoint.h"
 #include "databar.h"
-#include <qt5/QtCore/QEvent>
+#include <QtCore/QEvent>
 #include <QMap>
 #include <QLabel>
 #include <QToolButton>
