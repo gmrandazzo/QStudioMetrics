@@ -80,6 +80,7 @@ public slots:
     void zoomIn();
     void zoomOut();
     void slotPointHoverd(const QPointF &point, bool state);
+    void slotPointClicked(const QPointF &point);
 
 protected:
     bool viewportEvent(QEvent *event);
@@ -123,6 +124,7 @@ private:
 
     QList<QLabel*> plotLabels;
     QLabel *m_valueLabel;
+    QRectF zoom_region;
 };
 
 #endif // CHARTQT_H

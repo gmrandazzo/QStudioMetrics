@@ -49,7 +49,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules/")
 find_package(Libscientific)
 
 # Disable some warnings
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x  -Wno-extra-semi")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-extra-semi")
 
 # IF RELEASE
 if(cmake_build_type_tolower STREQUAL "release")

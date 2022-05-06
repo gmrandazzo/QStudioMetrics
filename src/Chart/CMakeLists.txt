@@ -53,7 +53,8 @@ foreach(_component ${_components})
 endforeach()
 
 add_definitions(${QT6_DEFINITIONS})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-extra-semi")
+
 
 if(WIN32)
   message(STATUS "OS: Windows")
@@ -123,7 +124,7 @@ target_link_libraries(testqplotly PRIVATE libchart ${QT6_LIBRARIES})
 add_executable(testchart ${CHART_TEST_SRC})
 target_link_libraries(testchart PRIVATE libchart ${QT6_LIBRARIES})
 
-#add_executable(testchartqt ${CHARTQT_TEST_SRC})
-#target_link_libraries(testchartqt PRIVATE libchart ${QT6_LIBRARIES})
+add_executable(testchartqt ${CHARTQT_TEST_SRC})
+target_link_libraries(testchartqt PRIVATE libchart ${QT6_LIBRARIES})
 
 # install(TARGETS libchart LIBRARY DESTINATION lib COMPONENT Libraries)

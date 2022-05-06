@@ -30,6 +30,25 @@ void PlotFromfile(ChartQt *chart, const QString &fileName)
   chart->Refresh();
 }
 
+
+void _BarPlotExample(ChartQt *chart)
+{
+  QStringList x1, text1;
+  QVector<qreal> y1;
+  x1 << "JAN" << "FEB" << "MAR" << "APR" << "MAY" << "JUN" << "JUL" << "AUG" << "SEP" << "OCT" << "NOV" << "DEC";
+  y1 << 19 << 14 << 22 << 16 << 17 << 21 << 28 << 32 << 27 << 25 << 17 << 12;
+  text1 << "January" << "February" << "March" << "April" << "May" << "June" << "July" << "August" << "September" << "October" << "November" << "December";
+  chart->addBars(x1, y1, text1, Qt::black);
+
+  QStringList x2, text2;
+  QVector<qreal> y2;
+  x2 << "JAN" << "FEB" << "MAR" << "APR" << "MAY" << "JUN" << "JUL" << "AUG" << "SEP" << "OCT" << "NOV" << "DEC";
+  y2 << 12 << 22 << 25 << 30 << 35 << 43 << 45 << 40 << 34 << 20 << 15 << 10;
+  text2 << "January" << "February" << "March" << "April" << "May" << "June" << "July" << "August" << "September" << "October" << "November" << "December";
+
+  chart->addBars(x2, y2, text2, Qt::blue);
+}
+
 double uniform0to1Random(QRandomGenerator rndgen) {
     double r = rndgen.generateDouble();
     return r / ((double)RAND_MAX + 1);
@@ -90,7 +109,7 @@ void _2DScattePlotExample(ChartQt *chart)
 
 void _2DScattePlotExampleBIS(ChartQt *chart)
 {
-  int n_points = 10000;
+  int n_points = 1000;
   QRandomGenerator rndgen(n_points);
   for(int i = 0; i < n_points; i++){
     #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
@@ -133,16 +152,16 @@ int main(int argc, char *argv[])
   QPlotVersion(&major, &minor, &patch);
   printf("QPlot Version %d.%d.%d\n", major, minor, patch);
   //_2DScattePlotExample(&chart);
-  _2DScattePlotExampleBIS(&chart);
-  //_BarPlotExample(&chart);
+  //_2DScattePlotExampleBIS(&chart);
+  _BarPlotExample(&chart);
   //_CurvePlotExample(&chart);
-  
+
   chart.setXaxisName("X axis");
   chart.setYaxisName("Y axis");
   chart.setPlotTitle("Test Plot...");
   chart.Plot();
   chart.resize(400, 300);
   chart.show();
-  
+
   return app.exec();
 }

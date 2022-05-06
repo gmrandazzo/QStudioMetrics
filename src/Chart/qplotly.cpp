@@ -1080,7 +1080,6 @@ void QPlotlyWindow::Plot()
     delete wview;
   }
 
-  QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
   QVBoxLayout *mainLayout = new QVBoxLayout;
   wview = new QWebEngineView(this);
   if(code.size() > 0){
@@ -1239,7 +1238,6 @@ QPlotlyWindow::QPlotlyWindow(QWidget *parent) : QWidget(parent)
   trace_id = 1;
   xtickangle = ytickangle = 0;
 
-  QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
   QVBoxLayout *mainLayout = new QVBoxLayout;
   #ifdef WEBKIT
   wview = new QWebView(this);
