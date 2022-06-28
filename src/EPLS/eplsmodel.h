@@ -116,7 +116,7 @@ public:
   EPLSPREDICTION *getLastEPLSPrediction(){ return prediction.last(); }
   int EPLSPredictionCount(){ return prediction.size(); }
 
-  QString& getHash(){ if(eplshash.size() == 0){ eplshash = GenMatrixHash(m->models[0]->xscores); } return eplshash; }
+  QString& getHash(){ if(eplshash.size() == 0){ eplshash = GenHashFromStrlst((QStringList() << name << "eplsmodel_type")+objname+xvarname+yvarname); } return eplshash; }
 
 private:
   EPLSMODEL *m;

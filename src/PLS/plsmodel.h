@@ -100,7 +100,7 @@ public:
   PLSPREDICTION *getLastPLSPrediction(){ return prediction.last(); }
   int PLSPredictionCount(){ return prediction.size(); }
 
-  QString& getHash(){ if(plshash.size() == 0){ plshash = GenMatrixHash(m->xscores); } return plshash; }
+  QString& getHash(){ if(plshash.size() == 0){ plshash = GenHashFromStrlst((QStringList() << name << "plsmodel_type")+objname+xvarname+yvarname); } return plshash; }
 
 private:
   PLSMODEL *m;

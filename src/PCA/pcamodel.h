@@ -79,7 +79,7 @@ public:
   PCAPREDICTION *getLastPCAPrediction(){ return prediction.last(); }
   int PCAPredictionCount(){ return prediction.size(); }
 
-  QString& getHash(){ if(pcahash.size() == 0){ pcahash = GenMatrixHash(m->scores); } return pcahash; }
+  QString& getHash(){ if(pcahash.size() == 0){ pcahash = GenHashFromStrlst((QStringList() << name << "pcamodel_type")+objname+varname); } return pcahash; }
 
 
 private:

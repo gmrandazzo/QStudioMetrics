@@ -24,8 +24,8 @@ QString SerializeTensor(tensor *ar);
 
 // hash functions
 // Serialze the matrix and return a QCryptographicHash in hexadecimal
-QString GenDVectorHash(dvector *v);
-QString GenMatrixHash(matrix *m);
-QString GenArrayHash(tensor *a);
+
+QString GenHashFromStrlst(QStringList slst);
+
 
 #endif

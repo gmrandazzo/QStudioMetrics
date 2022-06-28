@@ -85,7 +85,7 @@ public:
   MLRPREDICTION *getMLRPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
   MLRPREDICTION *getLastMLRPrediction(){ return prediction.last(); }
   int MLRPredictionCount(){ return prediction.size(); }
-  QString& getHash(){ if(mlrhash.size() == 0){ mlrhash = GenMatrixHash(m->b); } return mlrhash; }
+  QString& getHash(){ if(mlrhash.size() == 0){ mlrhash = GenHashFromStrlst((QStringList() << name << "mlrmodel_type")+objname+xvarname+yvarname); } return mlrhash; }
 
 private:
   MLRMODEL *m;

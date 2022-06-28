@@ -8,6 +8,7 @@
 #include <QPixmap>
 #include <QString>
 #include <QStringList>
+#include <QSqlQuery>
 #include <cmath>
 #include <QCryptographicHash>
 #include <QTreeWidget>
@@ -70,7 +71,6 @@ public:
       array_.append(qMakePair(objname[i], i));
     }
     // Ordering ascending
-    //qSort(array_.begin(), array_.end(), QPairComparerAscending()); DEPRECATED
     std::sort(array_.begin(), array_.end(), QPairComparerAscending());
 
     dvector *tmp;
@@ -88,7 +88,7 @@ public:
   void setName(QString name_){ name = name_; }
   QString getName(){ return name.toUtf8(); }
   QStringList& getObjName(){ return objname; }
-  QString& getHash(){ if(hash.size() == 0){ hash = GenDVectorHash(v); } return hash; }
+  QString& getHash(){ if(hash.size() == 0){ hash = GenHashFromStrlst((QStringList() << name << "vector_type")+objname); } return hash; }
 
 private:
   dvector *v;
@@ -116,7 +116,6 @@ public:
       array_.append(qMakePair(objname[i], i));
     }
     // Ordering ascending
-    //qSort(array_.begin(), array_.end(), QPairComparerAscending()); DEPRECATED
     std::sort(array_.begin(), array_.end(), QPairComparerAscending());
 
     matrix *tmp;
@@ -138,7 +137,7 @@ public:
   QString getName(){ return name.toUtf8(); }
   QStringList& getObjName(){ return objname; }
   QStringList& getVarName(){ return varname; }
-  QString& getHash(){ if(hash.size() == 0){ hash = GenMatrixHash(m); } return hash; }
+  QString& getHash(){ if(hash.size() == 0){ hash = GenHashFromStrlst((QStringList() << name << "matrix_type")+objname+varname); } return hash; }
 
 private:
   QStringList objname, varname;
@@ -167,7 +166,6 @@ public:
       array_.append(qMakePair(objname[i], i));
     }
     // Ordering ascending
-    //qSort(array_.begin(), array_.end(), QPairComparerAscending()); DEPRECATED
     std::sort(array_.begin(), array_.end(), QPairComparerAscending());
 
     initTensor(&atmp);
@@ -189,7 +187,7 @@ public:
   QString getName(){ return name.toUtf8(); }
   QStringList& getObjName(){ return objname; }
   QStringList& getVarName(){ return varname; }
-  QString& getHash(){ if(hash.size() == 0){ hash = GenArrayHash(a); } return hash; }
+  QString& getHash(){ if(hash.size() == 0){ hash = GenHashFromStrlst((QStringList() << name << "array_type")+objname+varname); } return hash; }
 
 private:
   QStringList objname, varname;
@@ -305,6 +303,9 @@ public:
   static void ImportColumns(QString fname, QString separator, QStringList &collst);
   static bool CopyFile(const QString& sourceFile, const QString& destinationDir);
 private:
+  void saveMatrixToSQL(QSqlQuery *query, MATRIX *m);
+  void saveArrayToSQL(QSqlQuery *query, ARRAY *a);
+
   QString projectpath, projectname, projectfautosave;
   QList<MATRIX*> matrix_;
   QList<ARRAY*> array_;

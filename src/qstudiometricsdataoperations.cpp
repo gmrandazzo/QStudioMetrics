@@ -192,71 +192,11 @@ QString SerializeTensor(tensor *ar)
   }
 }
 
-QString GenDVectorHash(dvector *v)
+QString GenHashFromStrlst(QStringList slst)
 {
-  QString hash;
-  if(v->size> 0){
-    hash.append(QString::number(v->size)); // get the size
-    hash.append(QString::number((int)ceil(DvectorModule(v)))); // get the vector module
-    hash.append(QString::number((int)ceil(getDVectorValue(v, 0)))); // get the element 0
-    hash.append(QString::number((int)ceil(getDVectorValue(v, (size_t)ceil((v->size-1)/2))))); // get the middle element
-    hash.append(QString::number((int)ceil(getDVectorValue(v, v->size-1)))); // get the last element
-    QCryptographicHash hash_(QCryptographicHash::Md5);
-    hash_.addData(hash.toUtf8());
-    hash = QString(hash_.result().toHex());
-  }
-  else{
-    hash = "Vector Empty!";
-  }
-  return hash;
-}
-
-QString GenMatrixHash(matrix *m)
-{
-  QString hash;
-  if(m->row > 0 && m->col > 0){
-    QString vectorizedform;
-    vectorizedform.append(QString::number(m->row)); // get the row
-    vectorizedform.append(QString::number(m->col)); // get the col
-    for(uint i = 0; i < m->row; i++){
-      for(uint j = 0; j < m->col; j++){
-        //vectorizedform.append(QString::number(((int)getMatrixValue(m, i, j)*100)/100.0));
-        vectorizedform.append(QString::number((int)ceil(getMatrixValue(m, i, j))));
-      }
-    }
-
-    QCryptographicHash hash_(QCryptographicHash::Md5);
-    hash_.addData(vectorizedform.toUtf8());
-    hash = QString(hash_.result().toHex());
-  }
-  else{
-    hash = "Matrix Empty!";
-  }
-  return hash;
-}
-
-QString GenArrayHash(tensor *a)
-{
-  QString hash;
-  if(a->order > 0){
-    hash.append(QString::number(a->order)); // get the order
-    QString vectorizedform;
-    for(uint k = 0; k < a->order; k++){
-      vectorizedform.append(QString::number(a->m[k]->row)); // get the row
-      vectorizedform.append(QString::number(a->m[k]->col)); // get the col
-      for(uint i = 0; i < a->m[k]->row; i++){
-        for(uint j = 0; j < a->m[k]->col; j++){
-          //vectorizedform.append(QString::number(((int)getTensorValue(a, k, i, j)*100)/100.0));
-          vectorizedform.append(QString::number((int)ceil(getTensorValue(a, k, i, j))));
-        }
-      }
-    }
-    QCryptographicHash hash_(QCryptographicHash::Md5);
-    hash_.addData(vectorizedform.toUtf8());
-    hash = QString(hash_.result().toHex());
-  }
-  else{
-    hash = "Array Empty!";
-  }
-  return hash;
+  
+  slst.sort(Qt::CaseSensitive);
+  QCryptographicHash hash_(QCryptographicHash::Sha256);
+  hash_.addData(slst.join("").toUtf8());
+  return QString(hash_.result().toHex());
 }

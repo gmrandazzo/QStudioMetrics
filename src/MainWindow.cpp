@@ -50,7 +50,24 @@
 
 void MainWindow::CheckProjects()
 {
-  havepca = havepcapred = havepls = haveplspred = haveplsvalid = haveplsyscrambling = haveepls = haveeplspred = haveeplsvalid = haveeplsyscrambling = havemlr = havemlrpred = havemlrvalid = havemlryscrambling = havelda = haveldapred = haveldavalid = false;
+  
+  havepca = false;
+  havepcapred = false;
+  havepls = false;
+  haveplspred = false;
+  haveplsvalid = false;
+  haveplsyscrambling = false;
+  haveepls = false;
+  haveeplspred = false;
+  haveeplsvalid = false;
+  haveeplsyscrambling = false;
+  havemlr = false;
+  havemlrpred = false;
+  havemlrvalid = false;
+  havemlryscrambling = false;
+  havelda = false;
+  haveldapred = false;
+  haveldavalid = false;
 
   QMap<int, DATA*>::const_iterator i = projects->constBegin();
   while(i != projects->constEnd()){

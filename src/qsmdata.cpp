@@ -5,7 +5,6 @@
 #include <QDir>
 #include <QIODevice>
 #include <QSqlDatabase>
-#include <QSqlQuery>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QBuffer>
@@ -1817,6 +1816,40 @@ QString DATA::SaveData(QString savepath)
   return savefname;
 }
 
+void DATA::saveMatrixToSQL(QSqlQuery *query, MATRIX *m)
+{
+  QString mxname = m->getName();
+  QString objname_serialized = SerializeQStringList(m->getObjName());
+  QStringList varname = m->getVarName();
+  //varname.removeFirst();
+  QString varname_serialized = SerializeQStringList(varname);
+  QString serialized_mx = SerializeMatrix(m->Matrix());
+
+  query->prepare("INSERT INTO matrixTable (name, objname, varname, mx) VALUES (:name, :objname, :varname, :mx)");
+  query->bindValue(":name", mxname);
+  query->bindValue(":objname", objname_serialized);
+  query->bindValue(":varname", varname_serialized);
+  query->bindValue(":mx", serialized_mx);
+  query->exec();
+}
+
+void DATA::saveArrayToSQL(QSqlQuery *query, ARRAY *a)
+{
+  QString arname = a->getName();
+  QString objname_serialized = SerializeQStringList(a->getObjName());
+  QStringList varname = a->getVarName();
+  //varname.removeFirst();
+  QString varname_serialized = SerializeQStringList(varname);
+  QString serialized_ar = SerializeTensor(a->Array());
+
+  query->prepare("INSERT INTO arrayTable (name, objname, varname, ar) VALUES (:name, :objname, :varname, :ar)");
+  query->bindValue(":name", arname);
+  query->bindValue(":objname", objname_serialized);
+  query->bindValue(":varname", varname_serialized);
+  query->bindValue(":ar", serialized_ar);
+  query->exec();
+}
+
 QString DATA::SaveSQLData(QString savepath)
 {
   GenericProgressDialog pbdialog;
@@ -1844,22 +1877,10 @@ QString DATA::SaveSQLData(QString savepath)
   query.exec(QString("CREATE TABLE IF NOT EXISTS matrixTable (name TEXT, objname TEXT, varname  TEXT, mx TEXT)"));
   if(MatrixCount() > 0){
     for(int i = 0; i < MatrixCount(); i++){
-      QString mxname = getMatrix(i)->getName();
-      QString objname_serialized = SerializeQStringList(getMatrix(i)->getObjName());
-      QStringList varname = getMatrix(i)->getVarName();
-      //varname.removeFirst();
-      QString varname_serialized = SerializeQStringList(varname);
-      QString serialized_mx = SerializeMatrix(getMatrix(i)->Matrix());
-
-      query.prepare("INSERT INTO matrixTable (name, objname, varname, mx) VALUES (:name, :objname, :varname, :mx)");
-      query.bindValue(":name", mxname);
-      query.bindValue(":objname", objname_serialized);
-      query.bindValue(":varname", varname_serialized);
-      query.bindValue(":mx", serialized_mx);
-      query.exec();
+      saveMatrixToSQL(&query, getMatrix(i));
     }
   }
-
+  
   pbdialog.setValue(1);
 
   query.exec(QString("CREATE TABLE IF NOT EXISTS arrayTable (name TEXT, objname TEXT, varname  TEXT, ar TEXT)"));
@@ -1870,19 +1891,7 @@ QString DATA::SaveSQLData(QString savepath)
      * txt4 = serialized_ar
      */
     for(int i = 0; i < ArrayCount(); i++){
-      QString arname = getArray(i)->getName();
-      QString objname_serialized = SerializeQStringList(getArray(i)->getObjName());
-      QStringList varname = getArray(i)->getVarName();
-      //varname.removeFirst();
-      QString varname_serialized = SerializeQStringList(varname);
-      QString serialized_ar = SerializeTensor(getArray(i)->Array());
-
-      query.prepare("INSERT INTO arrayTable (name, objname, varname, ar) VALUES (:name, :objname, :varname, :ar)");
-      query.bindValue(":name", arname);
-      query.bindValue(":objname", objname_serialized);
-      query.bindValue(":varname", varname_serialized);
-      query.bindValue(":ar", serialized_ar);
-      query.exec();
+      saveArrayToSQL(&query, getArray(i));
     }
   }
 
@@ -1997,6 +2006,50 @@ QString DATA::SaveSQLData(QString savepath)
   }
 
   query.exec(QString("CREATE TABLE IF NOT EXISTS plsTable (name TEXT, nlvs INT, xscalingtype INT, yscalingtype INT, hashinputmx TEXT, objname TEXT, xvarname TEXT, yvarname TEXT, tscores TEXT, ploadings  TEXT, weights TEXT, xvarexp TEXT, xcolscaling TEXT, xcolaverage TEXT, uscores TEXT, qloadings TEXT, ycolscaling TEXT, ycolaverage TEXT, b TEXT, r2y_model TEXT, sdec TEXT, recalc_y TEXT, recalc_residuals TEXT, validationtype INT, q2y TEXT, sdep TEXT, bias TEXT, predicted_y TEXT, predicted_residuals TEXT, roc_recalculated TEXT, roc_validation TEXT, roc_auc_recalculated TEXT, roc_auc_validation TEXT, precision_recall_recalculated TEXT, precision_recall_validation TEXT, precision_recall_ap_recalculated TEXT, precision_recall_ap_validation TEXT, yscrambling TEXT, yscrambling TEXT)"));
+  
+  QString plsTable_query_str;
+  plsTable_query_str.append("CREATE TABLE IF NOT EXISTS plsTable (");
+  plsTable_query_str.append("name TEXT, ");
+  plsTable_query_str.append("nlvs INT, ");
+  plsTable_query_str.append("xscalingtype INT, ");
+  plsTable_query_str.append("yscalingtype INT, ");
+  plsTable_query_str.append("hashinputmx TEXT, ");
+  plsTable_query_str.append("objname TEXT, ");
+  plsTable_query_str.append("xvarname TEXT, ");
+  plsTable_query_str.append("yvarname TEXT, ");
+  plsTable_query_str.append("tscores TEXT, ");
+  plsTable_query_str.append("ploadings  TEXT, ");
+  plsTable_query_str.append("weights TEXT, ");
+  plsTable_query_str.append("xvarexp TEXT, ");
+  plsTable_query_str.append("xcolscaling TEXT, ");
+  plsTable_query_str.append("xcolaverage TEXT, ");
+  plsTable_query_str.append("uscores TEXT, ");
+  plsTable_query_str.append("qloadings TEXT, ");
+  plsTable_query_str.append("ycolscaling TEXT, ");
+  plsTable_query_str.append("ycolaverage TEXT, ");
+  plsTable_query_str.append("b TEXT, ");
+  plsTable_query_str.append("r2y_model TEXT, ");
+  plsTable_query_str.append("sdec TEXT, ");
+  plsTable_query_str.append("recalc_y TEXT, ");
+  plsTable_query_str.append("recalc_residuals TEXT, ");
+  plsTable_query_str.append("validationtype INT, ");
+  plsTable_query_str.append("q2y TEXT, ");
+  plsTable_query_str.append("sdep TEXT, ");
+  plsTable_query_str.append("bias TEXT, ");
+  plsTable_query_str.append("predicted_y TEXT, ");
+  plsTable_query_str.append("predicted_residuals TEXT, ");
+  plsTable_query_str.append("roc_recalculated TEXT, ");
+  plsTable_query_str.append("roc_validation TEXT, ");
+  plsTable_query_str.append("roc_auc_recalculated TEXT, ");
+  plsTable_query_str.append("roc_auc_validation TEXT, ");
+  plsTable_query_str.append("precision_recall_recalculated TEXT, ");
+  plsTable_query_str.append("precision_recall_validation TEXT, ");
+  plsTable_query_str.append("precision_recall_ap_recalculated TEXT, ");
+  plsTable_query_str.append("precision_recall_ap_validation TEXT, ");
+  plsTable_query_str.append("yscrambling TEXT");
+  plsTable_query_str.append(")");
+  query.exec(plsTable_query_str);
+  
   query.exec(QString("CREATE TABLE IF NOT EXISTS plspredTable (name TEXT, plshash TEXT, hashinputmx TEXT, objname TEXT, yvarname TEXT, tscores TEXT, predicted_y TEXT, r2y TEXT, sdec TXT)"));
   if(PLSCount() > 0){
     for(int i = 0; i < PLSCount(); i++){
@@ -2011,7 +2064,6 @@ QString DATA::SaveSQLData(QString savepath)
       QString serialized_xvarexp = SerializeDVector(getPLSModelAt(i)->Model()->xvarexp);
       QString serialized_xcolaverage = SerializeDVector(getPLSModelAt(i)->Model()->xcolaverage);
       QString serialized_xcolscaling = SerializeDVector(getPLSModelAt(i)->Model()->xcolscaling);
-
 
       QString serialized_uscores = SerializeMatrix(getPLSModelAt(i)->Model()->yscores);
       QString serialized_qloadings = SerializeMatrix(getPLSModelAt(i)->Model()->yloadings);
@@ -2039,11 +2091,90 @@ QString DATA::SaveSQLData(QString savepath)
       QString serialized_precision_recall_ap_recalculated = SerializeMatrix(getPLSModelAt(i)->Model()->precision_recall_ap_recalculated);
       QString serialized_precision_recall_ap_validation = SerializeMatrix(getPLSModelAt(i)->Model()->precision_recall_ap_validation);
 
-
       QString serialized_yscrambling = SerializeMatrix(getPLSModelAt(i)->Model()->yscrambling);
 
-
-      query.prepare("INSERT INTO plsTable (name, nlvs, xscalingtype, yscalingtype, hashinputmx, objname, xvarname, yvarname, tscores, ploadings, weights , xvarexp, xcolscaling, xcolaverage, uscores, qloadings, ycolscaling, ycolaverage, b, r2y_model, sdec, recalc_y, recalc_residuals, validationtype, q2y, sdep, bias, predicted_y, predicted_residuals , roc_recalculated, roc_validation, roc_auc_recalculated, roc_auc_validation, precision_recall_recalculated, precision_recall_validation, precision_recall_ap_recalculated, precision_recall_ap_validation, yscrambling) VALUES (:name, :nlvs, :xscalingtype, :yscalingtype, :hashinputmx, :objname, :xvarname, :yvarname, :tscores, :ploadings, :weights , :xvarexp, :xcolscaling, :xcolaverage, :uscores, :qloadings, :ycolscaling, :ycolaverage, :b, :r2y_model, :sdec, :recalc_y, :recalc_residuals, :validationtype, :q2y, :sdep, :bias, :predicted_y, :predicted_residuals , :roc_recalculated, :roc_validation, :roc_auc_recalculated, :roc_auc_validation, :precision_recall_recalculated, :precision_recall_validation, :precision_recall_ap_recalculated, :precision_recall_ap_validation, :yscrambling, :yscrambling)");
+      QString plsTable_pepare_query_str;
+      plsTable_pepare_query_str.append("INSERT INTO plsTable (");
+      plsTable_pepare_query_str.append("name, ");
+      plsTable_pepare_query_str.append("nlvs, ");
+      plsTable_pepare_query_str.append("xscalingtype, ");
+      plsTable_pepare_query_str.append("yscalingtype, ");
+      plsTable_pepare_query_str.append("hashinputmx, ");
+      plsTable_pepare_query_str.append("objname, ");
+      plsTable_pepare_query_str.append("xvarname, ");
+      plsTable_pepare_query_str.append("yvarname, ");
+      plsTable_pepare_query_str.append("tscores, ");
+      plsTable_pepare_query_str.append("ploadings, ");
+      plsTable_pepare_query_str.append("weights, ");
+      plsTable_pepare_query_str.append("xvarexp, ");
+      plsTable_pepare_query_str.append("xcolscaling, ");
+      plsTable_pepare_query_str.append("xcolaverage, ");
+      plsTable_pepare_query_str.append("uscores, ");
+      plsTable_pepare_query_str.append("qloadings, ");
+      plsTable_pepare_query_str.append("ycolscaling, ");
+      plsTable_pepare_query_str.append("ycolaverage, ");
+      plsTable_pepare_query_str.append("b, ");
+      plsTable_pepare_query_str.append("r2y_model, ");
+      plsTable_pepare_query_str.append("sdec, ");
+      plsTable_pepare_query_str.append("recalc_y, ");
+      plsTable_pepare_query_str.append("recalc_residuals, ");
+      plsTable_pepare_query_str.append("validationtype, ");
+      plsTable_pepare_query_str.append("q2y, ");
+      plsTable_pepare_query_str.append("sdep, ");
+      plsTable_pepare_query_str.append("bias, ");
+      plsTable_pepare_query_str.append("predicted_y, ");
+      plsTable_pepare_query_str.append("predicted_residuals, ");
+      plsTable_pepare_query_str.append("roc_recalculated, ");
+      plsTable_pepare_query_str.append("roc_validation, ");
+      plsTable_pepare_query_str.append("roc_auc_recalculated, ");
+      plsTable_pepare_query_str.append("roc_auc_validation, ");
+      plsTable_pepare_query_str.append("precision_recall_recalculated, ");
+      plsTable_pepare_query_str.append("precision_recall_validation, ");
+      plsTable_pepare_query_str.append("precision_recall_ap_recalculated, ");
+      plsTable_pepare_query_str.append("precision_recall_ap_validation, ");
+      plsTable_pepare_query_str.append("yscrambling");
+      plsTable_pepare_query_str.append(") VALUES (");
+      plsTable_pepare_query_str.append(":name, ");
+      plsTable_pepare_query_str.append(":nlvs, ");
+      plsTable_pepare_query_str.append(":xscalingtype, ");
+      plsTable_pepare_query_str.append(":yscalingtype, ");
+      plsTable_pepare_query_str.append(":hashinputmx, ");
+      plsTable_pepare_query_str.append(":objname, ");
+      plsTable_pepare_query_str.append(":xvarname, ");
+      plsTable_pepare_query_str.append(":yvarname, ");
+      plsTable_pepare_query_str.append(":tscores, ");
+      plsTable_pepare_query_str.append(":ploadings, ");
+      plsTable_pepare_query_str.append(":weights, ");
+      plsTable_pepare_query_str.append(":xvarexp, ");
+      plsTable_pepare_query_str.append(":xcolscaling, ");
+      plsTable_pepare_query_str.append(":xcolaverage, ");
+      plsTable_pepare_query_str.append(":uscores, ");
+      plsTable_pepare_query_str.append(":qloadings, ");
+      plsTable_pepare_query_str.append(":ycolscaling, ");
+      plsTable_pepare_query_str.append(":ycolaverage, ");
+      plsTable_pepare_query_str.append(":b, ");
+      plsTable_pepare_query_str.append(":r2y_model, ");
+      plsTable_pepare_query_str.append(":sdec, ");
+      plsTable_pepare_query_str.append(":recalc_y, ");
+      plsTable_pepare_query_str.append(":recalc_residuals, ");
+      plsTable_pepare_query_str.append(":validationtype, ");
+      plsTable_pepare_query_str.append(":q2y, ");
+      plsTable_pepare_query_str.append(":sdep, ");
+      plsTable_pepare_query_str.append(":bias, ");
+      plsTable_pepare_query_str.append(":predicted_y, ");
+      plsTable_pepare_query_str.append(":predicted_residuals, ");
+      plsTable_pepare_query_str.append(":roc_recalculated, ");
+      plsTable_pepare_query_str.append(":roc_validation, ");
+      plsTable_pepare_query_str.append(":roc_auc_recalculated, ");
+      plsTable_pepare_query_str.append(":roc_auc_validation, ");
+      plsTable_pepare_query_str.append(":precision_recall_recalculated, ");
+      plsTable_pepare_query_str.append(":precision_recall_validation, ");
+      plsTable_pepare_query_str.append(":precision_recall_ap_recalculated, ");
+      plsTable_pepare_query_str.append(":precision_recall_ap_validation, ");
+      plsTable_pepare_query_str.append(":yscrambling");
+      plsTable_pepare_query_str.append(")");
+      query.prepare(plsTable_pepare_query_str);
+      
       query.bindValue(":name", modname);
       query.bindValue(":nlvs", getPLSModelAt(i)->getNPC());
       query.bindValue(":xscalingtype", getPLSModelAt(i)->getXScaling());
@@ -2109,7 +2240,30 @@ QString DATA::SaveSQLData(QString savepath)
     }
   }
 
-  query.exec(QString("CREATE TABLE IF NOT EXISTS mlrTable (name TEXT, hashinputmx TEXT, objname TEXT, xvarname TEXT, yvarname TEXT, b TEXT, r2y TEXT, sdec TEXT,  recalc_y TEXT, recalc_residuals TEXT, validationtype INT, ymean TEXT, q2y TEXT, sdep TEXT, bias TEXT, predicted_y TEXT, predicted_residuals TEXT, yscrambling TEXT)"));
+  QString mlrTable_query_str;
+  mlrTable_query_str.append("CREATE TABLE IF NOT EXISTS mlrTable (");
+  mlrTable_query_str.append("name TEXT, ");
+  mlrTable_query_str.append("hashinputmx TEXT, ");
+  mlrTable_query_str.append("objname TEXT, ");
+  mlrTable_query_str.append("xvarname TEXT, ");
+  mlrTable_query_str.append("yvarname TEXT, ");
+  mlrTable_query_str.append("b TEXT, ");
+  mlrTable_query_str.append("r2y TEXT, ");
+  mlrTable_query_str.append("sdec TEXT,  ");
+  mlrTable_query_str.append("recalc_y TEXT, ");
+  mlrTable_query_str.append("recalc_residuals TEXT, ");
+  mlrTable_query_str.append("validationtype INT, ");
+  mlrTable_query_str.append("ymean TEXT, ");
+  mlrTable_query_str.append("q2y TEXT, ");
+  mlrTable_query_str.append("sdep TEXT, ");
+  mlrTable_query_str.append("bias TEXT, ");
+  mlrTable_query_str.append("predicted_y TEXT, ");
+  mlrTable_query_str.append("predicted_residuals TEXT, ");
+  mlrTable_query_str.append("yscrambling TEXT");
+  mlrTable_query_str.append(")");
+  
+  query.exec(mlrTable_query_str);
+  
   query.exec(QString("CREATE TABLE IF NOT EXISTS mlrpredTable (name TEXT, mlrhash TEXT, hashinputmx TEXT, objname TEXT, yvarname TEXT, predicted_y TEXT, r2y TEXT, sdec TXT)"));
   if(MLRCount() > 0){
     for(int i = 0; i < MLRCount(); i++){
