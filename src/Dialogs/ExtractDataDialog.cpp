@@ -42,7 +42,7 @@ void ExtractDataDialog::genObjVarView(QModelIndex current)
 
     tab3->clear();
     tab4->clear();
-    tab3->setHorizontalHeaderItem(0, new QStandardItem("Object Names"));
+    tab3->setHorizontalHeaderItem(0, new QStandardItem(firstcol_name));
     tab4->setHorizontalHeaderItem(0, new QStandardItem("Variable Names"));
     for(int i = 0; i < projects_->value(pid)->getMatrix(selectedhash_)->getObjName().size(); i++){
 //       for(int i = 0; i < (int)projects_->value(pid)->getMatrix(selectedhash_)->Matrix()->row; i++){
@@ -52,7 +52,7 @@ void ExtractDataDialog::genObjVarView(QModelIndex current)
     }
 
     for(int i = 0; i < projects_->value(pid)->getMatrix(selectedhash_)->getVarName().size(); i++){
-      if(projects_->value(pid)->getMatrix(selectedhash_)->getVarName()[i].compare("Object Names") == 0){
+      if(projects_->value(pid)->getMatrix(selectedhash_)->getVarName()[i].compare(firstcol_name) == 0){
         continue;
       }
       else{
@@ -184,7 +184,7 @@ void ExtractDataDialog::ObjectsSelectBy()
 
       NewMatrix(&m, projects_->value(pid)->getMatrix(dataid)->Matrix()->row, varlist.size());
       QStringList varnames = projects_->value(pid)->getMatrix(dataid)->getVarName();
-      varnames.removeAll("Object Names");
+      varnames.removeAll(firstcol_name);
 
       int col = 0;
       for(int j = 0; j < varlist.size(); j++){
@@ -358,7 +358,7 @@ void ExtractDataDialog::OK()
 
     QStringList objnames, varnames;
 
-    varnames.append("Object Names");
+    varnames.append(firstcol_name);
     uint row = 0, col = 0;
     for(int i = 0; i < ui.tableView_3->model()->rowCount(); i++){
       if(i == 0){ /*Fill the variable names*/

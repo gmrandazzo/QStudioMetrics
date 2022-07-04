@@ -1,18 +1,35 @@
 #include "MergeDataDialog.h"
+
 // // 
 /* 
 * Merge along rows
 * This means that the matrix do not share same column
-* but share same object names
+* but share same object names (firstcol_name)
 */
+
+void MergeDataDialog::MergeDialogPrepare()
+{
+  ui.okButton->hide();
+  ui.cancelButton->hide();
+  ui.progressBar->show();
+  ui.progressBar->setMinimum(0);
+  ui.progressBar->setMaximum(100);
+  ui.progressBar->setValue(0);
+  ui.listView->setSelectionMode(QAbstractItemView::NoSelection);
+  ui.listView_2->setSelectionMode(QAbstractItemView::NoSelection);
+  ui.dataname->setReadOnly(true);
+  ui.mergeallcol->hide();
+  ui.mergematchcol->hide();
+}
 
 void MergeDataDialog::MergeType0()
 {
   // Merge and Exit
-  /*Create a map of objectname, matrix id, and row position*/
+  /* Create a map of objectname and a list of matrix id, and row position */
   QMap<QString, QList<QPair<int, int>>> objmap;
   QStringList varnames;
   for(int i = 0; i < mxids.size(); i++){
+    QApplication::processEvents();
     for(int j = 0; j < projects->value(pid)->getMatrix(mxids[i])->getObjName().size(); j++){
       QString objname = projects->value(pid)->getMatrix(mxids[i])->getObjName()[j];
       QPair<int, int> p;
@@ -20,17 +37,18 @@ void MergeDataDialog::MergeType0()
       p.second = j;
       objmap[objname].append(p);
     }
-    /* we start from 1 because at 0 there is the standard sample name "Object Names" */
+    /* we start from 1 because at 0 there is the standard sample name firstcol_name */
     for(int j = 1; j < projects->value(pid)->getMatrix(mxids[i])->getVarName().size(); j++){
       varnames.append(projects->value(pid)->getMatrix(mxids[i])->getVarName()[j]);
     }
   }
-  
+
   /*
    * Remove items that do not contains the row object in all the matrix in question
    */
   int i = 0;
   while(i < objmap.size()){
+    QApplication::processEvents();
     if(objmap.values()[i].size() == mxids.size()){
       i++;
     }
@@ -39,9 +57,13 @@ void MergeDataDialog::MergeType0()
       objmap.remove(key);
     }
   }
+  ui.progressBar->setMaximum(objmap.size()+1);
   
+  /*Slow step...*/
   mx->MatrixResize(objmap.size(), varnames.size());
   for(int i = 0; i < objmap.size(); i++){
+    ui.progressBar->setValue(i+1);
+    QApplication::processEvents();
     mx->getObjName() << objmap.keys()[i];
     int c = 0;
     for(int k = 0; k < objmap.values()[i].size(); k++){
@@ -54,7 +76,7 @@ void MergeDataDialog::MergeType0()
     }
   }
   
-  mx->getVarName().append("Object Names");
+  mx->getVarName().append(firstcol_name);
   mx->getVarName().append(varnames);
   mx->setName(ui.dataname->text());
 }
@@ -70,7 +92,7 @@ void MergeDataDialog::MergeType1()
   QStringList objnames;
   for(int i = 0; i < mxids.size(); i++){
     objnames << projects->value(pid)->getMatrix(mxids[i])->getObjName();
-    /* we start from 1 because at 0 there is the standard sample name "Object Names" */
+    /* we start from 1 because at 0 there is the standard sample name firstcol_name */
     for(int j = 1; j < projects->value(pid)->getMatrix(mxids[i])->getVarName().size(); j++){
       varnames.append(projects->value(pid)->getMatrix(mxids[i])->getVarName()[j]);
     }
@@ -82,7 +104,7 @@ void MergeDataDialog::MergeType1()
   for(int i = 0; i < varnames.size(); i++){
     QList<int> cids;
     for(int j = 0; j < mxids.size(); j++){
-      /*-1 because first name of getVarName() is "Object Names" */
+      /*-1 because first name of getVarName() is firstcol_name */
       int vindx = projects->value(pid)->getMatrix(mxids[j])->getVarName().indexOf(varnames[i])-1;
       if(vindx > -1){
         cids.append(vindx);
@@ -114,7 +136,7 @@ void MergeDataDialog::MergeType1()
   }
   
   mx->getObjName().append(objnames);
-  mx->getVarName().append("Object Names");
+  mx->getVarName().append(firstcol_name);
   for(int j = 0; j < varmap.size(); j++){
     mx->getVarName().append(varmap.keys()[j]);
   }
@@ -124,6 +146,7 @@ void MergeDataDialog::MergeType1()
 void MergeDataDialog::OK()
 {
   // Merge and Exit
+  MergeDialogPrepare();
   if(ui.mergematchcol->isChecked()){
     MergeType1();
   }
@@ -199,7 +222,8 @@ MergeDataDialog::MergeDataDialog (PROJECTS *projects_)
   tab2 = new QStandardItemModel();
   ui.listView->setModel(tab1);
   ui.listView_2->setModel(tab2);
-
+  ui.progressBar->hide();
+  
   QList<QStandardItem*> projectsname;
   for(int i = 0; i < projects->keys().size(); i++){
     projectsname.append(new QStandardItem(projects->value(projects->keys()[i])->getProjectName()));

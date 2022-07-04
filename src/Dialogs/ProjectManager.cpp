@@ -262,7 +262,7 @@ void ProjectManager::AddImagesAsRGB()
             _m_->data[i][j] = imgmx[i][j];
           }
         }
-        data->getMATRIXList().last()->getVarName().append("Object Names");
+        data->getMATRIXList().last()->getVarName().append(firstcol_name);
         for(uint i = 0; i < _m_->col; i++){
           data->getMATRIXList().last()->getVarName().append(QString("pixel%1").arg(i+1));
         }

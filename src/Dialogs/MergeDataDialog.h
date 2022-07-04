@@ -34,6 +34,7 @@ private:
   int pid;
   void MergeType0();
   void MergeType1();
+  void MergeDialogPrepare();
 };
 
 

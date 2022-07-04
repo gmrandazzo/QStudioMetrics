@@ -7,6 +7,8 @@
 #include <QPixmap>
 #include <scientific.h>
 
+static QString firstcol_name = "Object Names";
+
 #define DEFAULT_EMTPY_VALUE missing_value()
 
 enum{
@@ -170,5 +172,6 @@ private:
 };
 
 typedef QList<TABLABEL*> TABLABELS;
+
 
 #endif

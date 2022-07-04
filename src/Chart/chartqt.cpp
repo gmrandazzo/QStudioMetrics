@@ -658,6 +658,14 @@ void ChartQt::addCurve(QVector< QPointF > curve, QString name, QColor color)
   curveMap.append(DataCurve(curve, name, color));
 }
 
+void ChartQt::setCurveStyle(int indx, LTYPE cs)
+{
+  if(indx < curveMap.size()){
+    curveMap[indx].setStyle(cs);
+  }
+}
+
+
 void ChartQt::addBars(QStringList x, QVector<qreal> y, QStringList text, QColor color)
 {
   #ifdef DEBUG

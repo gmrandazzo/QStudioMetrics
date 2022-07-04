@@ -114,7 +114,7 @@ void ObjectSelectorDialog::setVariablesView(QModelIndex current)
     dataindex = current.row();
     if(mxlst_ != 0){
       QStringList variablelst = (*mxlst_)[current.row()]->getVarName();
-      variablelst.removeAll("Object Names");
+      variablelst.removeAll(firstcol_name);
       ui.listView->setModel(new QStringListModel(variablelst));
     }
     else{

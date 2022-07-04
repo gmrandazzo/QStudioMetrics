@@ -23,7 +23,7 @@ void AdvancedPretreatmentDialog::OK()
     }
   }
 
-  mx->getVarName().append("Object Names");
+  mx->getVarName().append(firstcol_name);
   // Set the object names in the pretreated matrix
   for(size_t i = 0; i < nrow; i++){
     mx->getObjName().append(projects->value(pid)->getMatrix(mxid)->getObjName()[i]);

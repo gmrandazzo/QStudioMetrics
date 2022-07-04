@@ -10,6 +10,7 @@
 
 
 #include "Chart/qplotly.h"
+#include "Chart/chartqt.h"
 
 class SimpleLine2DPlot: public QWidget
 {
@@ -29,7 +30,7 @@ private slots:
 private:
   int random_(int low, int high);
   Ui::SimpleLine2DPlot ui;
-  QPlotlyWindow *chart;
+  ChartQt *chart;
 };
 
 #endif

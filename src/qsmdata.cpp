@@ -64,7 +64,7 @@ void DATA::ImportRows(QString fname, QStringList &rowlst)
 }
 
 // static void DATA::ImportVarNames(FILEDATA f, QStringList &varname)
-// collst.append("Object Names");
+// collst.append(firstcol_name);
 void DATA::ImportColumns(QString fname, QString separator, QStringList &collst)
 {
   QFile file(fname);
@@ -106,14 +106,14 @@ void DATA::ImportFileMatrix(const FILEDATA& f)
     }
 
     if(f.filevarname.isEmpty()){
-      getMatrix(MatrixCount()-1)->getVarName().append(QString("Object Names"));
+      getMatrix(MatrixCount()-1)->getVarName().append(QString(firstcol_name));
       GenNameLst(getMatrix(MatrixCount()-1)->Matrix()->col, "Var", getMatrix(MatrixCount()-1)->getVarName());
     }
     else{
-      getMatrix(MatrixCount()-1)->getVarName().append(QString("Object Names"));
+      getMatrix(MatrixCount()-1)->getVarName().append(QString(firstcol_name));
       ImportColumns(f.filevarname, f.separator, getMatrix(MatrixCount()-1)->getVarName());
       if(getMatrix(MatrixCount()-1)->getVarName().size() == 0){
-        getMatrix(MatrixCount()-1)->getVarName().append(QString("Object Names"));
+        getMatrix(MatrixCount()-1)->getVarName().append(QString(firstcol_name));
         GenNameLst(getMatrix(MatrixCount()-1)->Matrix()->col, "Var", getMatrix(MatrixCount()-1)->getVarName());
       }
     }
@@ -159,14 +159,14 @@ void DATA::ImportFileArray(const FILEDATA& f)
 
 
     if(f.filevarname.isEmpty()){
-      getArray(ArrayCount()-1)->getVarName().append(QString("Object Names"));
+      getArray(ArrayCount()-1)->getVarName().append(QString(firstcol_name));
       GenNameLst(getArray(ArrayCount()-1)->Array()->m[0]->col, "Var", getArray(ArrayCount()-1)->getVarName());
     }
     else{
-      getArray(ArrayCount()-1)->getVarName().append(QString("Object Names"));
+      getArray(ArrayCount()-1)->getVarName().append(QString(firstcol_name));
       ImportColumns(f.filevarname, f.separator,getArray(ArrayCount()-1)->getVarName());
       if(getArray(ArrayCount()-1)->getVarName().size() == 0){
-        getArray(ArrayCount()-1)->getVarName().append(QString("Object Names"));
+        getArray(ArrayCount()-1)->getVarName().append(QString(firstcol_name));
         GenNameLst(getArray(ArrayCount()-1)->Array()->m[0]->col, "Var", getArray(ArrayCount()-1)->getVarName());
       }
     }

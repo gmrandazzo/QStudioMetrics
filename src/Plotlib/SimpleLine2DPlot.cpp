@@ -41,7 +41,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename, QString windowt
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
-  chart = new QPlotlyWindow(this);
+  chart = new ChartQt(this);
   plotLayout->addWidget(chart);
   ui.plotwidget->setLayout(plotLayout);
 
@@ -72,7 +72,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString wi
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
-  chart = new QPlotlyWindow(this);
+  chart = new ChartQt(this);
   plotLayout->addWidget(chart);
   ui.plotwidget->setLayout(plotLayout);
 
@@ -114,7 +114,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(QList< matrix* > mlst, QStringList curvenames
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
-  chart = new QPlotlyWindow(this);
+  chart = new ChartQt(this);
   plotLayout->addWidget(chart);
   ui.plotwidget->setLayout(plotLayout);
 

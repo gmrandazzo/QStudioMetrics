@@ -65,7 +65,7 @@ void SelectionStyleColor::SetVariableTypeSymbolColor()
   if(ui.colorvarvaltype->currentIndex() == 0){
     ui.colorvarlist->clear();
     for(int i = 0; i < xvarname.size(); i++){
-      if(xvarname[i].compare("Object Names",  Qt::CaseInsensitive) == 0){
+      if(xvarname[i].compare(firstcol_name,  Qt::CaseInsensitive) == 0){
         continue;
       }
       else{
@@ -81,7 +81,7 @@ void SelectionStyleColor::SetVariableTypeSymbolColor()
   else{ // set y
     ui.colorvarlist->clear();
     for(int i = 0; i < yvarname.size(); i++){
-      if(yvarname[i].compare("Object Names",  Qt::CaseInsensitive) == 0){
+      if(yvarname[i].compare(firstcol_name,  Qt::CaseInsensitive) == 0){
         continue;
       }
       else{
@@ -179,7 +179,7 @@ SelectionStyleColor::SelectionStyleColor(QStringList &xvarname_, QStringList &yv
   xlevels = ylevels = 0;
   
   for(int i = 0; i < xvarname.size(); i++){
-    if(xvarname[i].compare("Object Names",  Qt::CaseInsensitive) == 0){
+    if(xvarname[i].compare(firstcol_name,  Qt::CaseInsensitive) == 0){
       continue;
     }
     else{
@@ -232,7 +232,7 @@ SelectionStyleColor::SelectionStyleColor(QStringList& xvarname_, QStringList& yv
   clevel = 0;
   
   for(int i = 0; i < xvarname.size(); i++){
-    if(xvarname[i].compare("Object Names",  Qt::CaseInsensitive) == 0){
+    if(xvarname[i].compare(firstcol_name,  Qt::CaseInsensitive) == 0){
       continue;
     }
     else{

@@ -347,7 +347,7 @@ void Model::newMatrix(uint row, uint col)
   }
 
   header.clear();
-  header.append("Object Names");
+  header.append(firstcol_name);
   for(uint j = 0; j < m->col; j++){
     header.append(QString::number(j+1));
   }
@@ -437,7 +437,7 @@ Model::Model(matrix* m_, QObject* parent): QAbstractTableModel(parent)
     labels << "####";
     id.append(i+1);
   }
-  header.append("Object Names");
+  header.append(firstcol_name);
   for(uint j = 0; j < m->col; j++)
     header.append(QString::number(j+1));
 }
@@ -455,7 +455,7 @@ Model::Model(QList< QStringList > tab_, QObject* parent): QAbstractTableModel(pa
     labels << "####";
     id.append(i+1);
   }
-  header.append("Object Names");
+  header.append(firstcol_name);
   for(int j = 0; j < tab.last().size(); j++)
     header.append(QString::number(j+1));
 }
@@ -570,8 +570,7 @@ void Table::addVariableLabel()
 void Table::selectBy()
 {
   QStringList currentvariables = model()->getHorizontalHeaderLabels();
-  currentvariables.removeAll("Object Names");
-  currentvariables.removeAll("Object Labels");
+  currentvariables.removeAll(firstcol_name);
   currentvariables.removeAll("Principal Component");
   currentvariables.removeAll("Variables");
 

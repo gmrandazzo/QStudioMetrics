@@ -56,7 +56,8 @@ public:
     void addPoint(qreal x, qreal y, QString name, QColor color, int radius);
     virtual void addPoint(qreal x, qreal y, qreal z, QString name, QColor color, int radius){};
     void addCurve(QVector< QPointF > curve, QString name, QColor color);
-
+    void setCurveStyle(int indx, LTYPE cs);
+    
     // Bar plot
     void addBars(QStringList x, QVector<qreal> y, QStringList text, QColor color);
 

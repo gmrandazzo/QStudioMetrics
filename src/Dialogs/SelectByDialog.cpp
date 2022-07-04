@@ -105,7 +105,7 @@ void SelectByDialog::SetSelectionView()
         if(datatype == 1){
           NewMatrix(&m, (*mxlst)[dataid]->Matrix()->row, varlist.size());
           QStringList varnames = (*mxlst)[dataid]->getVarName();
-          varnames.removeAll("Object Names");
+          varnames.removeAll(firstcol_name);
 
           int col = 0;
           for(int j = 0; j < varlist.size(); j++){

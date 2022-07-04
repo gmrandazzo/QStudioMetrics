@@ -103,7 +103,7 @@ void ImportFileDialog::ImportType0()
     QString sep = getSeparator();
     // Assign header to matrix
     Clean_rnames();
-    AssignName(m->getVarName(), "Object Names");
+    AssignName(m->getVarName(), firstcol_name);
     QStringList header;
     int header_line = getHeader(&header);
     for(int j = 1; j < header.size(); j++){
@@ -154,7 +154,7 @@ void ImportFileDialog::ImportType1()
     QString sep = getSeparator();
     // Assign header to matrix
     Clean_rnames();
-    AssignName(m->getVarName(), "Object Names");
+    AssignName(m->getVarName(), firstcol_name);
     QStringList header;
     int header_line = getHeader(&header);
     for(int j = 0; j < header.size(); j++){
@@ -206,7 +206,7 @@ void ImportFileDialog::ImportType2()
       return;
 
     Clean_rnames();
-    AssignName(m->getVarName(), "Object Names");
+    AssignName(m->getVarName(), firstcol_name);
     size_t lnum = 0;
     size_t row = 0;
     QTextStream in(&f);
@@ -247,7 +247,7 @@ void ImportFileDialog::ImportType3()
       return;
 
     Clean_rnames();
-    AssignName(m->getVarName(), "Object Names");
+    AssignName(m->getVarName(), firstcol_name);
     size_t row = 0;
     size_t lnum = 0;
     QTextStream in(&f);
@@ -329,7 +329,7 @@ void ImportFileDialog::BuildMatrix()
     m->getVarName().removeFirst();
     m->getObjName() = m->getVarName();
     m->getVarName().clear();
-    m->getVarName().append("Object Names");
+    m->getVarName().append(firstcol_name);
     m->getVarName().append(tmp);
   }
 
@@ -373,7 +373,7 @@ void ImportFileDialog::Preview()
     return;
 
   QStringList objnames, varnames;
-  varnames << "Object Names";
+  varnames << firstcol_name;
 
   size_t row = 0, max_row = 10;
   QTextStream in(&f);
@@ -476,7 +476,7 @@ void ImportFileDialog::Preview()
     varnames.removeFirst();
     objnames = varnames;
     varnames.clear();
-    varnames.append("Object Names");
+    varnames.append(firstcol_name);
     varnames.append(tmp);
   }
 

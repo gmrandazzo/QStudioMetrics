@@ -6,6 +6,7 @@
 #include <QStringList>
 #include <QTextStream>
 #include <QMessageBox>
+#include "qstudiometricstypes.h"
 
 int AddFileDialog::CountNumberColum(QString file_)
 {
@@ -230,7 +231,7 @@ void AddFileDialog::Preview()
         QStringList value =  line_.split(getSeparator(), Qt::SkipEmptyParts);
         if(row == 0){
           if(ui.filevarname->isChecked() && !ui.file_varname->text().isEmpty()){
-            model->setHorizontalHeaderItem(0, new QStandardItem(QString("Object Names")));
+            model->setHorizontalHeaderItem(0, new QStandardItem(firstcol_name));
             QStringList varname = ListRead(getFileVarName());
 
             if(file_ncol != varname.size()){
@@ -250,7 +251,7 @@ void AddFileDialog::Preview()
             }
           }
           else{
-            model->setHorizontalHeaderItem(0, new QStandardItem(QString("Object Names")));
+            model->setHorizontalHeaderItem(0, new QStandardItem(firstcol_name));
 
             if(value.size() < 10){ // is the max number of column
               for(int c = 0; c < value.size(); c++){

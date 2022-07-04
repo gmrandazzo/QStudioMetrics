@@ -233,7 +233,7 @@ SelectionStyleDialog::SelectionStyleDialog(QStringList &varnames_): QDialog()
   varnames = varnames_;
 
   for(int i = 0; i < varnames.size(); i++){
-    if(varnames[i].compare("Object Names",  Qt::CaseInsensitive) == 0){
+    if(varnames[i].compare(firstcol_name,  Qt::CaseInsensitive) == 0){
       continue;
     }
     else{

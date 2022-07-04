@@ -1,4 +1,5 @@
 #include "HighlightTableVarDialog.h"
+#include "qstudiometricstypes.h"
 #include <QColorDialog>
 
 void HighlightTableVarDialog::Cancel()
@@ -41,7 +42,7 @@ HighlightTableVarDialog::HighlightTableVarDialog(QStringList varname): QDialog()
   ui.actionSelectColorMax->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(colormax.red()).arg(colormax.green()).arg(colormax.blue()));
   
   for(int i = 0; i < varname.size(); i++){
-    if(varname[i].compare("Object Names",  Qt::CaseInsensitive) == 0 || 
+    if(varname[i].compare(firstcol_name,  Qt::CaseInsensitive) == 0 || 
       varname[i].compare("Principal Component",  Qt::CaseInsensitive) == 0 || 
       varname[i].compare("Variables",  Qt::CaseInsensitive) == 0 ||
       varname[i].compare("Models Name",  Qt::CaseInsensitive) == 0){

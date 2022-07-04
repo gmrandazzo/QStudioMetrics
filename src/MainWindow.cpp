@@ -268,6 +268,7 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     int ii = aligned_objid[i];
     for(int j = 0; j < aligned_xvarid.size(); j++){
       int jx = aligned_xvarid[j];
+      printf("%d %d %d %d\n", i, j, ii, jx);
       (*x)->data[i][j] = indata->Matrix()->data[ii][jx];
     }
 
@@ -1953,7 +1954,7 @@ void MainWindow::showLDAPrediction()
       child->newTable(tabname, tabclasspred, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
       child->getTable()->model()->setObjNames(projects->value(pid)->getLDAModel(mid)->getLDAPrediction(predid)->getObjName());
 
-      header << "Object Names" << "Predicted Class";
+      header << firstcol_name << "Predicted Class";
 
       child->getTable()->model()->setHorizontalHeaderLabels(header);
       child->show();
@@ -2174,7 +2175,7 @@ void MainWindow::showMLRPrediction()
       child->newTable(tabname, projects->value(pid)->getMLRModel(mid)->getMLRPrediction(predid)->getYDipVar(), &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
       child->getTable()->model()->setObjNames(projects->value(pid)->getMLRModel(mid)->getMLRPrediction(predid)->getObjName());
       QStringList header;
-      header << "Object Names";
+      header << firstcol_name;
 
       for(size_t j = 0; j < projects->value(pid)->getMLRModel(mid)->getMLRPrediction(predid)->getYDipVar()->col; j++){
         header << QString("Y %1").arg(QString::number(j+1));
@@ -2246,7 +2247,7 @@ void MainWindow::showEPLSPrediction()
       child->newTable(tabname, projects->value(pid)->getEPLSModel(mid)->getEPLSPrediction(predid)->py, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
       child->getTable()->model()->setObjNames(projects->value(pid)->getEPLSModel(mid)->getEPLSPrediction(predid)->getObjName());
       QStringList header;
-      header << "Object Names";
+      header << firstcol_name;
 
       for(int i = 0; i < projects->value(pid)->getEPLSModel(mid)->getNPC(); i++){
         for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->Model()->ny; j++){
@@ -2359,7 +2360,7 @@ void MainWindow::showEPLSValidatedPrediction()
     QStringList varname = projects->value(pid)->getEPLSModel(mid)->getObjName();
     child->getTable()->model()->setObjNames(varname);
     QStringList header;
-    header << "Object Names";
+    header << firstcol_name;
     for(size_t i = 0; i < projects->value(pid)->getEPLSModel(mid)->Model()->nlv; i++){
       for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->Model()->ny; j++){
         header << QString("y %1 (PC %2)").arg(QString::number(j+1)).arg(QString::number(i+1));
@@ -2387,7 +2388,7 @@ void MainWindow::showEPLSRecalcY()
     child->newTable(tabname, projects->value(pid)->getEPLSModel(mid)->y_recalculated, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
     child->getTable()->model()->setObjNames(projects->value(pid)->getEPLSModel(mid)->getObjName());
     QStringList header;
-    header << "Object Names";
+    header << firstcol_name;
 
     for(size_t i = 0; i < projects->value(pid)->getEPLSModel(mid)->Model()->nlv; i++){
       for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->Model()->ny; j++){
@@ -2476,7 +2477,7 @@ void MainWindow::showPLSPrediction()
       child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->getPLSPrediction(predid)->getYDipVar(), &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
       child->getTable()->model()->setObjNames(projects->value(pid)->getPLSModel(mid)->getPLSPrediction(predid)->getObjName());
       QStringList header;
-      header << "Object Names";
+      header << firstcol_name;
 
       for(int i = 0; i < projects->value(pid)->getPLSModel(mid)->getNPC(); i++){
         for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->yloadings->row; j++){
@@ -2508,7 +2509,7 @@ void MainWindow::showPLSPredScore()
       child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->getPLSPrediction(predid)->getXPredScores(), &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
       child->getTable()->model()->setObjNames(projects->value(pid)->getPLSModel(mid)->getPLSPrediction(predid)->getObjName());
       QStringList headername;
-      headername << "Object Names";
+      headername << firstcol_name;
       for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->getPLSPrediction(predid)->getXPredScores()->col; c++){
         headername << QString("PC %1").arg(QString::number(c+1));
       }
@@ -2537,7 +2538,7 @@ void MainWindow::showPLSValidatedPrediction()
     QStringList varname = projects->value(pid)->getPLSModel(mid)->getObjName();
     child->getTable()->model()->setObjNames(varname);
     QStringList header;
-    header << "Object Names";
+    header << firstcol_name;
 
     for(int i = 0; i < projects->value(pid)->getPLSModel(mid)->getNPC(); i++){
       for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->yloadings->row; j++){
@@ -2652,7 +2653,7 @@ void MainWindow::showPLSRecalcY()
     child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->recalculated_y, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
     child->getTable()->model()->setObjNames(projects->value(pid)->getPLSModel(mid)->getObjName());
     QStringList header;
-    header << "Object Names";
+    header << firstcol_name;
 
     for(int i = 0; i < projects->value(pid)->getPLSModel(mid)->getNPC(); i++){
       for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->yloadings->row; j++){
@@ -2858,7 +2859,7 @@ void MainWindow::showPLSUSCores()
     child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->yscores, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
     child->getTable()->model()->setObjNames(projects->value(pid)->getPLSModel(mid)->getObjName());
     QStringList headername;
-    headername << "Object Names";
+    headername << firstcol_name;
     for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->Model()->yscores->col; c++){
       headername << QString("PC %1").arg(QString::number(c+1));
     }
@@ -2886,7 +2887,7 @@ void MainWindow::showPLSTScores()
       &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
     child->getTable()->model()->setObjNames(projects->value(pid)->getPLSModel(mid)->getObjName());
     QStringList headername;
-    headername << "Object Names";
+    headername << firstcol_name;
     for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->Model()->xscores->col; c++){
       headername << QString("PC %1").arg(QString::number(c+1));
     }
@@ -2914,7 +2915,7 @@ void MainWindow::showPCAPredScore()
       child->newTable(tabname, projects->value(pid)->getPCAModel(mid)->getPCAPrediction(predid)->getPredScores());
       child->getTable()->model()->setObjNames(projects->value(pid)->getPCAModel(mid)->getPCAPrediction(predid)->getObjName());
       QStringList headername;
-      headername << "Object Names";
+      headername << firstcol_name;
       for(size_t c = 0; c < projects->value(pid)->getPCAModel(mid)->getPCAPrediction(predid)->getPredScores()->col; c++){
         headername << QString("PC %1").arg(QString::number(c+1));
       }
@@ -3013,7 +3014,7 @@ void MainWindow::showPCAScore()
     child->newTable(tabname, projects->value(pid)->getPCAModel(mid)->Model()->scores, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
     child->getTable()->model()->setObjNames(projects->value(pid)->getPCAModel(mid)->getObjName());
     QStringList headername;
-    headername << "Object Names";
+    headername << firstcol_name;
     for(size_t c = 0; c < projects->value(pid)->getPCAModel(mid)->Model()->scores->col; c++){
       headername << QString("PC %1").arg(QString::number(c+1));
     }
