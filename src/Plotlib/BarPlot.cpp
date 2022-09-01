@@ -6,7 +6,6 @@
 
 #include <unistd.h>
 
-#include "Chart/qplotly.h"
 #include "Chart/chartqt.h"
 
 void BarPlot::slotExit()
@@ -73,7 +72,7 @@ BarPlot::BarPlot(dvector *v_,
     ui.widget->setLayout(plotLayout);
     //Finally render the scene
     chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
-    chart->Refresh();
+    chart->Plot();
     connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
 }
 
@@ -106,7 +105,7 @@ BarPlot::BarPlot(dvector *v_,
   ui.widget->setLayout(plotLayout);
   //Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
-  chart->Refresh();
+  chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
 }
 
@@ -164,7 +163,7 @@ BarPlot::BarPlot(QList<dvector*> vlst_, QString windowtitle, QString xaxestitle,
   }
   //Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
-  chart->Refresh();
+  chart->Plot();
 
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
 }

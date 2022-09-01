@@ -42,9 +42,8 @@ void ValidationClusterPlot::SavePlotImage()
 ValidationClusterPlot::ValidationClusterPlot(dvector* toplot, QString yaxestitle)
 {
   ui.setupUi(this);
-  chart = new QPlotlyWindow(this);
+  chart = new Chart();
   plotLayout = new QVBoxLayout();
-  chart = new QPlotlyWindow(this);
   plotLayout->addWidget(chart);
   ui.plotwidget->setLayout(plotLayout);
   chart->setXaxisName("Number of clusters");

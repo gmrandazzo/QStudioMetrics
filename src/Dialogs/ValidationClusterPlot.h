@@ -7,8 +7,7 @@
 #include <QList>
 #include <QColor>
 #include "ui_ValidationClusterPlot.h"
-#include "Chart/qplotly.h"
-
+#include "Chart/chart.h"
 
 class ValidationClusterPlot: public QDialog
 {
@@ -24,7 +23,7 @@ private slots:
 
 private:
   Ui::ValidationClusterPlot ui;
-  QPlotlyWindow *chart;
+  Chart *chart;
   QVBoxLayout *plotLayout;
 };
 

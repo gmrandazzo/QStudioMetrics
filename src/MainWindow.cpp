@@ -268,7 +268,7 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     int ii = aligned_objid[i];
     for(int j = 0; j < aligned_xvarid.size(); j++){
       int jx = aligned_xvarid[j];
-      printf("%d %d %d %d\n", i, j, ii, jx);
+      // printf("%d %d %d %d\n", i, j, ii, jx);
       (*x)->data[i][j] = indata->Matrix()->data[ii][jx];
     }
 

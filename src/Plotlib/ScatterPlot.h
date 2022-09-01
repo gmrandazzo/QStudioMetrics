@@ -10,7 +10,6 @@
 
 #include "Chart/chartqt.h"
 #include "Chart/chart.h"
-#include "Chart/qplotly.h"
 
 #include "ui_ScatterPlot.h"
 #include "qsmdata.h"

@@ -30,7 +30,7 @@ Graphs* ScatterPlot::NewGraph(PEngine peng)
     //return new ChartQt(); // Low performance
   }
   else{
-    return new QPlotlyWindow(this);
+    return new ChartQt();
   }
 }
 

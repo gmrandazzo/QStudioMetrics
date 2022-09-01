@@ -10,6 +10,7 @@
 #include "datacurve.h"
 #include "databar.h"
 #include <QtCharts/QScatterSeries>
+#include <QtCharts/QAbstractSeries>
 #include <QtCharts/QLineSeries>
 
 
@@ -57,7 +58,7 @@ public:
     virtual void addPoint(qreal x, qreal y, qreal z, QString name, QColor color, int radius){};
     void addCurve(QVector< QPointF > curve, QString name, QColor color);
     void setCurveStyle(int indx, LTYPE cs);
-    
+
     // Bar plot
     void addBars(QStringList x, QVector<qreal> y, QStringList text, QColor color);
 
@@ -99,8 +100,11 @@ private:
     void refreshPlot();
     QMap<MarkerType, QMap<QColor, QMap<bool, QList<int>>>> getColors_Shapes_Selected();
     void drawScatters();
+    void updateScatters();
     void drawCurves();
+    void updateCurves();
     void drawBars();
+    void updateBars();
     void DoUnselection(int low, int high);
     void DoSelection(int low, int high);
 
@@ -108,6 +112,10 @@ private:
     QVector <DataCurve> curveMap; // used for line plot
     QVector<DataBar*> b; // used for bar plot
 
+    QList<QXYSeries *> seriesList;
+    QList<QXYSeries *> curvesList;
+    QList<QBarSet *> barsList;
+    
     QPixmap pixmap;
     QString m_xaxisname, m_yaxisname, m_plottitle;
     bool antialiasing;

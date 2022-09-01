@@ -32,7 +32,7 @@ bool ChartQt::viewportEvent(QEvent *event)
         // will only slow us down.
         chart()->setAnimationOptions(QChart::NoAnimation);
     }
-    
+
     return QChartView::viewportEvent(event);
 }
 
@@ -115,7 +115,7 @@ void ChartQt::mouseReleaseEvent(QMouseEvent *event)
     }
 
     if(event->button() == Qt::MiddleButton){
-        
+
         chart()->zoomIn();
         //zoom and store the zoom domain region
         /*
@@ -125,7 +125,7 @@ void ChartQt::mouseReleaseEvent(QMouseEvent *event)
         zoom_region.setY(maxY);
         zoom_region.setWidth(maxX-minX);
         zoom_region.setHeight(maxY-minY);
-        
+
         qDebug() << zoom_region;
         */
     }
@@ -216,21 +216,19 @@ void ChartQt::drawCurves()
     //#endif
     for(int i = 0; i < curveMap.size(); i++){
         const DataCurve data = curveMap[i];
-        if(data.isVisible() == true){
-            if(data.getPoints().size() > 0){
-                QLineSeries *lseries = new QLineSeries();
+        if(data.getPoints().size() > 0){
+            QXYSeries *series = 0;
+            series = new QLineSeries;
+            QLineSeries *line = static_cast<QLineSeries *>(series);
 
-                for(int j = 0; j < data.getPoints().size(); ++j){
-                    lseries->append(data.getPoints()[j].x(), data.getPoints()[j].y());
-                }
-                lseries->setColor(data.color());
-                //lseries->setUseOpenGL(true);
-                chart()->addSeries(lseries);
+            //QLineSeries *lseries = new QLineSeries();
+            for(int j = 0; j < data.getPoints().size(); ++j){
+                line->append(data.getPoints()[j].x(), data.getPoints()[j].y());
             }
-            else{
-                continue;
-            }
-
+            line->setColor(data.color());
+            //line->setUseOpenGL(true);
+            chart()->addSeries(line);
+            curvesList.append(series);
         }
         else{
             continue;
@@ -238,6 +236,34 @@ void ChartQt::drawCurves()
     }
 }
 
+void ChartQt::updateCurves()
+{
+    //#ifdef DEBUG
+    printf("Chart::updateCurves\n");
+    //#endif
+    for(int i = 0; i < curveMap.size(); i++){
+        const DataCurve data = curveMap[i];
+        QLineSeries *line = static_cast<QLineSeries *>(curvesList[i]);
+
+        if(data.isVisible() == true){
+            if(data.getPoints().size() > 0){
+                //QLineSeries *lseries = new QLineSeries();
+                for(int j = 0; j < data.getPoints().size(); ++j){
+                    line->replace(j, data.getPoints()[j].x(), data.getPoints()[j].y());
+                }
+                line->setColor(data.color());
+            }
+            else{
+                continue;
+            }
+
+        }
+        else{
+            line->hide();
+        }
+    }
+
+}
 
 void ChartQt::slotPointHoverd(const QPointF &point, bool state)
 {
@@ -311,86 +337,90 @@ QMap<MarkerType, QMap<QColor, QMap<bool, QList<int>>>>  ChartQt::getColors_Shape
 
 void ChartQt::drawScatters()
 {
-    //#ifdef DEBUG
-    printf("ChartQt::drawScatters\n");
-    //#endif
-    QMap<MarkerType, QMap<QColor, QMap<bool, QList<int>>>> dict = getColors_Shapes_Selected();
-    //qDebug() << dict.keys().size();
-    QMap<MarkerType, QMap<QColor, QMap<bool, QList<int>>>>::const_iterator shape_i = dict.constBegin();
+  //#ifdef DEBUG
+  printf("ChartQt::drawScatters\n");
+  //#endif
 
-    while(shape_i != dict.constEnd()){
-        QMap<QColor, QMap<bool, QList<int>>> cmap = shape_i.value();
-        QMap<QColor, QMap<bool, QList<int>>>::const_iterator color_i = cmap.constBegin();
-        while(color_i != cmap.constEnd()){
-            QMap<bool, QList<int>> smap = color_i.value();
-            QMap<bool, QList<int>>::const_iterator smap_i = smap.constBegin();
-            while(smap_i != smap.constEnd()){
-                QScatterSeries *series = new QScatterSeries();
-                if(shape_i.key() == CIRCLE){
-                    series->setMarkerShape(QScatterSeries::MarkerShapeCircle);
-                }
-                else if(shape_i.key()== SQUARE){
-                    series->setMarkerShape(QScatterSeries::MarkerShapeRectangle);
-                }
-                else{ //TRIANGLE
-                    series->setMarkerShape(QScatterSeries::MarkerShapeCircle);
-                }
+    for(int i = 0; i < p.size(); i++){
+        QXYSeries *series = 0;
+        series = new QScatterSeries;
+        QScatterSeries *scatter = static_cast<QScatterSeries *>(series);
 
-                foreach(int k, smap_i.value()){
-                    if(p[k]->isVisible() == true){
-                        QColor c = p[k]->getColor();
-                        c.setAlpha(127);
-                        series->setColor(c);
-                        if(smap_i.key() == true){
-                            series->setBorderColor(Qt::red);
-                        }
-                        else{
-                            series->setBorderColor(p[k]->getColor());
-                        }
-                        series->setMarkerSize(p[k]->radius());
-                        series->append(p[k]->x(), p[k]->y());
-                    }
-                    else{
-                        continue;
-                    }
-                }
-                //series->setUseOpenGL(true);
-                chart()->addSeries(series);
-                connect(series, &QScatterSeries::hovered, this, &ChartQt::slotPointHoverd);
-                // connect(series, &QScatterSeries::clicked, this, &ChartQt::slotPointClicked);
-                ++smap_i;
-            }
-            ++color_i;
+        if(p[i]->marker() == CIRCLE){
+            scatter->setMarkerShape(QScatterSeries::MarkerShapeCircle);
         }
-        ++shape_i;
+        else if(p[i]->marker() == SQUARE){
+            scatter->setMarkerShape(QScatterSeries::MarkerShapeRectangle);
+        }
+        else{ //TRIANGLE
+            scatter->setMarkerShape(QScatterSeries::MarkerShapeCircle);
+        }
+
+
+        QColor c = p[i]->getColor();
+        c.setAlpha(127);
+        series->setColor(c);
+
+        scatter->setMarkerSize(p[i]->radius());
+        scatter->append(p[i]->x(), p[i]->y());
+
+        //scatter->setUseOpenGL(true);
+        chart()->addSeries(scatter);
+        connect(scatter, &QScatterSeries::hovered, this, &ChartQt::slotPointHoverd);
+        seriesList.append(series);
+    }
+}
+
+
+void ChartQt::updateScatters()
+{
+  //#ifdef DEBUG
+  printf("ChartQt::updateScatters\n");
+  //#endif
+
+    for(int i = 0; i < p.size(); i++){
+        QScatterSeries *scatter = static_cast<QScatterSeries *>(seriesList[i]);
+        if(p[i]->marker() == CIRCLE){
+            scatter->setMarkerShape(QScatterSeries::MarkerShapeCircle);
+        }
+        else if(p[i]->marker() == SQUARE){
+            scatter->setMarkerShape(QScatterSeries::MarkerShapeRectangle);
+        }
+        else{ //TRIANGLE
+            scatter->setMarkerShape(QScatterSeries::MarkerShapeCircle);
+        }
+
+        QColor c = p[i]->getColor();
+        c.setAlpha(127);
+        scatter->setColor(c);
+        scatter->setMarkerSize(p[i]->radius());
+        scatter->replace(0, p[i]->x(), p[i]->y());
     }
 }
 
 void ChartQt::drawBars()
 {
+    //#ifdef DEBUG
+    printf("ChartQt::drawBars\n");
+    //#endif
+
     QStringList categories;
     QBarSeries *series = new QBarSeries();
 
     for(int i = 0; i < b.size(); i++){
-
-        if(b[i]->isVisible() == true){
-            QBarSet *set = new QBarSet("");
-            for(int j = 0; j < b[i]->x().size(); j++){
-                categories << b[i]->x()[j];
-                *set << b[i]->y()[j];
-
-//                set->color(b[i]->color());
-
-            }
-            series->append(set);
-            chart()->addSeries(series);
-            //void addBars(QStringList x, QVector<qreal> y, QStringList text, QColor color);
+        QBarSet *set = new QBarSet("");
+        for(int j = 0; j < b[i]->x().size(); j++){
+            categories << b[i]->x()[j];
+            *set << b[i]->y()[j];
+    //                set->color(b[i]->color());
         }
-        else{
-            continue;
-        }
+        //set->color(b[i]->color());
+        series->append(set);
+        barsList.append(set);
+        //void addBars(QStringList x, QVector<qreal> y, QStringList text, QColor color);
     }
-    
+    chart()->addSeries(series);
+
     if(plot_ready == false){
         QBarCategoryAxis *axisX = new QBarCategoryAxis();
         axisX->append(categories);
@@ -404,44 +434,75 @@ void ChartQt::drawBars()
     }
 }
 
-void ChartQt::refreshPlot()
-{
-    qDebug() << "ChartQt::refreshPlot()";
-
-    if(plot_ready == true){
-        /*
-        if(!chart()->isZoomed()){
-          zoom_region = QRectF();
-        }*/
-
-        for(int i = 0; i < chart()->series().size(); i++)
-            delete  chart()->series()[i];
-        
-        for(int i = 0; i < chart()->axes().size(); i++)
-          delete chart()->axes()[i];
-        
-        chart()->series().clear();
-        chart()->axes().clear();
-        plot_ready = false;
+void ChartQt::updateBars(){
+    //#ifdef DEBUG
+    printf("ChartQt::updateBars\n");
+    //#endif
+    printf("%lld %lld\n", b.size(), barsList.size());
+    for(int i = 0; i < b.size(); i++){
+        QBarSet *set = barsList[i];
+        if(b[i]->isVisible() == true){
+            for(int j = 0; j < b[i]->x().size(); j++){
+                set->insert(j, b[i]->y()[j]);
+        //                set->color(b[i]->color());
+            }
+            //barsList.append(set);
+            //void addBars(QStringList x, QVector<qreal> y, QStringList text, QColor color);
+        }
+        else{
+            // HIDE
+            continue;
+            //barsList[i]->hide();
+        }
     }
 
-    Plot();
+}
+
+void ChartQt::refreshPlot()
+{
+    //#ifdef DEBUG
+    qDebug() << "ChartQt::refreshPlot()";
+    //#endif
+    if(curveMap.size() > 0 || p.size() > 0){
+        if(curveMap.size() > 0 && curvesList.size() == curveMap.size())
+            updateCurves();
+        else{
+            drawCurves();
+        }
+        
+        if(p.size() > 0 && seriesList.size() == p.size()){
+            updateScatters();
+        }
+        else{
+            drawScatters();
+        }
+        
+        chart()->setTitle(m_plottitle);
+        chart()->axes()[0]->setTitleText(m_xaxisname);
+        chart()->axes()[1]->setTitleText(m_yaxisname);
+    }
     
-    /*if(!zoom_region.isEmpty()){
-      qDebug() << zoom_region;
-      chart()->zoomIn(zoom_region);
-    }*/
-    
+    if(b.size() > 0 && barsList.size() == b.size()){
+        updateBars();
+        chart()->setTitle(m_plottitle);
+        chart()->legend()->setAlignment(Qt::AlignLeft);
+    }
+    else{
+        drawBars();
+    }
 }
 
 void ChartQt::Plot(){
+    //#ifdef DEBUG
     qDebug() << "ChartQt::Plot";
+    //#endif
     if(curveMap.size() > 0 || p.size() > 0){
         if(curveMap.size() > 0)
             drawCurves();
 
-        if(p.size() > 0)
+        if(p.size() > 0){
             drawScatters();
+        }
 
         chart()->setTitle(m_plottitle);
 
@@ -564,9 +625,9 @@ void ChartQt::Refresh()
 
 void ChartQt::DoSelection(int low, int high)
 {
-    #ifdef DEBUG
+    //#ifdef DEBUG
     printf("ChartQt::DoSelection\n");
-    #endif
+    //#endif
     int i;
     for(i = low; i < high; i++){
         p[i]->setSelection(true);
@@ -575,9 +636,9 @@ void ChartQt::DoSelection(int low, int high)
 
 void ChartQt::Select(int from, int to)
 {
-    #ifdef DEBUG
+    //#ifdef DEBUG
     printf("ChartQt::Select\n");
-    #endif
+    //#endif
     if(from < to){
         int mid = (from+to)/2;
         Select(from, mid);
@@ -588,9 +649,9 @@ void ChartQt::Select(int from, int to)
 
 void ChartQt::SelectAll()
 {
-    #ifdef DEBUG
+    //#ifdef DEBUG
     printf("ChartQt::SelectAll\n");
-    #endif
+    //#endif
     Select(0, p.size());
     refreshPlot();
 }
@@ -623,9 +684,9 @@ void ChartQt::Unselect(int from, int to)
 
 void ChartQt::ClearSelection()
 {
-    #ifdef DEBUG
+    //#ifdef DEBUG
     printf("ChartQt::ClearSelection\n");
-    #endif
+    //#endif
     /* Unselection by divide and conqueror technique*/
     Unselect(0, p.size());
     refreshPlot();
@@ -700,18 +761,18 @@ QVector<DataCurve> ChartQt::getCurves()
 
 void ChartQt::RemoveCurveAt(int cid)
 {
-    #ifdef DEBUG
+    //#ifdef DEBUG
     printf("Chart::RemoveCurveAt\n");
-    #endif
+    //#endif
     curveMap.remove(cid);
     refreshPlot();
 }
 
 void ChartQt::RemoveAllCurves()
 {
-    #ifdef DEBUG
+    //#ifdef DEBUG
     printf("ChartQt::RemoveAllCurves\n");
-    #endif
+    //#endif
     curveMap.clear();
     refreshPlot();
 }
@@ -768,13 +829,31 @@ ChartQt::ChartQt(QWidget *parent) : QChartView(new QChart(), parent), m_isTouchi
 
 ChartQt::~ChartQt()
 {
-    #ifdef DEBUG
+    //#ifdef DEBUG
     printf("ChartQt::~ChartQt\n");
-    #endif
-
-    for(int i = 0; i < p.size(); i++)
+    //#endif
+    int i;
+    for(i = 0; i < p.size(); i++)
         delete p[i];
     p.clear();
+    
+    for(i = 0; i < seriesList.size(); i++)
+        delete seriesList[i];
+    seriesList.clear();
+    
+    for(i = 0; i < curvesList.size(); i++)
+        delete curvesList[i];
+    curvesList.clear();
+    
+    for(i = 0; i < barsList.size(); i++)
+        delete barsList[i];
+    barsList.clear();
+    
+    for(i = 0; i < plotLabels.size(); i++)
+        delete plotLabels[i];
+    plotLabels.clear();
+    
+    
     /*delete zoomInButton;
     delete zoomOutButton;*/
     delete m_valueLabel;
