@@ -34,7 +34,7 @@ Install
 ## Dependencies
 - c++ compiler
 - cmake >= 2.8.9
-- Qt5 (with WebKit or WebEngine)
+- Qt6 
 - libscientific > 0.8
 
 ## Compile from source
@@ -62,7 +62,7 @@ Binary releases for Windows and OSX at <https://github.com/gmrandazzo/QStudioMet
 [Plotly Javascript](https://plotly.com/javascript/) - QStudioMetrics use plot.js as plot engine.
  
 
-## Suppoerted platforms
+## Supported platforms
 - Linux
 - Windows 
 - Mac intel/silicon
