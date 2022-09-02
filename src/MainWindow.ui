@@ -127,7 +127,7 @@
      <x>0</x>
      <y>0</y>
      <width>916</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -223,60 +223,38 @@
       <iconset resource="icons/icons.qrc">
        <normaloff>:/regression.png</normaloff>:/regression.png</iconset>
      </property>
-     <widget class="QMenu" name="menu3D_Space_3">
-      <property name="title">
-       <string>3D Space</string>
-      </property>
-      <addaction name="actionPLS3D_ttt_Score_Plot"/>
-      <addaction name="actionPLS3D_uuu_Score_Plot"/>
-      <addaction name="actionPLS3D_ppp_Loadings_Plot"/>
-      <addaction name="actionPLS3D_qqq_Loadings_Plot"/>
-      <addaction name="actionPLS3D_www_Weights_Plot"/>
-      <addaction name="separator"/>
-      <addaction name="actionPLS3D_ttt_Score_Plot_Prediction"/>
-      <addaction name="separator"/>
-      <addaction name="actionPLS3D_Q2_Dynamic_Sample_Validator_Plot"/>
-      <addaction name="actionPLS3D_SDEP_Dynamic_Sample_Validator_Plot"/>
-     </widget>
-     <widget class="QMenu" name="menu2D_Space_3">
-      <property name="title">
-       <string>2D Space</string>
-      </property>
-      <addaction name="actionPLS_Plot"/>
-      <addaction name="actionPLS2D_tt_Score_Plot"/>
-      <addaction name="actionPLS2D_uu_Score_Plot"/>
-      <addaction name="actionPLS2D_pp_Loadings_Plot"/>
-      <addaction name="actionPLS2D_qq_Loadings_Plot"/>
-      <addaction name="actionPLS2D_p_q_p_q_Loadings_Plot"/>
-      <addaction name="actionPLS2D_ww_Weights_Plot"/>
-      <addaction name="actionPLSBeta_Coefficients"/>
-      <addaction name="actionBetaCoeffDWPlot"/>
-      <addaction name="separator"/>
-      <addaction name="actionPLSRecalc_vs_Exp"/>
-      <addaction name="actionPLSRecalc_Residuals_vs_Exp"/>
-      <addaction name="actionPLSPred_vs_Exp"/>
-      <addaction name="actionPLSPred_Residuals_vs_Exp"/>
-      <addaction name="separator"/>
-      <addaction name="actionPLSR2_Q2"/>
-      <addaction name="actionPLSRMSE"/>
-      <addaction name="separator"/>
-      <addaction name="actionPLSROC_Curve"/>
-      <addaction name="actionPLSROC_AUC_recalculated_predicted"/>
-      <addaction name="actionPLSPrecision_recall_Curve"/>
-      <addaction name="actionPLSPrecision_Recall_AUC_recalculated_predicted"/>
-      <addaction name="separator"/>
-      <addaction name="actionPLSYScrambling"/>
-      <addaction name="separator"/>
-      <addaction name="actionPLS2DScore_Plot_Prediction"/>
-      <addaction name="actionPLSRecalc_vs_Exp_with_Prediction"/>
-      <addaction name="actionPLSPred_vs_Exp_with_Prediction"/>
-      <addaction name="actionPLSR2_Prediction"/>
-      <addaction name="actionPLSRMSEModel_and_External_Prediction"/>
-      <addaction name="actionROC_AUC_recalculated_and_external_prediction"/>
-      <addaction name="actionPrecision_recall_AUC_recalculated_predicted"/>
-     </widget>
-     <addaction name="menu2D_Space_3"/>
-     <addaction name="menu3D_Space_3"/>
+     <addaction name="actionPLS_Plot"/>
+     <addaction name="actionPLS2D_tt_Score_Plot"/>
+     <addaction name="actionPLS2D_uu_Score_Plot"/>
+     <addaction name="actionPLS2D_pp_Loadings_Plot"/>
+     <addaction name="actionPLS2D_qq_Loadings_Plot"/>
+     <addaction name="actionPLS2D_p_q_p_q_Loadings_Plot"/>
+     <addaction name="actionPLS2D_ww_Weights_Plot"/>
+     <addaction name="actionPLSBeta_Coefficients"/>
+     <addaction name="actionBetaCoeffDWPlot"/>
+     <addaction name="separator"/>
+     <addaction name="actionPLSRecalc_vs_Exp"/>
+     <addaction name="actionPLSRecalc_Residuals_vs_Exp"/>
+     <addaction name="actionPLSPred_vs_Exp"/>
+     <addaction name="actionPLSPred_Residuals_vs_Exp"/>
+     <addaction name="separator"/>
+     <addaction name="actionPLSR2_Q2"/>
+     <addaction name="actionPLSRMSE"/>
+     <addaction name="separator"/>
+     <addaction name="actionPLSROC_Curve"/>
+     <addaction name="actionPLSROC_AUC_recalculated_predicted"/>
+     <addaction name="actionPLSPrecision_recall_Curve"/>
+     <addaction name="actionPLSPrecision_Recall_AUC_recalculated_predicted"/>
+     <addaction name="separator"/>
+     <addaction name="actionPLSYScrambling"/>
+     <addaction name="separator"/>
+     <addaction name="actionPLS2DScore_Plot_Prediction"/>
+     <addaction name="actionPLSRecalc_vs_Exp_with_Prediction"/>
+     <addaction name="actionPLSPred_vs_Exp_with_Prediction"/>
+     <addaction name="actionPLSR2_Prediction"/>
+     <addaction name="actionPLSRMSEModel_and_External_Prediction"/>
+     <addaction name="actionROC_AUC_recalculated_and_external_prediction"/>
+     <addaction name="actionPrecision_recall_AUC_recalculated_predicted"/>
     </widget>
     <widget class="QMenu" name="menuPlot_LDA">
      <property name="title">
@@ -287,13 +265,11 @@
        <normaloff>:/discriminant_analysis.png</normaloff>:/discriminant_analysis.png</iconset>
      </property>
      <addaction name="action2D_Feature_Plot"/>
-     <addaction name="action3D_Feature_Plot"/>
      <addaction name="actionProbability_Distribution_Plot"/>
      <addaction name="actionLDAROC_Curve"/>
      <addaction name="actionLDAPrecision_Recall_Curve"/>
      <addaction name="separator"/>
      <addaction name="action2D_Feature_Plot_and_Predictions"/>
-     <addaction name="action3D_Feature_Plot_and_Predictions"/>
      <addaction name="actionProbability_Distribution_Plot_and_Predictions"/>
     </widget>
     <widget class="QMenu" name="menuPlot_PCA_Model">
@@ -304,27 +280,11 @@
       <iconset resource="icons/icons.qrc">
        <normaloff>:/scatter.png</normaloff>:/scatter.png</iconset>
      </property>
-     <widget class="QMenu" name="menu3D_Space">
-      <property name="title">
-       <string>3D Space</string>
-      </property>
-      <addaction name="actionPCA3DScore_Plot"/>
-      <addaction name="actionPCA3DLoadings_Plot"/>
-      <addaction name="separator"/>
-      <addaction name="actionPCA3DScore_Plot_Prediction"/>
-     </widget>
-     <widget class="QMenu" name="menu2D_Space">
-      <property name="title">
-       <string>2D Space</string>
-      </property>
-      <addaction name="actionPCA2DScore_Plot"/>
-      <addaction name="actionPCA2DLoadings_Plot"/>
-      <addaction name="actionPCA2DExpVarPlot"/>
-      <addaction name="separator"/>
-      <addaction name="actionPCA2DScore_Plot_Prediction"/>
-     </widget>
-     <addaction name="menu2D_Space"/>
-     <addaction name="menu3D_Space"/>
+     <addaction name="actionPCA2DScore_Plot"/>
+     <addaction name="actionPCA2DLoadings_Plot"/>
+     <addaction name="actionPCA2DExpVarPlot"/>
+     <addaction name="separator"/>
+     <addaction name="actionPCA2DScore_Plot_Prediction"/>
     </widget>
     <widget class="QMenu" name="menuEPLS_plots">
      <property name="title">
@@ -370,7 +330,7 @@
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
-     <string>&amp;Window</string>
+     <string>&amp;Windows</string>
     </property>
     <addaction name="separator"/>
     <addaction name="actionLog_Window"/>
@@ -421,7 +381,20 @@
       <layout class="QGridLayout" name="gridLayout_6">
        <item row="0" column="0">
         <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="5">
+         <item row="0" column="2">
+          <widget class="QPushButton" name="removeProject">
+           <property name="minimumSize">
+            <size>
+             <width>78</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="3">
           <spacer name="horizontalSpacer_2">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -447,47 +420,16 @@
            </property>
           </spacer>
          </item>
-         <item row="0" column="1" colspan="2">
+         <item row="0" column="1">
           <widget class="QPushButton" name="addProject">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <property name="minimumSize">
             <size>
-             <width>74</width>
-             <height>28</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>74</width>
-             <height>28</height>
+             <width>78</width>
+             <height>32</height>
             </size>
            </property>
            <property name="text">
             <string>Add</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="3" colspan="2">
-          <widget class="QPushButton" name="removeProject">
-           <property name="minimumSize">
-            <size>
-             <width>74</width>
-             <height>28</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>74</width>
-             <height>28</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Remove</string>
            </property>
           </widget>
          </item>

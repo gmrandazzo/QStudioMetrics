@@ -76,9 +76,6 @@ private slots:
   void PCA2DExpVarPlot();
   void PCA2DLoadingsMVANDPlot();
   void PCA2DScorePlotPrediction();
-  void PCA3DScorePlot();
-  void PCA3DLoadingsPlot();
-  void PCA3DScorePlotPrediction();
 
   void PLS2DPlot();
   void PLS2DTTScorePlot();
@@ -106,13 +103,6 @@ private slots:
   void PLSPlotRMSEPredicted();
   void PLSPlotYScrambling();
 
-  void PLS3DTTTScorePlot();
-  void PLS3DPPPLoadingsPlot();
-  void PLS3DWWWLoadingsPlot();
-  void PLS3DUUUScorePlot();
-  void PLS3DQQQLoadingsPlot();
-  void PLS3DScorePlotPrediction();
-
   void EPLSRecalcVSExpPlot();
   void EPLSRecalcResidualsVSExpPlot();
   void EPLSPredVSExpPlot();
@@ -134,10 +124,8 @@ private slots:
   void MLRPlotYScrambling();
 
   void LDAFeaturePlot2D();
-  void LDAFeaturePlot3D();
   void LDAProbabilityDistribution();
   void LDAFeaturePlotAndPrediction2D();
-  void LDAFeaturePlotAndPrediction3D();
   void LDAProbabilityDistributionWithPredictions();
 
   void SubWindowsCascade();

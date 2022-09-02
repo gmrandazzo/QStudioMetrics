@@ -86,6 +86,7 @@ void _2DScattePlotExample(Chart *chart)
   chart->setXaxisName("Test X Axis");
   chart->setYaxisName("Test Y Axis");
   chart->setPlotTitle("Test Plot Title");
+  chart->Center();
 }
 
 void _2DScattePlotExampleBIS(Chart *chart)
@@ -131,8 +132,8 @@ int main(int argc, char *argv[])
   QPlotVersion(&major, &minor, &patch);
   printf("QPlot Version %d.%d.%d\n", major, minor, patch);
   //PlotFromfile(&chart, argv[1]);
-  //_2DScattePlotExample(&chart);
-  _2DScattePlotExampleBIS(&chart);
+  _2DScattePlotExample(&chart);
+  //_2DScattePlotExampleBIS(&chart);
   //_BarPlotExample(&chart);
   //_CurvePlotExample(&chart);
   chart.setXaxisName("X axis");

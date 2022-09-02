@@ -50,7 +50,7 @@
 
 void MainWindow::CheckProjects()
 {
-  
+
   havepca = false;
   havepcapred = false;
   havepls = false;
@@ -435,11 +435,9 @@ void MainWindow::TopMenuEnableDisable()
     ui.menuPlot_PCA_Model->setEnabled(true);
     if(ProjectsHavePCAPrediction() == false){
       ui.actionPCA2DScore_Plot_Prediction->setEnabled(false);
-      ui.actionPCA3DScore_Plot_Prediction->setEnabled(false);
     }
     else{
       ui.actionPCA2DScore_Plot_Prediction->setEnabled(true);
-      ui.actionPCA3DScore_Plot_Prediction->setEnabled(true);
     }
   }
 
@@ -472,14 +470,12 @@ void MainWindow::TopMenuEnableDisable()
 
     if(ProjectsHavePLSPrediction() == false){
       ui.actionPLS2DScore_Plot_Prediction->setEnabled(false);
-      ui.actionPLS3D_ttt_Score_Plot_Prediction->setEnabled(false);
       ui.actionPLSRecalc_vs_Exp_with_Prediction->setEnabled(false);
       ui.actionPLSPred_vs_Exp_with_Prediction->setEnabled(false);
       ui.actionPLSR2_Prediction->setEnabled(false);
     }
     else{
       ui.actionPLS2DScore_Plot_Prediction->setEnabled(true);
-      ui.actionPLS3D_ttt_Score_Plot_Prediction->setEnabled(true);
       ui.actionPLSRecalc_vs_Exp_with_Prediction->setEnabled(true);
       if(ProjectsHavePLSValidated() == true)
         ui.actionPLSPred_vs_Exp_with_Prediction->setEnabled(true);
@@ -536,12 +532,10 @@ void MainWindow::TopMenuEnableDisable()
 
     if(ProjectsHaveLDAPrediction() == false){
       ui.action2D_Feature_Plot_and_Predictions->setEnabled(false);
-      ui.action3D_Feature_Plot_and_Predictions->setEnabled(false);
       ui.actionProbability_Distribution_Plot_and_Predictions->setEnabled(false);
     }
     else{
       ui.action2D_Feature_Plot_and_Predictions->setEnabled(true);
-      ui.action3D_Feature_Plot_and_Predictions->setEnabled(true);
       ui.actionProbability_Distribution_Plot_and_Predictions->setEnabled(true);
     }
   }
@@ -4333,85 +4327,6 @@ void MainWindow::PCA2DScorePlotPrediction()
   }
 }
 
-void MainWindow::PCA3DScorePlot()
-{
-  if(ProjectsHavePCA() == true){
-    ProjectTree pjtree;
-    GetPCAProjects(&pjtree);
-    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
-    dp.hideOptions(true);
-    if(dp.exec() == QDialog::Accepted){
-      PCAPlot pcaplot(projects);
-      pcaplot.setPID(dp.getProjectID());
-      pcaplot.setMID(dp.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot *plot3D;
-      pcaplot.ScorePlot3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PCA3DLoadingsPlot()
-{
-  if(ProjectsHavePCA() == true){
-    ProjectTree pjtree;
-    GetPCAProjects(&pjtree);
-    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
-    dp.hideOptions(true);
-    if(dp.exec() == QDialog::Accepted){
-      PCAPlot pcaplot(projects);
-      pcaplot.setPID(dp.getProjectID());
-      pcaplot.setMID(dp.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot *plot3D;
-      pcaplot.LoadingsPlot3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PCA3DScorePlotPrediction()
-{
-  if(ProjectsHavePCA() == true){
-    ProjectTree pjtree;
-    GetPCAProjects(&pjtree);
-    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
-    dp.hideOptions(true);
-    if(dp.exec() == QDialog::Accepted){
-      PCAPlot pcaplot(projects);
-      pcaplot.setPID(dp.getProjectID());
-      pcaplot.setMID(dp.getModelID());
-      pcaplot.setPREDID(dp.getPredictionID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot *plot3D;
-      pcaplot.ScorePlotPrediction3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"), QMessageBox::Close);
-  }
-}
-
 void MainWindow::PLS2DPlot()
 {
   if(ProjectsHavePLS() == true){
@@ -5132,164 +5047,6 @@ void MainWindow::PLSPlotYScrambling()
   }
 }
 
-
-void MainWindow::PLS3DTTTScorePlot()
-{
-  if(ProjectsHavePLS() == true){
-    ProjectTree pjtree;
-    GetPLSProjects(&pjtree);
-    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
-    dp.hideOptions(true);
-    if(dp.exec() == QDialog::Accepted){
-      PLSPlot plsplot(projects);
-      plsplot.setPID(dp.getProjectID());
-      plsplot.setMID(dp.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot *plot3D;
-      plsplot.T_ScorePlot3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PLS3DPPPLoadingsPlot()
-{
- if(ProjectsHavePLS() == true){
-   ProjectTree pjtree;
-   GetPLSProjects(&pjtree);
-   DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
-   dp.hideOptions(true);
-    if(dp.exec() == QDialog::Accepted){
-      PLSPlot plsplot(projects);
-      plsplot.setPID(dp.getProjectID());
-      plsplot.setMID(dp.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot *plot3D;
-      plsplot.P_LoadingsPlot3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PLS3DWWWLoadingsPlot()
-{
-  if(ProjectsHavePLS() == true){
-    ProjectTree pjtree;
-    GetPLSProjects(&pjtree);
-    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
-    dp.hideOptions(true);
-    if(dp.exec() == QDialog::Accepted){
-      PLSPlot plsplot(projects);
-      plsplot.setPID(dp.getProjectID());
-      plsplot.setMID(dp.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot *plot3D;
-      plsplot.WeightsPlot3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PLS3DUUUScorePlot()
-{
-  if(ProjectsHavePLS() == true){
-    ProjectTree pjtree;
-    GetPLSProjects(&pjtree);
-    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
-    dp.hideOptions(true);
-    if(dp.exec() == QDialog::Accepted){
-      PLSPlot plsplot(projects);
-      plsplot.setPID(dp.getProjectID());
-      plsplot.setMID(dp.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot *plot3D;
-      plsplot.U_ScorePlot3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PLS3DQQQLoadingsPlot()
-{
-  if(ProjectsHavePLS() == true){
-    ProjectTree pjtree;
-    GetPLSProjects(&pjtree);
-    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
-    dp.hideOptions(true);
-    if(dp.exec() == QDialog::Accepted){
-      PLSPlot plsplot(projects);
-      plsplot.setPID(dp.getProjectID());
-      plsplot.setMID(dp.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot *plot3D;
-      plsplot.Q_LoadingsPlot3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::PLS3DScorePlotPrediction()
-{
-  if(ProjectsHavePLS() == true){
-    ProjectTree pjtree;
-    GetPLSProjects(&pjtree);
-    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
-    dp.hideOptions(true);
-    if(dp.exec() == QDialog::Accepted){
-      PLSPlot plsplot(projects);
-      plsplot.setPID(dp.getProjectID());
-      plsplot.setMID(dp.getModelID());
-      plsplot.setPREDID(dp.getPredictionID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot *plot3D;
-      plsplot.T_ScorePlotPrediction3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"), QMessageBox::Close);
-  }
-}
-
 void MainWindow::EPLSRecalcVSExpPlot()
 {
   if(ProjectsHaveEPLSValidated() == true ){
@@ -5851,32 +5608,6 @@ void MainWindow::LDAFeaturePlot2D()
   }
 }
 
-void MainWindow::LDAFeaturePlot3D()
-{
-  if(ProjectsHaveLDA() == true ){
-    ProjectTree pjtree;
-    GetLDAProjects(&pjtree);
-    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
-    dp.hideOptions(true);
-    if(dp.exec() == QDialog::Accepted){
-      LDAPlot ldaplot(projects);
-      ldaplot.setPID(dp.getProjectID());
-      ldaplot.setMID(dp.getModelID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot *plot3D;
-      ldaplot.FeaturePlot3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Found!\n"), QMessageBox::Close);
-  }
-}
-
 void MainWindow::LDAFeaturePlotAndPrediction2D()
 {
   if(ProjectsHaveLDA() == true && ProjectsHaveLDAPrediction() == true){
@@ -5897,33 +5628,6 @@ void MainWindow::LDAFeaturePlotAndPrediction2D()
       graphchild->resize(510, 530);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::LDAFeaturePlotAndPrediction3D()
-{
-  if(ProjectsHaveLDA() == true && ProjectsHaveLDAPrediction() == true){
-    ProjectTree pjtree;
-    GetLDAProjects(&pjtree);
-    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
-    dp.hideOptions(true);
-    if(dp.exec() == QDialog::Accepted){
-      LDAPlot ldaplot(projects);
-      ldaplot.setPID(dp.getProjectID());
-      ldaplot.setMID(dp.getModelID());
-      ldaplot.setPREDID(dp.getPredictionID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot *plot3D;
-      ldaplot.FeaturePlotAndPrediction3D(&plot3D);
-      graphchild->setWidget(plot3D);
-      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot3D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
   else{
@@ -7792,9 +7496,6 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPCA2DExpVarPlot, SIGNAL(triggered(bool)), SLOT(PCA2DExpVarPlot()));
   //connect(ui.actionPCA2DLoadingsMVAND_Plot, SIGNAL(triggered(bool)), SLOT(PCA2DLoadingsMVANDPlot()));
   connect(ui.actionPCA2DScore_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(PCA2DScorePlotPrediction()));
-  connect(ui.actionPCA3DScore_Plot, SIGNAL(triggered(bool)), SLOT(PCA3DScorePlot()));
-  connect(ui.actionPCA3DLoadings_Plot, SIGNAL(triggered(bool)), SLOT(PCA3DLoadingsPlot()));
-  connect(ui.actionPCA3DScore_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(PCA3DScorePlotPrediction()));
 
 
   connect(ui.actionPLS_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DPlot()));
@@ -7826,15 +7527,6 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPLSR2_Prediction, SIGNAL(triggered(bool)), SLOT(PLSPlotR2R2Predicted()));
   connect(ui.actionPLSRMSEModel_and_External_Prediction, SIGNAL(triggered(bool)), SLOT(PLSPlotRMSEPredicted()));
 
-  connect(ui.actionPLS3D_ttt_Score_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DTTTScorePlot()));
-  connect(ui.actionPLS3D_ppp_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DPPPLoadingsPlot()));
-  connect(ui.actionPLS3D_www_Weights_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DWWWLoadingsPlot()));
-  connect(ui.actionPLS3D_uuu_Score_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DUUUScorePlot()));
-  connect(ui.actionPLS3D_qqq_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(PLS3DQQQLoadingsPlot()));
-  connect(ui.actionPLS3D_ttt_Score_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(PLS3DScorePlotPrediction()));
-
-
-
   /*void EPLSRecalcResidualsVSExpPlot();
   void EPLSPredResidualsVSExpPlot();
   void EPLSPlotSDECSDEP();*/
@@ -7860,9 +7552,8 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionMLR_Y_Scrambling_Plot, SIGNAL(triggered(bool)), SLOT(MLRPlotYScrambling()));
 
   connect(ui.action2D_Feature_Plot, SIGNAL(triggered(bool)), SLOT(LDAFeaturePlot2D()));
-  connect(ui.action3D_Feature_Plot, SIGNAL(triggered(bool)), SLOT(LDAFeaturePlot3D()));
   connect(ui.action2D_Feature_Plot_and_Predictions, SIGNAL(triggered(bool)), SLOT(LDAFeaturePlotAndPrediction2D()));
-  connect(ui.action3D_Feature_Plot_and_Predictions, SIGNAL(triggered(bool)), SLOT(LDAFeaturePlotAndPrediction3D()));
+
   connect(ui.actionProbability_Distribution_Plot, SIGNAL(triggered(bool)), SLOT(LDAProbabilityDistribution()));
   connect(ui.actionProbability_Distribution_Plot_and_Predictions, SIGNAL(triggered(bool)), SLOT(LDAProbabilityDistributionWithPredictions()));
 

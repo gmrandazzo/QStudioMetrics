@@ -11,11 +11,18 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Variable Plot Dialog</string>
+   <string>Variable Plot</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_7">
    <item row="2" column="0" colspan="4">
     <layout class="QGridLayout" name="gridLayout_6">
+     <item row="0" column="1">
+      <widget class="QPushButton" name="cancelButton">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="0">
       <spacer name="horizontalSpacer">
        <property name="orientation">
@@ -30,38 +37,7 @@
       </spacer>
      </item>
      <item row="0" column="2">
-      <widget class="QPushButton" name="cancelButton">
-       <property name="minimumSize">
-        <size>
-         <width>80</width>
-         <height>24</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>80</width>
-         <height>24</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Cancel</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="3">
       <widget class="QPushButton" name="okButton">
-       <property name="minimumSize">
-        <size>
-         <width>80</width>
-         <height>24</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>80</width>
-         <height>24</height>
-        </size>
-       </property>
        <property name="text">
         <string>OK</string>
        </property>

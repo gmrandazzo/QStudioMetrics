@@ -566,6 +566,7 @@ void Chart::SaveAsImage(QString imgname)
     QPainter painter(&printer);
     painter.setRenderHint(QPainter::Antialiasing, antialiasing);
     painter.setRenderHint(QPainter::TextAntialiasing, antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, antialiasing);
     painter.drawPixmap(rect(), pixmap);
   }
   else{
@@ -808,10 +809,11 @@ void Chart::refreshPixmap()
   /*pixmap.fill(this, 0, 0); OBSOLETE FUNCTION in qt5 */
 
   QPainter painter(&pixmap);
-  // painter.begin(painter.device());
   painter.setRenderHint(QPainter::Antialiasing, antialiasing);
   painter.setRenderHint(QPainter::TextAntialiasing, antialiasing);
+  painter.setRenderHint(QPainter::SmoothPixmapTransform, antialiasing);
 
+  // painter.begin(painter.device());
   //painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
   drawGrid(&painter);
@@ -927,7 +929,7 @@ void Chart::drawGrid(QPainter *painter)
   //qreal factor = rect.width()/480.;
   //  factor is DEPRECATED in favour of the possibility of produce custom size
 
-  QFont font("SansSerif", 5);
+  QFont font("Times", 12);
   font.setPointSizeF(font.pointSizeF()*axisValueSize);
   font.setStyleStrategy(QFont::ForceOutline);
   painter->setFont(font);
@@ -1010,6 +1012,7 @@ void Chart::drawGrid(QPainter *painter)
   qreal x = rect.left() + (dx * (rect.width() - 1) / settings.spanX());
   qreal y = rect.bottom() - (dy * (rect.height() - 1) / settings.spanY());
 
+  /*
   if(x > rect.left() && x < rect.right()){
     painter->drawLine(x, rect.top(), x, rect.bottom());
   }
@@ -1026,6 +1029,7 @@ void Chart::drawGrid(QPainter *painter)
                 Qt::AlignHCenter | Qt::AlignTop,
                 QString::number(0));
   }
+  */
 
   // Draw Axis names, titles and ticks.
   font.setPointSize(10); // Standard size
@@ -1306,7 +1310,7 @@ void Chart::drawScatters(QPainter *painter)
       qreal radius = p[i]->radius();
 
       if(p[i]->isSelected() == true){
-        QFont font("SansSerif", 8);
+        QFont font("Times", 14);
         painter->setPen(QPen(Qt::black, 0.5, Qt::SolidLine, Qt::RoundCap));
         font.setStyleStrategy(QFont::ForceOutline);
         font.setPixelSize(pxelsz);
