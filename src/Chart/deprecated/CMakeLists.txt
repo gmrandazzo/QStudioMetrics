@@ -38,10 +38,10 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
 #    DataVisualization)
 
 if(WIN32)
-  set(_components Core Gui Concurrent Widgets Network PrintSupport Charts)
+  set(_components Core Gui Concurrent Widgets WebKitWidgets Network PrintSupport Charts)
   add_definitions(-DWEBKIT)
 else()
-  set(_components Core Gui Concurrent Widgets PrintSupport Charts)
+  set(_components Core Gui Concurrent Widgets PrintSupport WebEngineCore WebEngineWidgets Charts)
 endif()
 
 foreach(_component ${_components})
@@ -80,6 +80,7 @@ set(CHART_SRC
     datapoint.cpp
     datacurve.cpp
     databar.cpp
+    qplotly.cpp
     chartqt.cpp
     chart.cpp)
 
@@ -88,6 +89,7 @@ set(CHART_H
     datapoint.h
     datacurve.h
     databar.h
+    qplotly.h
     chartqt.h
     chart.h)
 
@@ -111,10 +113,13 @@ add_library(libchart SHARED ${CHART_SRC} ${CHART_H} ${icon_RCC_SRCS} ${CHART_MOC
 set_target_properties(libchart PROPERTIES OUTPUT_NAME "chart")
 
 if(WIN32)
-  target_link_libraries(libchart  PRIVATE ${QT6_LIBRARIES} "-mwindows")
+  target_link_libraries(libchart  PRIVATE ${QT6_LIBRARIES} Qt6::WinMain "-mwindows")
 else()
   target_link_libraries(libchart PRIVATE ${QT6_LIBRARIES})
 endif()
+
+add_executable(testqplotly ${QPLOTLY_TEST_SRC})
+target_link_libraries(testqplotly PRIVATE libchart ${QT6_LIBRARIES})
 
 add_executable(testchart ${CHART_TEST_SRC})
 target_link_libraries(testchart PRIVATE libchart ${QT6_LIBRARIES})
