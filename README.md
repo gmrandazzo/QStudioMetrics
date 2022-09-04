@@ -57,10 +57,6 @@ make
 
 Binary releases for Windows and OSX at <https://github.com/gmrandazzo/QStudioMetrics/releases>.
 
-## Acknowledgments
-
-[Plotly Javascript](https://plotly.com/javascript/) - QStudioMetrics use plot.js as plot engine.
- 
 
 ## Supported platforms
 - Linux
