@@ -469,19 +469,19 @@ void ChartQt::refreshPlot()
         else{
             drawCurves();
         }
-        
+
         if(p.size() > 0 && seriesList.size() == p.size()){
             updateScatters();
         }
         else{
             drawScatters();
         }
-        
+
         chart()->setTitle(m_plottitle);
         chart()->axes()[0]->setTitleText(m_xaxisname);
         chart()->axes()[1]->setTitleText(m_yaxisname);
     }
-    
+
     if(b.size() > 0 && barsList.size() == b.size()){
         updateBars();
         chart()->setTitle(m_plottitle);
@@ -536,7 +536,6 @@ void ChartQt::setYaxisName(QString yaxisname)
 {
     m_yaxisname = yaxisname;
 }
-
 
 void ChartQt::setPlotTitle(QString plottitle)
 {
@@ -836,24 +835,24 @@ ChartQt::~ChartQt()
     for(i = 0; i < p.size(); i++)
         delete p[i];
     p.clear();
-    
+
     for(i = 0; i < seriesList.size(); i++)
         delete seriesList[i];
     seriesList.clear();
-    
+
     for(i = 0; i < curvesList.size(); i++)
         delete curvesList[i];
     curvesList.clear();
-    
+
     for(i = 0; i < barsList.size(); i++)
         delete barsList[i];
     barsList.clear();
-    
+
     for(i = 0; i < plotLabels.size(); i++)
         delete plotLabels[i];
     plotLabels.clear();
-    
-    
+
+
     /*delete zoomInButton;
     delete zoomOutButton;*/
     delete m_valueLabel;

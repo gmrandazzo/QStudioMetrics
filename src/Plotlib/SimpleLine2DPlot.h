@@ -9,7 +9,7 @@
 #include "ui_SimpleLine2DPlot.h"
 
 
-#include "Chart/chartqt.h"
+#include "Chart/chart.h"
 
 class SimpleLine2DPlot: public QWidget
 {
@@ -29,7 +29,7 @@ private slots:
 private:
   int random_(int low, int high);
   Ui::SimpleLine2DPlot ui;
-  ChartQt *chart;
+  Chart *chart;
 };
 
 #endif

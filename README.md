@@ -39,19 +39,12 @@ Install
 
 ## Compile from source
 
-If you have a recent qt version and QWebEngine support use:
 
 ```
 cmake .. -Wno-dev -DCMAKE_PREFIX_PATH=/usr/local/Cellar/qt/5.11.1/ -DLIBSCIENTIFIC_ROOT_DIR=/usr/local/Cellar/libscientific/HEAD-b4a8a4f/
 make
 ```
 
-For other qt versions with WebKit support pleas use this configuration:
-
-```
-cmake .. -Wno-dev -DCMAKE_PREFIX_PATH=/usr/local/Cellar/qt/5.11.1/ -DLIBSCIENTIFIC_ROOT_DIR=/usr/local/Cellar/libscientific/HEAD-b4a8a4f/ -DPLOT_ENGINE=WEBKIT
-make
-```
 
 ## Install binary release
 

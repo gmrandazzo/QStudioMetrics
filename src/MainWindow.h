@@ -13,8 +13,8 @@
 
 // Version
 #define major_ 2
-#define minor_ 0
-#define patch_ 2
+#define minor_ 1
+#define patch_ 0
 
 class MainWindow : public QMainWindow
 {

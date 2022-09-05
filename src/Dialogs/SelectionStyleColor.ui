@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>443</width>
-    <height>174</height>
+    <width>462</width>
+    <height>226</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -58,7 +58,6 @@
        </property>
        <property name="font">
         <font>
-         <weight>50</weight>
          <bold>false</bold>
         </font>
        </property>
@@ -89,7 +88,6 @@
        </property>
        <property name="font">
         <font>
-         <weight>50</weight>
          <bold>false</bold>
          <underline>false</underline>
         </font>
@@ -330,7 +328,13 @@
        <property name="minimumSize">
         <size>
          <width>70</width>
-         <height>24</height>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>32</height>
         </size>
        </property>
        <property name="text">
@@ -344,6 +348,12 @@
         <size>
          <width>70</width>
          <height>24</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>32</height>
         </size>
        </property>
        <property name="text">

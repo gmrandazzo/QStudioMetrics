@@ -37,16 +37,14 @@ void SimpleLine2DPlot::setPlotTitle(QString title)
 SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename, QString windowtitle, QString xaxestitle, QString yaxestitle)
 {
   ui.setupUi(this);
-
+  qDebug() <<  "First";
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
-  chart = new ChartQt(this);
+  chart = new Chart(this);
   plotLayout->addWidget(chart);
   ui.plotwidget->setLayout(plotLayout);
 
-  chart->setXaxisName(xaxestitle);
-  chart->setYaxisName(yaxestitle);
 
   for(uint j = 1; j < m->col; j++){
     //QVector< QPointF > curve;
@@ -60,6 +58,8 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename, QString windowt
     //chart->addCurve(curve, QString("%1").arg(curvenames[j-1]), Qt::red); Mediane
   }
 
+  chart->setXaxisName(xaxestitle);
+  chart->setYaxisName(yaxestitle);
   chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
@@ -68,11 +68,11 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename, QString windowt
 SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString windowtitle, QString xaxestitle, QString yaxestitle)
 {
   ui.setupUi(this);
-
+  qDebug() <<  "Second";
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
-  chart = new ChartQt(this);
+  chart = new Chart(this);
   plotLayout->addWidget(chart);
   ui.plotwidget->setLayout(plotLayout);
 
@@ -87,9 +87,6 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString wi
     }
   }
 
-  chart->setXaxisName(xaxestitle);
-  chart->setYaxisName(yaxestitle);
-
   for(uint j = 1; j < m->col; j++){
     QVector< QPointF > curve;
     for(uint i = 0; i < m->row; i++){
@@ -99,10 +96,13 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString wi
       curve.append(QPointF(x, y));
     }
     chart->addCurve(curve, QString("%1").arg(curvenames[j-1]), colors[j-1]);
-    chart->setCurveStyle(j-1, LM);
+    //chart->setCurveStyle(j-1, LM);
   }
 
+  chart->setXaxisName(xaxestitle);
+  chart->setYaxisName(yaxestitle);
   chart->Plot();
+
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
 }
@@ -110,11 +110,11 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString wi
 SimpleLine2DPlot::SimpleLine2DPlot(QList< matrix* > mlst, QStringList curvenames, QString windowtitle, QString xaxestitle, QString yaxestitle)
 {
   ui.setupUi(this);
-
+  qDebug() <<  "Third";
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
-  chart = new ChartQt(this);
+  chart = new Chart(this);
   plotLayout->addWidget(chart);
   ui.plotwidget->setLayout(plotLayout);
 
@@ -137,12 +137,11 @@ SimpleLine2DPlot::SimpleLine2DPlot(QList< matrix* > mlst, QStringList curvenames
       curve.append(QPointF(x, y));
     }
     chart->addCurve(curve, QString("%1").arg(curvenames[i]), colors[i]);
-    chart->setCurveStyle(i, LM);
+    //chart->setCurveStyle(i, LM);
   }
 
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
-
   chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));

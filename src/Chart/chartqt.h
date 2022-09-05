@@ -74,8 +74,8 @@ public:
     void RemoveAllCurves();
 
 //     void clearCurve(int id);
-
     void SaveAsImage(QString imgname);
+
 
 public slots:
     void showLabels();
@@ -115,7 +115,7 @@ private:
     QList<QXYSeries *> seriesList;
     QList<QXYSeries *> curvesList;
     QList<QBarSet *> barsList;
-    
+
     QPixmap pixmap;
     QString m_xaxisname, m_yaxisname, m_plottitle;
     bool antialiasing;

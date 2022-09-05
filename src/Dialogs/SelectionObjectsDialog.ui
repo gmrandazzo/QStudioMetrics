@@ -326,8 +326,8 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>60</width>
-         <height>16777215</height>
+         <width>80</width>
+         <height>32</height>
         </size>
        </property>
        <property name="text">
@@ -340,13 +340,13 @@
        <property name="minimumSize">
         <size>
          <width>80</width>
-         <height>0</height>
+         <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>60</width>
-         <height>16777215</height>
+         <width>80</width>
+         <height>32</height>
         </size>
        </property>
        <property name="text">

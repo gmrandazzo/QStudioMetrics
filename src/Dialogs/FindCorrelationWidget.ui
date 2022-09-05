@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>408</width>
-    <height>428</height>
+    <width>468</width>
+    <height>519</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -225,13 +225,13 @@
      <property name="minimumSize">
       <size>
        <width>80</width>
-       <height>24</height>
+       <height>32</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>130</width>
-       <height>24</height>
+       <height>32</height>
       </size>
      </property>
      <property name="text">
@@ -266,13 +266,13 @@
        <property name="minimumSize">
         <size>
          <width>150</width>
-         <height>24</height>
+         <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>188</width>
-         <height>24</height>
+         <width>16777215</width>
+         <height>32</height>
         </size>
        </property>
        <property name="text">
@@ -298,7 +298,13 @@
        <property name="minimumSize">
         <size>
          <width>150</width>
-         <height>24</height>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>32</height>
         </size>
        </property>
        <property name="text">
@@ -321,7 +327,13 @@
        <property name="minimumSize">
         <size>
          <width>150</width>
-         <height>24</height>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>32</height>
         </size>
        </property>
        <property name="text">
@@ -334,7 +346,13 @@
        <property name="minimumSize">
         <size>
          <width>150</width>
-         <height>24</height>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>32</height>
         </size>
        </property>
        <property name="text">
@@ -347,13 +365,13 @@
        <property name="minimumSize">
         <size>
          <width>150</width>
-         <height>24</height>
+         <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>188</width>
-         <height>24</height>
+         <width>16777215</width>
+         <height>32</height>
         </size>
        </property>
        <property name="text">
@@ -383,13 +401,13 @@
        <property name="minimumSize">
         <size>
          <width>70</width>
-         <height>24</height>
+         <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>70</width>
-         <height>24</height>
+         <height>32</height>
         </size>
        </property>
        <property name="text">
@@ -406,7 +424,6 @@
   <zorder>findButton</zorder>
   <zorder>horizontalSpacer_4</zorder>
   <zorder>horizontalSpacer_5</zorder>
-  <zorder></zorder>
   <zorder></zorder>
   <zorder>directly_proportional_checkBox</zorder>
  </widget>
