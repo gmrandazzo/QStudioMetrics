@@ -45,7 +45,7 @@ foreach(_component ${_components})
 endforeach()
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules/")
-find_package(Libscientific)
+find_package(libscientific)
 
 # Disable some warnings
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-extra-semi")

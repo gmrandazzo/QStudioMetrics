@@ -301,7 +301,7 @@ void DATAIO::GetArrayOrderRowCol(char *file_, const std::string  &sep, size_t *o
   file.close();
 }
 
-void DATAIO::ImportArray(char *file_, const std::string  &sep, tensor *data)
+void DATAIO::ImportTensor(char *file_, const std::string  &sep, tensor *data)
 {
   std::ifstream  file;
   std::string line;
@@ -527,7 +527,7 @@ void DATAIO::ImportUPCAModel(char *path_, UPCAMODEL* m)
   std::string sep = " \t";
   std::cout << "Import PCA " << path_ << std::endl;
   ImportMatrix(tscore, sep, m->scores);
-  ImportArray(ploadings, sep, m->loadings);
+  ImportTensor(ploadings, sep, m->loadings);
   ImportDvector(expvar, m->varexp);
   ImportMatrix(columnscaling, sep, m->colscaling);
   ImportMatrix(columnaverage, sep, m->colaverage);
@@ -571,34 +571,34 @@ void DATAIO::ImportUPLSModel(char *path_, UPLSMODEL* m)
 
   std::string sep = " \t";
   ImportMatrix(tscore, sep, m->xscores);
-  ImportArray(ploadings, sep, m->xloadings);
-  ImportArray(weights, sep, m->xweights);
+  ImportTensor(ploadings, sep, m->xloadings);
+  ImportTensor(weights, sep, m->xweights);
   ImportDvector(xexpvar, m->xvarexp);
   ImportMatrix(xcolumnaverage, sep, m->xcolaverage);
   ImportMatrix(xcolumnscaling, sep, m->xcolscaling);
 
 //   ImportDvector(path_, "/Y-ExpVar.txt", m->yvarexp);
   ImportMatrix(uscore, sep, m->yscores);
-  ImportArray(qloadings, sep, m->yloadings);
+  ImportTensor(qloadings, sep, m->yloadings);
   ImportMatrix(ycolumnaverage, sep, m->ycolaverage);
   ImportMatrix(ycolumnscaling, sep, m->ycolscaling);
 
   ImportDvector(bcoeff, m->b);
 
   ImportDvector(r2x, m->r2x_model);
-  ImportArray(r2y, sep, m->r2y_model);
-  ImportArray(sdec, sep, m->sdec);
-  ImportArray(recalc_y, sep, m->recalculated_y);
-  ImportArray(recalc_residuals, sep, m->recalc_residuals);
+  ImportTensor(r2y, sep, m->r2y_model);
+  ImportTensor(sdec, sep, m->sdec);
+  ImportTensor(recalc_y, sep, m->recalculated_y);
+  ImportTensor(recalc_residuals, sep, m->recalc_residuals);
 
   ImportDvector(validatedr2x, m->r2x_validation);
-  ImportArray(validatedq2y, sep, m->q2y);
-  ImportArray(validatedsdep, sep, m->sdep);
-  ImportArray(validatedypred, sep, m->predicted_y);
-  ImportArray(validatedypred_residuals, sep, m->pred_residuals);
+  ImportTensor(validatedq2y, sep, m->q2y);
+  ImportTensor(validatedsdep, sep, m->sdep);
+  ImportTensor(validatedypred, sep, m->predicted_y);
+  ImportTensor(validatedypred_residuals, sep, m->pred_residuals);
 
-  ImportArray(yscramblingq2y, sep, m->q2y_yscrambling);
-  ImportArray(yscramblingsdep, sep, m->sdep_yscrambling);
+  ImportTensor(yscramblingq2y, sep, m->q2y_yscrambling);
+  ImportTensor(yscramblingsdep, sep, m->sdep_yscrambling);
 }
 
 void DATAIO::ImportMLRModel(char *path_, MLRMODEL* m)
@@ -643,16 +643,23 @@ void DATAIO::ImportMLRModel(char *path_, MLRMODEL* m)
 void DATAIO::ImportLDAModel(char *path_, LDAMODEL* m)
 {
   uivector *otherinfo;
-  char acc[MAXCHARS], npv[MAXCHARS], ppv[MAXCHARS], spec[MAXCHARS], sens[MAXCHARS], pprob[MAXCHARS], eval[MAXCHARS],
-       mu[MAXCHARS], evect[MAXCHARS], mnpdf[MAXCHARS], features[MAXCHARS], inv_cov[MAXCHARS], others[MAXCHARS], classid[MAXCHARS],
-       fmean[MAXCHARS], fsdev[MAXCHARS];
+  char roc[MAXCHARS], roc_aucs[MAXCHARS], pr[MAXCHARS], pr_aucs[MAXCHARS],
+       pprob[MAXCHARS], eval[MAXCHARS], mu[MAXCHARS], evect[MAXCHARS],
+       mnpdf[MAXCHARS], features[MAXCHARS], inv_cov[MAXCHARS],
+       others[MAXCHARS], classid[MAXCHARS], fmean[MAXCHARS], fsdev[MAXCHARS],
+       recalculated_y[MAXCHARS], recalculated_residuals[MAXCHARS],
+       predicted_y[MAXCHARS], predicted_residuals[MAXCHARS];
 
-  strcpy(acc, path_); strcat(acc, "/ACC.txt");
-  strcpy(npv, path_); strcat(npv, "/NPV.txt");
-  strcpy(ppv, path_); strcat(ppv, "/PPV.txt");
-  strcpy(spec, path_); strcat(spec, "/SPEC.txt");
-  strcpy(sens, path_); strcat(sens, "/SENS.txt");
+  strcpy(roc, path_); strcat(roc, "/ROC.txt");
+  strcpy(roc_aucs, path_); strcat(roc_aucs, "/ROCAUCS.txt");
+  strcpy(pr, path_); strcat(pr, "/PRECISIONRECALL.txt");
+  strcpy(pr_aucs, path_); strcat(pr_aucs, "/PRECISIONRECALLAUCS.txt");
   strcpy(pprob, path_); strcat(pprob, "/PPROB.txt");
+
+  strcpy(recalculated_y, path_); strcat(recalculated_y, "/RECALCULATEDY.txt");
+  strcpy(recalculated_residuals, path_); strcat(recalculated_residuals, "/RECALCULATED_RESIDUALS.txt");
+  strcpy(predicted_y, path_); strcat(predicted_y, "/PRECISIONRECALLAUCS.txt");
+  strcpy(predicted_residuals, path_); strcat(predicted_residuals, "/PREDICTED_RESIDUALS.txt");
 
   strcpy(eval, path_); strcat(eval, "/EVAL.txt");
   strcpy(mu, path_); strcat(mu, "/MU.txt");
@@ -668,19 +675,22 @@ void DATAIO::ImportLDAModel(char *path_, LDAMODEL* m)
 
   std::string sep = " \t";
 
-  ImportDvector(acc, m->acc);
-  ImportDvector(npv, m->npv);
-  ImportDvector(ppv, m->ppv);
-  ImportDvector(spec, m->spec);
-  ImportDvector(sens, m->sens);
-  ImportDvector(pprob, m->pprob);
+  ImportTensor(roc, sep, m->roc);
+  ImportDvector(roc_aucs, m->roc_aucs);
+  ImportTensor(pr, sep, m->pr);
+  ImportDvector(pr_aucs, m->pr_aucs);
+
+  ImportMatrix(recalculated_y, sep, m->recalculated_y);
+  ImportMatrix(recalculated_residuals, sep, m->recalculated_residuals);
+  ImportMatrix(recalculated_y, sep, m->predicted_y);
+  ImportMatrix(recalculated_residuals, sep, m->predicted_residuals);
 
   ImportDvector(eval, m->eval);
   ImportMatrix(mu, sep, m->mu);
   ImportMatrix(evect, sep, m->evect);
-  ImportArray(mnpdf, sep, m->mnpdf);
+  ImportTensor(mnpdf, sep, m->mnpdf);
 
-  ImportArray(features, sep, m->features);
+  ImportTensor(features, sep, m->features);
   ImportMatrix(fmean, sep, m->fmean);
   ImportMatrix(fmean, sep, m->fsdev);
   ImportMatrix(inv_cov, sep, m->inv_cov);
@@ -759,7 +769,7 @@ void DATAIO::WriteMatrix(char *file_, matrix *m)
   out.close();
 }
 
-void DATAIO::WriteArray(char *file_, tensor *a)
+void DATAIO::WriteTensor(char *file_, tensor *a)
 {
   std::fstream out;
   out.open (file_, std::ios::out | std::ios::app);
@@ -888,7 +898,7 @@ void DATAIO::WriteUPCAModel(char *path_, UPCAMODEL* m)
   MakeDir(path_);
 
   WriteMatrix(tscore, m->scores);
-  WriteArray(ploadings, m->loadings);
+  WriteTensor(ploadings, m->loadings);
   WriteDvector(expvar, m->varexp);
   WriteMatrix(columnscaling, m->colscaling);
   WriteMatrix(columnaverage, m->colaverage);
@@ -937,34 +947,34 @@ void DATAIO::WriteUPLSModel(char *path_, UPLSMODEL* m)
   MakeDir(path_);
 
   WriteMatrix(tscore, m->xscores);
-  WriteArray(ploadings, m->xloadings);
-  WriteArray(weights, m->xweights);
+  WriteTensor(ploadings, m->xloadings);
+  WriteTensor(weights, m->xweights);
   WriteDvector(xexpvar, m->xvarexp);
   WriteMatrix(xcolumnaverage, m->xcolaverage);
   WriteMatrix(xcolumnscaling, m->xcolscaling);
 
 //   WriteDvector(path_, "/Y-ExpVar.txt", m->yvarexp);
   WriteMatrix(uscore, m->yscores);
-  WriteArray(qloadings, m->yloadings);
+  WriteTensor(qloadings, m->yloadings);
   WriteMatrix(ycolumnaverage, m->ycolaverage);
   WriteMatrix(ycolumnscaling, m->ycolscaling);
 
   WriteDvector(bcoeff, m->b);
 
   WriteDvector(r2x, m->r2x_model);
-  WriteArray(r2y, m->r2y_model);
-  WriteArray(sdec, m->sdec);
-  WriteArray(recalc_y, m->recalculated_y);
-  WriteArray(recalc_residuals, m->recalc_residuals);
+  WriteTensor(r2y, m->r2y_model);
+  WriteTensor(sdec, m->sdec);
+  WriteTensor(recalc_y, m->recalculated_y);
+  WriteTensor(recalc_residuals, m->recalc_residuals);
 
   WriteDvector(validatedr2x, m->r2x_validation);
-  WriteArray(validatedq2y, m->q2y);
-  WriteArray(validatedsdep, m->sdep);
-  WriteArray(validatedypred, m->predicted_y);
-  WriteArray(validatedypred_residuals, m->pred_residuals);
+  WriteTensor(validatedq2y, m->q2y);
+  WriteTensor(validatedsdep, m->sdep);
+  WriteTensor(validatedypred, m->predicted_y);
+  WriteTensor(validatedypred_residuals, m->pred_residuals);
 
-  WriteArray(yscramblingq2y, m->q2y_yscrambling);
-  WriteArray(yscramblingsdep, m->sdep_yscrambling);
+  WriteTensor(yscramblingq2y, m->q2y_yscrambling);
+  WriteTensor(yscramblingsdep, m->sdep_yscrambling);
 }
 
 void DATAIO::WriteMLRModel(char *path_, MLRMODEL* m)
@@ -1012,17 +1022,22 @@ void DATAIO::WriteMLRModel(char *path_, MLRMODEL* m)
 void DATAIO::WriteLDAModel(char *path_, LDAMODEL* m)
 {
   uivector *otherinfo;
-  char acc[MAXCHARS], npv[MAXCHARS], ppv[MAXCHARS], spec[MAXCHARS], sens[MAXCHARS], pprob[MAXCHARS], eval[MAXCHARS],
-       mu[MAXCHARS], evect[MAXCHARS], mnpdf[MAXCHARS], features[MAXCHARS], inv_cov[MAXCHARS], others[MAXCHARS], classid[MAXCHARS],
-       fmean[MAXCHARS], fsdev[MAXCHARS];
+  char roc[MAXCHARS], roc_aucs[MAXCHARS], pr[MAXCHARS], pr_aucs[MAXCHARS],
+       pprob[MAXCHARS], eval[MAXCHARS], mu[MAXCHARS], evect[MAXCHARS],
+       mnpdf[MAXCHARS], features[MAXCHARS], inv_cov[MAXCHARS],
+       others[MAXCHARS], classid[MAXCHARS], fmean[MAXCHARS], fsdev[MAXCHARS],
+       recalculated_y[MAXCHARS], recalculated_residuals[MAXCHARS],
+       predicted_y[MAXCHARS], predicted_residuals[MAXCHARS];
 
-  strcpy(acc, path_); strcat(acc, "/ACC.txt");
-  strcpy(npv, path_); strcat(npv, "/NPV.txt");
-  strcpy(ppv, path_); strcat(ppv, "/PPV.txt");
-  strcpy(spec, path_); strcat(spec, "/SPEC.txt");
-  strcpy(sens, path_); strcat(sens, "/SENS.txt");
+  strcpy(roc, path_); strcat(roc, "/ROC.txt");
+  strcpy(roc_aucs, path_); strcat(roc_aucs, "/ROCAUCS.txt");
+  strcpy(pr, path_); strcat(pr, "/PRECISIONRECALL.txt");
+  strcpy(pr_aucs, path_); strcat(pr_aucs, "/PRECISIONRECALLAUCS.txt");
+  strcpy(recalculated_y, path_); strcat(recalculated_y, "/RECALCULATEDY.txt");
+  strcpy(recalculated_residuals, path_); strcat(recalculated_residuals, "/RECALCULATED_RESIDUALS.txt");
+  strcpy(predicted_y, path_); strcat(predicted_y, "/PRECISIONRECALLAUCS.txt");
+  strcpy(predicted_residuals, path_); strcat(predicted_residuals, "/PREDICTED_RESIDUALS.txt");
   strcpy(pprob, path_); strcat(pprob, "/PPROB.txt");
-
   strcpy(eval, path_); strcat(eval, "/EVAL.txt");
   strcpy(mu, path_); strcat(mu, "/MU.txt");
   strcpy(evect, path_); strcat(evect, "/EVECT.txt");
@@ -1040,19 +1055,22 @@ void DATAIO::WriteLDAModel(char *path_, LDAMODEL* m)
 
   MakeDir(path_);
 
-  WriteDvector(acc, m->acc);
-  WriteDvector(npv, m->npv);
-  WriteDvector(ppv, m->ppv);
-  WriteDvector(spec, m->spec);
-  WriteDvector(sens, m->sens);
-  WriteDvector(pprob, m->pprob);
+  WriteTensor(roc, m->roc);
+  WriteDvector(roc_aucs, m->roc_aucs);
+  WriteTensor(pr, m->pr);
+  WriteDvector(pr_aucs, m->pr_aucs);
+
+  WriteMatrix(recalculated_y, m->recalculated_y);
+  WriteMatrix(recalculated_residuals, m->recalculated_residuals);
+  WriteMatrix(predicted_y, m->predicted_y);
+  WriteMatrix(predicted_residuals, m->predicted_residuals);
 
   WriteDvector(eval, m->eval);
   WriteMatrix(mu, m->mu);
   WriteMatrix(evect, m->evect);
-  WriteArray(mnpdf, m->mnpdf);
+  WriteTensor(mnpdf, m->mnpdf);
 
-  WriteArray(features, m->features);
+  WriteTensor(features, m->features);
   WriteMatrix(fmean, m->fmean);
   WriteMatrix(fmean, m->fsdev);
   WriteMatrix(inv_cov, m->inv_cov);

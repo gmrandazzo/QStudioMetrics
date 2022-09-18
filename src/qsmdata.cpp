@@ -146,7 +146,7 @@ void DATA::ImportFileArray(const FILEDATA& f)
   if(f.datatype == 2){ // import array
     addArray();
 
-    DATAIO::ImportArray(f.filename.toUtf8().data(),
+    DATAIO::ImportTensor(f.filename.toUtf8().data(),
                     f.separator.toStdString(),
                     getArray(ArrayCount()-1)->Array());
 
@@ -1479,43 +1479,51 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
 
   query.exec("SELECT * from ldaTable");
   while (query.next()){
-    //name, hashinputmx, objname, varname, validation, acc, npv, ppv, spec, sens, pprob, evect, eval,
-    // mu, mnpdf, features, fmean, fsdev, inv_cov, nclass, class_start, classid, classes, nameclasses
+    // name, hashinputmx, objname, varname, validation, roc, roc_aucs, pr, pr_aucs, recalculated_y, recalculated_residuals,
+    // predicted_y, predicted_residuals, pprob, evect, eval, mu, mnpdf, features, fmean, fsdev,
+    // inv_cov, nclass, class_start, classid, classes, nameclasses
+
     QString name =  query.value(0).toString();
     QString hashinputmx =  query.value(1).toString();
     QString serialized_objname =  query.value(2).toString();
     QString serialized_varname =  query.value(3).toString();
     int validationtype =  query.value(4).toInt();
-    QString serialized_acc = query.value(5).toString();
-    QString serialized_npv = query.value(6).toString();
-    QString serialized_ppv = query.value(7).toString();
-    QString serialized_spec = query.value(8).toString();
-    QString serialized_sens = query.value(9).toString();
-    QString serialized_prob = query.value(10).toString();
-    QString serialized_evect = query.value(11).toString();
-    QString serialized_eval = query.value(12).toString();
-    QString serialized_mu = query.value(13).toString();
-    QString serialized_mnpdf = query.value(14).toString();
-    QString serialized_features = query.value(15).toString();
-    QString serialized_fmean = query.value(16).toString();
-    QString serialized_fsdev = query.value(17).toString();
-    QString serialized_inv_cov = query.value(18).toString();
-    int nclass = query.value(19).toInt();
-    int class_start = query.value(20).toInt();
-    QString serialized_classid = query.value(21).toString();
-    QString serialized_classes = query.value(22).toString();
-    QString serialized_nameclasses = query.value(23).toString();
+    QString serialized_roc = query.value(5).toString();
+    QString serialized_roc_aucs = query.value(6).toString();
+    QString serialized_pr = query.value(7).toString();
+    QString serialized_pr_aucs = query.value(8).toString();
+    QString serialized_recalculated_y = query.value(9).toString();
+    QString serialized_recalculated_residuals = query.value(10).toString();
+    QString serialized_predicted_y = query.value(11).toString();
+    QString serialized_predicted_residuals = query.value(12).toString();
+    QString serialized_prob = query.value(13).toString();
+    QString serialized_evect = query.value(14).toString();
+    QString serialized_eval = query.value(15).toString();
+    QString serialized_mu = query.value(16).toString();
+    QString serialized_mnpdf = query.value(17).toString();
+    QString serialized_features = query.value(18).toString();
+    QString serialized_fmean = query.value(19).toString();
+    QString serialized_fsdev = query.value(20).toString();
+    QString serialized_inv_cov = query.value(21).toString();
+    int nclass = query.value(22).toInt();
+    int class_start = query.value(23).toInt();
+    QString serialized_classid = query.value(24).toString();
+    QString serialized_classes = query.value(25).toString();
+    QString serialized_nameclasses = query.value(26).toString();
 
     addLDAModel();
     getLastLDAModel()->setName(name);
     getLastLDAModel()->setModelID((*mid_));
     getLastLDAModel()->getObjName() = DeserializeQStringList(serialized_objname);
     getLastLDAModel()->getVarName() = DeserializeQStringList(serialized_varname);
-    DeserializeDVector(serialized_acc, &getLastLDAModel()->Model()->acc);
-    DeserializeDVector(serialized_npv, &getLastLDAModel()->Model()->npv);
-    DeserializeDVector(serialized_ppv, &getLastLDAModel()->Model()->ppv);
-    DeserializeDVector(serialized_spec, &getLastLDAModel()->Model()->spec);
-    DeserializeDVector(serialized_sens, &getLastLDAModel()->Model()->sens);
+    DeserializeTensor(serialized_roc, &getLastLDAModel()->Model()->roc);
+    DeserializeDVector(serialized_roc_aucs, &getLastLDAModel()->Model()->roc_aucs);
+    DeserializeTensor(serialized_pr, &getLastLDAModel()->Model()->pr);
+    DeserializeDVector(serialized_pr_aucs, &getLastLDAModel()->Model()->pr_aucs);
+    DeserializeMatrix(serialized_recalculated_y, &getLastLDAModel()->Model()->recalculated_y);
+    DeserializeMatrix(serialized_recalculated_residuals, &getLastLDAModel()->Model()->recalculated_residuals);
+    DeserializeMatrix(serialized_predicted_y, &getLastLDAModel()->Model()->predicted_y);
+    DeserializeMatrix(serialized_predicted_residuals, &getLastLDAModel()->Model()->predicted_residuals);
     DeserializeDVector(serialized_prob, &getLastLDAModel()->Model()->pprob);
     DeserializeDVector(serialized_eval, &getLastLDAModel()->Model()->eval);
     DeserializeMatrix(serialized_evect, &getLastLDAModel()->Model()->evect);
@@ -1575,7 +1583,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         getLastLDAModel()->getLastLDAPrediction()->setDataHash(ldapredlist[j][2]);
         getLastLDAModel()->getLastLDAPrediction()->getObjName() = DeserializeQStringList(ldapredlist[j][3]);
         getLastLDAModel()->getLastLDAPrediction()->getVarName() = DeserializeQStringList(ldapredlist[j][4]);
-        DeserializeUIVector(ldapredlist[j][5], getLastLDAModel()->getLastLDAPrediction()->getPredClassesPointer());
+        DeserializeMatrix(ldapredlist[j][5], getLastLDAModel()->getLastLDAPrediction()->getPredClassesPointer());
         DeserializeMatrix(ldapredlist[j][6], getLastLDAModel()->getLastLDAPrediction()->getPredFeaturesPointer());
         DeserializeMatrix(ldapredlist[j][7], getLastLDAModel()->getLastLDAPrediction()->getProbPredPointer());
         QStringList pred_classes = ldapredlist[j][8].split("\\");
@@ -1679,7 +1687,7 @@ QString DATA::SaveData(QString savepath)
     for(int i = 0; i < ArrayCount(); i++){
       QString arname = QString::fromUtf8(arpath.toUtf8())+QString::fromUtf8(getArray(i)->getName().toUtf8());
       DATAIO::MakeDir(arname.toUtf8().data());
-      DATAIO::WriteArray(QString(QString::fromUtf8(arname.toUtf8())+"/data.txt").toUtf8().data(), getArray(i)->Array());
+      DATAIO::WriteTensor(QString(QString::fromUtf8(arname.toUtf8())+"/data.txt").toUtf8().data(), getArray(i)->Array());
       WriteList(getArray(i)->getObjName(), arname+"/label.txt");
       QStringList varname = getArray(i)->getVarName();
       varname.removeFirst();
@@ -1880,7 +1888,7 @@ QString DATA::SaveSQLData(QString savepath)
       saveMatrixToSQL(&query, getMatrix(i));
     }
   }
-  
+
   pbdialog.setValue(1);
 
   query.exec(QString("CREATE TABLE IF NOT EXISTS arrayTable (name TEXT, objname TEXT, varname  TEXT, ar TEXT)"));
@@ -2006,7 +2014,7 @@ QString DATA::SaveSQLData(QString savepath)
   }
 
   query.exec(QString("CREATE TABLE IF NOT EXISTS plsTable (name TEXT, nlvs INT, xscalingtype INT, yscalingtype INT, hashinputmx TEXT, objname TEXT, xvarname TEXT, yvarname TEXT, tscores TEXT, ploadings  TEXT, weights TEXT, xvarexp TEXT, xcolscaling TEXT, xcolaverage TEXT, uscores TEXT, qloadings TEXT, ycolscaling TEXT, ycolaverage TEXT, b TEXT, r2y_model TEXT, sdec TEXT, recalc_y TEXT, recalc_residuals TEXT, validationtype INT, q2y TEXT, sdep TEXT, bias TEXT, predicted_y TEXT, predicted_residuals TEXT, roc_recalculated TEXT, roc_validation TEXT, roc_auc_recalculated TEXT, roc_auc_validation TEXT, precision_recall_recalculated TEXT, precision_recall_validation TEXT, precision_recall_ap_recalculated TEXT, precision_recall_ap_validation TEXT, yscrambling TEXT, yscrambling TEXT)"));
-  
+
   QString plsTable_query_str;
   plsTable_query_str.append("CREATE TABLE IF NOT EXISTS plsTable (");
   plsTable_query_str.append("name TEXT, ");
@@ -2049,7 +2057,7 @@ QString DATA::SaveSQLData(QString savepath)
   plsTable_query_str.append("yscrambling TEXT");
   plsTable_query_str.append(")");
   query.exec(plsTable_query_str);
-  
+
   query.exec(QString("CREATE TABLE IF NOT EXISTS plspredTable (name TEXT, plshash TEXT, hashinputmx TEXT, objname TEXT, yvarname TEXT, tscores TEXT, predicted_y TEXT, r2y TEXT, sdec TXT)"));
   if(PLSCount() > 0){
     for(int i = 0; i < PLSCount(); i++){
@@ -2174,7 +2182,7 @@ QString DATA::SaveSQLData(QString savepath)
       plsTable_pepare_query_str.append(":yscrambling");
       plsTable_pepare_query_str.append(")");
       query.prepare(plsTable_pepare_query_str);
-      
+
       query.bindValue(":name", modname);
       query.bindValue(":nlvs", getPLSModelAt(i)->getNPC());
       query.bindValue(":xscalingtype", getPLSModelAt(i)->getXScaling());
@@ -2261,9 +2269,9 @@ QString DATA::SaveSQLData(QString savepath)
   mlrTable_query_str.append("predicted_residuals TEXT, ");
   mlrTable_query_str.append("yscrambling TEXT");
   mlrTable_query_str.append(")");
-  
+
   query.exec(mlrTable_query_str);
-  
+
   query.exec(QString("CREATE TABLE IF NOT EXISTS mlrpredTable (name TEXT, mlrhash TEXT, hashinputmx TEXT, objname TEXT, yvarname TEXT, predicted_y TEXT, r2y TEXT, sdec TXT)"));
   if(MLRCount() > 0){
     for(int i = 0; i < MLRCount(); i++){
@@ -2335,14 +2343,15 @@ QString DATA::SaveSQLData(QString savepath)
       QString modname = getLDAModelAt(i)->getName()/*.remove("LDA - ", Qt::CaseSensitive).trimmed()*/;
       QString objname_serialized = SerializeQStringList(getLDAModelAt(i)->getObjName());
       QString varname_serialized = SerializeQStringList(getLDAModelAt(i)->getVarName());
-
-      QString serialized_accuracy = SerializeDVector(getLDAModelAt(i)->Model()->acc);
-      QString serialized_negativepredictedvalues = SerializeDVector(getLDAModelAt(i)->Model()->npv);
-      QString serialized_positivepredictedvalues = SerializeDVector(getLDAModelAt(i)->Model()->ppv);
-      QString serialized_specificity = SerializeDVector(getLDAModelAt(i)->Model()->spec);
-      QString serialized_sensitivity = SerializeDVector(getLDAModelAt(i)->Model()->sens);
+      QString serialized_roc = SerializeTensor(getLDAModelAt(i)->Model()->roc);
+      QString serialized_roc_aucs = SerializeDVector(getLDAModelAt(i)->Model()->roc_aucs);
+      QString serialized_pr = SerializeTensor(getLDAModelAt(i)->Model()->pr);
+      QString serialized_pr_aucs = SerializeDVector(getLDAModelAt(i)->Model()->pr_aucs);
+      QString serialized_recaculated_y = SerializeMatrix(getLDAModelAt(i)->Model()->recalculated_y);
+      QString serialized_recalculated_residuals = SerializeMatrix(getLDAModelAt(i)->Model()->recalculated_residuals);
+      QString serialized_predicted_y = SerializeMatrix(getLDAModelAt(i)->Model()->predicted_y);
+      QString serialized_predicted_residuals = SerializeMatrix(getLDAModelAt(i)->Model()->predicted_residuals);
       QString serialized_priorprobability = SerializeDVector(getLDAModelAt(i)->Model()->pprob);
-
       QString serialized_eigenvalues = SerializeDVector(getLDAModelAt(i)->Model()->eval);
       QString serialized_eigenvectors = SerializeMatrix(getLDAModelAt(i)->Model()->evect);
       QString serialized_mu = SerializeMatrix(getLDAModelAt(i)->Model()->mu);
@@ -2365,17 +2374,20 @@ QString DATA::SaveSQLData(QString savepath)
 
       QString serialized_nameclasses = SerializeQStringList(nameclasses);
 
-      query.prepare("INSERT INTO ldaTable (name, hashinputmx, objname, varname, validation, acc, npv, ppv, spec, sens, pprob, evect, eval, mu, mnpdf, features, fmean, fsdev, inv_cov, nclass, class_start, classid, classes, nameclasses) VALUES (:name, :hashinputmx, :objname, :varname, :validation, :acc, :npv, :ppv, :spec, :sens, :pprob, :evect, :eval, :mu, :mnpdf, :features, :fmean, :fsdev, :inv_cov, :nclass, :class_start, :classid, :classes, :nameclasses)");
+      query.prepare("INSERT INTO ldaTable (name, hashinputmx, objname, varname, validation, roc, roc_aucs, pr, pr_aucs, recalculated_y, recalculated_residuals, predicted_y, predicted_residuals, pprob, evect, eval, mu, mnpdf, features, fmean, fsdev, inv_cov, nclass, class_start, classid, classes, nameclasses) VALUES (:name, :hashinputmx, :objname, :varname, :validation, :roc, :roc_aucs, :pr, :pr_aucs, :recalculated_y, :recalculated_residuals, :predicted_y, :predicted_residuals, :pprob, :evect, :eval, :mu, :mnpdf, :features, :fmean, :fsdev, :inv_cov, :nclass, :class_start, :classid, :classes, :nameclasses)");
       query.bindValue(":name", modname);
       query.bindValue(":hashinputmx", getLDAModelAt(i)->getDataHash());
       query.bindValue(":objname", objname_serialized);
       query.bindValue(":varname", varname_serialized);
       query.bindValue(":validation", getLDAModelAt(i)->getValidation());
-      query.bindValue(":acc", serialized_accuracy);
-      query.bindValue(":npv", serialized_negativepredictedvalues);
-      query.bindValue(":ppv", serialized_positivepredictedvalues);
-      query.bindValue(":spec", serialized_specificity);
-      query.bindValue(":sens", serialized_sensitivity);
+      query.bindValue(":roc", serialized_roc);
+      query.bindValue(":roc_aucs", serialized_roc_aucs);
+      query.bindValue(":pr", serialized_pr);
+      query.bindValue(":pr_aucs", serialized_pr_aucs);
+      query.bindValue(":recalculated_y", serialized_recaculated_y);
+      query.bindValue(":recalculated_residuals", serialized_recalculated_residuals);
+      query.bindValue(":predicted_y", serialized_predicted_y);
+      query.bindValue(":predicted_residuals", serialized_predicted_residuals);
       query.bindValue(":pprob", serialized_priorprobability);
       query.bindValue(":evect", serialized_eigenvectors);
       query.bindValue(":eval", serialized_eigenvalues);
@@ -2397,7 +2409,7 @@ QString DATA::SaveSQLData(QString savepath)
         for(int j = 0; j < getLDAModelAt(i)->LDAPredictionCount(); j++){
           QString pred_objname_serialized = SerializeQStringList(getLDAModelAt(i)->getLDAPrediction(j)->getObjName());
           QString pred_varname_serialized = SerializeQStringList(getLDAModelAt(i)->getLDAPrediction(j)->getVarName());
-          QString pred_serialized_predicted_class = SerializeUIVector(getLDAModelAt(i)->getLDAPrediction(j)->getPredClasses());
+          QString pred_serialized_predicted_class = SerializeMatrix(getLDAModelAt(i)->getLDAPrediction(j)->getPredClasses());
           QString pred_serialized_predicted_features = SerializeMatrix(getLDAModelAt(i)->getLDAPrediction(j)->getPredFeatures());
           QString pred_serialized_probability = SerializeMatrix(getLDAModelAt(i)->getLDAPrediction(j)->getProbPred());
           QString pred_serialized_mnpdf = SerializeMatrix(getLDAModelAt(i)->getLDAPrediction(j)->getMVNProbDistrib());

@@ -29,8 +29,8 @@ public:
   void setNameClasses(QStringList nameclasses_){ nameclasses = nameclasses_; }
   QList < QStringList >  &getClasses(){ return classes; }
   QStringList &getNameClasses(){ return nameclasses; }
-  uivector *getPredClasses(){ return pclass; }
-  uivector **getPredClassesPointer(){ return &pclass; }
+  matrix *getPredClasses(){ return pclass; }
+  matrix **getPredClassesPointer(){ return &pclass; }
   void setPredID(int id_){ id = id_; }
   int getPredID(){ return id; }
   void setDID(int id){ did = id; }
@@ -55,7 +55,7 @@ private:
   matrix *pfeatures;
   matrix *probpred;
   matrix *mnpdf;
-  uivector *pclass;
+  matrix *pclass;
 };
 
 class LDAModel

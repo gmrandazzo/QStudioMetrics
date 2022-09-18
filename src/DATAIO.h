@@ -21,7 +21,7 @@ namespace DATAIO {
   void GetMatrixRowCol(char *file_, const std::string &sep, size_t *row, size_t *col);
   void ImportMatrix(char *file_, const std::string &sep, matrix *data);
   void GetArrayOrderRowCol(char *file_, const std::string &sep, size_t *order, size_t *row, size_t *col);
-  void ImportArray(char *file_, const std::string &sep, tensor *data);
+  void ImportTensor(char *file_, const std::string &sep, tensor *data);
 
   void GetVectorSize(char *file_, size_t *size_);
   void ImportStrvector(char *file_, strvector **strv);
@@ -40,7 +40,7 @@ namespace DATAIO {
   void WriteDvector(char *file_, dvector *v);
   void WriteUIvector(char *file_, uivector *v);
   void WriteMatrix(char *file_, matrix *m);
-  void WriteArray(char *file_, tensor *a);
+  void WriteTensor(char *file_, tensor *a);
   void WritePCAModel(char *path_, PCAMODEL *m);
   void WritePLSModel(char *path_, PLSMODEL* m);
   void WriteUPCAModel(char *path_, UPCAMODEL *m);

@@ -89,7 +89,7 @@ void RUN::DoMDCSelection()
 
 void RUN::DoLDAPrediction()
 {
-  uivector *py = ldamodel->getLastLDAPrediction()->getPredClasses();
+  matrix *py = ldamodel->getLastLDAPrediction()->getPredClasses();
   matrix *pfeatures = ldamodel->getLastLDAPrediction()->getPredFeatures();
   matrix *probpred = ldamodel->getLastLDAPrediction()->getProbPred();
   matrix *mvnpfd = ldamodel->getLastLDAPrediction()->getMVNProbDistrib();
@@ -98,42 +98,48 @@ void RUN::DoLDAPrediction()
 
 void RUN::DoLDAValidation()
 {
-  DelDVector(&ldamodel->Model()->sens);
-  DelDVector(&ldamodel->Model()->spec);
-  DelDVector(&ldamodel->Model()->ppv);
-  DelDVector(&ldamodel->Model()->npv);
-  DelDVector(&ldamodel->Model()->acc);
+  DelTensor(&ldamodel->Model()->roc);
+  DelDVector(&ldamodel->Model()->roc_aucs);
+  DelTensor(&ldamodel->Model()->pr);
+  DelDVector(&ldamodel->Model()->pr_aucs);
+  DelMatrix(&ldamodel->Model()->predicted_y);
+  DelMatrix(&ldamodel->Model()->predicted_residuals);
 
-  initDVector(&ldamodel->Model()->sens);
-  initDVector(&ldamodel->Model()->spec);
-  initDVector(&ldamodel->Model()->ppv);
-  initDVector(&ldamodel->Model()->npv);
-  initDVector(&ldamodel->Model()->acc);
+  initTensor(&ldamodel->Model()->roc);
+  initDVector(&ldamodel->Model()->roc_aucs);
+  initTensor(&ldamodel->Model()->pr);
+  initDVector(&ldamodel->Model()->pr_aucs);
+  initMatrix(&ldamodel->Model()->predicted_y);
+  initMatrix(&ldamodel->Model()->predicted_residuals);
+
+  MODELINPUT minpt;
+  minpt.mx = &x;
+  minpt.my = &y;
+  minpt.nlv = 0;
+  minpt.xautoscaling = 0;
+  minpt.yautoscaling = 0;
 
   if(vt == LOO_){ // Leave One Out
-    LDALOOCV(x, uiv,
-                      &ldamodel->Model()->sens,
-                      &ldamodel->Model()->spec,
-                      &ldamodel->Model()->ppv,
-                      &ldamodel->Model()->npv,
-                      &ldamodel->Model()->acc,
-                      QThread::idealThreadCount(), &scientifisignal);
+    LeaveOneOut(&minpt, _LDA_, &ldamodel->Model()->predicted_y, &ldamodel->Model()->predicted_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
   }
-  else{ // Cross Validation
-    LDARandomGroupsCV(x, uiv,
-                      ngroup, niter,
-                      &ldamodel->Model()->sens,
-                      &ldamodel->Model()->spec,
-                      &ldamodel->Model()->ppv,
-                      &ldamodel->Model()->npv,
-                      &ldamodel->Model()->acc,
-                      QThread::idealThreadCount(), &scientifisignal);
+  else if(vt == KFOLDCV_){
+    KFoldCV(&minpt, uiv, _LDA_, &ldamodel->Model()->predicted_y, &ldamodel->Model()->predicted_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
   }
+  else{
+    BootstrapRandomGroupsCV(&minpt, ngroup, niter, _LDA_, &ldamodel->Model()->predicted_y, &ldamodel->Model()->predicted_residuals, QThread::idealThreadCount(), &scientifisignal, 0);
+  }
+
+  LDAMulticlassStatistics(x,
+                          ldamodel->Model()->predicted_y,
+                          &ldamodel->Model()->roc,
+                          &ldamodel->Model()->roc_aucs,
+                          &ldamodel->Model()->pr,
+                          &ldamodel->Model()->pr_aucs);
 }
 
 void RUN::DoLDA()
 {
-  LDA(x, uiv, ldamodel->Model());
+  LDA(x, y, ldamodel->Model());
 }
 
 void RUN::DoMLRPrediction()
@@ -197,7 +203,7 @@ void RUN::DoMLRValidation()
       varg.rgcv_group = ngroup;
       varg.rgcv_iterations = niter;
     }
-    YScrambling(&minpt, _PLS_, varg, n_yscrambling, &mlrmodel->Model()->r2q2scrambling, QThread::idealThreadCount(), &scientifisignal);
+    YScrambling(&minpt, _MLR_, varg, n_yscrambling, &mlrmodel->Model()->r2q2scrambling, QThread::idealThreadCount(), &scientifisignal);
   }
 }
 
@@ -322,7 +328,7 @@ void RUN::DoPLSValidation()
   DelMatrix(&plsmod->Model()->roc_auc_validation);
   DelTensor(&plsmod->Model()->precision_recall_validation);
   DelMatrix(&plsmod->Model()->precision_recall_ap_validation);
-  
+
   //initMatrix(&plsmod->Model()->r2y_recalculated);
   //initMatrix(&plsmod->Model()->sdec);
   initMatrix(&plsmod->Model()->q2y);

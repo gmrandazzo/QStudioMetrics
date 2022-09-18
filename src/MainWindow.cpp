@@ -1899,19 +1899,34 @@ void MainWindow::showLDAValidation()
     child->setWindowID(tabid);
     matrix *valid;
     initMatrix(&valid);
-    MatrixAppendCol(&valid, projects->value(pid)->getLDAModel(mid)->Model()->sens);
-    MatrixAppendCol(&valid, projects->value(pid)->getLDAModel(mid)->Model()->spec);
-    MatrixAppendCol(&valid, projects->value(pid)->getLDAModel(mid)->Model()->ppv);
-    MatrixAppendCol(&valid, projects->value(pid)->getLDAModel(mid)->Model()->npv);
-    MatrixAppendCol(&valid, projects->value(pid)->getLDAModel(mid)->Model()->acc);
+    QStringList headername;
+    headername << "Classes";
+    for(size_t k = 0; k < projects->value(pid)->getLDAModel(mid)->Model()->roc->order; k++){
+      headername << QString("ROC FP Rate - %1").arg(QString::number(k+1))  << QString("ROC TP Rate - %1").arg(QString::number(k+1));
+      dvector *fpr = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->roc->m[k], 0);
+      dvector *tpr = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->roc->m[k], 1);
+      MatrixAppendCol(&valid, fpr);
+      MatrixAppendCol(&valid, tpr);
+      DelDVector(&fpr);
+      DelDVector(&tpr);
+    }
+
+    for(size_t k = 0; k < projects->value(pid)->getLDAModel(mid)->Model()->roc->order; k++){
+      headername << QString("PR Recall - %1").arg(QString::number(k+1))  << QString("PR Precision Rate - %1").arg(QString::number(k+1));
+      dvector *recall = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->pr->m[k], 0);
+      dvector *precision = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->pr->m[k], 1);
+      MatrixAppendCol(&valid, recall);
+      MatrixAppendCol(&valid, precision);
+      DelDVector(&recall);
+      DelDVector(&precision);
+    }
 
     child->newTable(tabname, valid);
     QStringList objname;
     for(size_t i = 0; i < valid->row; i++)
       objname.append(QString("Class %1").arg(QString::number(i+1)));
     child->getTable()->model()->setObjNames(objname);
-    QStringList headername;
-    headername << "Classes" << "Sensitivity" << "Specificity" << "Pos Pred Val" << "Neg Pred Val" << "Accuracy";
+
     child->getTable()->model()->setHorizontalHeaderLabels(headername);
     child->show();
     child->getTable()->setPID(pid);
@@ -1927,30 +1942,18 @@ void MainWindow::showLDAPrediction()
     int mid = getCurrentPredictionModelID();
     int tabid = getCurrentPredictionTableID();
     if(pid > -1 && mid > -1 && tabid > -1){
+
       QString projectname = projects->value(pid)->getProjectName();
-      QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
+      QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
       int predid = getCurrentPredictionID();
-      QString tabname = projectname + " - " + modelname + " - LDA Predicted Class" + " - " +  ui.treeWidget->currentItem()->text(0);
+      QString tabname = projectname + " - " + modelname + " - LDa Predicted Class" + " - " +  ui.treeWidget->currentItem()->text(0);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
-
-      QStringList header;
-
-      uivector *pclass = projects->value(pid)->getLDAModel(mid)->getLDAPrediction(predid)->getPredClasses();
-
-      QList<QStringList> tabclasspred;
-
-      for(int i = 0; i < projects->value(pid)->getLDAModel(mid)->getLDAPrediction(predid)->getObjName().size(); i++){
-        tabclasspred.append(QStringList());
-        tabclasspred.last().append(projects->value(pid)->getLDAModel(mid)->getNameClasses()[pclass->data[i]]);
-      }
-
-      child->newTable(tabname, tabclasspred, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-      child->getTable()->model()->setObjNames(projects->value(pid)->getLDAModel(mid)->getLDAPrediction(predid)->getObjName());
-
-      header << firstcol_name << "Predicted Class";
-
-      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->newTable(tabname, projects->value(pid)->getLDAModel(mid)->getLDAPrediction(predid)->getPredClasses());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getPCAModel(mid)->getPCAPrediction(predid)->getObjName());
+      QStringList headername;
+      headername << firstcol_name << "Predicted Class";
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
       child->show();
       child->getTable()->setPID(pid);
       connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
@@ -6722,10 +6725,10 @@ void MainWindow::DoLDAPrediction()
         }
 
         QList< QStringList > classes;
-        int maxclass = projects->value(pid)->getLDAModel(mid)->getLastLDAPrediction()->getPredClasses()->data[0];
-        for(size_t i = 1; i <  projects->value(pid)->getLDAModel(mid)->getLastLDAPrediction()->getPredClasses()->size; i++){
-          if(projects->value(pid)->getLDAModel(mid)->getLastLDAPrediction()->getPredClasses()->data[i] > (size_t)maxclass)
-            maxclass = projects->value(pid)->getLDAModel(mid)->getLastLDAPrediction()->getPredClasses()->data[i];
+        int maxclass = projects->value(pid)->getLDAModel(mid)->getLastLDAPrediction()->getPredClasses()->data[0][0];
+        for(size_t i = 1; i <  projects->value(pid)->getLDAModel(mid)->getLastLDAPrediction()->getPredClasses()->row; i++){
+          if(projects->value(pid)->getLDAModel(mid)->getLastLDAPrediction()->getPredClasses()->data[i][0] > (size_t)maxclass)
+            maxclass = projects->value(pid)->getLDAModel(mid)->getLastLDAPrediction()->getPredClasses()->data[i][0];
           else
             continue;
         }
@@ -6735,8 +6738,8 @@ void MainWindow::DoLDAPrediction()
           classes.append(QStringList());
 
 
-        for(size_t i = 1; i <  projects->value(pid)->getLDAModel(mid)->getLastLDAPrediction()->getPredClasses()->size; i++){
-          int cid = projects->value(pid)->getLDAModel(mid)->getLastLDAPrediction()->getPredClasses()->data[i];
+        for(size_t i = 1; i <  projects->value(pid)->getLDAModel(mid)->getLastLDAPrediction()->getPredClasses()->row; i++){
+          int cid = projects->value(pid)->getLDAModel(mid)->getLastLDAPrediction()->getPredClasses()->data[i][0];
           classes[cid].append(objsel[i]);
         }
 
@@ -6910,19 +6913,19 @@ void MainWindow::DoLDA()
         projects->value(pid)->getLastLDAModel()->setNameClasses(nameclasses);
 
         matrix *x;
-        uivector *y;
+        matrix *y;
         NewMatrix(&x, objsel.size(), varsel.size());
-        NewUIVector(&y, objsel.size());
+        NewMatrix(&y, objsel.size(), 1);
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
-
+        PrintMatrix(x)
         // Rudimental y class preparation
         for(int i = 0; i < projects->value(pid)->getMatrix(did)->getObjName().size(); i++){
           int ii = _index_of_(objsel, projects->value(pid)->getMatrix(did)->getObjName()[i]);
           if(ii > -1){
             for(int j = 0; j < classes.size(); j++){
               if(classes[j].contains(projects->value(pid)->getMatrix(did)->getObjName()[i]) == true){
-                y->data[ii] = j;
+                y->data[ii][0] = j;
                 break;
               }
               else{
@@ -6935,10 +6938,11 @@ void MainWindow::DoLDA()
           }
           QApplication::processEvents();
         }
+        PrintMatrix(y)
 
         RUN obj;
         obj.setXMatrix(x);
-        obj.setUIVector(y);
+        obj.setMatrix(y);
         obj.setLDAModel(projects->value(pid)->getLastLDAModel());
 
         QFuture<void> future = obj.RunLDA();
@@ -6980,7 +6984,7 @@ void MainWindow::DoLDA()
         }
 
         DelMatrix(&x);
-        DelUIVector(&y);
+        DelMatrix(&y);
         TopMenuEnableDisable();
         CalculationMenuEnable();
         StopRun();

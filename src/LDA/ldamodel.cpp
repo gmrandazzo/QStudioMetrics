@@ -58,7 +58,7 @@ void LDAPREDICTION::WriteLDAPrediction(char *path, char* dirname)
     DATA::WriteList(classes[i], QString("%1/Class-%2.txt").arg(QString::fromUtf8(prediction.toUtf8())).arg(nameclasses[i]));
   }
 
-  DATAIO::WriteUIvector(QString(QString("%1/PredClass.txt").arg(QString::fromUtf8(prediction.toUtf8()))).toUtf8().data(), pclass);
+  DATAIO::WriteMatrix(QString(QString("%1/PredClass.txt").arg(QString::fromUtf8(prediction.toUtf8()))).toUtf8().data(), pclass);
   DATAIO::WriteMatrix(QString(QString::fromUtf8(prediction.toUtf8())+"/PredFeatures.txt").toUtf8().data(), pfeatures);
   DATAIO::WriteMatrix(QString(QString::fromUtf8(prediction.toUtf8())+"/Probability.txt").toUtf8().data(), probpred);
   DATA::WriteList(getObjName(), QString::fromUtf8(prediction.toUtf8())+"/label.txt");
@@ -87,7 +87,7 @@ void LDAPREDICTION::ImportLDAPrediction(char *path, char *name_)
     }
    }
 
-  DATAIO::ImportUIvector(QString(QString("%1/PredClass.txt").arg(QString::fromUtf8(path))).toUtf8().data(), pclass);
+  DATAIO::ImportMatrix(QString(QString("%1/PredClass.txt").arg(QString::fromUtf8(path))).toUtf8().data(), std::string("\t").c_str(), pclass);
   DATAIO::ImportMatrix(QString(QString::fromUtf8(path)+"/PredFeatures.txt").toUtf8().data(), std::string("\t").c_str(), pfeatures);
   DATAIO::ImportMatrix(QString(QString::fromUtf8(path)+"/Probability.txt").toUtf8().data(), std::string("\t").c_str(), probpred);
   DATA::ImportRows(QString::fromUtf8(path)+"/label.txt", objname);
@@ -95,7 +95,7 @@ void LDAPREDICTION::ImportLDAPrediction(char *path, char *name_)
 
 LDAPREDICTION::LDAPREDICTION()
 {
-  initUIVector(&pclass);
+  initMatrix(&pclass);
   initMatrix(&pfeatures);
   initMatrix(&probpred);
   initMatrix(&mnpdf);
@@ -105,7 +105,7 @@ LDAPREDICTION::~LDAPREDICTION(){
   #ifdef DEBUG
   qDebug() << "Delete LDAPREDICTION: " << name;
   #endif
-  DelUIVector(&pclass);
+  DelMatrix(&pclass);
   DelMatrix(&pfeatures);
   DelMatrix(&probpred);
   DelMatrix(&mnpdf);
