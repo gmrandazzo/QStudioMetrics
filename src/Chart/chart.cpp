@@ -879,6 +879,7 @@ void Chart::drawGrid(QPainter *painter)
 
   painter->setRenderHint(QPainter::Antialiasing, antialiasing);
   painter->setRenderHint(QPainter::TextAntialiasing, antialiasing);
+  painter->setRenderHint(QPainter::SmoothPixmapTransform, antialiasing);
 
   QRect rect(Margin, Margin, width() - 2 * Margin, height() - 2 * Margin);
   if(!rect.isValid())
@@ -929,9 +930,14 @@ void Chart::drawGrid(QPainter *painter)
   //qreal factor = rect.width()/480.;
   //  factor is DEPRECATED in favour of the possibility of produce custom size
 
-  QFont font("Times", 10);
+  QFont font("Helvetica", 10);
+  //font.setBold(true);
   font.setPointSizeF(font.pointSizeF()*axisValueSize);
-  font.setStyleStrategy(QFont::ForceOutline);
+  font.setStyleStrategy(QFont::PreferAntialias);
+  font.setStyleHint(QFont::SansSerif,QFont::PreferOutline);
+  
+  //font.setStyleStrategy(QFont::ForceOutline);
+  //font.setStyleStrategy(QFont::PreferAntialias);
   painter->setFont(font);
 
   for (qreal ix = min; ix < max; ix += stepx){
@@ -1072,6 +1078,7 @@ void Chart::drawCurves(QPainter *painter)
   #endif
   painter->setRenderHint(QPainter::Antialiasing, antialiasing);
   painter->setRenderHint(QPainter::TextAntialiasing, antialiasing);
+  painter->setRenderHint(QPainter::SmoothPixmapTransform, antialiasing);
 
   PlotSettings settings = zoomStack[curZoom];
   QRect rect(Margin, Margin,
@@ -1220,6 +1227,7 @@ void Chart::drawScatters(QPainter *painter)
   #endif
   painter->setRenderHint(QPainter::Antialiasing, antialiasing);
   painter->setRenderHint(QPainter::TextAntialiasing, antialiasing);
+  painter->setRenderHint(QPainter::SmoothPixmapTransform, antialiasing);
 
   PlotSettings settings = zoomStack[curZoom];
   QRect rect(Margin,
@@ -1255,8 +1263,11 @@ void Chart::drawScatters(QPainter *painter)
         double y = rect.bottom() - (dy * (rect.height() - 1) / settings.spanY());
         qreal radius = p[i]->radius();
         QRectF point = QRectF(x-radius/2., y-radius/2., radius, radius);
-
-        painter->setRenderHint(QPainter::Antialiasing);
+        
+        painter->setRenderHint(QPainter::Antialiasing, antialiasing);
+        painter->setRenderHint(QPainter::TextAntialiasing, antialiasing);
+        painter->setRenderHint(QPainter::SmoothPixmapTransform, antialiasing);
+        
         painter->setPen(QPen(Qt::red, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
         //painter->drawEllipse(point);
 
@@ -1310,9 +1321,14 @@ void Chart::drawScatters(QPainter *painter)
       qreal radius = p[i]->radius();
 
       if(p[i]->isSelected() == true){
-        QFont font("Times", 14);
+        QFont font("Helvetica", 14);
+        //font.setBold(true);
+        font.setStyleStrategy(QFont::PreferAntialias);
+        font.setStyleHint(QFont::SansSerif,QFont::PreferOutline);
+  
         painter->setPen(QPen(Qt::black, 0.5, Qt::SolidLine, Qt::RoundCap));
-        font.setStyleStrategy(QFont::ForceOutline);
+        //font.setStyleStrategy(QFont::ForceOutline);
+        //font.setStyleStrategy(QFont::PreferAntialias);
         font.setPixelSize(pxelsz);
         painter->setFont(font);
 

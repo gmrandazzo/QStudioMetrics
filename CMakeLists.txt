@@ -35,7 +35,7 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
 #    OpenGL)
 
 
-set(_components Core Core5Compat Gui Widgets WebEngineWidgets Sql PrintSupport Concurrent Charts)
+set(_components Core Core5Compat Gui Widgets Sql PrintSupport Concurrent Charts)
 foreach(_component ${_components})
   find_package(Qt6 COMPONENTS ${_component} REQUIRED)
   list(APPEND QT6_LIBRARIES ${Qt6${_component}_LIBRARIES})
