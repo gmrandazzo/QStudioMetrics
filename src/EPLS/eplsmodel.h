@@ -16,8 +16,8 @@ public:
   ~EPLSPREDICTION();
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
-  void setObjName(QStringList &objname_){ objname = objname_; }
-  void setYVarName(QStringList &yvarname_){ yvarname = yvarname_; }
+  void setObjName(const QStringList &objname_){ objname = objname_; }
+  void setYVarName(const QStringList &yvarname_){ yvarname = yvarname_; }
   QStringList &getObjName(){ return objname; }
   QStringList &getYVarName(){ return yvarname; }
   void setPredID(int id_){ id = id_; }
@@ -75,12 +75,12 @@ public:
 
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
-  void setObjName(QStringList &objname_){ objname = objname_; }
+  void setObjName(const QStringList &objname_){ objname = objname_; }
   QStringList &getObjName(){ return objname; }
-  void setXVarName(QStringList &varname_){ xvarname = varname_; }
+  void setXVarName(const QStringList &varname_){ xvarname = varname_; }
   QStringList &getXVarName(){ return xvarname; }
-  void setYVarName(QStringList &varname_){ yvarname = varname_; }
-  void setClasses(LABELS &classes_){ classes = classes_; cnames.clear(); for(int i = 0; i < classes.size(); i++){cnames << classes[i].name;}}
+  void setYVarName(const QStringList &varname_){ yvarname = varname_; }
+  void setClasses(const LABELS &classes_){ classes = classes_; cnames.clear(); for(int i = 0; i < classes.size(); i++){cnames << classes[i].name;}}
   LABELS getClasses(){ return classes; }
   QStringList &getYVarName(){if(algtype == EPLS_){return yvarname;}else{return cnames;} }
   void setAlgorithm(int algtype_){ algtype = algtype_; };

@@ -14,7 +14,7 @@ class ExtractDataDialog : public QDialog
   Q_OBJECT
   
 public:  
-  ExtractDataDialog(PROJECTS *projects);
+  explicit ExtractDataDialog(PROJECTS *projects);
   ~ExtractDataDialog();
   
   int getProjectID(){ return pid; }

@@ -22,9 +22,9 @@ class Model : public QAbstractTableModel
 {
   Q_OBJECT
 public:
-  Model(QObject *parent = 0);
-  Model(matrix *m_, QObject* parent);
-  Model(QList<QStringList> tab_, QObject* parent);
+  explicit Model(QObject *parent = 0);
+  explicit Model(matrix *m_, QObject* parent);
+  explicit Model(QList<QStringList> tab_, QObject* parent);
   ~Model();
 
   void setItem(uint row, uint col, double value);
@@ -74,11 +74,11 @@ class Table : public QWidget
   Q_OBJECT
 
 public:
-  Table(QWidget *parent = 0);
-  Table(matrix *m_, QWidget *parent = 0);
-  Table(matrix *m_, LABELS *objlabels_, LABELS *varlabels_, QWidget *parent = 0);
-  Table(QList<QStringList> tab, LABELS *objlabels_, LABELS *varlabels_, QWidget *parent = 0);
-  Table(QStringList names, QList<QPixmap> images, QList<QColor> colors, QWidget *parent = 0);
+  explicit Table(QWidget *parent = 0);
+  explicit Table(matrix *m_, QWidget *parent = 0);
+  explicit Table(matrix *m_, LABELS *objlabels_, LABELS *varlabels_, QWidget *parent = 0);
+  explicit Table(QList<QStringList> tab, LABELS *objlabels_, LABELS *varlabels_, QWidget *parent = 0);
+  explicit Table(QStringList names, QList<QPixmap> images, QList<QColor> colors, QWidget *parent = 0);
   ~Table();
 
   void setPID(int pid_){ pid = pid_; } /*used for img signal*/

@@ -127,7 +127,7 @@
      <x>0</x>
      <y>0</y>
      <width>916</width>
-     <height>24</height>
+     <height>40</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -264,13 +264,13 @@
       <iconset resource="icons/icons.qrc">
        <normaloff>:/discriminant_analysis.png</normaloff>:/discriminant_analysis.png</iconset>
      </property>
-     <addaction name="action2D_Feature_Plot"/>
-     <addaction name="actionProbability_Distribution_Plot"/>
+     <addaction name="actionLDA2D_Feature_Plot"/>
+     <addaction name="actionLDAProbability_Distribution_Plot"/>
      <addaction name="actionLDAROC_Curve"/>
      <addaction name="actionLDAPrecision_Recall_Curve"/>
      <addaction name="separator"/>
-     <addaction name="action2D_Feature_Plot_and_Predictions"/>
-     <addaction name="actionProbability_Distribution_Plot_and_Predictions"/>
+     <addaction name="actionLDA2D_Feature_Plot_and_Predictions"/>
+     <addaction name="actionLDAProbability_Distribution_Plot_and_Predictions"/>
     </widget>
     <widget class="QMenu" name="menuPlot_PCA_Model">
      <property name="title">
@@ -1188,7 +1188,7 @@
     <string>LDA Prediction</string>
    </property>
   </action>
-  <action name="action2D_Feature_Plot">
+  <action name="actionLDA2D_Feature_Plot">
    <property name="text">
     <string>2D Feature Plot</string>
    </property>
@@ -1198,12 +1198,12 @@
     <string>3D Feature Plot</string>
    </property>
   </action>
-  <action name="actionProbability_Distribution_Plot">
+  <action name="actionLDAProbability_Distribution_Plot">
    <property name="text">
     <string>Probability Distribution Plot</string>
    </property>
   </action>
-  <action name="action2D_Feature_Plot_and_Predictions">
+  <action name="actionLDA2D_Feature_Plot_and_Predictions">
    <property name="text">
     <string>2D Feature Plot and Predictions</string>
    </property>
@@ -1213,7 +1213,7 @@
     <string>3D Feature Plot and Predictions</string>
    </property>
   </action>
-  <action name="actionProbability_Distribution_Plot_and_Predictions">
+  <action name="actionLDAProbability_Distribution_Plot_and_Predictions">
    <property name="text">
     <string>Probability Distribution Plot and Predictions</string>
    </property>

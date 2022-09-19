@@ -2336,7 +2336,7 @@ QString DATA::SaveSQLData(QString savepath)
     }
   }
 
-  query.exec(QString("CREATE TABLE IF NOT EXISTS ldaTable (name TEXT, hashinputmx TEXT, objname TEXT, varname TEXT, validation INT, acc TEXT, npv TEXT, ppv TEXT, spec TEXT, sens TEXT, pprob TEXT, evect TEXT, eval TEXT, mu TEXT, mnpdf TEXT, features TEXT, fmean TEXT, fsdev TEXT, inv_cov TEXT, nclass INT, class_start INT, classid TEXT, classes TEXT, nameclasses TEXT)"));
+  query.exec(QString("CREATE TABLE IF NOT EXISTS ldaTable (name TEXT, hashinputmx TEXT, objname TEXT, varname TEXT, validation INT, roc TEXT, roc_aucs TEXT, pr TEXT, pr_aucs TEXT, recalculated_y TEXT, recalculated_residuals TEXT, predicted_y TEXT, predicted_residuals TEXT, pprob TEXT, evect TEXT, eval TEXT, mu TEXT, mnpdf TEXT, features TEXT, fmean TEXT, fsdev TEXT, inv_cov TEXT, nclass INT, class_start INT, classid TEXT, classes TEXT, nameclasses TEXT)"));
   query.exec(QString("CREATE TABLE IF NOT EXISTS ldapredTable (name TEXT, ldahash TEXT, hashinputmx TEXT, objname TEXT, varname TEXT, pred_class TEXT, pred_features TEXT, prob TEXT, classes TEXT, nameclasses TEXT, mnpdf TEXT)"));
   if(LDACount() > 0){
     for(int i = 0; i < LDACount(); i++){

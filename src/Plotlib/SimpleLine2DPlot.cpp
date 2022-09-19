@@ -29,6 +29,16 @@ void SimpleLine2DPlot::SavePlotImage()
   }
 }
 
+void SimpleLine2DPlot::setXminXmaxXTick(double xmin, double xmax, int xtick)
+{
+  chart->setXminXmaxXTick(xmin, xmax, xtick);
+}
+
+void SimpleLine2DPlot::setYminYmaxYTick(double ymin, double ymax, int ytick)
+{
+  chart->setYminYmaxYTick(ymin, ymax, ytick);
+}
+
 void SimpleLine2DPlot::setPlotTitle(QString title)
 {
   chart->setPlotTitle(title);
@@ -37,7 +47,6 @@ void SimpleLine2DPlot::setPlotTitle(QString title)
 SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename, QString windowtitle, QString xaxestitle, QString yaxestitle)
 {
   ui.setupUi(this);
-  qDebug() <<  "First";
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
@@ -68,7 +77,6 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename, QString windowt
 SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString windowtitle, QString xaxestitle, QString yaxestitle)
 {
   ui.setupUi(this);
-  qDebug() <<  "Second";
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();
@@ -110,7 +118,6 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames, QString wi
 SimpleLine2DPlot::SimpleLine2DPlot(QList< matrix* > mlst, QStringList curvenames, QString windowtitle, QString xaxestitle, QString yaxestitle)
 {
   ui.setupUi(this);
-  qDebug() <<  "Third";
   setWindowTitle(windowtitle);
 
   QVBoxLayout *plotLayout = new QVBoxLayout();

@@ -54,3 +54,8 @@ Binary releases for Windows and OSX at <https://github.com/gmrandazzo/QStudioMet
 - Linux
 - Windows
 - Mac intel/silicon
+
+## Known bugs
+
+- Hierarchical clustering: the problem belongs to the original libscientific library
+

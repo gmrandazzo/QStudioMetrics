@@ -13,7 +13,7 @@ class ListView : public QWidget
   Q_OBJECT
 
 public:
-  ListView(QStringList);
+  explicit ListView(QStringList);
 
 private slots:
   void copy();

@@ -12,13 +12,13 @@ class ProjectManager: public QDialog
   Q_OBJECT
 
 public:
-  ProjectManager(DATA *data_);
+  explicit ProjectManager(DATA *data_);
   ~ProjectManager();
   void setWindowName(QString name_);
   void setAppend(bool appendstate_);
   QString getName(){ return ui.lineEdit->text(); }
   void setName(QString name){ ui.lineEdit->setText(name); }
-  void setLastPath(QString &lastpath_){ lastpath = lastpath_; }
+  void setLastPath(const QString &lastpath_){ lastpath = lastpath_; }
   QString &getLastPath(){ return lastpath; }
   
 private slots:

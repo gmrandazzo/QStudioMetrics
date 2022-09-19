@@ -9,7 +9,17 @@
 class DirCompressor
 {
 public:
-  DirCompressor(){ fsupported << ".txt" << ".jpg" << ".jpeg" << ".png" << ".bmp" << ".ppm" << ".xbp" << ".xmp"; }
+  DirCompressor(){
+  	dtype = clevel = -1;
+  	fsupported << ".txt";
+  	fsupported << ".jpg";
+  	fsupported << ".jpeg";
+  	fsupported << ".png";
+  	fsupported << ".bmp";
+  	fsupported << ".ppm";
+  	fsupported << ".xbp";
+  	fsupported << ".xmp";
+  }
   int compress();
   int decompress();
   void setFile(const char *file);

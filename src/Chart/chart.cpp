@@ -929,7 +929,7 @@ void Chart::drawGrid(QPainter *painter)
   //qreal factor = rect.width()/480.;
   //  factor is DEPRECATED in favour of the possibility of produce custom size
 
-  QFont font("Times", 12);
+  QFont font("Times", 10);
   font.setPointSizeF(font.pointSizeF()*axisValueSize);
   font.setStyleStrategy(QFont::ForceOutline);
   painter->setFont(font);
@@ -951,7 +951,7 @@ void Chart::drawGrid(QPainter *painter)
         else{
           painter->drawText(x - 50, rect.bottom() + 10, 100, 15,
                           Qt::AlignHCenter | Qt::AlignTop,
-                          QString::number(ix, 'g', getDecimals(stepx)));
+                          QString::number(ix, 'f', getDecimals(stepx)));
           /*
           painter->drawText(x - 2, rect.bottom()+20, QString::number(ix, 'g', getDecimals(stepx)));
           */
@@ -996,7 +996,7 @@ void Chart::drawGrid(QPainter *painter)
       else{
         painter->drawText(rect.left() - Margin -5, y - 10, Margin - 5, 20,
                        Qt::AlignRight | Qt::AlignVCenter,
-                       QString::number(iy, 'g', getDecimals(stepy)));
+                       QString::number(iy, 'f', getDecimals(stepy)));
       }
     }
     else{
@@ -1052,11 +1052,11 @@ void Chart::drawGrid(QPainter *painter)
   // write y axis name vertically
   font.setPointSize(10); // Standard size
   font.setPointSizeF(font.pointSizeF()*yLabelSize);
-  painter->save();
+  painter->save(); // ???
   qreal ymarkTextWidth = (qreal)fm.horizontalAdvance(m_yaxisname);
   y = Margin + (rect.bottom() - rect.top())/2. + ymarkTextWidth/2.;
   // painter->translate(rect.left() - (Margin+40), y + 160);
-  painter->translate(rect.left() - Margin/2., y);
+  painter->translate(rect.left() - Margin/1.2, y);
   painter->rotate(270); // or 270
   painter->drawText(0, 0, m_yaxisname);
   painter->restore();

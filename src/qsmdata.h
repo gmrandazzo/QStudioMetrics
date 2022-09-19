@@ -57,8 +57,8 @@ struct QPairComparerDescending
 class DVECTOR
 {
 public:
-  DVECTOR(){ initDVector(&v); }
-  DVECTOR(uint n){ NewDVector(&v, n); }
+  explicit DVECTOR(){ initDVector(&v); }
+  explicit DVECTOR(uint n){ NewDVector(&v, n); }
   ~DVECTOR(){
     #ifdef DEBUG
     qDebug() << "Delete DVector";

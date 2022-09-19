@@ -21,6 +21,8 @@ public:
   // Simple Line Plot with one x (first column of m) and more y objects
   SimpleLine2DPlot(matrix *m, QString curvename, QString windowtitle, QString xaxestitle, QString yaxestitle);
   void setPlotTitle(QString);
+  void setXminXmaxXTick(double xmin, double xmax, int xtick);
+  void setYminYmaxYTick(double ymin, double ymax, int ytick);
 
 private slots:
   void slotExit();

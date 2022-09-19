@@ -1115,7 +1115,7 @@ void ScatterPlot::DoClusterAnalysis()
         coordinates->data[i][1] = chart->getPoint(i)->y();
       }
 
-      int ncluster = 2;
+      int ncluster = 2; // minimum number of clusters
       if(docluster.ValidateCluster() == true){
         RUN obj2;
 
@@ -1233,53 +1233,58 @@ void ScatterPlot::DoClusterAnalysis()
     }
     else{
       matrix *m;
-
       int dataid = GetIDinmxlst(docluster.getDataHash());
-      m = (*mxlst)[dataid]->Matrix();
+      if(dataid > -1){
+        m = (*mxlst)[dataid]->Matrix();
 
-      int ncluster = 2;
-      if(docluster.ValidateCluster() == true){
-        RUN obj2;
+        int ncluster = 2;
+        if(docluster.ValidateCluster() == true){
+          RUN obj2;
 
-        dvector *toplot;
-        initDVector(&toplot);
+          dvector *toplot;
+          initDVector(&toplot);
 
-        obj2.setMatrix(m);
-        obj2.setDVector(toplot);
-        obj2.setValidationType(docluster.getVaidationType());
-        obj2.setNumberOfGroups(docluster.getNGroups());
-        obj2.setNumberOfIterations(docluster.getNIterations());
-        obj2.setNMaxClusters(docluster.getMaxClustersNumber());
+          obj2.setMatrix(m);
+          obj2.setDVector(toplot);
+          obj2.setValidationType(docluster.getVaidationType());
+          obj2.setNumberOfGroups(docluster.getNGroups());
+          obj2.setNumberOfIterations(docluster.getNIterations());
+          obj2.setNMaxClusters(docluster.getMaxClustersNumber());
 
-        StartRun();
-        QFuture<void> future = obj2.RunClusterValidation();
+          StartRun();
+          QFuture<void> future = obj2.RunClusterValidation();
 
-        while(!future.isFinished()){
-          if(abort == true){
-            obj2.AbortRun();
-            QApplication::processEvents();
-          }
-          else{
-            QApplication::processEvents();
-          }
-        }
-
-        StopRun();
-
-        if(toplot->size > 0){
-
-          QString yaxestitle;
-          if(docluster.getVaidationType() == JUMPMETHOD){
-            yaxestitle = "Jumps";
-          }
-          else{
-            yaxestitle = "K-Means Distance Minimization";
+          while(!future.isFinished()){
+            if(abort == true){
+              obj2.AbortRun();
+              QApplication::processEvents();
+            }
+            else{
+              QApplication::processEvents();
+            }
           }
 
-          ValidationClusterPlot vclusterplot(toplot, yaxestitle);
-          if(vclusterplot.exec() == QDialog::Accepted){
-            ncluster = vclusterplot.getNClusters();
-            DelDVector(&toplot);
+          StopRun();
+
+          if(toplot->size > 0){
+
+            QString yaxestitle;
+            if(docluster.getVaidationType() == JUMPMETHOD){
+              yaxestitle = "Jumps";
+            }
+            else{
+              yaxestitle = "K-Means Distance Minimization";
+            }
+
+            ValidationClusterPlot vclusterplot(toplot, yaxestitle);
+            if(vclusterplot.exec() == QDialog::Accepted){
+              ncluster = vclusterplot.getNClusters();
+              DelDVector(&toplot);
+            }
+            else{
+              DelDVector(&toplot);
+              return;
+            }
           }
           else{
             DelDVector(&toplot);
@@ -1287,81 +1292,80 @@ void ScatterPlot::DoClusterAnalysis()
           }
         }
         else{
-          DelDVector(&toplot);
-          return;
+          ncluster = docluster.getNumberOfClusters();
         }
-      }
-      else{
-        ncluster = docluster.getNumberOfClusters();
-      }
 
-      RUN obj;
-      obj.setMatrix(m);
-      obj.setUIVector(clusterids);
-      obj.setClusteringAlgorithm(docluster.getAlgorithmType());
-      obj.setNumberOfCluster(ncluster);
-      obj.setObjectSelectionType(docluster.getExtractObjects());
-      obj.setNMaxObjects(docluster.getNMaxObjects());
+        RUN obj;
+        obj.setMatrix(m);
+        obj.setUIVector(clusterids);
+        obj.setClusteringAlgorithm(docluster.getAlgorithmType());
+        obj.setNumberOfCluster(ncluster);
+        obj.setObjectSelectionType(docluster.getExtractObjects());
+        obj.setNMaxObjects(docluster.getNMaxObjects());
 
-      StartRun();
-      QFuture<void> future = obj.RunClustering();
+        StartRun();
+        QFuture<void> future = obj.RunClustering();
 
-      while(!future.isFinished()){
-        if(abort == true){
-          obj.AbortRun();
-          QApplication::processEvents();
-        }
-        else{
-          QApplication::processEvents();
-        }
-      }
-
-
-      QList<QColor> colors = GenColorList(ncluster);
-
-      // Set Labels
-      LABELS clusterobjlabels;
-      if(docluster.SaveClusterLabels() == true){
-        for(int i = 0; i < ncluster; i++){
-          clusterobjlabels.append(LABEL());
-          clusterobjlabels.last().name = QString("%1 - %2").arg(docluster.getClusterLabelSufix()).arg(QString::number(i+1));
-        }
-      }
-
-      for(uint i = 0; i < clusterids->size; i++){
-        int objid = -1;
-        for(int j = 0; j < chart->PointSize(); j++){
-          if((*mxlst)[dataid]->getObjName()[i].compare(chart->getPoint(j)->name()) == 0){
-            objid = j;
-            break;
+        while(!future.isFinished()){
+          if(abort == true){
+            obj.AbortRun();
+            QApplication::processEvents();
           }
           else{
-            continue;
+            QApplication::processEvents();
           }
         }
 
-        if(objid > -1){
-          int cid = getUIVectorValue(clusterids, i)-1;
-          if(cid > -1){
-            chart->getPoint(objid)->setColor(colors[cid]);
-            if(docluster.SaveClusterLabels() == true){
-              clusterobjlabels[cid].objects.append(chart->getPoint(objid)->name());
+
+        QList<QColor> colors = GenColorList(ncluster);
+
+        // Set Labels
+        LABELS clusterobjlabels;
+        if(docluster.SaveClusterLabels() == true){
+          for(int i = 0; i < ncluster; i++){
+            clusterobjlabels.append(LABEL());
+            clusterobjlabels.last().name = QString("%1 - %2").arg(docluster.getClusterLabelSufix()).arg(QString::number(i+1));
+          }
+        }
+
+        for(uint i = 0; i < clusterids->size; i++){
+          int objid = -1;
+          for(int j = 0; j < chart->PointSize(); j++){
+            if((*mxlst)[dataid]->getObjName()[i].compare(chart->getPoint(j)->name()) == 0){
+              objid = j;
+              break;
+            }
+            else{
+              continue;
+            }
+          }
+
+          if(objid > -1){
+            int cid = getUIVectorValue(clusterids, i)-1;
+            if(cid > -1){
+              chart->getPoint(objid)->setColor(colors[cid]);
+              if(docluster.SaveClusterLabels() == true){
+                clusterobjlabels[cid].objects.append(chart->getPoint(objid)->name());
+              }
+            }
+            else{
+              continue;
             }
           }
           else{
             continue;
           }
         }
-        else{
-          continue;
+
+        if(docluster.SaveClusterLabels() == true){
+          objlabels->append(clusterobjlabels);
         }
-      }
 
-      if(docluster.SaveClusterLabels() == true){
-        objlabels->append(clusterobjlabels);
+        StopRun();
       }
-
-      StopRun();
+      else{
+        QMessageBox::warning(this, tr("Clustering Error"), tr("Unable to run clustering\n Please select the data where to run the clustering algorithm."), QMessageBox::Ok);
+      }
     }
     DelUIVector(&clusterids);
   }

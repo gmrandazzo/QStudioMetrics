@@ -11,7 +11,7 @@ class ModelInfo : public QWidget
   Q_OBJECT
 
 public:
-  ModelInfo(QWidget *parent = 0);
+  explicit ModelInfo(QWidget *parent = 0);
   void Adjust();
   void setText(QStringList textlst);
 

@@ -14,7 +14,7 @@ class AdvancedPretreatmentDialog : public QDialog
   Q_OBJECT
 
 public:
-  AdvancedPretreatmentDialog(PROJECTS *projects_);
+  explicit AdvancedPretreatmentDialog(PROJECTS *projects_);
   ~AdvancedPretreatmentDialog();
   MATRIX *getMergedMatrix(){ return mx; }
   int getProjectID(){ return pid; }

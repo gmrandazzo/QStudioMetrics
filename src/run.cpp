@@ -26,16 +26,16 @@ void RUN::DoClustering()
 {
   if(objselectiontype == 3){ /*get all objects...*/
     if(clusteralgoritm < 4){
-      KMeans(m, nclusters, clusteralgoritm, &uiv, NULL, QThread::idealThreadCount(), &scientifisignal);
+      KMeans(m, nclusters+1, clusteralgoritm, &uiv, NULL, QThread::idealThreadCount(), &scientifisignal);
     }
     else{
-      HierarchicalClustering(m, nclusters, &uiv, NULL, &dendogram, (enum LinkageType)linktype, QThread::idealThreadCount(), &scientifisignal);
+      HierarchicalClustering(m, nclusters+1, &uiv, NULL, &dendogram, (enum LinkageType)linktype, QThread::idealThreadCount(), &scientifisignal);
     }
   }
   else{
     matrix *centroids;
     initMatrix(&centroids);
-    KMeans(m, nclusters, clusteralgoritm, &uiv, &centroids, QThread::idealThreadCount(), &scientifisignal);
+    KMeans(m, nclusters+1, clusteralgoritm, &uiv, &centroids, QThread::idealThreadCount(), &scientifisignal);
     PruneResults(m, centroids, nmaxobjects, objselectiontype, uiv, QThread::idealThreadCount());
     DelMatrix(&centroids);
   }

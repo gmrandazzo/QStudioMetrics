@@ -21,11 +21,11 @@ public:
   void WriteLDAPredictionInfo(char *path);
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
-  void setObjName(QStringList &objname_){ objname = objname_; }
+  void setObjName(const QStringList &objname_){ objname = objname_; }
   QStringList &getVarName(){ return varname; }
   void setVarName(QStringList varname_){ varname = varname_; }
   QStringList &getObjName(){ return objname; }
-  void setClasses(QList < QStringList >  &classes_){ classes = classes_; }
+  void setClasses(const QList < QStringList >  &classes_){ classes = classes_; }
   void setNameClasses(QStringList nameclasses_){ nameclasses = nameclasses_; }
   QList < QStringList >  &getClasses(){ return classes; }
   QStringList &getNameClasses(){ return nameclasses; }
@@ -70,9 +70,9 @@ public:
   void WriteLDAModelInfo(char *path);
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
-  void setObjName(QStringList &objname_){ objname = objname_; }
+  void setObjName(const QStringList &objname_){ objname = objname_; }
   QStringList &getObjName(){ return objname; }
-  void setVarName(QStringList &varname_){ varname = varname_; }
+  void setVarName(const QStringList &varname_){ varname = varname_; }
   void setClasses(QList < QStringList > classes_){ classes = classes_; }
   void setNameClasses(QStringList nameclasses_){ nameclasses = nameclasses_; }
   QStringList &getVarName(){ return varname; }

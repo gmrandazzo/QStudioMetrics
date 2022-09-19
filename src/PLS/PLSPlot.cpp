@@ -1065,6 +1065,8 @@ QList< SimpleLine2DPlot* > PLSPlot::R2Q2()
       PrintMatrix(m);
       #endif
       plots.append(new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - R2 Q2 Plot %3").arg(projectname).arg(modelname).arg(yname), "Latent Variables", "R2 / Q2"));
+      plots.last()->setXminXmaxXTick(0, nlv, nlv);
+      plots.last()->setYminYmaxYTick(0, 1, 10);
     }
     DelMatrix(&m);
   }
@@ -1160,6 +1162,8 @@ QList< SimpleLine2DPlot* > PLSPlot::ROCAUCs()
                                         curvenames,
                                         QString(" %1 - %2 - ROC AUC Recalculated/Predicted Plot %3").arg(projectname).arg(modelname).arg(yname),
                                         "Latent Variables", "ROC AUC Recalculated / AUC Predicted"));
+      plots.last()->setXminXmaxXTick(0, 1., nlv);
+      plots.last()->setYminYmaxYTick(0, 1., nlv);
     }
     DelMatrix(&m);
   }
@@ -1205,6 +1209,8 @@ QList< SimpleLine2DPlot* > PLSPlot::ROCCurves()
                                           QString("N. LV: %1 %2 - %3 - ROC Curve Recalculated/Predicted Plot %4").arg(QString::number(i+1)).arg(projectname).arg(modelname).arg(yname),
                                           "False positive rate", "True positive rate"));
         plots.last()->setPlotTitle(QString("N. LV: %1; Class name: %2").arg(QString::number(i+1)).arg(yname));
+        plots.last()->setXminXmaxXTick(0, 1., nlv);
+        plots.last()->setYminYmaxYTick(0, 1., nlv);
         DelMatrix(&mrec);
         DelMatrix(&mpred);
         mlst.clear();
@@ -1247,7 +1253,13 @@ QList< SimpleLine2DPlot* > PLSPlot::PrecisionRecallAveragePrecision()
       }
       l++;
 
-      plots.append(new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - Precision-Recall AUC Recalculated/Predicted Plot %3").arg(projectname).arg(modelname).arg(yname), "Latent Variables", "Prec./Rec. Recalculated and Predicted"));
+      plots.append(new SimpleLine2DPlot(m,
+                                        curvenames,
+                                        QString(" %1 - %2 - Precision-Recall AUC Recalculated/Predicted Plot %3").arg(projectname).arg(modelname).arg(yname),
+                                        "Latent Variables",
+                                        "Prec./Rec. Recalculated and Predicted"));
+      plots.last()->setXminXmaxXTick(0, 1., nlv);
+      plots.last()->setYminYmaxYTick(0, 1., nlv);
     }
     DelMatrix(&m);
   }
@@ -1292,8 +1304,11 @@ QList< SimpleLine2DPlot* > PLSPlot::PrecisionRecallCurves()
         plots.append(new SimpleLine2DPlot(mlst,
                                           curvenames,
                                           QString("N. LV: %1 %2 - %3 - Precision-Recall Recalculated/Predicted Plot %4").arg(QString::number(i+1)).arg(projectname).arg(modelname).arg(yname),
-                                          "Recall", "Precision"));
+                                          "Recall",
+                                          "Precision"));
         plots.last()->setPlotTitle(QString("N. LV: %1; Class name: %2").arg(QString::number(i+1)).arg(yname));
+        plots.last()->setXminXmaxXTick(0, 1., nlv);
+        plots.last()->setYminYmaxYTick(0, 1., nlv);
         DelMatrix(&mrec);
         DelMatrix(&mpred);
         mlst.clear();

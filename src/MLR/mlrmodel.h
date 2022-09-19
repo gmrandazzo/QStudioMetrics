@@ -21,9 +21,9 @@ public:
   void WriteMLRPredictionInfo(char *path);
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
-  void setObjName(QStringList &objname_){ objname = objname_; }
+  void setObjName(const QStringList &objname_){ objname = objname_; }
   QStringList &getObjName(){ return objname; }
-  void setYVarName(QStringList &varname_){ yvarname = varname_; }
+  void setYVarName(const QStringList &varname_){ yvarname = varname_; }
   QStringList &getYVarName(){ return yvarname; }
   void setPredID(int id_){ id = id_; }
   int getPredID(){ return id; }
@@ -60,11 +60,11 @@ public:
   void WriteMLRModelInfo(char *path);
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
-  void setObjName(QStringList &objname_){ objname = objname_; }
+  void setObjName(const QStringList &objname_){ objname = objname_; }
   QStringList &getObjName(){ return objname; }
-  void setXVarName(QStringList &varname_){ xvarname = varname_; }
+  void setXVarName(const QStringList &varname_){ xvarname = varname_; }
   QStringList &getXVarName(){ return xvarname; }
-  void setYVarName(QStringList &varname_){ yvarname = varname_; }
+  void setYVarName(const QStringList &varname_){ yvarname = varname_; }
   QStringList &getYVarName(){ return yvarname; }
   void setValidation(int v){ validation = v; }
   int getValidation(){ return validation; }

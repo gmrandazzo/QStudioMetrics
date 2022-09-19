@@ -12,7 +12,7 @@
 class VariablePlot
 {
 public:
-  VariablePlot(PROJECTS *projects_);
+  explicit VariablePlot(PROJECTS *projects_);
   void setPlotType(int type_){ type = type_; } // MATRIXDATA, ARRATDATA
   void setPID(int pid_){ pid = pid_; }
   void setXHash(QStringList xhash_){ xhash = xhash_; }

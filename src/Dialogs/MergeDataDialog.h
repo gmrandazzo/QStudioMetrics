@@ -14,7 +14,7 @@ class MergeDataDialog : public QDialog
   Q_OBJECT
   
 public:
-  MergeDataDialog(PROJECTS *projects_);
+  explicit MergeDataDialog(PROJECTS *projects_);
   ~MergeDataDialog();
   MATRIX *getMergedMatrix(){ return mx; }
   int getProjectID(){ return pid; }

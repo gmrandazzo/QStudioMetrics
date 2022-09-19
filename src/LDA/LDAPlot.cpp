@@ -177,6 +177,80 @@ void LDAPlot::ProbabilityDistribution(ScatterPlot** plot2D)
   }
 }
 
+QList< SimpleLine2DPlot* > LDAPlot::ROCPlot()
+{
+  QList< SimpleLine2DPlot* > plots;
+  if(mid > -1){
+    QString projectname = projects->value(pid)->getProjectName();
+    QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
+    
+    matrix *m;
+
+    LDAMODEL *lda = projects->value(pid)->getLDAModel(mid)->Model();
+    QStringList curvenames;
+    curvenames << "Current classifier" << "Random classifier";
+
+    for(size_t k = 0; k < lda->roc->order; k++){
+      QString classname = projects->value(pid)->getLDAModel(mid)->getNameClasses()[k];
+      NewMatrix(&m, lda->roc->m[k]->row+1, 3);
+      for(size_t i = 0; i < lda->roc->m[k]->row; i++){
+        m->data[i][0] = lda->roc->m[k]->data[i][0];
+        m->data[i][1] = lda->roc->m[k]->data[i][1]; // current classifier
+        m->data[i][2] = lda->roc->m[k]->data[i][0]; //random classifier
+      }
+      m->data[lda->roc->m[k]->row][0] = 1.;
+      m->data[lda->roc->m[k]->row][1] = 1.; // current classifier
+      m->data[lda->roc->m[k]->row][2] = 1.; //random classifier
+      
+      #ifdef DEBUG
+      qDebug() << "Final Matrix";
+      PrintMatrix(m);
+      #endif
+      plots.append(new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - ROC Plot %3").arg(projectname).arg(modelname).arg(classname), "FP Rate", "TP Rate"));
+      plots.last()->setXminXmaxXTick(0, 1., 10);
+      plots.last()->setYminYmaxYTick(0, 1., 10);
+      DelMatrix(&m);
+    }
+  }
+  return plots;
+}
+
+QList< SimpleLine2DPlot* > LDAPlot::PRPlot()
+{
+  QList< SimpleLine2DPlot* > plots;
+  if(mid > -1){
+    QString projectname = projects->value(pid)->getProjectName();
+    QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
+    
+    matrix *m;
+
+    LDAMODEL *lda = projects->value(pid)->getLDAModel(mid)->Model();
+    QStringList curvenames;
+    curvenames << "Current classifier" << "Random classifier";
+
+    for(size_t k = 0; k < lda->pr->order; k++){
+      QString classname = projects->value(pid)->getLDAModel(mid)->getNameClasses()[k];
+      NewMatrix(&m, lda->pr->m[k]->row+1, 3);
+      for(size_t i = 0; i < lda->pr->m[k]->row; i++){
+        m->data[i][0] = lda->pr->m[k]->data[i][0];
+        m->data[i][1] = lda->pr->m[k]->data[i][1]; // current classifier
+        m->data[i][2] = 1-lda->pr->m[k]->data[i][0]; //random classifier
+      }
+      m->data[lda->pr->m[k]->row][0] = 1.;
+      m->data[lda->pr->m[k]->row][1] = 0.;
+      m->data[lda->pr->m[k]->row][2] = 0.; 
+      #ifdef DEBUG
+      qDebug() << "Final Matrix";
+      PrintMatrix(m);
+      #endif
+      plots.append(new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - ROC Plot %3").arg(projectname).arg(modelname).arg(classname), "FP Rate", "TP Rate"));
+      plots.last()->setXminXmaxXTick(0, 1., 10);
+      plots.last()->setYminYmaxYTick(0, 1., 10);
+      DelMatrix(&m);
+    }
+  }
+  return plots;
+}
 void LDAPlot::FeaturePlotAndPrediction2D(ScatterPlot** plot2D)
 {
   if(mid > -1 && predid > -1){

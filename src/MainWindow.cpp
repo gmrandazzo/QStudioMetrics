@@ -531,12 +531,12 @@ void MainWindow::TopMenuEnableDisable()
     */
 
     if(ProjectsHaveLDAPrediction() == false){
-      ui.action2D_Feature_Plot_and_Predictions->setEnabled(false);
-      ui.actionProbability_Distribution_Plot_and_Predictions->setEnabled(false);
+      ui.actionLDA2D_Feature_Plot_and_Predictions->setEnabled(false);
+      ui.actionLDAProbability_Distribution_Plot_and_Predictions->setEnabled(false);
     }
     else{
-      ui.action2D_Feature_Plot_and_Predictions->setEnabled(true);
-      ui.actionProbability_Distribution_Plot_and_Predictions->setEnabled(true);
+      ui.actionLDA2D_Feature_Plot_and_Predictions->setEnabled(true);
+      ui.actionLDAProbability_Distribution_Plot_and_Predictions->setEnabled(true);
     }
   }
 
@@ -830,7 +830,6 @@ QTreeWidgetItem* MainWindow::getPredictionItem(int pid, int mid, int preid)
   while(*it){
     if((*it)->columnCount() == 8 && (*it)->text(6).toInt() ==  preid){
       return (*it);
-      break;
     }
     ++it;
   }
@@ -1037,7 +1036,6 @@ int MainWindow::getModelID(int pid, int mid)
   while(*it){
     if((*it)->columnCount() == 10 && (*it)->text(9).toInt() ==  mid){
       return (*it)->text(9).toInt();
-      break;
     }
     ++it;
   }
@@ -1059,7 +1057,6 @@ QString MainWindow::getModelType(int pid, int mid)
   while(*it){
     if((*it)->columnCount() == 10 && (*it)->text(9).toInt() ==  mid){
       return (*it)->text(8);
-      break;
     }
     ++it;
   }
@@ -1072,7 +1069,6 @@ int MainWindow::getModelNComponents(int pid, int mid)
   while(*it){
     if((*it)->columnCount() == 10 && (*it)->text(9).toInt() ==  mid){
       return (*it)->text(7).toInt();
-      break;
     }
     ++it;
   }
@@ -1085,7 +1081,6 @@ int MainWindow::getModelYScalingType(int pid, int mid)
   while(*it){
     if((*it)->columnCount() == 10 && (*it)->text(9).toInt() ==  mid){
       return (*it)->text(6).toInt();
-      break;
     }
     ++it;
   }
@@ -1098,7 +1093,6 @@ int MainWindow::getModelXScalingType(int pid, int mid)
   while(*it){
     if((*it)->columnCount() == 10 && (*it)->text(9).toInt() ==  mid){
       return (*it)->text(5).toInt();
-      break;
     }
     ++it;
   }
@@ -1111,7 +1105,6 @@ QString MainWindow::getModelYhash(int pid, int mid)
   while(*it){
     if((*it)->columnCount() == 10 && (*it)->text(9).toInt() ==  mid){
       return (*it)->text(4);
-      break;
     }
     ++it;
   }
@@ -1125,7 +1118,6 @@ QString MainWindow::getModelXhash(int pid, int mid)
   while(*it){
     if((*it)->columnCount() == 10 && (*it)->text(9).toInt() ==  mid){
       return (*it)->text(3);
-      break;
     }
     ++it;
   }
@@ -1138,7 +1130,6 @@ int MainWindow::getModelProjectID(int pid, int mid)
   while(*it){
     if((*it)->columnCount() == 10 && (*it)->text(9).toInt() ==  mid){
       return (*it)->text(2).toInt();
-      break;
     }
     ++it;
   }
@@ -1151,7 +1142,6 @@ int MainWindow::getModelTableID(int pid, int mid)
   while(*it){
     if((*it)->columnCount() == 10 && (*it)->text(9).toInt() ==  mid){
       return (*it)->text(1).toInt();
-      break;
     }
     ++it;
   }
@@ -1164,7 +1154,6 @@ QString MainWindow::getModelName(int pid, int mid)
   while(*it){
     if((*it)->columnCount() == 10 && (*it)->text(9).toInt() ==  mid){
       return (*it)->text(0);
-      break;
     }
     ++it;
   }
@@ -1178,7 +1167,6 @@ QTreeWidgetItem* MainWindow::getModelItem(int pid, int mid, QTreeWidget *treeWid
   while(*it){
     if((*it)->columnCount() == 10 && (*it)->text(9).toInt() ==  mid){
       return (*it);
-      break;
     }
     ++it;
   }
@@ -1191,7 +1179,6 @@ QTreeWidgetItem* MainWindow::getModelItem(int pid, int mid) // pid = project id,
   while(*it){
     if((*it)->columnCount() == 10 && (*it)->text(9).toInt() ==  mid){
       return (*it);
-      break;
     }
     ++it;
   }
@@ -1299,7 +1286,6 @@ QTreeWidgetItem* MainWindow::getDataItem(int pid, int did) // pid = project id, 
   while(*it){
     if((*it)->columnCount() == 5 && (*it)->text(3).toInt() ==  did){
       return (*it);
-      break;
     }
     ++it;
   }
@@ -1367,7 +1353,6 @@ QTreeWidgetItem* MainWindow::getProjectItem(int pid, QTreeWidget *treeWidget)
   while(*it){
     if((*it)->columnCount() == 2 && (*it)->text(1).toInt() ==  pid){
       return (*it);
-      break;
     }
     ++it;
   }
@@ -1381,7 +1366,6 @@ QTreeWidgetItem* MainWindow::getProjectItem(int pid)
   while(*it){
     if((*it)->columnCount() == 2 && (*it)->text(1).toInt() ==  pid){
       return (*it);
-      break;
     }
     ++it;
   }
@@ -1531,19 +1515,19 @@ void MainWindow::DowngradePredictionID()
         int childid =  getPredictionID(pid, mid, i);
         if(childid > predid){
           QString childmodeltype =  getPredictionType(pid, mid, i);
-          if(childmodeltype.compare("PCA Prediction") == 0 && childid > predid){
+          if(childmodeltype.compare("PCA Prediction") == 0){
             ui.treeWidget->currentItem()->parent()->child(i)->setText(6, QString::number(childid-1));
             projects->value(pid)->getPCAModel(mid)->getPCAPrediction(childid)->setPredID(childid-1);
           }
-          else if(childmodeltype.compare("PLS Prediction") == 0 && childid > predid){
+          else if(childmodeltype.compare("PLS Prediction") == 0){
             ui.treeWidget->currentItem()->parent()->child(i)->setText(6, QString::number(childid-1));
             projects->value(pid)->getPLSModel(mid)->getPLSPrediction(childid)->setPredID(childid-1);
           }
-          else if(childmodeltype.compare("MLR Prediction") == 0 && childid > predid){
+          else if(childmodeltype.compare("MLR Prediction") == 0){
             ui.treeWidget->currentItem()->parent()->child(i)->setText(6, QString::number(childid-1));
             projects->value(pid)->getMLRModel(mid)->getMLRPrediction(childid)->setPredID(childid-1);
           }
-          else if(childmodeltype.compare("LDA Prediction") == 0 && childid > predid){
+          else if(childmodeltype.compare("LDA Prediction") == 0){
             ui.treeWidget->currentItem()->parent()->child(i)->setText(6, QString::number(childid-1));
             projects->value(pid)->getLDAModel(mid)->getLDAPrediction(childid)->setPredID(childid-1);
           }
@@ -5611,6 +5595,87 @@ void MainWindow::LDAFeaturePlot2D()
   }
 }
 
+void MainWindow::LDAProbabilityDistribution()
+{
+  if(ProjectsHaveLDA() == true){
+    ProjectTree pjtree;
+    GetLDAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      LDAPlot ldaplot(projects);
+      ldaplot.setPID(dp.getProjectID());
+      ldaplot.setMID(dp.getModelID());
+      ldaplot.setPREDID(dp.getPredictionID());
+      MDIChild *graphchild = createMdiChild();
+      ScatterPlot *plot2D;
+      ldaplot.ProbabilityDistribution(&plot2D);
+      graphchild->setWidget(plot2D);
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+      graphchild->resize(510, 530);
+      graphchild->show();
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::LDAROCPlot()
+{
+  if(ProjectsHaveLDAValidated() == true){
+    ProjectTree pjtree;
+    GetLDAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      LDAPlot ldaplot(projects);
+      ldaplot.setPID(dp.getProjectID());
+      ldaplot.setMID(dp.getModelID());
+      ldaplot.setPREDID(dp.getPredictionID());
+      QList< SimpleLine2DPlot* > plots = ldaplot.ROCPlot();
+       for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Validated Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::LDAPRPlot()
+{
+  if(ProjectsHaveLDAValidated() == true){
+    ProjectTree pjtree;
+    GetLDAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      LDAPlot ldaplot(projects);
+      ldaplot.setPID(dp.getProjectID());
+      ldaplot.setMID(dp.getModelID());
+      ldaplot.setPREDID(dp.getPredictionID());
+      QList< SimpleLine2DPlot* > plots = ldaplot.PRPlot();
+       for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Validated Found!\n"), QMessageBox::Close);
+  }  
+}
+
 void MainWindow::LDAFeaturePlotAndPrediction2D()
 {
   if(ProjectsHaveLDA() == true && ProjectsHaveLDAPrediction() == true){
@@ -5626,33 +5691,6 @@ void MainWindow::LDAFeaturePlotAndPrediction2D()
       MDIChild *graphchild = createMdiChild();
       ScatterPlot *plot2D;
       ldaplot.FeaturePlotAndPrediction2D(&plot2D);
-      graphchild->setWidget(plot2D);
-      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
-      graphchild->show();
-      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-  }
-  else{
-    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Found!\n"), QMessageBox::Close);
-  }
-}
-
-void MainWindow::LDAProbabilityDistribution()
-{
-  if(ProjectsHaveLDA() == true){
-    ProjectTree pjtree;
-    GetLDAProjects(&pjtree);
-    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
-    dp.hideOptions(true);
-    if(dp.exec() == QDialog::Accepted){
-      LDAPlot ldaplot(projects);
-      ldaplot.setPID(dp.getProjectID());
-      ldaplot.setMID(dp.getModelID());
-      ldaplot.setPREDID(dp.getPredictionID());
-      MDIChild *graphchild = createMdiChild();
-      ScatterPlot *plot2D;
-      ldaplot.ProbabilityDistribution(&plot2D);
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
       graphchild->resize(510, 530);
@@ -6808,9 +6846,9 @@ void MainWindow::DoLDAValidation()
         QList< QStringList > classes = projects->value(pid)->getLDAModel(mid)->getClasses();
 
         matrix *x;
-        uivector *y;
+        matrix *y;
         NewMatrix(&x, objsel.size(), varsel.size());
-        NewUIVector(&y, objsel.size());
+        NewMatrix(&y, objsel.size(), 1);
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
 
@@ -6820,7 +6858,7 @@ void MainWindow::DoLDAValidation()
           if(ii > -1){
             for(int j = 0; j < classes.size(); j++){
               if(classes[j].contains(projects->value(pid)->getMatrix(did)->getObjName()[i]) == true){
-                y->data[ii] = j;
+                y->data[ii][0] = j;
                 break;
               }
               else{
@@ -6836,7 +6874,7 @@ void MainWindow::DoLDAValidation()
 
         RUN obj;
         obj.setXMatrix(x);
-        obj.setUIVector(y);
+        obj.setYMatrix(y);
         obj.setLDAModel(projects->value(pid)->getLDAModel(mid));
         obj.setValidationType(vt);
 
@@ -6864,7 +6902,7 @@ void MainWindow::DoLDAValidation()
         CalculationMenuEnable();
         StopRun();
         DelMatrix(&x);
-        DelUIVector(&y);
+        DelMatrix(&y);
         projects->value(pid)->AutoSave();
       }
       else{
@@ -6918,7 +6956,7 @@ void MainWindow::DoLDA()
         NewMatrix(&y, objsel.size(), 1);
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
-        PrintMatrix(x)
+        
         // Rudimental y class preparation
         for(int i = 0; i < projects->value(pid)->getMatrix(did)->getObjName().size(); i++){
           int ii = _index_of_(objsel, projects->value(pid)->getMatrix(did)->getObjName()[i]);
@@ -6938,11 +6976,10 @@ void MainWindow::DoLDA()
           }
           QApplication::processEvents();
         }
-        PrintMatrix(y)
 
         RUN obj;
         obj.setXMatrix(x);
-        obj.setMatrix(y);
+        obj.setYMatrix(y);
         obj.setLDAModel(projects->value(pid)->getLastLDAModel());
 
         QFuture<void> future = obj.RunLDA();
@@ -7374,14 +7411,14 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
 {
   ui.setupUi(this);
 
-  #if defined(RELEASE) || defined(WIN32) // look in ImportFileDialog.cpp... same exception...
+ //#if defined(RELEASE) || defined(WIN32) // look in ImportFileDialog.cpp... same exception...
   ui.actionPCA2DLoadingsMVAND_Plot->setVisible(false);
   ui.actionEPLS_Regression->setVisible(false);
   ui.actionEPLS_Discriminant_Analysis->setVisible(false);
   ui.actionEPLS_Validator->setVisible(false);
   ui.actionEPLS_Prediction->setVisible(false);
   ui.menuEPLS_plots->menuAction()->setVisible(false);
-  #endif
+  //#endif
 
   confdir = confdir_;
   QFile file(confdir+"recents");
@@ -7555,12 +7592,14 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionMLR_Predict_Residuals_vs_Exp, SIGNAL(triggered(bool)), SLOT(MLRPredResidualsVSExpPlot()));
   connect(ui.actionMLR_Y_Scrambling_Plot, SIGNAL(triggered(bool)), SLOT(MLRPlotYScrambling()));
 
-  connect(ui.action2D_Feature_Plot, SIGNAL(triggered(bool)), SLOT(LDAFeaturePlot2D()));
-  connect(ui.action2D_Feature_Plot_and_Predictions, SIGNAL(triggered(bool)), SLOT(LDAFeaturePlotAndPrediction2D()));
-
-  connect(ui.actionProbability_Distribution_Plot, SIGNAL(triggered(bool)), SLOT(LDAProbabilityDistribution()));
-  connect(ui.actionProbability_Distribution_Plot_and_Predictions, SIGNAL(triggered(bool)), SLOT(LDAProbabilityDistributionWithPredictions()));
-
+  
+  connect(ui.actionLDA2D_Feature_Plot, SIGNAL(triggered(bool)), SLOT(LDAFeaturePlot2D()));
+  connect(ui.actionLDA2D_Feature_Plot_and_Predictions, SIGNAL(triggered(bool)), SLOT(LDAFeaturePlotAndPrediction2D()));
+  connect(ui.actionLDAROC_Curve, SIGNAL(triggered(bool)), SLOT(LDAROCPlot()));
+  connect(ui.actionLDAPrecision_Recall_Curve, SIGNAL(triggered(bool)), SLOT(LDAPRPlot()));
+  connect(ui.actionLDAProbability_Distribution_Plot, SIGNAL(triggered(bool)), SLOT(LDAProbabilityDistribution()));
+  connect(ui.actionLDAProbability_Distribution_Plot_and_Predictions, SIGNAL(triggered(bool)), SLOT(LDAProbabilityDistributionWithPredictions())); 
+  
   connect(ui.actionCascade_SubWindows, SIGNAL(triggered(bool)), SLOT(SubWindowsCascade()));
   connect(ui.actionTile_SubWindows, SIGNAL(triggered(bool)), SLOT(SubWindowsTiled()));
   connect(ui.actionAbout, SIGNAL(triggered(bool)), SLOT(About()));

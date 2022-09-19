@@ -18,7 +18,7 @@ class ClassModelDialog : public QDialog
   Q_OBJECT
   
 public:
-  ClassModelDialog(PROJECTS *projects);
+  explicit ClassModelDialog(PROJECTS *projects);
   ~ClassModelDialog();
   
   bool compute(){ return compute_; }

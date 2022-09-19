@@ -125,6 +125,8 @@ private slots:
 
   void LDAFeaturePlot2D();
   void LDAProbabilityDistribution();
+  void LDAROCPlot();
+  void LDAPRPlot();
   void LDAFeaturePlotAndPrediction2D();
   void LDAProbabilityDistributionWithPredictions();
 

@@ -16,10 +16,10 @@ class SaveDialog: public QDialog
   Q_OBJECT
 
 public:
-  SaveDialog(PROJECTS *projects);
+  explicit SaveDialog(PROJECTS *projects);
   int getProjectID(){ return pid; };
   QString getPathToSave(){ return savepath; };
-  void setPath(QString &path_){ path = path_; }
+  void setPath(const QString &path_){ path = path_; }
 
 private slots:
   void setProjectID(QModelIndex current);
