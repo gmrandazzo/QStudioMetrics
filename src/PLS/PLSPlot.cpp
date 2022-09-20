@@ -1,9 +1,9 @@
 #include "PLSPlot.h"
 #include "scientific.h"
 
-//#ifdef DEBUG
+#ifdef DEBUG
 #include <QDebug>
-//#endif
+#endif
 
 void PLSPlot::TU_Plot(ScatterPlot **plot2D)
 {

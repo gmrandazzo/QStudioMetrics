@@ -11,7 +11,11 @@
 #include <QString>
 #include <QByteArray>
 #include <QFileDialog>
+
+#ifdef DEBUG
 #include <QDebug>
+#endif
+
 #include "qstudiometricstypes.h"
 
 void ModelDialogWizard::WindowAdjust()

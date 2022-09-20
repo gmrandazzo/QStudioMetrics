@@ -124,7 +124,7 @@ BarPlot::BarPlot(QList<dvector*> vlst_, QString windowtitle, QString xaxestitle,
 
   int QtColours[]= {9, 7, 8, 2, 14, 13, 15, 10, 16, 11, 17, 12, 18, 5, 4, 6, 19}; // used for get the different colors
 
-  double min, max;
+  double min=9999., max=0.;
 
   for(int i = 0; i < vlst_.size(); i++){
     double t_min, t_max;

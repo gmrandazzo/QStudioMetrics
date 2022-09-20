@@ -15,7 +15,10 @@
 #include <QSqlError>
 #include <QVariant>
 #include <QStringList>
+
+#ifdef DEBUG
 #include <QDebug>
+#endif
 
 #include "DATAIO.h"
 #include "dircompressor.h"
@@ -487,9 +490,9 @@ void DATA::OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *m
                 && QFile::exists(pcapredpath.absolutePath()+"/T-Scores-Pred.txt") == true
                 && QFile::exists(pcapredpath.absolutePath()+"/info.txt") == true){
                 #ifdef DEBUG
-		qDebug() << pcapredpath.absolutePath() << " PCA Prediction - " + pcapredlist[j];
+                qDebug() << pcapredpath.absolutePath() << " PCA Prediction - " + pcapredlist[j];
                 #endif
-		getLastPCAModel()->addPCAPrediction();
+                getLastPCAModel()->addPCAPrediction();
                 getLastPCAModel()->getLastPCAPrediction()->ImportPCAPrediction(pcapredpath.absolutePath().toUtf8().data(), QString("PCA Prediction - %1").arg(QString::fromUtf8(pcapredlist[j].toUtf8())).toUtf8().data());
                 getLastPCAModel()->getLastPCAPrediction()->setPredID(getLastPCAModel()->PCAPredictionCount()-1);
 
@@ -845,7 +848,6 @@ bool DATA::isSQLDatabase(QString sqlfile)
     }
   }
   else{
-    qDebug() << "FALSE";
     return false;
   }
 }

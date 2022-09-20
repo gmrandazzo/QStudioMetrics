@@ -210,8 +210,9 @@ void ScatterPlot::BuildHotellingEllipse()
  /*
   * build the covariance matrix of the datas.
   */
-
+  #ifdef DEBUG
   qDebug() << "Build Confidence Ellipse";
+  #endif
   matrix *xy, *covxy;
   int vpoint = 0;
   for(int i = 0; i < chart->PointSize(); i++){
@@ -451,7 +452,9 @@ void ScatterPlot::initPoint(QList<matrix*> mx, QList<matrix*> my, QList<QStringL
 void ScatterPlot::initPoint(QList<matrix*> mx, QList<QStringList> name)
 {
   //For 2D and 3D plots!
+  #ifdef DEBUG
   qDebug() << "2D and 3D plot init";
+  #endif
   QList<QColor> colors = GenColorList(mx.size());
 
   for(int mxid = 0; mxid < mx.size(); mxid++){
@@ -626,7 +629,9 @@ void ScatterPlot::hideSelection()
 
 void ScatterPlot::clearSelection()
 {
+  #ifdef DEBUG
   qDebug() << "Clear Selection";
+  #endif
   for(int i = 0; i < selectedIDS.size(); i++){
     chart->getPoint(selectedIDS[i])->setSelection(false);
   }
@@ -1033,7 +1038,9 @@ void ScatterPlot::OpenPlotSettingsDialog()
     double ymax = psettings.getYmax();
     int ytick = psettings.getYTick();
     QString qdb = QString(" ScatterPlot::OpenPlotSettingsDialog title size %1 axis val size %2 xlbl size %3  ylbl size %4 xtick %5 ytick %6").arg(titlesize).arg(axisvaluesize).arg(xlabelsize).arg(ylabelsize).arg(xtick).arg(ytick);
+    #ifdef DEBUG
     qDebug() << qdb;
+    #endif
     chart->setPlotTitleSize(titlesize);
     chart->setAxisValueSize(axisvaluesize);
 
@@ -1722,7 +1729,9 @@ void ScatterPlot::BuildDiagonal()
 
 ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QString xaxsisname_, QString yaxsisname_, QString windowtitle)
 {
+  #ifdef DEBUG
   qDebug() << "ScatterPlot F1";
+  #endif
   ui.setupUi(this);
   type = SIMPLE;
   pid = mid = mtype -1;
@@ -1797,7 +1806,9 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QStrin
 
 ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname, QList<MATRIX*> *mxlst_,  QStringList xhash_, QStringList yhash_, LABELS *objlabels_, LABELS *varlabels_, QString xaxsisname_, QString yaxsisname_, QString windowtitle, int type_)
 {
+  #ifdef DEBUG
   qDebug() << "ScatterPlot F2";
+  #endif
   ui.setupUi(this);
   type = type_;
   pid = mid = mtype = -1;
@@ -1873,7 +1884,9 @@ ScatterPlot::ScatterPlot(QList<matrix*> &m_, QList<QStringList>& objname,
                          QString xaxsisname_, QString yaxsisname_, QString zaxsisname_,
                          QString windowtitle, int type_)
 {
+  #ifdef DEBUG
   qDebug() << "ScatterPlot F3";
+  #endif
   ui.setupUi(this);
   type = type_;
   pid = mid = mtype = -1;

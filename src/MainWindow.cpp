@@ -211,8 +211,6 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
 
 void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix **x, matrix **y)
 {
-  //qDebug() << xvarsel;
-  //qDebug() << yvarsel;
   ResizeMatrix(x, objnames.size(), xvarsel.size());
   ResizeMatrix(y, objnames.size(), yvarsel.size());
 
@@ -3526,7 +3524,7 @@ void MainWindow::removeProject()
       QMap<int, DATA*>::const_iterator i = projects->constBegin();
       while(i != projects->constEnd()){
         #ifdef DEBUG
-	qDebug() << i.key() << i.value()->getProjectName();
+        qDebug() << i.key() << i.value()->getProjectName();
         #endif
         ++i;
       }
@@ -3569,6 +3567,7 @@ void MainWindow::updateLog( QString str )
 
 void MainWindow::DebugProjectTree(ProjectTree pjtree)
 {
+  #ifdef DEBUG
   qDebug() << "DebugProjectTree";
   int i, j, k;
   for(i = 0; i < pjtree.size(); i++){
@@ -3581,6 +3580,7 @@ void MainWindow::DebugProjectTree(ProjectTree pjtree)
     }
     qDebug() << "-----------";
   }
+  #endif
 }
 
 void MainWindow::GetPCAProjects(ProjectTree *pjtree)

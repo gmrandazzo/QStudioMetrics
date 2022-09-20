@@ -8,7 +8,9 @@
 #include <QTextStream>
 #include <QString>
 #include <QStandardPaths>
+#ifdef DEBUG
 #include <QDebug>
+#endif
 
 #include "ClassDialog.h"
 

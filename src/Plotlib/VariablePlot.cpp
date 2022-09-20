@@ -1,7 +1,9 @@
 #include "VariablePlot.h"
 #include "qstudiometricstypes.h"
 
-//#include <QDebug>
+#ifdef DEBUG
+#include <QDebug>
+#endif
 
 ScatterPlot* VariablePlot::VariableVSVariable()
 {

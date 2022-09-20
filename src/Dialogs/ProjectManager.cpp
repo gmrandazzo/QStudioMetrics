@@ -11,7 +11,9 @@
 
 #include <QDir>
 
+#ifdef DEBUG
 #include <QDebug>
+#endif
 
 void ProjectManager::Finish()
 {

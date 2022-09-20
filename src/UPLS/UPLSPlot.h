@@ -1,6 +1,6 @@
 #ifndef UPLSPLOT_H
 #define UPLSPLOT_H
-#include "../Plotlib/ScatterPlot2D.h"
+#include "../Plotlib/ScatterPlot.h"
 #include "../Plotlib/ScatterPlot3D.h"
 #include "../Plotlib/SimpleLine2DPlot.h"
 #include "qsmdata.h"

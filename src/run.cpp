@@ -702,7 +702,9 @@ void RUN::setXMatrix(matrix* x_)
 
 void RUN::Test()
 {
+  #ifdef DEBUG
   qDebug() << " XSCALING " << xscaling << " YSCALING " << yscaling << " PC " << pc << " VT " << vt << " GROUP " << ngroup << " ITER " << niter;
+  #endif
 }
 
 void RUN::AbortRun()

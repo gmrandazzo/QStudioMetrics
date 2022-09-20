@@ -7,7 +7,9 @@
 #include <QMetaType>
 #include <cmath>
 
+#ifdef DEBUG
 #include <QDebug>
+#endif
 
 #define QEPSILON 1e-3  /* Define your own tolerance*/
 #define FLOAT_EQ(x,v, EPSILON) (((v - EPSILON) < x) && (x <( v + EPSILON)))
