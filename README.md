@@ -59,3 +59,6 @@ Binary releases for Windows and OSX at <https://github.com/gmrandazzo/QStudioMet
 
 - Hierarchical clustering: the problem belongs to the original libscientific library
 
+## Cite
+
+
