@@ -16,7 +16,10 @@ int main(int argc, char *argv[])
   //QCoreApplication::setLibraryPaths(QStringList(finfo.absolutePath()+"/../Plugins"));
   //#endif
   #ifdef WIN32
-  QCoreApplication::setLibraryPaths(QStringList(finfo.path()+"/plugins"));
+  QStringList paths;
+  paths << finfo.path();
+  paths << finfo.path()+"/plugins";
+  QCoreApplication::setLibraryPaths(paths);
   #endif
   #endif
 
@@ -26,7 +29,7 @@ int main(int argc, char *argv[])
   #ifdef BUILDEXEC
   QApplication::setStyle(QStyleFactory::create("Fusion"));
   #endif
-  
+
   QString path;
   QString k;
   path = QString("%1/.QStudioMetrics/").arg(QDir::homePath());
