@@ -12,12 +12,12 @@ int main(int argc, char *argv[])
 {
   #ifdef BUILDEXEC
   QFileInfo finfo(argv[0]);
-  #ifdef OSX
+  /*#ifdef OSX
   QStringList paths;
   paths << finfo.absolutePath()+"/../Frameworks";
   paths << finfo.absolutePath()+"/../PlugIns";
   QCoreApplication::setLibraryPaths(paths);
-  #endif
+  #endif*/
 
   #ifdef WIN32
   QStringList paths;

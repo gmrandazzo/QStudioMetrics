@@ -1162,8 +1162,8 @@ QList< SimpleLine2DPlot* > PLSPlot::ROCAUCs()
                                         curvenames,
                                         QString(" %1 - %2 - ROC AUC Recalculated/Predicted Plot %3").arg(projectname).arg(modelname).arg(yname),
                                         "Latent Variables", "ROC AUC Recalculated / AUC Predicted"));
-      plots.last()->setXminXmaxXTick(0, 1., nlv);
-      plots.last()->setYminYmaxYTick(0, 1., nlv);
+      plots.last()->setXminXmaxXTick(0., (float)nlv, 1);
+      plots.last()->setYminYmaxYTick(0., 1., 10);
     }
     DelMatrix(&m);
   }
@@ -1258,8 +1258,8 @@ QList< SimpleLine2DPlot* > PLSPlot::PrecisionRecallAveragePrecision()
                                         QString(" %1 - %2 - Precision-Recall AUC Recalculated/Predicted Plot %3").arg(projectname).arg(modelname).arg(yname),
                                         "Latent Variables",
                                         "Prec./Rec. Recalculated and Predicted"));
-      plots.last()->setXminXmaxXTick(0, 1., nlv);
-      plots.last()->setYminYmaxYTick(0, 1., nlv);
+      plots.last()->setXminXmaxXTick(0.f, (float)nlv, 1.f);
+      plots.last()->setYminYmaxYTick(0., 1., 10);
     }
     DelMatrix(&m);
   }
@@ -1555,7 +1555,7 @@ void PLSPlot::T_ScorePlot3D(ScatterPlot **plot3D)
                               &projects->value(pid)->getMATRIXList(),
                               xhash,
                               yhash,
-                              &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), 
+                              &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(),
                               "t",
                               "t",
                               "t",

@@ -207,7 +207,11 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
 if(WIN32)
-add_executable(QStudioMetrics WIN32 ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS} ${WIN32_ICON_O})
+  if(cmake_build_type_tolower STREQUAL "release")
+    add_executable(QStudioMetrics WIN32 ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS} ${WIN32_ICON_O})
+  else()
+    add_executable(QStudioMetrics ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS} ${WIN32_ICON_O})
+  endif()
 else(WIN32)
 add_executable(QStudioMetrics ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS})
 endif()
