@@ -215,19 +215,20 @@ void ModelDialogWizard::genListView(QModelIndex current, QModelIndex previous)
         }
       }
 
-      ui.objSelectByLabel->clear();
+      /*ui.objSelectByLabel->clear();
       ui.class_SelectByLabel->clear();
       ui.objSelectByLabel->addItem("Select by label...");
-      ui.class_SelectByLabel->addItem("Select by label...");
+      ui.class_SelectByLabel->addItem("Select by label...");*/
       for(int i = 0; i < projects_->value(selectedproject_)->getObjectLabels().size(); i++){
         ui.objSelectByLabel->addItem(projects_->value(selectedproject_)->getObjectLabels()[i].name);
         ui.class_SelectByLabel->addItem(projects_->value(selectedproject_)->getObjectLabels()[i].name);
       }
 
-      ui.xvarSelectByLabel->clear();
+      /*ui.xvarSelectByLabel->clear();
       ui.yvarSelectByLabel->clear();
       ui.xvarSelectByLabel->addItem("Select by label...");
       ui.yvarSelectByLabel->addItem("Select by label...");
+      */
       for(int i = 0; i < projects_->value(selectedproject_)->getVariableLabels().size(); i++){
         ui.xvarSelectByLabel->addItem(projects_->value(selectedproject_)->getVariableLabels()[i].name);
         ui.yvarSelectByLabel->addItem(projects_->value(selectedproject_)->getVariableLabels()[i].name);
