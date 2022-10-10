@@ -3078,33 +3078,50 @@ void MainWindow::ModelInfo()
       }
     }
 
-    textlst.append(QString("X and Y centered"));
+    if(getCurrentModelType().compare("PCA Model") == 0){
+      textlst.append(QString("X centered"));
+    }
+    else if(getCurrentModelType().compare("PLS Model") == 0){
+      textlst.append(QString("X and Y centered"));
+    }
+    else{ //LDA Model
+      if(getCurrentModelType().compare("MLR Model") == 0){
+        textlst.append(QString("X and Y as is"));
+      }
+      else{
+        textlst.append(QString("X as is"));
+      }
+    }
 
-    if(xscaling == 0)
-      textlst.append(QString("X not scaled"));
-    else if(xscaling == 1)
-      textlst.append(QString("X scaling type: %1").arg("Standard Deviation"));
-    else if(xscaling == 2)
-      textlst.append(QString("X scaling type: %1").arg("Column root mean square"));
-    else if(xscaling == 3)
-      textlst.append(QString("X scaling type: %1").arg("Pareto"));
-    else if(xscaling == 4)
-      textlst.append(QString("X scaling type: %1").arg("Min-Max range scaling"));
-    else if(xscaling == 5)
-      textlst.append(QString("X scaling type: %1").arg("Level scaling"));
+    if(getCurrentModelType().compare("PCA Model") == 0 || getCurrentModelType().compare("PLS Model") == 0){
+      if(xscaling == 0)
+        textlst.append(QString("X not scaled"));
+      else if(xscaling == 1)
+        textlst.append(QString("X scaling type: %1").arg("Standard Deviation"));
+      else if(xscaling == 2)
+        textlst.append(QString("X scaling type: %1").arg("Column root mean square"));
+      else if(xscaling == 3)
+        textlst.append(QString("X scaling type: %1").arg("Pareto"));
+      else if(xscaling == 4)
+        textlst.append(QString("X scaling type: %1").arg("Min-Max range scaling"));
+      else if(xscaling == 5)
+        textlst.append(QString("X scaling type: %1").arg("Level scaling"));
+    }
 
-    if(yscaling == 0)
-      textlst.append(QString("Y not scaled"));
-    else if(yscaling == 1)
-      textlst.append(QString("Y scaling type: %1").arg("Standard Deviation"));
-    else if(yscaling == 2)
-      textlst.append(QString("Y scaling type: %1").arg("Column root mean square"));
-    else if(yscaling == 3)
-      textlst.append(QString("Y scaling type: %1").arg("Pareto"));
-    else if(yscaling == 4)
-      textlst.append(QString("Y scaling type: %1").arg("Min-Max range scaling"));
-    else if(yscaling == 5)
-      textlst.append(QString("Y scaling type: %1").arg("Level scaling"));
+    if(getCurrentModelType().compare("PLS Model") == 0){
+      if(yscaling == 0)
+        textlst.append(QString("Y not scaled"));
+      else if(yscaling == 1)
+        textlst.append(QString("Y scaling type: %1").arg("Standard Deviation"));
+      else if(yscaling == 2)
+        textlst.append(QString("Y scaling type: %1").arg("Column root mean square"));
+      else if(yscaling == 3)
+        textlst.append(QString("Y scaling type: %1").arg("Pareto"));
+      else if(yscaling == 4)
+        textlst.append(QString("Y scaling type: %1").arg("Min-Max range scaling"));
+      else if(yscaling == 5)
+        textlst.append(QString("Y scaling type: %1").arg("Level scaling"));
+    }
 
     if(validationtype == 0){
       textlst.append(QString("Model Not Validated"));
