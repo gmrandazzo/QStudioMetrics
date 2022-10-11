@@ -118,6 +118,13 @@ void AdvancedPretreatmentDialog::setProjectID(QModelIndex current)
       tab2matrix.append(new QStandardItem(projects->value(pid)->getMatrix(i)->getName()));
       tab2->appendRow(tab2matrix);
     }
+
+
+    ui.selectByLabelButton->addItem("Select by label...");
+    for(int i = 0; i < projects->value(pid)->getVariableLabels().size(); i++){
+      ui.selectByLabelButton->addItem(projects->value(pid)->getVariableLabels()[i].name);
+    }
+
   }
   else{
     pid = -1;
@@ -165,7 +172,25 @@ void AdvancedPretreatmentDialog::UnselectAllVars()
   EnableOKButton();
 }
 
-void AdvancedPretreatmentDialog::SelectVarsBy(){return;}
+void AdvancedPretreatmentDialog::SelectVarsBy(int indx)
+{
+  if(pid > -1 && mxid > -1){
+    QItemSelection selection;
+    for(int i = 0; i < ui.listView_3->model()->rowCount(); i++){
+      if(projects->value(pid)->getVariableLabels()[indx].objects.contains(ui.listView_3->model()->index(i, 0).data(Qt::DisplayRole).toString()) == true){
+        QModelIndex topLeft = ui.listView_3->model()->index(i, 0);
+        QModelIndex bottomRight = ui.listView_3->model()->index(i, 0);
+        selection << QItemSelectionRange(topLeft, bottomRight);
+      }
+      else{
+        continue;
+      }
+    }
+    ui.listView_3->selectionModel()->select(selection, QItemSelectionModel::Select);
+    ui.selectByLabelButton->setCurrentIndex(0);
+
+  }
+}
 
 AdvancedPretreatmentDialog::AdvancedPretreatmentDialog (PROJECTS *projects_)
 {
@@ -193,7 +218,7 @@ AdvancedPretreatmentDialog::AdvancedPretreatmentDialog (PROJECTS *projects_)
   connect(ui.selectAllButton, SIGNAL(clicked()), SLOT(SelectAllVars()));
   connect(ui.invertSelectionButton, SIGNAL(clicked()), SLOT(InvertVarSelection()));
   connect(ui.unselectButton, SIGNAL(clicked()), SLOT(UnselectAllVars()));
-  connect(ui.selectByLabelButton, SIGNAL(clicked()), SLOT(SelectVarsBy()));
+  connect(ui.selectByLabelButton, SIGNAL(currentIndexChanged(int)), SLOT(SelectVarsBy(int)));
 
   connect(ui.cancelButton, SIGNAL(clicked()), SLOT(reject()));
   connect(ui.dataname, SIGNAL(textChanged(QString)), SLOT(EnableOKButton()));

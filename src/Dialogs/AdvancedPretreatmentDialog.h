@@ -26,7 +26,7 @@ private slots:
   void SelectAllVars();
   void InvertVarSelection();
   void UnselectAllVars();
-  void SelectVarsBy();
+  void SelectVarsBy(int current);
 
 private:
   Ui::AdvancedPretreatmentDialog ui;
