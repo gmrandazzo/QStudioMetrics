@@ -206,14 +206,13 @@ void DoPredictionDialog::setProject(QModelIndex current)
     // set project
     selectedproject_ = pids[current.row()];
 
-
-    ui.objSelectByLabel->clear();
+    //ui.objSelectByLabel->clear();
     ui.objSelectByLabel->addItem("Select by label...");
     for(int i = 0; i < projects_->value(selectedproject_)->getObjectLabels().size(); i++){
       ui.objSelectByLabel->addItem(projects_->value(selectedproject_)->getObjectLabels()[i].name);
     }
 
-    ui.yvarSelectByLabel->clear();
+    //ui.yvarSelectByLabel->clear();
     ui.yvarSelectByLabel->addItem("Select by label...");
     for(int i = 0; i < projects_->value(selectedproject_)->getVariableLabels().size(); i++){
       ui.yvarSelectByLabel->addItem(projects_->value(selectedproject_)->getVariableLabels()[i].name);
