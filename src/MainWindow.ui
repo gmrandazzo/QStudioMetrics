@@ -154,7 +154,6 @@
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
     <addaction name="separator"/>
-    <addaction name="actionPreferences"/>
    </widget>
    <widget class="QMenu" name="menuModels">
     <property name="title">
@@ -339,16 +338,10 @@
     <addaction name="actionCascade_SubWindows"/>
     <addaction name="actionTile_SubWindows"/>
    </widget>
-   <widget class="QMenu" name="menuExtensions">
-    <property name="title">
-     <string>Extensions</string>
-    </property>
-   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
    <addaction name="menuModels"/>
    <addaction name="menuGraphs"/>
-   <addaction name="menuExtensions"/>
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>

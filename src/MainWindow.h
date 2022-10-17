@@ -251,9 +251,9 @@ private:
   void TopMenuEnableDisable();
   void CalculationMenuEnable();
   void CalculationMenuDisable(int calcpid_);
-  void PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix **x, matrix **y);
-  void PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix **x, matrix **y);
-  void PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix **x);
+  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix **x, matrix **y);
+  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix **x, matrix **y);
+  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix **x);
   void PrepareKFoldClasses(QStringList objects, LABELS kfclasses, uivector **classes);
 
   bool ProjectsHavePCA(){ return havepca; }

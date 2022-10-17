@@ -163,7 +163,7 @@ static inline int _index_of_(QStringList lst, QString str)
   return -1;
 }
 
-void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix **x)
+bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix **x)
 {
   ResizeMatrix(x, objnames.size(), varsel.size());
 
@@ -187,14 +187,15 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
       continue;
     }
   }
-
+  
+  QStringList varnotfound;
   for(int i = 0; i < varsel.size(); i++){
     auto it = varmap.find(varsel[i]);
     if(it != varmap.end()){
         aligned_varid.append(it.value());
     }
     else{
-      continue;
+      varnotfound << varsel[i];
     }
   }
 
@@ -207,9 +208,22 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     }
     QApplication::processEvents();
   }
+  
+  if(varnotfound.size() > 0){
+    QString msg = "The following features were not found: \n";
+    QString vname;
+    foreach(vname, varnotfound)
+      msg += QString("%1\n").arg(vname);
+    
+    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()), QMessageBox::Close);
+    return false;
+  }
+  else{
+    return true;
+  }
 }
 
-void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix **x, matrix **y)
+bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix **x, matrix **y)
 {
   ResizeMatrix(x, objnames.size(), xvarsel.size());
   ResizeMatrix(y, objnames.size(), yvarsel.size());
@@ -235,24 +249,26 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
       continue;
     }
   }
-
+  
+  QStringList xvarnotfound;
   for(int i = 0; i < xvarsel.size(); i++){
     auto it = varmap.find(xvarsel[i]);
     if(it != varmap.end()){
         aligned_xvarid.append(it.value());
     }
     else{
-      continue;
+      xvarnotfound << xvarsel[i];
     }
   }
 
+  QStringList yvarnotfound;
   for(int i = 0; i < yvarsel.size(); i++){
     auto it = varmap.find(yvarsel[i]);
     if(it != varmap.end()){
         aligned_yvarid.append(it.value());
     }
     else{
-      continue;
+      xvarnotfound << yvarsel[i];
     }
   }
 
@@ -276,9 +292,31 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     }
     QApplication::processEvents();
   }
+  
+  bool retval = true;
+  if(xvarnotfound.size() > 0){
+    QString msg = "The following features were not found: \n";
+    QString xvname;
+    foreach(xvname, xvarnotfound)
+      msg += QString("%1\n").arg(xvname);
+    
+    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()), QMessageBox::Close);
+    retval = false;
+  }
+  
+  if(yvarnotfound.size() > 0){
+    QString msg = "The following dependent variables were not found: \n";
+    QString yvname;
+    foreach(yvname, yvarnotfound)
+      msg += QString("%1\n").arg(yvname);
+    
+    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()), QMessageBox::Close);
+    retval = false;
+  }
+  return retval;
 }
 
-void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix **x, matrix **y)
+bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix **x, matrix **y)
 {
   ResizeMatrix(x, objnames.size(), xvarsel.size());
 
@@ -312,13 +350,14 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     }
   }
 
+  QStringList xvarnotfound;
   for(int i = 0; i < xvarsel.size(); i++){
     auto it = varmap.find(xvarsel[i]);
     if(it != varmap.end()){
         aligned_xvarid.append(it.value());
     }
     else{
-      continue;
+      xvarnotfound << xvarsel[i];
     }
   }
 
@@ -352,45 +391,18 @@ void MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     QApplication::processEvents();
   }
 
-  /*
-  for(int i = 0; i < indata->getObjName().size(); i++){
-    int ii = _index_of_(objnames, indata->getObjName()[i]);
-    if(ii > 0){
-      for(int j = 1; j < indata->getVarName().size(); j++){
-        int jx = _index_of_(xvarsel, indata->getVarName()[j]);
-        if(jx > -1){
-          (*x)->data[ii][jx] = indata->Matrix()->data[i][j-1];
-        }
-        else{
-          continue;
-        }
-      }
-
-      if(classes.size() == 2){
-        if(classes[0].objects.contains(indata->getObjName()[i]) == true){
-          (*y)->data[ii][0] = 1; // TRUE
-        }
-        else{
-          (*y)->data[ii][0] = 0; // FALSE
-        }
-      }
-      else{
-        for(int j = 0; j < classes.size(); j++){
-          if(classes[j].objects.contains(indata->getObjName()[i]) == true){
-            (*y)->data[ii][j] = 1; // TRUE
-          }
-          else{
-            (*y)->data[ii][j] = 0; // FALSE
-          }
-        }
-      }
-    }
-    else{
-      continue;
-    }
-    QApplication::processEvents();
+  if(xvarnotfound.size() > 0){
+    QString msg = "The following features were not found: \n";
+    QString xvname;
+    foreach(xvname, xvarnotfound)
+      msg += QString("%1\n").arg(xvname);
+    
+    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()), QMessageBox::Close);
+    return false;
   }
-  */
+  else{
+    return true;
+  }
 }
 
 void MainWindow::PrepareKFoldClasses(QStringList objects, LABELS kfclasses, uivector **classes)
@@ -5776,9 +5788,9 @@ void MainWindow::DoPCAPrediction()
 
 
         NewMatrix(&x, objsel.size(), varsel.size());
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
+        bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
 
-        if(x->col == (size_t)varsel.size()){
+        if(x->col == (size_t)varsel.size() && mxok == true){
           QString str = "--------------------\n Computing PCA Prediction for: ";
           str.append(QString("%1").arg( projects->value(p.getselectedProject())->getProjectName()));
           updateLog(str);
@@ -6364,9 +6376,9 @@ void MainWindow::DoPLSPrediction()
         initMatrix(&x);
         initMatrix(&y);
 
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, ysel, &x, &y);
+        bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, ysel, &x, &y);
 
-        if(x->col == (size_t)xvarsel.size()){
+        if(x->col == (size_t)xvarsel.size() && mxok == true){
           QString str = "--------------------\n Computing PLS Prediction for: ";
           str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
           updateLog(str);
@@ -6752,9 +6764,9 @@ void MainWindow::DoLDAPrediction()
       matrix *x;
       NewMatrix(&x, objsel.size(), varsel.size());
 
-      PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
+      bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
 
-      if(x->col == (size_t)varsel.size()){
+      if(x->col == (size_t)varsel.size() && mxok == true){
         QString str = "--------------------\n Computing LDA Prediction for: ";
         str.append(QString("%1").arg( projects->value(p.getselectedProject())->getProjectName()));
         updateLog(str);
@@ -7077,9 +7089,9 @@ void MainWindow::DoMLRPrediction()
         initMatrix(&x);
         initMatrix(&y);
 
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+        bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
 
-        if(x->col == (size_t)xvarsel.size()){
+        if(x->col == (size_t)xvarsel.size() && mxok == true){
           QString str = "--------------------\n Computing MLR Prediction for: ";
           str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
           updateLog(str);
