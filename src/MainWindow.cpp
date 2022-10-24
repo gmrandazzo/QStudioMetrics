@@ -187,7 +187,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
       continue;
     }
   }
-  
+
   QStringList varnotfound;
   for(int i = 0; i < varsel.size(); i++){
     auto it = varmap.find(varsel[i]);
@@ -208,13 +208,13 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     }
     QApplication::processEvents();
   }
-  
+
   if(varnotfound.size() > 0){
     QString msg = "The following features were not found: \n";
     QString vname;
     foreach(vname, varnotfound)
       msg += QString("%1\n").arg(vname);
-    
+
     QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()), QMessageBox::Close);
     return false;
   }
@@ -249,7 +249,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
       continue;
     }
   }
-  
+
   QStringList xvarnotfound;
   for(int i = 0; i < xvarsel.size(); i++){
     auto it = varmap.find(xvarsel[i]);
@@ -292,24 +292,24 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     }
     QApplication::processEvents();
   }
-  
+
   bool retval = true;
   if(xvarnotfound.size() > 0){
     QString msg = "The following features were not found: \n";
     QString xvname;
     foreach(xvname, xvarnotfound)
       msg += QString("%1\n").arg(xvname);
-    
+
     QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()), QMessageBox::Close);
     retval = false;
   }
-  
+
   if(yvarnotfound.size() > 0){
     QString msg = "The following dependent variables were not found: \n";
     QString yvname;
     foreach(yvname, yvarnotfound)
       msg += QString("%1\n").arg(yvname);
-    
+
     QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()), QMessageBox::Close);
     retval = false;
   }
@@ -396,7 +396,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     QString xvname;
     foreach(xvname, xvarnotfound)
       msg += QString("%1\n").arg(xvname);
-    
+
     QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()), QMessageBox::Close);
     return false;
   }
@@ -5702,7 +5702,7 @@ void MainWindow::LDAPRPlot()
   }
   else{
     QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Validated Found!\n"), QMessageBox::Close);
-  }  
+  }
 }
 
 void MainWindow::LDAFeaturePlotAndPrediction2D()
@@ -6664,6 +6664,7 @@ void MainWindow::DoPLS(int algtype)
         QString str = "--------------------\n Computing PLS DA for: ";
         str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
         projects->value(pid)->addPLSModel();
+        
         updateLog(str);
         projects->value(pid)->getLastPLSModel()->setAlgorithm(algtype);
         projects->value(pid)->getLastPLSModel()->setDID(did);
@@ -6985,7 +6986,7 @@ void MainWindow::DoLDA()
         NewMatrix(&y, objsel.size(), 1);
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
-        
+
         // Rudimental y class preparation
         for(int i = 0; i < projects->value(pid)->getMatrix(did)->getObjName().size(); i++){
           int ii = _index_of_(objsel, projects->value(pid)->getMatrix(did)->getObjName()[i]);
@@ -7621,14 +7622,14 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionMLR_Predict_Residuals_vs_Exp, SIGNAL(triggered(bool)), SLOT(MLRPredResidualsVSExpPlot()));
   connect(ui.actionMLR_Y_Scrambling_Plot, SIGNAL(triggered(bool)), SLOT(MLRPlotYScrambling()));
 
-  
+
   connect(ui.actionLDA2D_Feature_Plot, SIGNAL(triggered(bool)), SLOT(LDAFeaturePlot2D()));
   connect(ui.actionLDA2D_Feature_Plot_and_Predictions, SIGNAL(triggered(bool)), SLOT(LDAFeaturePlotAndPrediction2D()));
   connect(ui.actionLDAROC_Curve, SIGNAL(triggered(bool)), SLOT(LDAROCPlot()));
   connect(ui.actionLDAPrecision_Recall_Curve, SIGNAL(triggered(bool)), SLOT(LDAPRPlot()));
   connect(ui.actionLDAProbability_Distribution_Plot, SIGNAL(triggered(bool)), SLOT(LDAProbabilityDistribution()));
-  connect(ui.actionLDAProbability_Distribution_Plot_and_Predictions, SIGNAL(triggered(bool)), SLOT(LDAProbabilityDistributionWithPredictions())); 
-  
+  connect(ui.actionLDAProbability_Distribution_Plot_and_Predictions, SIGNAL(triggered(bool)), SLOT(LDAProbabilityDistributionWithPredictions()));
+
   connect(ui.actionCascade_SubWindows, SIGNAL(triggered(bool)), SLOT(SubWindowsCascade()));
   connect(ui.actionTile_SubWindows, SIGNAL(triggered(bool)), SLOT(SubWindowsTiled()));
   connect(ui.actionAbout, SIGNAL(triggered(bool)), SLOT(About()));

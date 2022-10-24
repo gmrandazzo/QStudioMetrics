@@ -1,5 +1,6 @@
 #ifndef QSTUDIOMETRICSDATAOPERATIONS_H
 #define QSTUDIOMETRICSDATAOPERATIONS_H
+#include "qstudiometricstypes.h"
 
 #include <iostream>
 #include <QString>
@@ -11,6 +12,8 @@
 // Conversion functions for sql export
 // N.B.: To serialize vector,matrix and tensor is utilised a std::string
 // to avoid double conversion problems and truncated floating points present in QString
+LABELS DeserializeLABELS(QString serialized_l);
+QString SerializeLABELS(LABELS l);
 QStringList DeserializeQStringList(QString serialized_lst);
 QString SerializeQStringList(QStringList lst);
 void DeserializeDVector(QString serialized_dvector, dvector **v);

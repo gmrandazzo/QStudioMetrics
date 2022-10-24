@@ -564,7 +564,7 @@ void DATA::OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *m
 
           getLastPLSModel()->setDID(did);
           QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, "PLS - "+plslist[i]);
+          subitem->setText(0, plslist[i]);
           subitem->setText(1, QString::number((*tabcount_)));
           subitem->setText(2, QString::number(getProjectID()));
           subitem->setText(3, getLastPLSModel()->getDataHash());
@@ -914,7 +914,6 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
   query.exec("SELECT * from objlabelTable");
   while (query.next()){
     // get the query values
-    //query.exec(QString("CREATE TABLE IF NOT EXISTS objlabelTable (name TEXT, values TEXT)"));
     QString name = query.value(0).toString();
     QString s_values = query.value(1).toString();
     getObjectLabels().append(LABEL());
@@ -1120,36 +1119,37 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
    * 5: objname TEXT
    * 6: xvarname TEXT
    * 7: yvarname TEXT
-   * 8: tscores TEXT
-   * 9: ploadings  TEXT
-   * 10: weights TEXT
-   * 11: xvarexp TEXT
-   * 12: xcolscaling TEXT
-   * 13: xcolaverage TEXT
-   * 14: uscores TEXT
-   * 15: qloadings TEXT
-   * 16: ycolscaling TEXT
-   * 17: ycolaverage TEXT
-   * 18: b TEXT
-   * 19: r2y_model TEXT
-   * 20: sdec TEXT
-   * 21: recalc_y TEXT
-   * 22: recalc_residuals TEXT
-   * 23: validationtype INT
-   * 24: q2y TEXT
-   * 25: sdep TEXT
-   * 26: bias TEXT
-   * 27: predicted_y TEXT
-   * 28: predicted_residuals TEXT
-   * 29: roc_recalculated TEXT
-   * 30: roc_validation TEXT
-   * 31: roc_auc_recalculated TEXT
-   * 32: roc_auc_validation TEXT
-   * 33: precision_recall_recalculated TEXT
-   * 34: precision_recall_validation TEXT
-   * 35: precision_recall_ap_recalculated TEXT
-   * 36: precision_recall_ap_validation TEXT
-   * 37: yscrambling TEXT
+   * 8: classes TEXT
+   * 9: tscores TEXT
+   * 10: ploadings  TEXT
+   * 11: weights TEXT
+   * 12: xvarexp TEXT
+   * 13: xcolscaling TEXT
+   * 14: xcolaverage TEXT
+   * 15: uscores TEXT
+   * 16: qloadings TEXT
+   * 17: ycolscaling TEXT
+   * 18: ycolaverage TEXT
+   * 19: b TEXT
+   * 20: r2y_model TEXT
+   * 21: sdec TEXT
+   * 22: recalc_y TEXT
+   * 23: recalc_residuals TEXT
+   * 24: validationtype INT
+   * 25: q2y TEXT
+   * 26: sdep TEXT
+   * 27: bias TEXT
+   * 28: predicted_y TEXT
+   * 29: predicted_residuals TEXT
+   * 30: roc_recalculated TEXT
+   * 31: roc_validation TEXT
+   * 32: roc_auc_recalculated TEXT
+   * 33: roc_auc_validation TEXT
+   * 34: precision_recall_recalculated TEXT
+   * 35: precision_recall_validation TEXT
+   * 36: precision_recall_ap_recalculated TEXT
+   * 37: precision_recall_ap_validation TEXT
+   * 38: yscrambling TEXT
    */
   while (query.next()){
     // get the query values
@@ -1161,36 +1161,37 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     QString s_objname = query.value(5).toString();
     QString s_xvarname = query.value(6).toString();
     QString s_yvarname = query.value(7).toString();
-    QString s_tscores = query.value(8).toString();
-    QString s_ploadings = query.value(9).toString();
-    QString s_weights = query.value(10).toString();
-    QString s_xvarexp = query.value(11).toString();
-    QString s_xcolscaling = query.value(12).toString();
-    QString s_xcolaverage = query.value(13).toString();
-    QString s_uscores = query.value(14).toString();
-    QString s_qloadings = query.value(15).toString();
-    QString s_ycolscaling = query.value(16).toString();
-    QString s_ycolaverage = query.value(17).toString();
-    QString s_b = query.value(18).toString();
-    QString s_r2y_model = query.value(19).toString();
-    QString s_sdec = query.value(20).toString();
-    QString s_recalc_y = query.value(21).toString();
-    QString s_recalc_residuals = query.value(22).toString();
-    int validationtype = query.value(23).toInt();
-    QString s_q2y = query.value(24).toString();
-    QString s_sdep = query.value(25).toString();
-    QString s_bias = query.value(26).toString();
-    QString s_predicted_y = query.value(27).toString();
-    QString s_predicted_residuals = query.value(28).toString();
-    QString s_roc_recalculated = query.value(29).toString();
-    QString s_roc_validation = query.value(30).toString();
-    QString s_roc_auc_recalculated = query.value(31).toString();
-    QString s_roc_auc_validation = query.value(32).toString();
-    QString s_precision_recall_recalculated = query.value(33).toString();
-    QString s_precision_recall_validation = query.value(34).toString();
-    QString s_precision_recall_ap_recalculated = query.value(35).toString();
-    QString s_precision_recall_ap_validation = query.value(36).toString();
-    QString s_yscrambling = query.value(37).toString();
+    QString s_classes = query.value(8).toString();
+    QString s_tscores = query.value(9).toString();
+    QString s_ploadings = query.value(10).toString();
+    QString s_weights = query.value(11).toString();
+    QString s_xvarexp = query.value(12).toString();
+    QString s_xcolscaling = query.value(13).toString();
+    QString s_xcolaverage = query.value(14).toString();
+    QString s_uscores = query.value(15).toString();
+    QString s_qloadings = query.value(16).toString();
+    QString s_ycolscaling = query.value(17).toString();
+    QString s_ycolaverage = query.value(18).toString();
+    QString s_b = query.value(19).toString();
+    QString s_r2y_model = query.value(20).toString();
+    QString s_sdec = query.value(21).toString();
+    QString s_recalc_y = query.value(22).toString();
+    QString s_recalc_residuals = query.value(23).toString();
+    int validationtype = query.value(24).toInt();
+    QString s_q2y = query.value(25).toString();
+    QString s_sdep = query.value(26).toString();
+    QString s_bias = query.value(27).toString();
+    QString s_predicted_y = query.value(28).toString();
+    QString s_predicted_residuals = query.value(29).toString();
+    QString s_roc_recalculated = query.value(30).toString();
+    QString s_roc_validation = query.value(31).toString();
+    QString s_roc_auc_recalculated = query.value(32).toString();
+    QString s_roc_auc_validation = query.value(33).toString();
+    QString s_precision_recall_recalculated = query.value(34).toString();
+    QString s_precision_recall_validation = query.value(35).toString();
+    QString s_precision_recall_ap_recalculated = query.value(36).toString();
+    QString s_precision_recall_ap_validation = query.value(37).toString();
+    QString s_yscrambling = query.value(38).toString();
 
     //add the data matrix
     addPLSModel();
@@ -1201,8 +1202,9 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     getLastPLSModel()->setYScaling(yscaling);
     getLastPLSModel()->setDataHash(hashinputmx);
     getLastPLSModel()->getObjName() = DeserializeQStringList(s_objname);
-    getLastPLSModel()->getXVarName() = DeserializeQStringList(s_xvarname);
-    getLastPLSModel()->getYVarName() = DeserializeQStringList(s_yvarname);
+    getLastPLSModel()->setXVarName(DeserializeQStringList(s_xvarname));
+    getLastPLSModel()->setYVarName(DeserializeQStringList(s_yvarname));
+    getLastPLSModel()->setClasses(DeserializeLABELS(s_classes));
     DeserializeMatrix(s_tscores, &getLastPLSModel()->Model()->xscores);
     DeserializeMatrix(s_ploadings, &getLastPLSModel()->Model()->xloadings);
     DeserializeMatrix(s_weights, &getLastPLSModel()->Model()->xweights);
@@ -1248,7 +1250,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
 
     getLastPLSModel()->setDID(xid);
     QTreeWidgetItem *subitem = new QTreeWidgetItem;
-    subitem->setText(0, "PLS - "+getLastPLSModel()->getName());
+    subitem->setText(0, getLastPLSModel()->getName());
     subitem->setText(1, QString::number((*tabcount_)));
     subitem->setText(2, QString::number(getProjectID()));
     subitem->setText(3, getLastPLSModel()->getDataHash());
@@ -1266,6 +1268,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
 
     for(int i = 0; i < plspredlist.size(); i++){
       if(plspredlist[i][1].compare(plshash) == 0){
+
         /*
          * plspredTable SQL structure
          * 0: name TEXT
@@ -1891,6 +1894,7 @@ QString DATA::SaveSQLData(QString savepath)
     }
   }
 
+  /* Step 1 matrix saved */
   pbdialog.setValue(1);
 
   query.exec(QString("CREATE TABLE IF NOT EXISTS arrayTable (name TEXT, objname TEXT, varname  TEXT, ar TEXT)"));
@@ -1905,34 +1909,36 @@ QString DATA::SaveSQLData(QString savepath)
     }
   }
 
+  /* Step 2 array/tensors saved */
   pbdialog.setValue(2);
 
-  query.exec(QString("CREATE TABLE IF NOT EXISTS objlabelTable (name TEXT, values TEXT)"));
+  query.exec(QString("CREATE TABLE IF NOT EXISTS objlabelTable (name TEXT, lstvalues TEXT)"));
   if(getObjectLabels().size() > 0){
     //txt1 = serialized_label
     for(int i = 0; i < getObjectLabels().size(); i++){
       QString labelname = getObjectLabels()[i].name;
       QString serialized_label = SerializeQStringList(getObjectLabels()[i].objects);
 
-      query.prepare("INSERT INTO objlabelTable (name, values) VALUES (:name, :values)");
+      query.prepare("INSERT INTO objlabelTable (name, lstvalues) VALUES (:name, :lstvalues)");
       query.bindValue(":name", labelname);
-      query.bindValue(":values", serialized_label);
+      query.bindValue(":lstvalues", serialized_label);
       query.exec();
     }
   }
 
+  /* Step 3 object labels saved */
   pbdialog.setValue(3);
 
-  query.exec(QString("CREATE TABLE IF NOT EXISTS varlabelTable (name TEXT, values TEXT)"));
+  query.exec(QString("CREATE TABLE IF NOT EXISTS varlabelTable (name TEXT, lstvalues TEXT)"));
   if(getVariableLabels().size() > 0){
     //DATAIO::MakeDir(labelspath.toStdString());
     for(int i = 0; i < getVariableLabels().size(); i++){
       QString labelname = getVariableLabels()[i].name;
       QString serialized_label = SerializeQStringList(getVariableLabels()[i].objects);
 
-      query.prepare("INSERT INTO varlabelTable (name, values) VALUES (:name, :values)");
+      query.prepare("INSERT INTO varlabelTable (name, lstvalues) VALUES (:name, :lstvalues)");
       query.bindValue(":name", labelname);
-      query.bindValue(":values", serialized_label);
+      query.bindValue(":lstvalues", serialized_label);
       query.exec();
     }
   }
@@ -1956,6 +1962,8 @@ QString DATA::SaveSQLData(QString savepath)
     }
   }
 
+
+  /* Step 4 variable labels saved */
   pbdialog.setValue(4);
 
   query.exec(QString("CREATE TABLE IF NOT EXISTS imgTable (name TEXT,  imagedata BLOB)"));
@@ -2015,7 +2023,7 @@ QString DATA::SaveSQLData(QString savepath)
     }
   }
 
-  query.exec(QString("CREATE TABLE IF NOT EXISTS plsTable (name TEXT, nlvs INT, xscalingtype INT, yscalingtype INT, hashinputmx TEXT, objname TEXT, xvarname TEXT, yvarname TEXT, tscores TEXT, ploadings  TEXT, weights TEXT, xvarexp TEXT, xcolscaling TEXT, xcolaverage TEXT, uscores TEXT, qloadings TEXT, ycolscaling TEXT, ycolaverage TEXT, b TEXT, r2y_model TEXT, sdec TEXT, recalc_y TEXT, recalc_residuals TEXT, validationtype INT, q2y TEXT, sdep TEXT, bias TEXT, predicted_y TEXT, predicted_residuals TEXT, roc_recalculated TEXT, roc_validation TEXT, roc_auc_recalculated TEXT, roc_auc_validation TEXT, precision_recall_recalculated TEXT, precision_recall_validation TEXT, precision_recall_ap_recalculated TEXT, precision_recall_ap_validation TEXT, yscrambling TEXT, yscrambling TEXT)"));
+  query.exec(QString("CREATE TABLE IF NOT EXISTS plsTable (name TEXT, nlvs INT, xscalingtype INT, yscalingtype INT, hashinputmx TEXT, objname TEXT, xvarname TEXT, yvarname TEXT, classes TEXT, tscores TEXT, ploadings  TEXT, weights TEXT, xvarexp TEXT, xcolscaling TEXT, xcolaverage TEXT, uscores TEXT, qloadings TEXT, ycolscaling TEXT, ycolaverage TEXT, b TEXT, r2y_model TEXT, sdec TEXT, recalc_y TEXT, recalc_residuals TEXT, validationtype INT, q2y TEXT, sdep TEXT, bias TEXT, predicted_y TEXT, predicted_residuals TEXT, roc_recalculated TEXT, roc_validation TEXT, roc_auc_recalculated TEXT, roc_auc_validation TEXT, precision_recall_recalculated TEXT, precision_recall_validation TEXT, precision_recall_ap_recalculated TEXT, precision_recall_ap_validation TEXT, yscrambling TEXT, yscrambling TEXT)"));
 
   QString plsTable_query_str;
   plsTable_query_str.append("CREATE TABLE IF NOT EXISTS plsTable (");
@@ -2027,6 +2035,7 @@ QString DATA::SaveSQLData(QString savepath)
   plsTable_query_str.append("objname TEXT, ");
   plsTable_query_str.append("xvarname TEXT, ");
   plsTable_query_str.append("yvarname TEXT, ");
+  plsTable_query_str.append("classes TEXT, ");
   plsTable_query_str.append("tscores TEXT, ");
   plsTable_query_str.append("ploadings  TEXT, ");
   plsTable_query_str.append("weights TEXT, ");
@@ -2067,6 +2076,7 @@ QString DATA::SaveSQLData(QString savepath)
       QString objname_serialized = SerializeQStringList(getPLSModelAt(i)->getObjName());
       QString xvarname_serialized = SerializeQStringList(getPLSModelAt(i)->getXVarName());
       QString yvarname_serialized = SerializeQStringList(getPLSModelAt(i)->getYVarName());
+      QString classes_serialized = SerializeLABELS(getPLSModelAt(i)->getClasses());
 
       QString serialized_tscores = SerializeMatrix(getPLSModelAt(i)->Model()->xscores);
       QString serialized_ploadings = SerializeMatrix(getPLSModelAt(i)->Model()->xloadings);
@@ -2113,6 +2123,7 @@ QString DATA::SaveSQLData(QString savepath)
       plsTable_pepare_query_str.append("objname, ");
       plsTable_pepare_query_str.append("xvarname, ");
       plsTable_pepare_query_str.append("yvarname, ");
+      plsTable_pepare_query_str.append("classes, ");
       plsTable_pepare_query_str.append("tscores, ");
       plsTable_pepare_query_str.append("ploadings, ");
       plsTable_pepare_query_str.append("weights, ");
@@ -2152,6 +2163,7 @@ QString DATA::SaveSQLData(QString savepath)
       plsTable_pepare_query_str.append(":objname, ");
       plsTable_pepare_query_str.append(":xvarname, ");
       plsTable_pepare_query_str.append(":yvarname, ");
+      plsTable_pepare_query_str.append(":classes, ");
       plsTable_pepare_query_str.append(":tscores, ");
       plsTable_pepare_query_str.append(":ploadings, ");
       plsTable_pepare_query_str.append(":weights, ");
@@ -2193,6 +2205,7 @@ QString DATA::SaveSQLData(QString savepath)
       query.bindValue(":objname", objname_serialized);
       query.bindValue(":xvarname", xvarname_serialized);
       query.bindValue(":yvarname", yvarname_serialized);
+      query.bindValue(":classes", classes_serialized);
       query.bindValue(":tscores", serialized_tscores);
       query.bindValue(":ploadings", serialized_ploadings);
       query.bindValue(":weights", serialized_weights);

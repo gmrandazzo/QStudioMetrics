@@ -1,4 +1,5 @@
 #include "qstudiometricsdataoperations.h"
+#include "qstudiometricstypes.h"
 #include <iostream>
 #include <QString>
 #include <QStringList>
@@ -7,16 +8,48 @@
 #include <cmath>
 #include <scientific.h>
 
+LABELS DeserializeLABELS(QString serialized_l)
+{
+  LABELS l;
+  if(serialized_l.compare("NULL", Qt::CaseInsensitive) != 0){
+    QStringList r = serialized_l.split("/#");
+    for(int i = 0; i < r.size(); i++){
+      l.append(LABEL());
+      QStringList lb = r[i].split(";");
+      l.last().name = lb[0];
+      l.last().objects = lb[1].split("//");
+    }
+  }
+  return l;
+}
+
+QString SerializeLABELS(LABELS l)
+{
+  if(l.size() > 0){
+    QString serialized_l;
+    for(int i = 0; i < l.size()-1; i++){
+      serialized_l +=  l[i].name+";"+SerializeQStringList(l[i].objects)+"/#";
+    }
+    serialized_l += l.last().name+";"+SerializeQStringList(l.last().objects);
+    return serialized_l.toUtf8();
+  }
+  else{
+    return QString("NULL");
+  }
+}
 
 QStringList DeserializeQStringList(QString serialized_lst)
 {
-  return serialized_lst.split("//");
+  if(serialized_lst.compare("NULL", Qt::CaseInsensitive) != 0)
+    return serialized_lst.split("//");
+  else
+    return QStringList();
 }
 
 QString SerializeQStringList(QStringList lst)
 {
   if(lst.size() > 0){
-  QString serialized_lst;
+    QString serialized_lst;
     for(int i = 0; i < lst.size()-1; i++)
       serialized_lst += lst[i]+"//";
     serialized_lst += lst.last();
@@ -194,7 +227,7 @@ QString SerializeTensor(tensor *ar)
 
 QString GenHashFromStrlst(QStringList slst)
 {
-  
+
   slst.sort(Qt::CaseSensitive);
   QCryptographicHash hash_(QCryptographicHash::Sha256);
   hash_.addData(slst.join("").toUtf8());

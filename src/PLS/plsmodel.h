@@ -9,6 +9,7 @@
 
 #include "qstudiometricstypes.h"
 #include "qstudiometricsdataoperations.h"
+#include <QDebug>
 
 class PLSPREDICTION
 {
@@ -70,8 +71,8 @@ public:
   void setXVarName(const QStringList &varname_){ xvarname = varname_; }
   QStringList &getXVarName(){ return xvarname; }
   void setYVarName(const QStringList &varname_){ yvarname = varname_; }
-  QStringList &getYVarName(){if(algtype == PLS_){return yvarname;}else{return cnames;} }
-  void setClasses(LABELS classes_){ classes = classes_; cnames.clear(); for(int i = 0; i < classes.size(); i++){cnames << classes[i].name;} }
+  QStringList &getYVarName(){ return yvarname; }
+  void setClasses(LABELS classes_){ classes = classes_; if(classes.size() > 0){yvarname.clear(); for(int i = 0; i < classes.size(); i++) yvarname << classes[i].name;} }
   LABELS getClasses(){ return classes; }
   void setValidation(int v){ validation = v; }
   int getValidation(){ return validation; }
@@ -100,12 +101,28 @@ public:
   PLSPREDICTION *getLastPLSPrediction(){ return prediction.last(); }
   int PLSPredictionCount(){ return prediction.size(); }
 
-  QString& getHash(){ if(plshash.size() == 0){ plshash = GenHashFromStrlst((QStringList() << name << "plsmodel_type")+objname+xvarname+yvarname); } return plshash; }
+  QString& getHash(){
+    if(plshash.size() == 0){
+        QStringList hashprep;
+        hashprep << name;
+        hashprep  << "plsmodel_type";
+        hashprep += objname;
+        hashprep += xvarname;
+        hashprep += yvarname;
+        for(int i = 0; i < classes.size(); i++){
+          hashprep << classes[i].name;
+          hashprep += classes[i].objects;
+        }
+        plshash = GenHashFromStrlst(hashprep);
+        //plshash = GenHashFromStrlst((QStringList() << name << "plsmodel_type")+objname+xvarname+yvarname);
+      }
+      return plshash;
+    }
 
 private:
   PLSMODEL *m;
   QList<PLSPREDICTION*> prediction;
-  QStringList objname, xvarname, yvarname, cnames;
+  QStringList objname, xvarname, yvarname;
   QString name;
   LABELS classes;
   int did, xscaling, yscaling, npc, modelid, validation, algtype;
