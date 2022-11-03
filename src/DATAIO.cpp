@@ -311,7 +311,7 @@ void DATAIO::ImportTensor(char *file_, const std::string  &sep, tensor *data)
   GetArrayOrderRowCol(file_, sep, &order, &row, &col);
 
   for(size_t i = 0; i < order; i++){
-    AddTensorMatrix(&data, row, col);
+    AddTensorMatrix(data, row, col);
   }
 
   order = row = col = 0;

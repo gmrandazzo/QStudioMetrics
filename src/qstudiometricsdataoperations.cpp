@@ -181,7 +181,7 @@ void DeserializeTensor(QString serialized_ar, tensor *ar)
 
     //NewArray(ar, _ar_.size());
     for(int k = 0; k < _ar_.size(); k++){
-      AddTensorMatrix(&ar, _ar_[k].size(), _ar_[k][0].size());
+     AddTensorMatrix(ar, _ar_[k].size(), _ar_[k][0].size());
       for(int i = 0; i < _ar_[k].size(); i++){
         for(int j = 0; j < _ar_[k][i].size(); j++){
           ar->m[k]->data[i][j] = std::stod(_ar_[k][i][j].toStdString());

@@ -193,7 +193,7 @@ void PCAPlot::LoadingsMVANormDistrib(ScatterPlot **plot2D)
     }
 
     for(int i = 0; i < g.size(); i++){
-      NewTensorMatrix(&classvar, i, clsid[i].size(), projects->value(pid)->getPCAModel(mid)->Model()->loadings->col);
+      NewTensorMatrix(classvar, i, clsid[i].size(), projects->value(pid)->getPCAModel(mid)->Model()->loadings->col);
     }
 
     for(int k = 0; k < clsid.size(); k++){

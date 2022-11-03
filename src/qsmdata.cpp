@@ -2496,7 +2496,7 @@ void DATA::addArray(ARRAY* ar)
   tensor *ar_ = array_.last()->Array();
 
   for(uint order = 0; order < ar->Array()->order; order++){
-    TensorAppendMatrix(&ar_, ar->Array()->m[order]);
+    TensorAppendMatrix(ar_, ar->Array()->m[order]);
   }
 
   array_.last()->getObjName().append(ar->getObjName());
