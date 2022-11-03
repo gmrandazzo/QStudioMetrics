@@ -32,23 +32,23 @@ void AdvancedPretreatmentDialog::OK()
   matrix *mx_out;
   initMatrix(&mx_out);
   if(ui.logTransform->isChecked()){
-    Matrix2LogMatrix(mx_in, &mx_out);
+    Matrix2LogMatrix(mx_in, mx_out);
   }
   else if(ui.squareTransform->isChecked()){
-    Matrix2SquareMatrix(mx_in, &mx_out);
+    Matrix2SquareMatrix(mx_in, mx_out);
   }
   else if(ui.sqrtTransform->isChecked()){
-    Matrix2SQRTMatrix(mx_in, &mx_out);
+    Matrix2SQRTMatrix(mx_in, mx_out);
   }
   else if(ui.absTransform->isChecked()){
-  Matrix2ABSMatrix(mx_in, &mx_out);
+  Matrix2ABSMatrix(mx_in, mx_out);
   }
   else if(ui.rowcenteringScaling->isChecked()){
-    MatrixRowCenterScaling(mx_in, &mx_out);
+    MatrixRowCenterScaling(mx_in, mx_out);
   }
   else{
     /*else if(ui.SVNScaling->isChecked()){*/
-    MatrixSVNScaling(mx_in, &mx_out);
+    MatrixSVNScaling(mx_in, mx_out);
   }
 
   /* Now MX cpontain the pretreated matrix... */

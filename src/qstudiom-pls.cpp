@@ -152,9 +152,9 @@ int main(int argc, char **argv)
 
       PLS(xdata, ydata, npc, xautoscaling, yautoscaling, m, NULL);
       if(r_genmodel == true)
-        PLSRegressionStatistics(ydata, m->recalculated_y, &(m->r2y_recalculated), &(m->sdec), NULL);
+        PLSRegressionStatistics(ydata, m->recalculated_y, m->r2y_recalculated, m->sdec, NULL);
       else
-        PLSDiscriminantAnalysisStatistics(ydata, m->recalculated_y, NULL, &(m->r2y_recalculated), NULL, &(m->sdec));
+        PLSDiscriminantAnalysisStatistics(ydata, m->recalculated_y, NULL, m->r2y_recalculated, NULL, m->sdec);
 
       DATAIO::WritePLSModel((char*)outputfile.c_str(), m);
 
@@ -176,7 +176,7 @@ int main(int argc, char **argv)
 
       PLS(xdata, ydata, npc, xautoscaling, yautoscaling, m, NULL);
       initDVector(&betas);
-      PLSBetasCoeff(m, npc, &betas);
+      PLSBetasCoeff(m, npc, betas);
 
       for(size_t i = 0; i < betas->size; i++){
         cout << betas->data[i] << endl;
@@ -208,8 +208,8 @@ int main(int argc, char **argv)
       initMatrix(&xscores);
       initMatrix(&y);
 
-      PLSScorePredictor(xdata, m,  npc, &xscores);
-      PLSYPredictor(xscores, m, npc, &y);
+      PLSScorePredictor(xdata, m,  npc, xscores);
+      PLSYPredictor(xscores, m, npc, y);
 
       DATAIO::MakeDir((char*)outputfile.c_str());
       string ptscores = outputfile+"/T-Scores-Pred.txt";
@@ -249,9 +249,9 @@ int main(int argc, char **argv)
       minpt.xautoscaling = xautoscaling;
       minpt.yautoscaling = yautoscaling;
 
-      BootstrapRandomGroupsCV(&minpt, ngroups, iterations, _PLS_, &pred, &predresiduals, nthreads, NULL, 0);
+      BootstrapRandomGroupsCV(&minpt, ngroups, iterations, _PLS_, pred, predresiduals, nthreads, NULL, 0);
 //      LeaveOneOut(&minpt, _PLS_, &m->predicted_y, &m->pred_residuals, 4, NULL, 0);
-      PLSRegressionStatistics(ydata, pred, &q2y, &sdep, &bias);
+      PLSRegressionStatistics(ydata, pred, q2y, sdep, bias);
 
       if(!pathmodel.empty()){
         string q2yfile = pathmodel+"/Validated_q2y.txt";

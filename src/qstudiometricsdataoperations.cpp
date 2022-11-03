@@ -60,7 +60,7 @@ QString SerializeQStringList(QStringList lst)
   }
 }
 
-void DeserializeDVector(QString serialized_dvector, dvector **v)
+void DeserializeDVector(QString serialized_dvector, dvector *v)
 {
   if(serialized_dvector.compare("NULL", Qt::CaseInsensitive) == 0 || serialized_dvector.size() == 0){
     return;
@@ -69,7 +69,7 @@ void DeserializeDVector(QString serialized_dvector, dvector **v)
     QStringList strvct = serialized_dvector.split(";");
     DVectorResize(v, strvct.size());
     for(int i = 0; i < strvct.size(); i++){
-      (*v)->data[i] = std::stod(strvct[i].toStdString());
+      v->data[i] = std::stod(strvct[i].toStdString());
     }
   }
 }
@@ -88,7 +88,7 @@ QString SerializeDVector(dvector *v)
   }
 }
 
-void DeserializeUIVector(QString serialized_uivector, uivector **v)
+void DeserializeUIVector(QString serialized_uivector, uivector *v)
 {
   if(serialized_uivector.compare("NULL", Qt::CaseInsensitive) == 0 || serialized_uivector.size() == 0){
     return;
@@ -97,7 +97,7 @@ void DeserializeUIVector(QString serialized_uivector, uivector **v)
     QStringList strvct = serialized_uivector.split(";");
     UIVectorResize(v, strvct.size());
     for(int i = 0; i < strvct.size(); i++){
-      (*v)->data[i] = std::stoi(strvct[i].toStdString());
+      v->data[i] = std::stoi(strvct[i].toStdString());
     }
   }
 }
@@ -116,7 +116,7 @@ QString SerializeUIVector(uivector *v)
   }
 }
 
-void DeserializeMatrix(QString serialized_mx, matrix **mx)
+void DeserializeMatrix(QString serialized_mx, matrix *mx)
 {
   if(serialized_mx.compare("NULL", Qt::CaseInsensitive) == 0 || serialized_mx.size() == 0){
     return;
@@ -131,7 +131,7 @@ void DeserializeMatrix(QString serialized_mx, matrix **mx)
     ResizeMatrix(mx, _mx_.size(), _mx_[0].size());
     for(int i = 0; i < _mx_.size(); i++){
       for(int j = 0; j < _mx_[i].size(); j++){
-        (*mx)->data[i][j] = std::stod(_mx_[i][j].toStdString());
+        mx->data[i][j] = std::stod(_mx_[i][j].toStdString());
       }
     }
   }
@@ -162,7 +162,7 @@ QString SerializeMatrix(matrix *mx)
   }
 }
 
-void DeserializeTensor(QString serialized_ar, tensor **ar)
+void DeserializeTensor(QString serialized_ar, tensor *ar)
 {
   if(serialized_ar.compare("NULL", Qt::CaseInsensitive) == 0 || serialized_ar.size() == 0){
     return;
@@ -181,10 +181,10 @@ void DeserializeTensor(QString serialized_ar, tensor **ar)
 
     //NewArray(ar, _ar_.size());
     for(int k = 0; k < _ar_.size(); k++){
-      AddTensorMatrix(ar, _ar_[k].size(), _ar_[k][0].size());
+      AddTensorMatrix(&ar, _ar_[k].size(), _ar_[k][0].size());
       for(int i = 0; i < _ar_[k].size(); i++){
         for(int j = 0; j < _ar_[k][i].size(); j++){
-          (*ar)->m[k]->data[i][j] = std::stod(_ar_[k][i][j].toStdString());
+          ar->m[k]->data[i][j] = std::stod(_ar_[k][i][j].toStdString());
         }
       }
     }

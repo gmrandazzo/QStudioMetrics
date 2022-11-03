@@ -163,7 +163,7 @@ static inline int _index_of_(QStringList lst, QString str)
   return -1;
 }
 
-bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix **x)
+bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix *x)
 {
   ResizeMatrix(x, objnames.size(), varsel.size());
 
@@ -204,7 +204,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     int ii = aligned_objid[i];
     for(int j = 0; j < aligned_varid.size(); j++){
       int jx = aligned_varid[j];
-      (*x)->data[i][j] = indata->Matrix()->data[ii][jx];
+      x->data[i][j] = indata->Matrix()->data[ii][jx];
     }
     QApplication::processEvents();
   }
@@ -223,7 +223,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   }
 }
 
-bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix **x, matrix **y)
+bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix *x, matrix *y)
 {
   ResizeMatrix(x, objnames.size(), xvarsel.size());
   ResizeMatrix(y, objnames.size(), yvarsel.size());
@@ -283,12 +283,12 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     for(int j = 0; j < aligned_xvarid.size(); j++){
       int jx = aligned_xvarid[j];
       // printf("%d %d %d %d\n", i, j, ii, jx);
-      (*x)->data[i][j] = indata->Matrix()->data[ii][jx];
+      x->data[i][j] = indata->Matrix()->data[ii][jx];
     }
 
     for(int j = 0; j < aligned_yvarid.size(); j++){
       int jy = aligned_yvarid[j];
-      (*y)->data[i][j] = indata->Matrix()->data[ii][jy];
+      y->data[i][j] = indata->Matrix()->data[ii][jy];
     }
     QApplication::processEvents();
   }
@@ -316,7 +316,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   return retval;
 }
 
-bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix **x, matrix **y)
+bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix *x, matrix *y)
 {
   ResizeMatrix(x, objnames.size(), xvarsel.size());
 
@@ -366,25 +366,25 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     int ii = aligned_objid[i];
     for(int j = 0; j < aligned_xvarid.size(); j++){
       int jx = aligned_xvarid[j];
-      (*x)->data[i][j] = indata->Matrix()->data[ii][jx];
+      x->data[i][j] = indata->Matrix()->data[ii][jx];
     }
 
     if(classes.size() == 2){
       // contains maybe slow...
       if(classes[0].objects.contains(indata->getObjName()[ii]) == true){
-        (*y)->data[i][0] = 1; // TRUE
+        y->data[i][0] = 1; // TRUE
       }
       else{
-        (*y)->data[i][0] = 0; // FALSE
+        y->data[i][0] = 0; // FALSE
       }
     }
     else{
       for(int j = 0; j < classes.size(); j++){
         if(classes[j].objects.contains(indata->getObjName()[ii]) == true){
-          (*y)->data[i][j] = 1; // TRUE
+          y->data[i][j] = 1; // TRUE
         }
         else{
-          (*y)->data[i][j] = 0; // FALSE
+          y->data[i][j] = 0; // FALSE
         }
       }
     }
@@ -405,7 +405,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   }
 }
 
-void MainWindow::PrepareKFoldClasses(QStringList objects, LABELS kfclasses, uivector **classes)
+void MainWindow::PrepareKFoldClasses(QStringList objects, LABELS kfclasses, uivector *classes)
 {
   for(int i = 0; i < objects.size(); i++){
     size_t class_indx = 0;
@@ -1776,7 +1776,7 @@ void MainWindow::showLDAPriorProbabilities()
     child->setWindowID(tabid);
     matrix *pprob;
     initMatrix(&pprob);
-    MatrixAppendCol(&pprob, projects->value(pid)->getLDAModel(mid)->Model()->pprob);
+    MatrixAppendCol(pprob, projects->value(pid)->getLDAModel(mid)->Model()->pprob);
     child->newTable(tabname, pprob, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
     QStringList objname;
     for(size_t i = 0; i < pprob->row; i++)
@@ -1899,8 +1899,8 @@ void MainWindow::showLDAValidation()
       headername << QString("ROC FP Rate - %1").arg(QString::number(k+1))  << QString("ROC TP Rate - %1").arg(QString::number(k+1));
       dvector *fpr = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->roc->m[k], 0);
       dvector *tpr = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->roc->m[k], 1);
-      MatrixAppendCol(&valid, fpr);
-      MatrixAppendCol(&valid, tpr);
+      MatrixAppendCol(valid, fpr);
+      MatrixAppendCol(valid, tpr);
       DelDVector(&fpr);
       DelDVector(&tpr);
     }
@@ -1909,8 +1909,8 @@ void MainWindow::showLDAValidation()
       headername << QString("PR Recall - %1").arg(QString::number(k+1))  << QString("PR Precision Rate - %1").arg(QString::number(k+1));
       dvector *recall = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->pr->m[k], 0);
       dvector *precision = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->pr->m[k], 1);
-      MatrixAppendCol(&valid, recall);
-      MatrixAppendCol(&valid, precision);
+      MatrixAppendCol(valid, recall);
+      MatrixAppendCol(valid, precision);
       DelDVector(&recall);
       DelDVector(&precision);
     }
@@ -3486,7 +3486,7 @@ void MainWindow::showDescrpitiveStatistics()
     if(getCurrentDataType().compare("Matrix") == 0){
       matrix *stats;
       initMatrix(&stats);
-      MatrixColDescStat(projects->value(pid)->getMatrix(did)->Matrix(), &stats);
+      MatrixColDescStat(projects->value(pid)->getMatrix(did)->Matrix(), stats);
       QString tabname = projectname +"-Matrix-"+ getCurrentDataName()+ " Descriptive statistics";
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
@@ -5788,7 +5788,7 @@ void MainWindow::DoPCAPrediction()
 
 
         NewMatrix(&x, objsel.size(), varsel.size());
-        bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
+        bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, x);
 
         if(x->col == (size_t)varsel.size() && mxok == true){
           QString str = "--------------------\n Computing PCA Prediction for: ";
@@ -5896,7 +5896,7 @@ void MainWindow::DoPCA()
           MatrixCopy(projects->value(pid)->getMatrix(did)->Matrix(), &x);
         }
         else{
-          PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
+          PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, x);
         }
 
         RUN obj;
@@ -5978,7 +5978,7 @@ void MainWindow::DoEPLSPrediction()
       initMatrix(&x);
       initMatrix(&y);
 
-      PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, ysel, &x, &y);
+      PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, ysel, x, y);
 
       if(x->col == (size_t)xvarsel.size()){
         QString str = "--------------------\n Computing EPLS Prediction for: ";
@@ -6090,14 +6090,14 @@ void MainWindow::DoEPLSValidation()
       initMatrix(&x);
       initMatrix(&y);
       if(yvarsel.size() > 0 && classes.size() == 0){
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, x, y);
       }
       else{
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, classes, &x, &y);
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, classes, x, y);
       }
       uivector *kfc;
       initUIVector(&kfc);
-      PrepareKFoldClasses(objsel, kfoldclasses, &kfc);
+      PrepareKFoldClasses(objsel, kfoldclasses, kfc);
 
       projects->value(pid)->getEPLSModel(mid)->setCombinationRule(crule);
 
@@ -6206,7 +6206,7 @@ void MainWindow::DoEPLS(int algtype)
         initMatrix(&x);
         initMatrix(&y);
 
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, x, y);
 
         RUN obj;
         obj.setXMatrix(x);
@@ -6291,7 +6291,7 @@ void MainWindow::DoEPLS(int algtype)
         initMatrix(&x);
         initMatrix(&y);
 
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, classes, &x, &y);
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, classes, x, y);
 
         RUN obj;
         obj.setXMatrix(x);
@@ -6376,7 +6376,7 @@ void MainWindow::DoPLSPrediction()
         initMatrix(&x);
         initMatrix(&y);
 
-        bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, ysel, &x, &y);
+        bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, ysel, x, y);
 
         if(x->col == (size_t)xvarsel.size() && mxok == true){
           QString str = "--------------------\n Computing PLS Prediction for: ";
@@ -6491,15 +6491,15 @@ void MainWindow::DoPLSValidation()
 
 
         if(yvarsel.size() > 0 && classes.size() == 0){
-          PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+          PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, x, y);
         }
         else{
-          PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, classes, &x, &y);
+          PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, classes, x, y);
         }
 
         uivector *kfc;
         initUIVector(&kfc);
-        PrepareKFoldClasses(objsel, kfoldclasses, &kfc);
+        PrepareKFoldClasses(objsel, kfoldclasses, kfc);
 
         RUN obj;
         obj.setXMatrix(x);
@@ -6604,7 +6604,7 @@ void MainWindow::DoPLS(int algtype)
         initMatrix(&x);
         initMatrix(&y);
 
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, x, y);
 
         RUN obj;
         obj.setXMatrix(x);
@@ -6688,7 +6688,7 @@ void MainWindow::DoPLS(int algtype)
         initMatrix(&x);
         initMatrix(&y);
 
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, classes, &x, &y);
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, classes, x, y);
 
         RUN obj;
         obj.setXMatrix(x);
@@ -6765,7 +6765,7 @@ void MainWindow::DoLDAPrediction()
       matrix *x;
       NewMatrix(&x, objsel.size(), varsel.size());
 
-      bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
+      bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, x);
 
       if(x->col == (size_t)varsel.size() && mxok == true){
         QString str = "--------------------\n Computing LDA Prediction for: ";
@@ -6880,7 +6880,7 @@ void MainWindow::DoLDAValidation()
         NewMatrix(&x, objsel.size(), varsel.size());
         NewMatrix(&y, objsel.size(), 1);
 
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, x);
 
         // Rudimental y class preparation
         for(int i = 0; i < projects->value(pid)->getMatrix(did)->getObjName().size(); i++){
@@ -6985,7 +6985,7 @@ void MainWindow::DoLDA()
         NewMatrix(&x, objsel.size(), varsel.size());
         NewMatrix(&y, objsel.size(), 1);
 
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, &x);
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, x);
 
         // Rudimental y class preparation
         for(int i = 0; i < projects->value(pid)->getMatrix(did)->getObjName().size(); i++){
@@ -7090,7 +7090,7 @@ void MainWindow::DoMLRPrediction()
         initMatrix(&x);
         initMatrix(&y);
 
-        bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+        bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, x, y);
 
         if(x->col == (size_t)xvarsel.size() && mxok == true){
           QString str = "--------------------\n Computing MLR Prediction for: ";
@@ -7195,11 +7195,11 @@ void MainWindow::DoMLRValidation()
         initMatrix(&x);
         initMatrix(&y);
 
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, x, y);
 
         uivector *kfc;
         initUIVector(&kfc);
-        PrepareKFoldClasses(objsel, kfoldclasses, &kfc);
+        PrepareKFoldClasses(objsel, kfoldclasses, kfc);
 
         RUN obj;
         obj.setXMatrix(x);
@@ -7289,7 +7289,7 @@ void MainWindow::DoMLR()
         initMatrix(&x);
         initMatrix(&y);
 
-        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, &x, &y);
+        PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel, yvarsel, x, y);
 
         RUN obj;
         obj.setXMatrix(x);

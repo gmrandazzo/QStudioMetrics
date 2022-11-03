@@ -255,7 +255,7 @@ void ProjectManager::AddImagesAsRGB()
       if(imgname.size() > 0){
         data->addMatrix();
         matrix *_m_ = data->getMATRIXList().last()->Matrix();
-        ResizeMatrix(&_m_, imgmx.size(), colsize);
+        ResizeMatrix(_m_, imgmx.size(), colsize);
 
         for(int i = 0; i < imgmx.size(); i++){
           QFileInfo finfo(imgname[i]);

@@ -334,7 +334,7 @@ void PLSPlot::BetaCoefficients(BarPlot **betas_bar)
 
   dvector *betas;
   initDVector(&betas);
-  PLSBetasCoeff(projects->value(pid)->getPLSModel(mid)->Model(), nlv, &betas);
+  PLSBetasCoeff(projects->value(pid)->getPLSModel(mid)->Model(), nlv, betas);
 
   //compute the intercept
   //meanY - meanX*beta
@@ -362,7 +362,7 @@ void PLSPlot::BetaCoefficientsDurbinWatson(SimpleLine2DPlot **dw_betas_plot)
     dvector *betas;
     initDVector(&betas);
 
-    PLSBetasCoeff(plsmod, i, &betas);
+    PLSBetasCoeff(plsmod, i, betas);
     //PrintDVector(betas);
 
     double n = 0.f, d = 0.f;

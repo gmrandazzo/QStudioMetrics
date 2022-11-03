@@ -158,7 +158,7 @@ BarPlot* VariablePlot::VariableDistribution()
             if(projects->value(pid)->getMatrix(xhash[j])->getObjName()[k].compare(objects[i][m]) == 0){
               QString str = objects[i][m];
               objects[i].removeAll(str);
-              DVectorAppend(&v.last(), getMatrixValue(projects->value(pid)->getMatrix(xhash[j])->Matrix(), k, varid1));
+              DVectorAppend(v.last(), getMatrixValue(projects->value(pid)->getMatrix(xhash[j])->Matrix(), k, varid1));
               break;
             }
             else{
@@ -189,7 +189,7 @@ BarPlot* VariablePlot::VariableDistribution()
             if(projects->value(pid)->getArray(xhash[j])->getObjName()[k].compare(objects[i][m]) == 0){
               QString str = objects[i][m];
               objects[i].removeAll(str);
-              DVectorAppend(&v.last(), getMatrixValue(projects->value(pid)->getArray(xhash[j])->Array()->m[layerid], k, varid1));
+              DVectorAppend(v.last(), getMatrixValue(projects->value(pid)->getArray(xhash[j])->Array()->m[layerid], k, varid1));
               break;
             }
             else{

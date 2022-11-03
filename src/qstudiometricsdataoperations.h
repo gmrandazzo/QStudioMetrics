@@ -16,13 +16,13 @@ LABELS DeserializeLABELS(QString serialized_l);
 QString SerializeLABELS(LABELS l);
 QStringList DeserializeQStringList(QString serialized_lst);
 QString SerializeQStringList(QStringList lst);
-void DeserializeDVector(QString serialized_dvector, dvector **v);
+void DeserializeDVector(QString serialized_dvector, dvector *v);
 QString SerializeDVector(dvector *v);
-void DeserializeUIVector(QString serialized_dvector, uivector **v);
+void DeserializeUIVector(QString serialized_dvector, uivector *v);
 QString SerializeUIVector(uivector *v);
-void DeserializeMatrix(QString serialized_mx, matrix **mx);
+void DeserializeMatrix(QString serialized_mx, matrix *mx);
 QString SerializeMatrix(matrix *mx);
-void DeserializeTensor(QString serialized_ar, tensor **ar);
+void DeserializeTensor(QString serialized_ar, tensor *ar);
 QString SerializeTensor(tensor *ar);
 
 // hash functions

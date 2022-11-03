@@ -209,8 +209,8 @@ void PCAPlot::LoadingsMVANormDistrib(ScatterPlot **plot2D)
       initDVector(&mean);
       initDVector(&sdev);
 
-      MatrixColSDEV(classvar->m[k], &sdev);
-      MatrixColAverage(classvar->m[k], &mean);
+      MatrixColSDEV(classvar->m[k], sdev);
+      MatrixColAverage(classvar->m[k], mean);
 
       mx.append(classvar->m[k]);
       my.append(new matrix);

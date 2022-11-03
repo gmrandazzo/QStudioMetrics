@@ -233,7 +233,7 @@ void DATAIO::ImportMatrix(char *file_, const std::string &sep, matrix *data)
   size_t row, col;
 
   GetMatrixRowCol(file_, sep, &row, &col);
-  ResizeMatrix(&data, row, col);
+  ResizeMatrix(data, row, col);
 
   row = col = 0;
   file.open(file_, std::ios::in);
@@ -360,7 +360,7 @@ void DATAIO::GetVectorSize(char *file_, size_t *size_)
   file.close();
 }
 
-void DATAIO::ImportStrvector(char *file_, strvector **strv)
+void DATAIO::ImportStrvector(char *file_, strvector *strv)
 {
   std::ifstream  file;
   std::string line;
@@ -377,7 +377,7 @@ void DATAIO::ImportStrvector(char *file_, strvector **strv)
         continue;
       }
       else{
-        setStr((*strv), size_, Trim((char*)line.c_str()));
+        setStr(strv, size_, Trim((char*)line.c_str()));
         size_++;
       }
     }
@@ -392,7 +392,7 @@ void DATAIO::ImportDvector(char *file_, dvector *v)
   size_t size_;
 
   GetVectorSize(file_, &size_);
-  DVectorResize(&v, size_);
+  DVectorResize(v, size_);
 
   size_ = 0;
   file.open(file_, std::ios::in);
@@ -426,7 +426,7 @@ void DATAIO::ImportUIvector(char *file_, uivector *v)
         continue;
       }
       else{
-        UIVectorAppend(&v, atoi(Trim((char*)line.c_str())));
+        UIVectorAppend(v, atoi(Trim((char*)line.c_str())));
         size_++;
       }
     }

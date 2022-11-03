@@ -31,11 +31,8 @@ public:
   int getDID(){ return did; }
   void setDataHash(QString hash_){ hash = hash_; }
   QString &getDataHash(){ return hash; }
-  matrix **YDipVarPointer(){ return &py; }
   matrix *getYDipVar(){ return py; }
-  dvector **R2YPointer(){ return &r2y; }
   dvector *getR2Y(){ return r2y; }
-  dvector **SDECPointer(){ return &sdec; }
   dvector *getSDEC(){ return sdec; }
 private:
   QStringList objname, yvarname;

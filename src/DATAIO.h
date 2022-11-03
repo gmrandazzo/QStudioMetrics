@@ -24,7 +24,7 @@ namespace DATAIO {
   void ImportTensor(char *file_, const std::string &sep, tensor *data);
 
   void GetVectorSize(char *file_, size_t *size_);
-  void ImportStrvector(char *file_, strvector **strv);
+  void ImportStrvector(char *file_, strvector *strv);
   void ImportDvector(char *file_, dvector *v);
   void ImportUIvector(char *file_, uivector *v);
 

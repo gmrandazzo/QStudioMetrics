@@ -129,8 +129,8 @@ int main(int argc, char **argv)
       initMatrix(&indvar);
       initDVector(&seps);
 
-      PCAScorePredictor(xdata, m, npc, &xscores);
-      PCAIndVarPredictor(xscores, m->loadings, m->colaverage, m->colscaling, npc, &indvar);
+      PCAScorePredictor(xdata, m, npc, xscores);
+      PCAIndVarPredictor(xscores, m->loadings, m->colaverage, m->colscaling, npc, indvar);
 
       if(DATAIO::DirExists((char*)outputfile.c_str()) == true){
         DATAIO::RemoveDir((char*)outputfile.c_str());

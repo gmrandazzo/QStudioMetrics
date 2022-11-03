@@ -234,7 +234,7 @@ void ScatterPlot::BuildHotellingEllipse()
 
   /* Calculate the eigenvectors and eigenvalue of the covariance matrix*/
   initMatrix(&covxy);
-  MatrixCovariance(xy, &covxy);
+  MatrixCovariance(xy, covxy);
 
   dvector *eval;
   matrix *evect;
@@ -242,7 +242,7 @@ void ScatterPlot::BuildHotellingEllipse()
   initDVector(&eval);
   initMatrix(&evect);
 
-  EVectEval(covxy, &eval, &evect);
+  EVectEval(covxy, eval, evect);
 
   DelMatrix(&covxy);
 
@@ -270,7 +270,7 @@ void ScatterPlot::BuildHotellingEllipse()
   /*calculate the center of the ellipse */
   dvector *cc;
   initDVector(&cc);
-  MatrixColAverage(xy, &cc);
+  MatrixColAverage(xy, cc);
   DelMatrix(&xy); // now we can remove xy
 
 

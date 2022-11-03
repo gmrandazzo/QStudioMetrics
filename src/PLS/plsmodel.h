@@ -32,13 +32,9 @@ public:
   int getDID(){ return did; }
   void setDataHash(QString hash_){ hash = hash_; }
   QString &getDataHash(){ return hash; }
-  matrix **XPredScoresPointer(){ return &pxscores; }
   matrix *getXPredScores(){ return pxscores; }
-  matrix **YDipVarPointer(){ return &py; }
   matrix *getYDipVar(){ return py; }
-  matrix **R2YPointer(){ return &r2y; }
   matrix *getR2Y(){ return r2y; }
-  matrix **SDECPointer(){ return &sdec; }
   matrix *getSDEC(){ return sdec; }
 private:
   QStringList objname, yvarname;

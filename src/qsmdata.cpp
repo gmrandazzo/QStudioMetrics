@@ -871,7 +871,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     getMatrix(MatrixCount()-1)->setName(name);
     getMatrix(MatrixCount()-1)->getObjName() = DeserializeQStringList(s_objname);
     getMatrix(MatrixCount()-1)->getVarName() = DeserializeQStringList(s_varname);
-    DeserializeMatrix(s_matrix, &getMatrix(MatrixCount()-1)->Matrix());
+    DeserializeMatrix(s_matrix, getMatrix(MatrixCount()-1)->Matrix());
 
     // Add matrix to the treeview
     QTreeWidgetItem *subitem = new QTreeWidgetItem;
@@ -897,7 +897,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     getArray(ArrayCount()-1)->setName(name);
     getArray(ArrayCount()-1)->getObjName() = DeserializeQStringList(s_objname);
     getArray(ArrayCount()-1)->getVarName() = DeserializeQStringList(s_varname);
-    DeserializeTensor(s_tensor, &getArray(ArrayCount()-1)->Array());
+    DeserializeTensor(s_tensor, getArray(ArrayCount()-1)->Array());
 
     // Add matrix to the treeview
     QTreeWidgetItem *subitem = new QTreeWidgetItem;
@@ -946,7 +946,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     getVariableTabLabels().last()->getObjectsName() = DeserializeQStringList(s_objname);
     getVariableTabLabels().last()->getFeaturesName() = DeserializeQStringList(s_varname);
     matrix *tmp = getVariableTabLabels().last()->getMatrix();
-    DeserializeMatrix(s_matrix, &tmp);
+    DeserializeMatrix(s_matrix, tmp);
 
     (*log).append(QString("Variable table label %1 imported.\n").arg(name));
   }
@@ -998,11 +998,11 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     getLastPCAModel()->setDataHash(hashinputmx);
     getLastPCAModel()->getObjName() = DeserializeQStringList(s_objname);
     getLastPCAModel()->getVarName() = DeserializeQStringList(s_varname);
-    DeserializeMatrix(s_scores, &getLastPCAModel()->Model()->scores);
-    DeserializeMatrix(s_loadings, &getLastPCAModel()->Model()->loadings);
-    DeserializeDVector(s_colscaling, &getLastPCAModel()->Model()->colscaling);
-    DeserializeDVector(s_colaverage, &getLastPCAModel()->Model()->colaverage);
-    DeserializeDVector(s_varexp, &getLastPCAModel()->Model()->varexp);
+    DeserializeMatrix(s_scores, getLastPCAModel()->Model()->scores);
+    DeserializeMatrix(s_loadings, getLastPCAModel()->Model()->loadings);
+    DeserializeDVector(s_colscaling, getLastPCAModel()->Model()->colscaling);
+    DeserializeDVector(s_colaverage, getLastPCAModel()->Model()->colaverage);
+    DeserializeDVector(s_varexp, getLastPCAModel()->Model()->varexp);
 
     int xid = -1;
     for(int j = 0; j < MatrixCount(); j++){
@@ -1041,7 +1041,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         getLastPCAModel()->getLastPCAPrediction()->setName(pcapredlist[i][0]);
         getLastPCAModel()->getLastPCAPrediction()->setDataHash(pcapredlist[i][2]);
         getLastPCAModel()->getLastPCAPrediction()->getObjName() = DeserializeQStringList(pcapredlist[i][3]);
-        DeserializeMatrix(pcapredlist[i][4], getLastPCAModel()->getLastPCAPrediction()->PredScoresPointer());
+        DeserializeMatrix(pcapredlist[i][4], getLastPCAModel()->getLastPCAPrediction()->getPredScores());
 
         int predid = -1;
         for(int k = 0; k <  MatrixCount(); k++){
@@ -1205,36 +1205,36 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     getLastPLSModel()->setXVarName(DeserializeQStringList(s_xvarname));
     getLastPLSModel()->setYVarName(DeserializeQStringList(s_yvarname));
     getLastPLSModel()->setClasses(DeserializeLABELS(s_classes));
-    DeserializeMatrix(s_tscores, &getLastPLSModel()->Model()->xscores);
-    DeserializeMatrix(s_ploadings, &getLastPLSModel()->Model()->xloadings);
-    DeserializeMatrix(s_weights, &getLastPLSModel()->Model()->xweights);
-    DeserializeDVector(s_xvarexp, &getLastPLSModel()->Model()->xvarexp);
-    DeserializeDVector(s_xcolaverage, &getLastPLSModel()->Model()->xcolaverage);
-    DeserializeDVector(s_xcolscaling, &getLastPLSModel()->Model()->xcolscaling);
-    DeserializeMatrix(s_uscores, &getLastPLSModel()->Model()->yscores);
-    DeserializeMatrix(s_qloadings, &getLastPLSModel()->Model()->yloadings);
-    DeserializeDVector(s_ycolaverage, &getLastPLSModel()->Model()->ycolaverage);
-    DeserializeDVector(s_ycolscaling, &getLastPLSModel()->Model()->ycolscaling);
-    DeserializeDVector(s_b, &getLastPLSModel()->Model()->b);
-    DeserializeMatrix(s_r2y_model, &getLastPLSModel()->Model()->r2y_recalculated);
-    DeserializeMatrix(s_sdec, &getLastPLSModel()->Model()->sdec);
-    DeserializeMatrix(s_recalc_y, &getLastPLSModel()->Model()->recalculated_y);
-    DeserializeMatrix(s_recalc_residuals, &getLastPLSModel()->Model()->recalc_residuals);
+    DeserializeMatrix(s_tscores, getLastPLSModel()->Model()->xscores);
+    DeserializeMatrix(s_ploadings, getLastPLSModel()->Model()->xloadings);
+    DeserializeMatrix(s_weights, getLastPLSModel()->Model()->xweights);
+    DeserializeDVector(s_xvarexp, getLastPLSModel()->Model()->xvarexp);
+    DeserializeDVector(s_xcolaverage, getLastPLSModel()->Model()->xcolaverage);
+    DeserializeDVector(s_xcolscaling, getLastPLSModel()->Model()->xcolscaling);
+    DeserializeMatrix(s_uscores, getLastPLSModel()->Model()->yscores);
+    DeserializeMatrix(s_qloadings, getLastPLSModel()->Model()->yloadings);
+    DeserializeDVector(s_ycolaverage, getLastPLSModel()->Model()->ycolaverage);
+    DeserializeDVector(s_ycolscaling, getLastPLSModel()->Model()->ycolscaling);
+    DeserializeDVector(s_b, getLastPLSModel()->Model()->b);
+    DeserializeMatrix(s_r2y_model, getLastPLSModel()->Model()->r2y_recalculated);
+    DeserializeMatrix(s_sdec, getLastPLSModel()->Model()->sdec);
+    DeserializeMatrix(s_recalc_y, getLastPLSModel()->Model()->recalculated_y);
+    DeserializeMatrix(s_recalc_residuals, getLastPLSModel()->Model()->recalc_residuals);
     getLastPLSModel()->setValidation(validationtype);
-    DeserializeMatrix(s_q2y, &getLastPLSModel()->Model()->q2y);
-    DeserializeMatrix(s_sdep, &getLastPLSModel()->Model()->sdep);
-    DeserializeMatrix(s_bias, &getLastPLSModel()->Model()->bias);
-    DeserializeMatrix(s_predicted_y, &getLastPLSModel()->Model()->predicted_y);
-    DeserializeMatrix(s_predicted_residuals, &getLastPLSModel()->Model()->pred_residuals);
-    DeserializeTensor(s_roc_recalculated, &getLastPLSModel()->Model()->roc_recalculated);
-    DeserializeTensor(s_roc_validation, &getLastPLSModel()->Model()->roc_validation);
-    DeserializeMatrix(s_roc_auc_recalculated, &getLastPLSModel()->Model()->roc_auc_recalculated);
-    DeserializeMatrix(s_roc_auc_validation, &getLastPLSModel()->Model()->roc_auc_validation);
-    DeserializeTensor(s_precision_recall_recalculated, &getLastPLSModel()->Model()->precision_recall_recalculated);
-    DeserializeTensor(s_precision_recall_validation, &getLastPLSModel()->Model()->precision_recall_validation);
-    DeserializeMatrix(s_precision_recall_ap_recalculated, &getLastPLSModel()->Model()->precision_recall_ap_recalculated);
-    DeserializeMatrix(s_precision_recall_ap_validation, &getLastPLSModel()->Model()->precision_recall_ap_validation);
-    DeserializeMatrix(s_yscrambling, &getLastPLSModel()->Model()->yscrambling);
+    DeserializeMatrix(s_q2y, getLastPLSModel()->Model()->q2y);
+    DeserializeMatrix(s_sdep, getLastPLSModel()->Model()->sdep);
+    DeserializeMatrix(s_bias, getLastPLSModel()->Model()->bias);
+    DeserializeMatrix(s_predicted_y, getLastPLSModel()->Model()->predicted_y);
+    DeserializeMatrix(s_predicted_residuals, getLastPLSModel()->Model()->pred_residuals);
+    DeserializeTensor(s_roc_recalculated, getLastPLSModel()->Model()->roc_recalculated);
+    DeserializeTensor(s_roc_validation, getLastPLSModel()->Model()->roc_validation);
+    DeserializeMatrix(s_roc_auc_recalculated, getLastPLSModel()->Model()->roc_auc_recalculated);
+    DeserializeMatrix(s_roc_auc_validation, getLastPLSModel()->Model()->roc_auc_validation);
+    DeserializeTensor(s_precision_recall_recalculated, getLastPLSModel()->Model()->precision_recall_recalculated);
+    DeserializeTensor(s_precision_recall_validation, getLastPLSModel()->Model()->precision_recall_validation);
+    DeserializeMatrix(s_precision_recall_ap_recalculated, getLastPLSModel()->Model()->precision_recall_ap_recalculated);
+    DeserializeMatrix(s_precision_recall_ap_validation, getLastPLSModel()->Model()->precision_recall_ap_validation);
+    DeserializeMatrix(s_yscrambling, getLastPLSModel()->Model()->yscrambling);
 
     int xid = -1;
     for(int j = 0; j < MatrixCount(); j++){
@@ -1287,10 +1287,10 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         getLastPLSModel()->getLastPLSPrediction()->setDataHash(plspredlist[i][2]);
         getLastPLSModel()->getLastPLSPrediction()->getObjName() = DeserializeQStringList(plspredlist[i][3]);
         getLastPLSModel()->getLastPLSPrediction()->getYVarName() = DeserializeQStringList(plspredlist[i][4]);
-        DeserializeMatrix(plspredlist[i][5], getLastPLSModel()->getLastPLSPrediction()->XPredScoresPointer());
-        DeserializeMatrix(plspredlist[i][6], getLastPLSModel()->getLastPLSPrediction()->YDipVarPointer());
-        DeserializeMatrix(plspredlist[i][7], getLastPLSModel()->getLastPLSPrediction()->R2YPointer());
-        DeserializeMatrix(plspredlist[i][8], getLastPLSModel()->getLastPLSPrediction()->SDECPointer());
+        DeserializeMatrix(plspredlist[i][5], getLastPLSModel()->getLastPLSPrediction()->getXPredScores());
+        DeserializeMatrix(plspredlist[i][6], getLastPLSModel()->getLastPLSPrediction()->getYDipVar());
+        DeserializeMatrix(plspredlist[i][7], getLastPLSModel()->getLastPLSPrediction()->getR2Y());
+        DeserializeMatrix(plspredlist[i][8], getLastPLSModel()->getLastPLSPrediction()->getSDEC());
 
         int predid = -1;
         for(int k = 0; k <  MatrixCount(); k++){
@@ -1370,19 +1370,19 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     getLastMLRModel()->getObjName() = DeserializeQStringList(serialized_objname);
     getLastMLRModel()->getXVarName() = DeserializeQStringList(serialized_xvarname);
     getLastMLRModel()->getYVarName() = DeserializeQStringList(serialized_yvarname);
-    DeserializeMatrix(serialized_b, &getLastMLRModel()->Model()->b);
-    DeserializeDVector(serialized_r2y, &getLastMLRModel()->Model()->r2y_model);
-    DeserializeDVector(serialized_sdec, &getLastMLRModel()->Model()->sdec);
-    DeserializeMatrix(serialized_recalc_y, &getLastMLRModel()->Model()->recalculated_y);
-    DeserializeMatrix(serialized_recalc_residuals, &getLastMLRModel()->Model()->recalc_residuals);
-    DeserializeDVector(serialized_ymean, &getLastMLRModel()->Model()->ymean);
-    DeserializeDVector(serialized_q2y, &getLastMLRModel()->Model()->q2y);
-    DeserializeDVector(serialized_sdep, &getLastMLRModel()->Model()->sdep);
-    DeserializeDVector(serialized_bias, &getLastMLRModel()->Model()->bias);
-    DeserializeDVector(serialized_bias, &getLastMLRModel()->Model()->bias);
-    DeserializeMatrix(serialized_predicted_y, &getLastMLRModel()->Model()->predicted_y);
-    DeserializeMatrix(serialized_predicted_residuals, &getLastMLRModel()->Model()->pred_residuals);
-    DeserializeMatrix(serialized_r2q2scrambling, &getLastMLRModel()->Model()->r2q2scrambling);
+    DeserializeMatrix(serialized_b, getLastMLRModel()->Model()->b);
+    DeserializeDVector(serialized_r2y, getLastMLRModel()->Model()->r2y_model);
+    DeserializeDVector(serialized_sdec, getLastMLRModel()->Model()->sdec);
+    DeserializeMatrix(serialized_recalc_y, getLastMLRModel()->Model()->recalculated_y);
+    DeserializeMatrix(serialized_recalc_residuals, getLastMLRModel()->Model()->recalc_residuals);
+    DeserializeDVector(serialized_ymean, getLastMLRModel()->Model()->ymean);
+    DeserializeDVector(serialized_q2y, getLastMLRModel()->Model()->q2y);
+    DeserializeDVector(serialized_sdep, getLastMLRModel()->Model()->sdep);
+    DeserializeDVector(serialized_bias, getLastMLRModel()->Model()->bias);
+    DeserializeDVector(serialized_bias, getLastMLRModel()->Model()->bias);
+    DeserializeMatrix(serialized_predicted_y, getLastMLRModel()->Model()->predicted_y);
+    DeserializeMatrix(serialized_predicted_residuals, getLastMLRModel()->Model()->pred_residuals);
+    DeserializeMatrix(serialized_r2q2scrambling, getLastMLRModel()->Model()->r2q2scrambling);
     getLastMLRModel()->setValidation(validationtype);
 
 
@@ -1425,9 +1425,9 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         getLastMLRModel()->getLastMLRPrediction()->setDataHash(mlrpredlist[i][2]);
         getLastMLRModel()->getLastMLRPrediction()->getObjName() = DeserializeQStringList(mlrpredlist[i][3]);
         getLastMLRModel()->getLastMLRPrediction()->getYVarName() = DeserializeQStringList(mlrpredlist[i][4]);
-        DeserializeMatrix(mlrpredlist[i][5], getLastMLRModel()->getLastMLRPrediction()->YDipVarPointer());
-        DeserializeDVector(mlrpredlist[i][6], getLastMLRModel()->getLastMLRPrediction()->R2YPointer());
-        DeserializeDVector(mlrpredlist[i][7], getLastMLRModel()->getLastMLRPrediction()->SDECPointer());
+        DeserializeMatrix(mlrpredlist[i][5], getLastMLRModel()->getLastMLRPrediction()->getYDipVar());
+        DeserializeDVector(mlrpredlist[i][6], getLastMLRModel()->getLastMLRPrediction()->getR2Y());
+        DeserializeDVector(mlrpredlist[i][7], getLastMLRModel()->getLastMLRPrediction()->getSDEC());
 
         int did = -1;
         for(int k = 0; k <  MatrixCount(); k++){
@@ -1521,24 +1521,24 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     getLastLDAModel()->setModelID((*mid_));
     getLastLDAModel()->getObjName() = DeserializeQStringList(serialized_objname);
     getLastLDAModel()->getVarName() = DeserializeQStringList(serialized_varname);
-    DeserializeTensor(serialized_roc, &getLastLDAModel()->Model()->roc);
-    DeserializeDVector(serialized_roc_aucs, &getLastLDAModel()->Model()->roc_aucs);
-    DeserializeTensor(serialized_pr, &getLastLDAModel()->Model()->pr);
-    DeserializeDVector(serialized_pr_aucs, &getLastLDAModel()->Model()->pr_aucs);
-    DeserializeMatrix(serialized_recalculated_y, &getLastLDAModel()->Model()->recalculated_y);
-    DeserializeMatrix(serialized_recalculated_residuals, &getLastLDAModel()->Model()->recalculated_residuals);
-    DeserializeMatrix(serialized_predicted_y, &getLastLDAModel()->Model()->predicted_y);
-    DeserializeMatrix(serialized_predicted_residuals, &getLastLDAModel()->Model()->predicted_residuals);
-    DeserializeDVector(serialized_prob, &getLastLDAModel()->Model()->pprob);
-    DeserializeDVector(serialized_eval, &getLastLDAModel()->Model()->eval);
-    DeserializeMatrix(serialized_evect, &getLastLDAModel()->Model()->evect);
-    DeserializeMatrix(serialized_mu, &getLastLDAModel()->Model()->mu);
-    DeserializeTensor(serialized_mnpdf, &getLastLDAModel()->Model()->mnpdf);
-    DeserializeTensor(serialized_features, &getLastLDAModel()->Model()->features);
-    DeserializeMatrix(serialized_fmean, &getLastLDAModel()->Model()->fmean);
-    DeserializeMatrix(serialized_fsdev, &getLastLDAModel()->Model()->fsdev);
-    DeserializeMatrix(serialized_inv_cov, &getLastLDAModel()->Model()->inv_cov);
-    DeserializeUIVector(serialized_classid, &getLastLDAModel()->Model()->classid);
+    DeserializeTensor(serialized_roc, getLastLDAModel()->Model()->roc);
+    DeserializeDVector(serialized_roc_aucs, getLastLDAModel()->Model()->roc_aucs);
+    DeserializeTensor(serialized_pr, getLastLDAModel()->Model()->pr);
+    DeserializeDVector(serialized_pr_aucs, getLastLDAModel()->Model()->pr_aucs);
+    DeserializeMatrix(serialized_recalculated_y, getLastLDAModel()->Model()->recalculated_y);
+    DeserializeMatrix(serialized_recalculated_residuals, getLastLDAModel()->Model()->recalculated_residuals);
+    DeserializeMatrix(serialized_predicted_y, getLastLDAModel()->Model()->predicted_y);
+    DeserializeMatrix(serialized_predicted_residuals, getLastLDAModel()->Model()->predicted_residuals);
+    DeserializeDVector(serialized_prob, getLastLDAModel()->Model()->pprob);
+    DeserializeDVector(serialized_eval, getLastLDAModel()->Model()->eval);
+    DeserializeMatrix(serialized_evect, getLastLDAModel()->Model()->evect);
+    DeserializeMatrix(serialized_mu, getLastLDAModel()->Model()->mu);
+    DeserializeTensor(serialized_mnpdf, getLastLDAModel()->Model()->mnpdf);
+    DeserializeTensor(serialized_features, getLastLDAModel()->Model()->features);
+    DeserializeMatrix(serialized_fmean, getLastLDAModel()->Model()->fmean);
+    DeserializeMatrix(serialized_fsdev, getLastLDAModel()->Model()->fsdev);
+    DeserializeMatrix(serialized_inv_cov, getLastLDAModel()->Model()->inv_cov);
+    DeserializeUIVector(serialized_classid, getLastLDAModel()->Model()->classid);
     getLastLDAModel()->Model()->nclass = nclass;
     getLastLDAModel()->Model()->class_start = class_start;
     getLastLDAModel()->setValidation(validationtype);
@@ -1588,14 +1588,14 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         getLastLDAModel()->getLastLDAPrediction()->setDataHash(ldapredlist[j][2]);
         getLastLDAModel()->getLastLDAPrediction()->getObjName() = DeserializeQStringList(ldapredlist[j][3]);
         getLastLDAModel()->getLastLDAPrediction()->getVarName() = DeserializeQStringList(ldapredlist[j][4]);
-        DeserializeMatrix(ldapredlist[j][5], getLastLDAModel()->getLastLDAPrediction()->getPredClassesPointer());
-        DeserializeMatrix(ldapredlist[j][6], getLastLDAModel()->getLastLDAPrediction()->getPredFeaturesPointer());
-        DeserializeMatrix(ldapredlist[j][7], getLastLDAModel()->getLastLDAPrediction()->getProbPredPointer());
+        DeserializeMatrix(ldapredlist[j][5], getLastLDAModel()->getLastLDAPrediction()->getPredClasses());
+        DeserializeMatrix(ldapredlist[j][6], getLastLDAModel()->getLastLDAPrediction()->getPredFeatures());
+        DeserializeMatrix(ldapredlist[j][7], getLastLDAModel()->getLastLDAPrediction()->getProbPred());
         QStringList pred_classes = ldapredlist[j][8].split("\\");
         for(int k = 0; k < pred_classes.size(); k++)
           getLastLDAModel()->getLastLDAPrediction()->getClasses().append(DeserializeQStringList(pred_classes[k]));
         getLastLDAModel()->getLastLDAPrediction()->getNameClasses() = DeserializeQStringList(ldapredlist[j][9]);
-        DeserializeMatrix(ldapredlist[j][10], getLastLDAModel()->getLastLDAPrediction()->getProbPredPointer());
+        DeserializeMatrix(ldapredlist[j][10], getLastLDAModel()->getLastLDAPrediction()->getProbPred());
 
         int did = -1;
         for(int k = 0; k <  MatrixCount(); k++){

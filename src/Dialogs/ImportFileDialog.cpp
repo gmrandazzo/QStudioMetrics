@@ -276,7 +276,7 @@ void ImportFileDialog::BuildMatrix()
 {
   // Get the file size and build the empty matrix
   FSIZE sz = GetSize();
-  ResizeMatrix(&m->Matrix(), sz.row, sz.col);
+  ResizeMatrix(m->Matrix(), sz.row, sz.col);
   // Assign the matrix name
   m->setName(ui.filename->text());
 

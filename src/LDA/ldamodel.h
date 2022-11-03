@@ -30,7 +30,6 @@ public:
   QList < QStringList >  &getClasses(){ return classes; }
   QStringList &getNameClasses(){ return nameclasses; }
   matrix *getPredClasses(){ return pclass; }
-  matrix **getPredClassesPointer(){ return &pclass; }
   void setPredID(int id_){ id = id_; }
   int getPredID(){ return id; }
   void setDID(int id){ did = id; }
@@ -38,9 +37,7 @@ public:
   void setDataHash(QString hash_){ hash = hash_; }
   QString &getDataHash(){ return hash; }
   matrix *getPredFeatures(){ return pfeatures; }
-  matrix **getPredFeaturesPointer(){ return &pfeatures; }
   matrix *getProbPred(){ return probpred; }
-  matrix **getProbPredPointer(){ return &probpred; }
   matrix *getMVNProbDistrib(){ return mnpdf; }
   matrix **getMVNProbDistribPointer(){ return &mnpdf; }
 private:

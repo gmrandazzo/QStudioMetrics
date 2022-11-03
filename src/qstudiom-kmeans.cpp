@@ -87,7 +87,7 @@ int main(int argc, char **argv)
       uivector *clusters;
       initUIVector(&clusters);
       DATAIO::ImportMatrix((char*)inputdata.c_str(), sep, data);
-      KMeans(data, n_clusters, init, &clusters, &centroids, nthreads, NULL);
+      KMeans(data, n_clusters, init, clusters, centroids, nthreads, NULL);
       DATAIO::WriteUIvector((char*)outputfile.c_str(), clusters);
       DATAIO::WriteMatrix((char*)outcentroids.c_str(), centroids);
       DelUIVector(&clusters);

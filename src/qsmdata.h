@@ -76,7 +76,7 @@ public:
     dvector *tmp;
     initDVector(&tmp);
     objname.clear();
-    DVectorCopy(v, &tmp);
+    DVectorCopy(v, tmp);
     for(int i = 0; i < array_.size(); i++){
       setDVectorValue(v, i, getDVectorValue(tmp, array_[i].second));
       objname.append(array_[i].first);
@@ -131,7 +131,7 @@ public:
     DelMatrix(&tmp);
   }
 
-  void MatrixResize(size_t nrow, size_t ncol){ ResizeMatrix(&m, nrow, ncol); }
+  void MatrixResize(size_t nrow, size_t ncol){ ResizeMatrix(m, nrow, ncol); }
   matrix* &Matrix(){ return m; } //Access to the matrix
   void setName(QString name_){ name = name_; }
   QString getName(){ return name.toUtf8(); }

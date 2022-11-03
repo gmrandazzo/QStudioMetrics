@@ -126,7 +126,7 @@ int main(int argc, char **argv)
       }
 
       MLR(xdata, ydata, m, NULL);
-      MLRRegressionStatistics(ydata, m->recalculated_y, &(m->r2y_model), &(m->sdec), NULL);
+      MLRRegressionStatistics(ydata, m->recalculated_y, m->r2y_model, m->sdec, NULL);
 
       DATAIO::WriteMLRModel((char*)outputfile.c_str(), m);
 
@@ -146,7 +146,7 @@ int main(int argc, char **argv)
 
       matrix *predicted_y;
       initMatrix(&predicted_y);
-      MLRPredictY(xdata, NULL, m, &predicted_y, NULL, NULL, NULL);
+      MLRPredictY(xdata, NULL, m, predicted_y, NULL, NULL, NULL);
 
       DATAIO::MakeDir((char*)outputfile.c_str());
       string ypred = outputfile+"/Y-Pred.txt";
@@ -177,8 +177,8 @@ int main(int argc, char **argv)
       minpt.mx = &xdata;
       minpt.my = &ydata;
 
-      BootstrapRandomGroupsCV(&minpt, ngroups, iterations, _MLR_, &pred, &predresiduals, nthreads, NULL, 0);
-      MLRRegressionStatistics(ydata, pred, &q2y, &sdep, &bias);
+      BootstrapRandomGroupsCV(&minpt, ngroups, iterations, _MLR_, pred, predresiduals, nthreads, NULL, 0);
+      MLRRegressionStatistics(ydata, pred, q2y, sdep, bias);
 
       if(!pathmodel.empty()){
         string q2yfile = pathmodel+"/Validated_q2y.txt";

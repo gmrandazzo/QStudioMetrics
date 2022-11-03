@@ -251,10 +251,10 @@ private:
   void TopMenuEnableDisable();
   void CalculationMenuEnable();
   void CalculationMenuDisable(int calcpid_);
-  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix **x, matrix **y);
-  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix **x, matrix **y);
-  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix **x);
-  void PrepareKFoldClasses(QStringList objects, LABELS kfclasses, uivector **classes);
+  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix *x, matrix *y);
+  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix *x, matrix *y);
+  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix *x);
+  void PrepareKFoldClasses(QStringList objects, LABELS kfclasses, uivector *classes);
 
   bool ProjectsHavePCA(){ return havepca; }
   bool ProjectsHavePCAPrediction(){ return havepcapred; }

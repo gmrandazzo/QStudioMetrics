@@ -354,7 +354,7 @@ void ExtractDataDialog::OK()
   if(objectselected.size() > 0 && variableselected.size() > 0 && !ui.dataname->text().isEmpty()){
     matrix *_m_ = mx->Matrix();
 
-    ResizeMatrix(&_m_, objectselected.size(), variableselected.size());
+    ResizeMatrix(_m_, objectselected.size(), variableselected.size());
 
     QStringList objnames, varnames;
 

@@ -31,7 +31,6 @@ public:
   int getDID(){ return did; }
   void setDataHash(QString hash_){ hash = hash_; }
   QString &getDataHash(){ return hash; }
-  matrix **PredScoresPointer(){ return &pscores; }
   matrix *getPredScores(){ return pscores; }
 private:
   QStringList objname;
