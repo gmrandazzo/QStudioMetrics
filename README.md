@@ -1,6 +1,8 @@
 QStudioMetrics
 ==============
 
+![GitHub all releases](https://img.shields.io/github/downloads/gmrandazzo/QStudioMetrics/total)
+
 **QStudioMetrics is a software to develop data mining and multivariate analysis studies.**
 
 ![ScreenShot](https://github.com/gmrandazzo/QStudioMetrics/blob/master/vars/qsmgui.png)
