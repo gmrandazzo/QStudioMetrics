@@ -162,6 +162,9 @@
     <addaction name="actionPCA"/>
     <addaction name="actionPCA_Prediction"/>
     <addaction name="separator"/>
+    <addaction name="actionCPCA"/>
+    <addaction name="actionCPCA_Prediction"/>
+    <addaction name="separator"/>
     <addaction name="actionPLS_Regression"/>
     <addaction name="actionPLS_Discriminant_Analysis"/>
     <addaction name="actionPLS_Validator"/>
@@ -302,8 +305,18 @@
      <addaction name="actionEPLSPrecision_recall_curves"/>
      <addaction name="actionEPLSPrecision_Recall_AUC_recalculated_predicted"/>
     </widget>
+    <widget class="QMenu" name="menuCPCA_plots">
+     <property name="title">
+      <string>CPCA plots</string>
+     </property>
+     <addaction name="actionCPCA2DSuperScores_Plot"/>
+     <addaction name="actionCPCA2DSuperWeights_Plot"/>
+     <addaction name="actionCPCA2DBlockScores_Plot"/>
+     <addaction name="actionCPCA2DBlockLoadings_Plot"/>
+    </widget>
     <addaction name="menuVariable"/>
     <addaction name="menuPlot_PCA_Model"/>
+    <addaction name="menuCPCA_plots"/>
     <addaction name="menuPlot_PLS_Model"/>
     <addaction name="menuEPLS_plots"/>
     <addaction name="menuPlot_MLR"/>
@@ -1492,6 +1505,44 @@
   <action name="actionPLSMAEModel_and_External_Prediction">
    <property name="text">
     <string>Mean absolute error Model and External prediction</string>
+   </property>
+  </action>
+  <action name="actionCPCA">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/scatter.png</normaloff>:/scatter.png</iconset>
+   </property>
+   <property name="text">
+    <string>CPCA</string>
+   </property>
+  </action>
+  <action name="actionCPCA_Prediction">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/prediction.png</normaloff>:/prediction.png</iconset>
+   </property>
+   <property name="text">
+    <string>CPCA Prediction</string>
+   </property>
+  </action>
+  <action name="actionCPCA2DSuperScores_Plot">
+   <property name="text">
+    <string>t/t super scores</string>
+   </property>
+  </action>
+  <action name="actionCPCA2DBlockScores_Plot">
+   <property name="text">
+    <string>t/t block scores</string>
+   </property>
+  </action>
+  <action name="actionCPCA2DSuperWeights_Plot">
+   <property name="text">
+    <string>w/w super weights</string>
+   </property>
+  </action>
+  <action name="actionCPCA2DBlockLoadings_Plot">
+   <property name="text">
+    <string>p/p block loadings</string>
    </property>
   </action>
  </widget>

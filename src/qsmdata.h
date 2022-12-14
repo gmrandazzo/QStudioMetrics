@@ -21,6 +21,7 @@
 #include "qstudiometricsdataoperations.h"
 #include "DATAIO.h"
 #include "PCA/pcamodel.h"
+#include "CPCA/cpcamodel.h"
 #include "PLS/plsmodel.h"
 #include "EPLS/eplsmodel.h"
 #include "MLR/mlrmodel.h"
@@ -207,10 +208,8 @@ public:
   QString &getProjectPath(){ return projectpath; }
   void ImportFileMatrix(const FILEDATA &f);
   void ImportFileArray(const FILEDATA &f);
-  void OpenData(QString dir, QTreeWidget *treeWidget, int *tabcount_, int *mid_, QStringList *log);
   bool isSQLDatabase(QString sqlfile);
   void OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_, int *mid_, QStringList *log);
-  QString SaveData(QString savepath); // savepath is the path to save the project
   QString SaveSQLData(QString dbName);
   void AutoSave(); // To work first SaveData.
   QString getAutoSaveFile(){ return projectfautosave; }
@@ -227,6 +226,11 @@ public:
   void delPCAModel(int mid);
   void delPCAModelAt(int id);
   void delPCAModels();
+
+  void addCPCAModel();
+  void delCPCAModel(int mid);
+  void delCPCAModelAt(int id);
+  void delCPCAModels();
 
   void addPLSModel();
   void delPLSModel(int mid);
@@ -263,6 +267,7 @@ public:
 
   // return the last model
   PCAModel *getLastPCAModel();
+  CPCAModel *getLastCPCAModel();
   PLSModel *getLastPLSModel();
   EPLSModel *getLastEPLSModel();
   MLRModel *getLastMLRModel();
@@ -270,6 +275,7 @@ public:
 
   // return the model at given position id in list
   PCAModel *getPCAModelAt(int id);
+  CPCAModel *getCPCAModelAt(int id);
   PLSModel *getPLSModelAt(int id);
   EPLSModel *getEPLSModelAt(int id);
   MLRModel *getMLRModelAt(int id);
@@ -277,6 +283,7 @@ public:
 
   // return the model with a special ModelID
   PCAModel *getPCAModel(int mid);
+  CPCAModel *getCPCAModel(int mid);
   PLSModel *getPLSModel(int mid);
   PLSModel *getPLSModel(QString hash);
   EPLSModel *getEPLSModel(int mid);
@@ -292,6 +299,7 @@ public:
   int MatrixCount();
   int ArrayCount();
   int PCACount();
+  int CPCACount();
   int PLSCount();
   int EPLSCount();
   int MLRCount();
@@ -310,6 +318,7 @@ private:
   QList<MATRIX*> matrix_;
   QList<ARRAY*> array_;
   QList<PCAModel*> pcamodel;
+  QList<CPCAModel*> cpcamodel;
   QList<PLSModel*> plsmodel;
   QList<EPLSModel*> eplsmodel;
   QList<MLRModel*> mlrmodel;

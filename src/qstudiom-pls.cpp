@@ -243,8 +243,8 @@ int main(int argc, char **argv)
       initMatrix(&bias_consistency);
 
       MODELINPUT minpt;
-      minpt.mx = &xdata;
-      minpt.my = &ydata;
+      minpt.mx = xdata;
+      minpt.my = ydata;
       minpt.nlv = npc;
       minpt.xautoscaling = xautoscaling;
       minpt.yautoscaling = yautoscaling;

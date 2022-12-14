@@ -405,6 +405,78 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   }
 }
 
+bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames, QList<QStringList> block_varsel, tensor *x)
+{
+  
+  //ResizeMatrix(x, objnames.size(), varsel.size());
+
+  QMap<QString, int> objmap;
+  for(int i = 0; i < indata->getObjName().size(); i++){
+    objmap[indata->getObjName()[i]] = i;
+  }
+
+  QMap<QString, int> varmap;
+  for(int i = 1; i < indata->getVarName().size(); i++){
+    varmap[indata->getVarName()[i]] = i-1;
+  }
+
+  QList<int> aligned_objid;
+  for(int i = 0; i < objnames.size(); i++){
+    auto it = objmap.find(objnames[i]);
+    if(it != objmap.end()){
+        aligned_objid.append(it.value());
+    }
+    else{
+      continue;
+    }
+  }
+
+  QList<QList<int>> aligned_varid;
+  QStringList varnotfound;
+  for(int k = 0; k < block_varsel.size(); k++){
+    aligned_objid << QList<int>();
+    for(int i = 0; i < block_varsel[k].size(); i++){
+      auto it = varmap.find(block_varsel[k][i]);
+      if(it != varmap.end()){
+          aligned_varid.last().append(it.value());
+      }
+      else{
+        varnotfound << block_varsel[k][i];
+      }
+    }
+  }
+
+  // Prepare the tensor structure
+  for(int k = 0; k < aligned_varid.size(); k++){
+    AddTensorMatrix(x, objnames.size(), aligned_varid[k].size());
+  }
+  
+  //Copy the data
+  for(int i = 0; i < aligned_objid.size(); i++){
+    int ii = aligned_objid[i];
+    for(int k = 0; k < aligned_varid.size(); k++){
+      for(int j = 0; j < aligned_varid[k].size(); j++){
+        int jx = aligned_varid[k][j];
+        x->m[k]->data[i][j] = indata->Matrix()->data[ii][jx];
+      }
+    }
+    QApplication::processEvents();
+  }
+
+  if(varnotfound.size() > 0){
+    QString msg = "The following features were not found: \n";
+    QString vname;
+    foreach(vname, varnotfound)
+      msg += QString("%1\n").arg(vname);
+
+    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()), QMessageBox::Close);
+    return false;
+  }
+  else{
+    return true;
+  }
+}
+
 void MainWindow::PrepareKFoldClasses(QStringList objects, LABELS kfclasses, uivector *classes)
 {
   for(int i = 0; i < objects.size(); i++){
@@ -3888,32 +3960,7 @@ int MainWindow::ProjectOpen(QString fproject)
   }
   else{
     // OLD Version
-    QString dir = QString::fromUtf8(fproject.toUtf8());
-    dir.remove(".qsm");
-
-    if(DATAIO::DirExists(dir.toUtf8().data()) == true){
-      DATAIO::RemoveDir(dir.toUtf8().data());
-      DATAIO::MakeDir(dir.toUtf8().data());
-    }
-    else{
-      DATAIO::MakeDir(dir.toUtf8().data());
-    }
-
-    pbdialog.setValue(1);
-
-    DirCompressor dc;
-    dc.setFile(fproject.toUtf8().data());
-    dc.setExtractPath(dir.toUtf8().data());
-    if(dc.decompress() == 0){
-      pbdialog.setValue(2);
-      QApplication::processEvents();
-      projects->value(pid_)->OpenData(dir.toUtf8().data(), ui.treeWidget, &tabcount_, &mid_, &log);
-    }
-    else{
-      QMessageBox::warning(this, tr("Warning!"), tr("Empty Session!\n"), QMessageBox::Close);
-    }
-
-    DATAIO::RemoveDir(dir.toUtf8().data());
+    QMessageBox::warning(this, tr("Warning!"), tr("QSM old file version unsupported!\n"), QMessageBox::Close);
   }
 
   lastpath = info.absolutePath();
@@ -5759,6 +5806,195 @@ void MainWindow::LDAProbabilityDistributionWithPredictions()
   }
 }
 
+void MainWindow::DoCPCAPrediction()
+{
+  if(!projects->isEmpty()){
+    int npca = 0;
+    for(int i = 0; i < projects->values().size(); i++){
+        if(projects->values()[i]->PCACount() > 0)
+          npca++;
+    }
+
+    if(npca > 0){
+      DoPredictionDialog p(projects, PCA_);
+      if(p.exec() == QDialog::Accepted && p.compute() == true){
+
+        int pid = p.getselectedProject();
+        int mid = p.getselectedModel();
+        int did = p.getselectedData();
+
+        StartRun();
+        CalculationMenuDisable(pid);
+        TopMenuEnableDisable();
+
+        QString modelname = p.getPredictionName();
+        QStringList objsel = p.getObjectSelected();
+        QStringList varsel = projects->value(pid)->getPCAModel(mid)->getVarName();
+
+        matrix *x;
+
+
+        NewMatrix(&x, objsel.size(), varsel.size());
+        bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, x);
+
+        if(x->col == (size_t)varsel.size() && mxok == true){
+          QString str = "--------------------\n Computing PCA Prediction for: ";
+          str.append(QString("%1").arg( projects->value(p.getselectedProject())->getProjectName()));
+          updateLog(str);
+
+          projects->value(pid)->getPCAModel(mid)->addPCAPrediction();
+
+          projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->setName("PCA Prediction - " + modelname);
+          projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->setPredID(projects->value(pid)->getPCAModel(mid)->PCAPredictionCount()-1);
+          projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->setDID(did);
+          projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->setDataHash(projects->value(pid)->getMatrix(did)->getHash());
+          projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->setObjName(objsel);
+
+
+          RUN obj;
+
+          obj.setXMatrix(x);
+          obj.setPCAModel(projects->value(pid)->getPCAModel(mid));
+
+          QFuture<void> future = obj.RunPCAPrediction();
+
+          while(!future.isFinished()){
+            QApplication::processEvents();
+          }
+
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->getName());
+          subitem->setText(1, QString::number(tabcount_));
+          subitem->setText(2, QString::number(pid));
+          subitem->setText(3, QString::number(mid));
+          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+          subitem->setText(5, "");
+          subitem->setText(6, QString::number(projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->getPredID()));
+          subitem->setText(7, QString("PCA Prediction"));
+
+          #ifdef DEBUG
+          qDebug() << "Predicted Scores";
+          PrintMatrix(projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->getPredScores());
+          qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2) << subitem->text(3) << subitem->text(4) << subitem->text(5);
+          #endif
+
+          tabcount_++;
+          getModelItem(pid, mid)->addChild(subitem);
+
+        }
+        else{
+          QMessageBox::critical(this, tr("PCA Prediction Error"),
+                    tr("Unable to compute PCA Prediction.\n"
+                      "The number of variables differ. Please check your data."),
+                      QMessageBox::Ok);
+          updateLog(QString("Error!! Unable to compute PCA Prediction. The number of variables differ. Please check your data.\n"));
+        }
+        TopMenuEnableDisable();
+        CalculationMenuEnable();
+        StopRun();
+        DelMatrix(&x);
+        projects->value(pid)->AutoSave();
+      }
+    }
+  }
+}
+
+void MainWindow::DoCPCA()
+{
+  if(!projects->isEmpty()){
+
+    ModelDialogWizard docpca(projects, CPCA_);
+    if(docpca.exec() == QDialog::Accepted && docpca.compute() == true){
+      StartRun();
+
+      int pid = docpca.getselectedProject();
+      int did = docpca.getselectedData();
+      int xscaling = docpca.getXScalingType();
+      int pc = docpca.getNumberOfComponent();
+      QString modelname = "CPCA - "+docpca.getModelName();
+      QStringList objsel = docpca.getObjectSelected();
+      QList<QStringList> varsel; // = docpca.getXVarSelected();
+
+      if(did != -1 && pid != -1){
+        CalculationMenuDisable(pid);
+
+        QString str = "--------------------\n Computing CPCA for: ";
+        str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
+
+        updateLog(str);
+
+        projects->value(pid)->addCPCAModel();
+
+        projects->value(pid)->getLastCPCAModel()->setDID(did);
+        projects->value(pid)->getLastCPCAModel()->setDataHash(projects->value(pid)->getMatrix(did)->getHash());
+        projects->value(pid)->getLastCPCAModel()->setXScaling(xscaling);
+        projects->value(pid)->getLastCPCAModel()->setNPC(pc);
+        projects->value(pid)->getLastCPCAModel()->setModelID(mid_);
+        projects->value(pid)->getLastCPCAModel()->setName(modelname);
+        projects->value(pid)->getLastCPCAModel()->setObjName(objsel);
+        projects->value(pid)->getLastCPCAModel()->setVarName(varsel);
+
+        tensor *x;
+        initTensor(&x);
+        
+        PrepareTensor(projects->value(pid)->getMatrix(did), objsel, varsel, x);
+        
+        RUN obj;
+        obj.setXTensor(x);
+        obj.setCPCAModel(projects->value(pid)->getLastCPCAModel());
+        obj.setXScalingType(xscaling);
+        obj.setNumberPC(pc);
+
+        QFuture<void> future = obj.RunCPCA();
+        while(!future.isFinished()){
+          if(stoprun == true){
+            obj.AbortRun();
+            QApplication::processEvents();
+          }
+          else{
+            QApplication::processEvents();
+          }
+        }
+
+        if(stoprun == false){
+          WaitRun();
+          #ifdef DEBUG
+          qDebug() << "Print CPCA";
+          PrintCPCA(projects->value(pid)->getCPCAModel(mid_)->Model());
+          #endif
+
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, modelname);
+          subitem->setText(1, QString::number(tabcount_));
+          subitem->setText(2, QString::number(pid));
+          subitem->setText(3, projects->value(pid)->getMatrix(did)->getHash());
+          subitem->setText(4, QString("-"));
+          subitem->setText(5, QString::number(xscaling));
+          subitem->setText(6, QString("-"));
+          subitem->setText(7, QString::number(pc));
+          subitem->setText(8, QString("CPCA Model"));
+          subitem->setText(9, QString::number(mid_));
+
+          getProjectItem(pid)->child(1)->addChild(subitem);
+
+          tabcount_++;
+          mid_++;
+        }
+        else{
+          int removeid = projects->value(pid)->CPCACount()-1;
+          projects->value(pid)->delCPCAModelAt(removeid);
+        }
+
+        TopMenuEnableDisable();
+        CalculationMenuEnable();
+        StopRun();
+        DelTensor(&x);
+        projects->value(pid)->AutoSave();
+      }
+    }
+  }
+}
+
 void MainWindow::DoPCAPrediction()
 {
   if(!projects->isEmpty()){
@@ -6664,7 +6900,7 @@ void MainWindow::DoPLS(int algtype)
         QString str = "--------------------\n Computing PLS DA for: ";
         str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
         projects->value(pid)->addPLSModel();
-        
+
         updateLog(str);
         projects->value(pid)->getLastPLSModel()->setAlgorithm(algtype);
         projects->value(pid)->getLastPLSModel()->setDID(did);

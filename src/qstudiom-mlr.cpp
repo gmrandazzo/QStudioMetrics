@@ -174,8 +174,8 @@ int main(int argc, char **argv)
       initMatrix(&predresiduals);
 
       MODELINPUT minpt;
-      minpt.mx = &xdata;
-      minpt.my = &ydata;
+      minpt.mx = xdata;
+      minpt.my = ydata;
 
       BootstrapRandomGroupsCV(&minpt, ngroups, iterations, _MLR_, pred, predresiduals, nthreads, NULL, 0);
       MLRRegressionStatistics(ydata, pred, q2y, sdep, bias);

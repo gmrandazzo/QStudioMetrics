@@ -1,6 +1,7 @@
 set(QSTUDIOMETRICS_SRC
     dircompressor.cpp
     PCA/pcamodel.cpp
+    CPCA/cpcamodel.cpp
     PLS/plsmodel.cpp
     EPLS/eplsmodel.cpp
     MLR/mlrmodel.cpp
@@ -12,6 +13,7 @@ set(QSTUDIOMETRICS_SRC
     Dialogs/DialogPlots.cpp
     Dialogs/ClassPlotDialog.cpp
     PCA/PCAPlot.cpp
+    CPCA/CPCAPlot.cpp
     PLS/PLSPlot.cpp
     EPLS/EPLSPlot.cpp
     MLR/MLRPlot.cpp
@@ -64,6 +66,7 @@ set(QSTUDIOMETRICS_H
     qstudiometricsdataoperations.h
     qsmdata.h
     PCA/pcamodel.h
+    CPCA/cpcamodel.h
     PLS/plsmodel.h
     EPLS/eplsmodel.h
     VariableSelectionModel.h

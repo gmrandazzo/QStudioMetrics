@@ -13,10 +13,6 @@ class UPCAPREDICTION
 public:
   UPCAPREDICTION();
   ~UPCAPREDICTION();
-  void ImportUPCAPrediction(char *path, char *name_);
-  void WriteUPCAPrediction(char *path, char *dirname);
-  void WriteUPCAPredictionInfo(char *path);
-  void ImportUPCAPredictionInfo(char *path);
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(QStringList &objname_){ objname = objname_; }
@@ -43,11 +39,6 @@ public:
   UPCAModel();
   ~UPCAModel();
   UPCAMODEL *Model(){ return m; }
-  void ImportUPCAModel(char *path, char *name_);
-  void WriteUPCAModel(char *path, char *dirname);
-  void ImportUPCAModelInfo(char *path);
-  void WriteUPCAModelInfo(char *path);
-  
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(QStringList &objname_){ objname = objname_; }
@@ -66,16 +57,16 @@ public:
   int getModelID(){ return modelid; }
   void addUPCAPrediction(){ prediction.append(new UPCAPREDICTION); };
   void delUPCAPredictionAt(int id){ delete prediction[id]; prediction.removeAt(id); }
-  void delUPCAPredictions(){ 
+  void delUPCAPredictions(){
     for(int i = 0; i < prediction.size(); i++){
       delete prediction[i];
     }
-    prediction.clear(); 
+    prediction.clear();
   }
   UPCAPREDICTION *getUPCAPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
   UPCAPREDICTION *getLastUPCAPrediction(){ return prediction.last(); }
   int UPCAPredictionCount(){ return prediction.size(); }
-  
+
 private:
   UPCAMODEL *m;
   QList<UPCAPREDICTION*> prediction;

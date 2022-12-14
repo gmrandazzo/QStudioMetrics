@@ -338,7 +338,6 @@ void DATAIO::ImportTensor(char *file_, const std::string  &sep, tensor *data)
   file.close();
 }
 
-
 void DATAIO::GetVectorSize(char *file_, size_t *size_)
 {
   std::ifstream  file;
@@ -432,6 +431,77 @@ void DATAIO::ImportUIvector(char *file_, uivector *v)
     }
   }
   file.close();
+}
+
+
+void DATAIO::GetDVectorListSize(char *file_, uivector *sizes)
+{
+  std::ifstream  file;
+  std::string line;
+
+  size_t sz = 0;
+
+  file.open(file_, std::ios::in);
+  if(!file.fail()) {
+    while(getline(file, line)) {
+      if(line.find("#") == 0 || line.empty()){ // skip line
+        continue;
+      }
+      else{
+        if(line.find("//") == 0 || line.empty()){ // skip line
+          UIVectorAppend(sizes, sz);
+          sz = 0;
+        }
+        else{
+          sz++;
+        }
+      }
+    }
+  }
+  file.close();
+}
+
+void DATAIO::ImportDvectorList(char *file_, dvectorlist *lst)
+{
+  std::ifstream  file;
+  std::string line;
+  uivector *sizes;
+  initUIVector(&sizes);
+  GetDVectorListSize(file_, sizes);
+
+  size_t sz = 0;
+  size_t dvx = 0;
+  dvector *dv;
+  NewDVector(&dv, sizes->data[dvx]);
+  dvx += 1;
+
+  file.open(file_, std::ios::in);
+  if(!file.fail()) {
+    while(getline(file, line)){
+      if(line.find("#") == 0 || line.empty()){ // skip line
+        continue;
+      }
+      else{
+        if(line.find("//") == 0 || line.empty()){ // skip line
+          DVectorListAppend(lst, dv);
+          DelDVector(&dv);
+          sz = 0;
+          dvx += 1;
+          NewDVector(&dv, sizes->data[dvx]);
+        }
+        else{
+          dv->data[sz] = atof(Trim((char*)line.c_str()));
+          sz++;
+        }
+      }
+    }
+  }
+
+  DVectorListAppend(lst, dv);
+
+  file.close();
+  DelUIVector(&sizes);
+  DelDVector(&dv);
 }
 
 void DATAIO::ImportPCAModel(char *path_, PCAMODEL* m)
@@ -529,8 +599,9 @@ void DATAIO::ImportUPCAModel(char *path_, UPCAMODEL* m)
   ImportMatrix(tscore, sep, m->scores);
   ImportTensor(ploadings, sep, m->loadings);
   ImportDvector(expvar, m->varexp);
-  ImportMatrix(columnscaling, sep, m->colscaling);
-  ImportMatrix(columnaverage, sep, m->colaverage);
+
+  ImportDvectorList(columnscaling, m->colscaling);
+  ImportDvectorList(columnaverage, m->colaverage);
 }
 
 void DATAIO::ImportUPLSModel(char *path_, UPLSMODEL* m)
@@ -574,14 +645,14 @@ void DATAIO::ImportUPLSModel(char *path_, UPLSMODEL* m)
   ImportTensor(ploadings, sep, m->xloadings);
   ImportTensor(weights, sep, m->xweights);
   ImportDvector(xexpvar, m->xvarexp);
-  ImportMatrix(xcolumnaverage, sep, m->xcolaverage);
-  ImportMatrix(xcolumnscaling, sep, m->xcolscaling);
+  ImportDvectorList(xcolumnaverage, m->xcolaverage);
+  ImportDvectorList(xcolumnscaling, m->xcolscaling);
 
 //   ImportDvector(path_, "/Y-ExpVar.txt", m->yvarexp);
   ImportMatrix(uscore, sep, m->yscores);
   ImportTensor(qloadings, sep, m->yloadings);
-  ImportMatrix(ycolumnaverage, sep, m->ycolaverage);
-  ImportMatrix(ycolumnscaling, sep, m->ycolscaling);
+  ImportDvectorList(ycolumnaverage, m->ycolaverage);
+  ImportDvectorList(ycolumnscaling, m->ycolscaling);
 
   ImportDvector(bcoeff, m->b);
 
@@ -751,6 +822,24 @@ void DATAIO::WriteUIvector(char *file_, uivector *v)
   out.close();
 }
 
+void DATAIO::WriteDVectorList(char *file_, dvectorlist *lst)
+{
+  std::fstream out;
+  out.open (file_, std::ios::out | std::ios::app);
+  out.setf(std::ios_base::right, std::ios_base::adjustfield);
+  out.setf(std::ios::fixed, std::ios::floatfield);
+  for(size_t i = 0; i < lst->size; i++){
+    for(size_t j = 0; j < lst->d[i]->size; j++){
+      out << lst->d[i]->data[j] << std::endl;
+    }
+
+    if(i < lst->size-1){
+      out << "//" << std::endl;
+    }
+  }
+  out.close();
+}
+
 void DATAIO::WriteMatrix(char *file_, matrix *m)
 {
   std::fstream out;
@@ -900,8 +989,8 @@ void DATAIO::WriteUPCAModel(char *path_, UPCAMODEL* m)
   WriteMatrix(tscore, m->scores);
   WriteTensor(ploadings, m->loadings);
   WriteDvector(expvar, m->varexp);
-  WriteMatrix(columnscaling, m->colscaling);
-  WriteMatrix(columnaverage, m->colaverage);
+  WriteDVectorList(columnscaling, m->colscaling);
+  WriteDVectorList(columnaverage, m->colaverage);
 }
 
 
@@ -950,14 +1039,14 @@ void DATAIO::WriteUPLSModel(char *path_, UPLSMODEL* m)
   WriteTensor(ploadings, m->xloadings);
   WriteTensor(weights, m->xweights);
   WriteDvector(xexpvar, m->xvarexp);
-  WriteMatrix(xcolumnaverage, m->xcolaverage);
-  WriteMatrix(xcolumnscaling, m->xcolscaling);
+  WriteDVectorList(xcolumnaverage, m->xcolaverage);
+  WriteDVectorList(xcolumnscaling, m->xcolscaling);
 
 //   WriteDvector(path_, "/Y-ExpVar.txt", m->yvarexp);
   WriteMatrix(uscore, m->yscores);
   WriteTensor(qloadings, m->yloadings);
-  WriteMatrix(ycolumnaverage, m->ycolaverage);
-  WriteMatrix(ycolumnscaling, m->ycolscaling);
+  WriteDVectorList(ycolumnaverage, m->ycolaverage);
+  WriteDVectorList(ycolumnscaling, m->ycolscaling);
 
   WriteDvector(bcoeff, m->b);
 

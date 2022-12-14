@@ -27,6 +27,8 @@ namespace DATAIO {
   void ImportStrvector(char *file_, strvector *strv);
   void ImportDvector(char *file_, dvector *v);
   void ImportUIvector(char *file_, uivector *v);
+  void GetDVectorListSize(char *file_, uivector *sizes);
+  void ImportDvectorList(char *file_, dvectorlist *lst);
 
   void ImportPCAModel(char *path_, PCAMODEL *m);
   void ImportPLSModel(char *path_, PLSMODEL *m);
@@ -39,6 +41,7 @@ namespace DATAIO {
   void WriteComments(char *file_, std::vector<std::string> &strvect);
   void WriteDvector(char *file_, dvector *v);
   void WriteUIvector(char *file_, uivector *v);
+  void WriteDVectorList(char *file_, dvectorlist *lst);
   void WriteMatrix(char *file_, matrix *m);
   void WriteTensor(char *file_, tensor *a);
   void WritePCAModel(char *path_, PCAMODEL *m);

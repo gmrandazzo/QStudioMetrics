@@ -16,10 +16,6 @@ class PLSPREDICTION
 public:
   PLSPREDICTION();
   ~PLSPREDICTION();
-  void ImportPLSPrediction(char *path, char *name_);
-  void WritePLSPrediction(char *path, char *dirname);
-  void ImportPLSPredictionInfo(char *path);
-  void WritePLSPredictionInfo(char *path);
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(const QStringList &objname_){ objname = objname_; }
@@ -54,10 +50,6 @@ public:
   PLSModel();
    ~PLSModel();
   PLSMODEL *Model(){ return m; }
-  void ImportPLSModel(char *path, char *name_);
-  void WritePLSModel(char *path, char *dirname);
-  void ImportPLSModelInfo(char *path);
-  void WritePLSModelInfo(char *path);
   void setAlgorithm(int algtype_){ algtype = algtype_; }
   int getAlgorithm(){ return algtype; }
   void setName(QString name_){ name = name_; }

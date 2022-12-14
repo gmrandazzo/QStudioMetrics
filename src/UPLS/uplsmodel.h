@@ -15,10 +15,6 @@ class UPLSPREDICTION
 public:
   UPLSPREDICTION();
   ~UPLSPREDICTION();
-  void ImportUPLSPrediction(char *path, char *name_);
-  void WriteUPLSPrediction(char *path, char *dirname_);
-  void ImportUPLSPredictionInfo(char *path);
-  void WriteUPLSPredictionInfo(char *path);
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(QStringList &objname_){ objname = objname_; }
@@ -55,10 +51,6 @@ public:
   UPLSModel();
   ~UPLSModel();
   UPLSMODEL *Model(){ return m; }
-  void ImportUPLSModel(char *path, char *name_);
-  void WriteUPLSModel(char *path, char *dirname);
-  void ImportUPLSModelInfo(char *path);
-  void WriteUPLSModelInfo(char *path);
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(QStringList &objname_){ objname = objname_; }

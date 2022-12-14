@@ -17,6 +17,7 @@ enum{
 
   // Calculations
   PCA_,
+  CPCA_,
   PLS_,
   PLS_DA_,
   PLSValidation,

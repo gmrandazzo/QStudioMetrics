@@ -14,9 +14,10 @@ public:
   void Test();
   void setXMatrix(matrix *x_);
   void setYMatrix(matrix *y_);
-  void setXArray(tensor *ax_);
-  void setYArray(tensor *ay_);
+  void setXTensor(tensor *ax_);
+  void setYTensor(tensor *ay_);
   void setPCAModel(PCAModel *pcamod_);
+  void setCPCAModel(CPCAModel *cpcamod_);
   void setPLSModel(PLSModel *plsmod_);
   void setEPLSModel(EPLSModel *eplsmod_);
   void setMLRModel(MLRModel *mlrmodel_);
@@ -51,6 +52,8 @@ public:
 
   QFuture<void> RunPCA();
   QFuture<void> RunPCAPrediction();
+  QFuture<void> RunCPCA();
+  QFuture<void> RunCPCAPrediction();
   QFuture<void> RunPLS(int algtype_);
   QFuture<void> RunPLSValidation(int algtype_);
   QFuture<void> RunPLSPrediction();
@@ -78,6 +81,7 @@ private:
   dvector *dv;
 
   PCAModel *pcamod;
+  CPCAModel *cpcamod;
   PLSModel *plsmod;
   EPLSModel *eplsmod;
   MLRModel *mlrmodel;
@@ -113,6 +117,8 @@ private:
 
   void DoPCA();
   void DoPCAPrediction();
+  void DoCPCA();
+  void DoCPCAPrediction();
   void DoPLS();
   void DoPLSValidation();
   void DoPLSPrediction();

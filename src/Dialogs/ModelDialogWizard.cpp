@@ -597,6 +597,14 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
     ui.yScaling->hide();
     ui.YvariableGroupBox->hide();
     ui.YclassGroupBox->hide();
+    ui.XBlockGroupBox->hide();
+    ui.ELearningMethodGroupBox->hide();
+  }
+  else if(type == CPCA_){
+    setWindowTitle("Compute CPCA");
+    ui.yScaling->hide();
+    ui.YvariableGroupBox->hide();
+    ui.YclassGroupBox->hide();
     ui.ELearningMethodGroupBox->hide();
   }
   else if(type == PLS_){
@@ -604,6 +612,7 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
     setWindowTitle("Compute PLS Regression");
     ui.YclassGroupBox->hide();
     ui.YvariableGroupBox->show();
+    ui.XBlockGroupBox->hide();
     ui.ELearningMethodGroupBox->hide();
   }
   else if(type == PLS_DA_){
@@ -611,6 +620,7 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
     setWindowTitle("Compute PLS Discriminant Analysis");
     ui.YclassGroupBox->show();
     ui.YvariableGroupBox->hide();
+    ui.XBlockGroupBox->hide();
     ui.ELearningMethodGroupBox->hide();
     ui.yScaling->hide();
   }
@@ -619,6 +629,7 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
     setWindowTitle("Compute Ensemble PLS Regression");
     ui.YclassGroupBox->hide();
     ui.YvariableGroupBox->show();
+    ui.XBlockGroupBox->hide();
   }
   else if(type == EPLS_DA_){
     ui.groupBox->setTitle("N. of Latent Variables");
@@ -626,12 +637,14 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
     ui.YclassGroupBox->show();
     ui.YvariableGroupBox->hide();
     ui.yScaling->hide();
+    ui.XBlockGroupBox->hide();
   }
   else if(type == MLR_){
     setWindowTitle("Compute MLR");
     ui.groupBox->hide();
     ui.YclassGroupBox->hide();
     ui.ELearningMethodGroupBox->hide();
+    ui.XBlockGroupBox->hide();
   }
   else if(type == LDA_){
     setWindowTitle("Compute LDA");
@@ -643,6 +656,7 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
     ui.yvarUnselectButton->hide();
     ui.listView_5->setSelectionMode(QAbstractItemView::SingleSelection);
     ui.ELearningMethodGroupBox->hide();
+    ui.XBlockGroupBox->hide();
   }
 
   selecteddata_ = ydata = -1;

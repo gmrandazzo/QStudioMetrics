@@ -15,10 +15,6 @@ class LDAPREDICTION
 public:
   LDAPREDICTION();
   ~LDAPREDICTION();
-  void ImportLDAPrediction(char *path, char *name_);
-  void WriteLDAPrediction(char *path, char *dirname_);
-  void ImportLDAPredictionInfo(char *path);
-  void WriteLDAPredictionInfo(char *path);
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(const QStringList &objname_){ objname = objname_; }
@@ -61,10 +57,6 @@ public:
   LDAModel();
   ~LDAModel();
   LDAMODEL *Model(){ return m; }
-  void ImportLDAModel(char *path, char *name_);
-  void WriteLDAModel(char *path, char *dirname);
-  void ImportLDAModelInfo(char *path);
-  void WriteLDAModelInfo(char *path);
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(const QStringList &objname_){ objname = objname_; }

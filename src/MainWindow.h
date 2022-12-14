@@ -51,6 +51,8 @@ private slots:
 
   void DoPCA();
   void DoPCAPrediction();
+  void DoCPCA();
+  void DoCPCAPrediction();
   void DoPLS(int algtype);
   void DoPLSRegression();
   void DoPLSDA();
@@ -251,6 +253,7 @@ private:
   void TopMenuEnableDisable();
   void CalculationMenuEnable();
   void CalculationMenuDisable(int calcpid_);
+  bool PrepareTensor(MATRIX *indata, QStringList objnames, QList<QStringList> block_varsel, tensor *x);
   bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix *x, matrix *y);
   bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix *x, matrix *y);
   bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix *x);

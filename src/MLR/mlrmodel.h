@@ -15,10 +15,6 @@ class MLRPREDICTION
 public:
   MLRPREDICTION();
   ~MLRPREDICTION();
-  void ImportMLRPrediction(char *path, char *name_);
-  void WriteMLRPrediction(char *path, char *dirname_);
-  void ImportMLRPredictionInfo(char *path);
-  void WriteMLRPredictionInfo(char *path);
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(const QStringList &objname_){ objname = objname_; }
@@ -51,10 +47,6 @@ public:
   MLRModel();
   ~MLRModel();
   MLRMODEL *Model(){ return m; }
-  void ImportMLRModel(char *path, char *name_);
-  void WriteMLRModel(char *path, char *dirname);
-  void ImportMLRModelInfo(char *path);
-  void WriteMLRModelInfo(char *path);
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(const QStringList &objname_){ objname = objname_; }

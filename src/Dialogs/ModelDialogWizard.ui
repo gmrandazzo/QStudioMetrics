@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1856</width>
-    <height>533</height>
+    <width>2638</width>
+    <height>492</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -123,7 +123,7 @@
    </layout>
   </widget>
   <widget class="QWizardPage" name="wizardPage2">
-   <layout class="QGridLayout" name="gridLayout_23">
+   <layout class="QGridLayout" name="gridLayout_29">
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_12">
       <item row="0" column="0">
@@ -977,6 +977,258 @@
            </widget>
           </item>
          </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="4">
+     <widget class="QGroupBox" name="XBlockGroupBox">
+      <property name="minimumSize">
+       <size>
+        <width>662</width>
+        <height>410</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>X blocks</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_23">
+       <item row="1" column="1">
+        <layout class="QGridLayout" name="gridLayout_26">
+         <item row="2" column="0">
+          <widget class="QPushButton" name="class_import_2">
+           <property name="minimumSize">
+            <size>
+             <width>160</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>160</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Block from CSV...</string>
+           </property>
+           <property name="autoRepeatDelay">
+            <number>12</number>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="Line" name="line_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QPushButton" name="class_removeButton_2">
+           <property name="minimumSize">
+            <size>
+             <width>160</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>160</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>&lt;</string>
+           </property>
+           <property name="autoRepeatDelay">
+            <number>12</number>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QPushButton" name="class_addButton_2">
+           <property name="minimumSize">
+            <size>
+             <width>160</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>160</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>&gt;</string>
+           </property>
+           <property name="autoRepeatDelay">
+            <number>12</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QComboBox" name="class_SelectByLabel_2">
+           <property name="minimumSize">
+            <size>
+             <width>160</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>160</width>
+             <height>32</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>Select by label...</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0" rowspan="2">
+        <widget class="QGroupBox" name="groupBox_5">
+         <property name="minimumSize">
+          <size>
+           <width>221</width>
+           <height>262</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>Variables</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_28">
+          <item row="0" column="0">
+           <widget class="QListView" name="listView_9">
+            <property name="minimumSize">
+             <size>
+              <width>140</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::MultiSelection</enum>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>196</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="2" rowspan="2">
+        <widget class="QGroupBox" name="modelsGroupBox_2">
+         <property name="minimumSize">
+          <size>
+           <width>222</width>
+           <height>262</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>Blocks</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_27">
+          <item row="0" column="0">
+           <widget class="QListView" name="listView_8">
+            <property name="minimumSize">
+             <size>
+              <width>140</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::ExtendedSelection</enum>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="xblockscalinglist">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>200</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="editable">
+          <bool>false</bool>
+         </property>
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>No Scaling</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>SDEV Column Scaling</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>RMS Column Scaling</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Pareto Scaling</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Range Scaling</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Level Scaling</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>

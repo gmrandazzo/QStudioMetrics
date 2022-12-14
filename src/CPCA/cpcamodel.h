@@ -1,5 +1,5 @@
-#ifndef PCAMODEL_H
-#define PCAMODEL_H
+#ifndef CPCAMODEL_H
+#define CPCAMODEL_H
 
 #include <scientific.h>
 #include <QFile>
@@ -11,11 +11,11 @@
 #include <cmath>
 #include "../qstudiometricsdataoperations.h"
 
-class PCAPREDICTION
+class CPCAPREDICTION
 {
 public:
-  PCAPREDICTION();
-  ~PCAPREDICTION();
+  CPCAPREDICTION();
+  ~CPCAPREDICTION();
 
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
@@ -27,28 +27,29 @@ public:
   int getDID(){ return did; }
   void setDataHash(QString hash_){ hash = hash_; }
   QString &getDataHash(){ return hash; }
-  matrix *getPredScores(){ return pscores; }
+  matrix *getPredSuperScores(){ return p_super_scores; }
+  tensor *getPredBlockScores(){ return p_block_scores; }
 private:
   QStringList objname;
   QString name;
   QString hash;
   int id, did;
-  matrix *pscores;
+  matrix *p_super_scores;
+  tensor *p_block_scores;
 };
 
-class PCAModel
+class CPCAModel
 {
 public:
-  PCAModel();
-  ~PCAModel();
-  PCAMODEL *Model(){ return m; }
-  
+  CPCAModel();
+  ~CPCAModel();
+  CPCAMODEL *Model(){ return m; }
   void setName(QString name_){ name = name_; }
   QString &getName(){ return name; }
   void setObjName(const QStringList &objname_){ objname = objname_; }
   QStringList &getObjName(){ return objname; }
-  void setVarName(const QStringList &varname_){ varname = varname_; }
-  QStringList &getVarName(){ return varname; }
+  void setVarName(const QList<QStringList> &varname_){ varname = varname_; }
+  QList<QStringList> &getVarName(){ return varname; }
   void setDID(int did_){ did = did_; }
   void setDataHash(QString hash_){ hash = hash_; }
   QString &getDataHash(){ return hash; }
@@ -59,28 +60,39 @@ public:
   int getXScaling(){ return xscaling; }
   int getNPC(){ return npc; }
   int getModelID(){ return modelid; }
-  void addPCAPrediction(){ prediction.append(new PCAPREDICTION); };
-  void delPCAPredictionAt(int id){ delete prediction[id]; prediction.removeAt(id); }
-  void delPCAPredictions(){
+  void addCPCAPrediction(){ prediction.append(new CPCAPREDICTION); };
+  void delCPCAPredictionAt(int id){ delete prediction[id]; prediction.removeAt(id); }
+  void delCPCAPredictions(){
     for(int i = 0; i < prediction.size(); i++){
       delete prediction[i];
     }
     prediction.clear();
   }
-  PCAPREDICTION *getPCAPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
-  PCAPREDICTION *getLastPCAPrediction(){ return prediction.last(); }
-  int PCAPredictionCount(){ return prediction.size(); }
+  CPCAPREDICTION *getCPCAPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
+  CPCAPREDICTION *getLastCPCAPrediction(){ return prediction.last(); }
+  int CPCAPredictionCount(){ return prediction.size(); }
 
-  QString& getHash(){ if(pcahash.size() == 0){ pcahash = GenHashFromStrlst((QStringList() << name << "pcamodel_type")+objname+varname); } return pcahash; }
+  QString& getHash(){
+    if(cpcahash.size() == 0){ 
+      QStringList varname_;
+      QStringList v;
+      foreach(v, varname)
+        varname_ << v;
+      cpcahash = GenHashFromStrlst((QStringList() << name << "cpcamodel_type")+objname+varname_); 
+    } 
+    return cpcahash; 
+    
+  }
 
 
 private:
-  PCAMODEL *m;
-  QList<PCAPREDICTION*> prediction;
-  QStringList objname, varname;
+  CPCAMODEL *m;
+  QList<CPCAPREDICTION*> prediction;
+  QStringList objname;
+  QList<QStringList> varname;
   QString name;
   int did, xscaling, npc, modelid;
-  QString hash, pcahash;
+  QString hash, cpcahash;
 };
 
 #endif
