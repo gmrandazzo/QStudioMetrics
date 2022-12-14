@@ -26,11 +26,11 @@ void ModelDialogWizard::WindowAdjust()
   this->move(screenGeometry.center() - this->rect().center());
 }
 
-int ModelDialogWizard::CheckClassLabelAndObject(QString label, QString objectname)
+int ModelDialogWizard::CheckLabelAndObjectInLabel(QString label, QString objectname, LABELS lbl)
 {
   int id = -1;
-  for(int i = 0; i < classes.size(); i++){
-    if(classes[i].name.compare(label) == 0){
+  for(int i = 0; i < lbl.size(); i++){
+    if(lbl[i].name.compare(label) == 0){
       id = i;
       break;
     }
@@ -40,8 +40,8 @@ int ModelDialogWizard::CheckClassLabelAndObject(QString label, QString objectnam
   }
 
   if(id > -1){
-    for(int i = 0; i < classes.size(); i++){
-      if(classes[i].objects.contains(objectname) == true){
+    for(int i = 0; i < lbl.size(); i++){
+      if(lbl[i].objects.contains(objectname) == true){
         id = -1;
         break;
       }
@@ -60,7 +60,7 @@ int ModelDialogWizard::CheckClassLabelAndObject(QString label, QString objectnam
 void ModelDialogWizard::AddObject2Class(QString class_name, QString objname)
 {
   QAbstractItemModel *model = ui.listView_6->model();
-  int indx = CheckClassLabelAndObject(class_name, objname);
+  int indx = CheckLabelAndObjectInLabel(class_name, objname, classes);
   if(indx > -1){
     // Class found then add object if exist
     for(int i = 0; i < model->rowCount(); i++){
@@ -90,6 +90,148 @@ void ModelDialogWizard::AddObject2Class(QString class_name, QString objname)
       else{
         continue;
       }
+    }
+  }
+}
+
+void ModelDialogWizard::AddVariable2Block(QString block_name, QString varname)
+{
+  QAbstractItemModel *model = ui.listView_9->model();
+  int indx = CheckLabelAndObjectInLabel(block_name, varname, xblocks);
+  if(indx > -1){
+    // Class found then add object if exist
+    for(int i = 0; i < model->rowCount(); i++){
+      if(model->index(i, 0).data(Qt::DisplayRole).toString().compare(varname) == 0){
+        xblocks[indx].objects.append(varname);
+        model->removeRow(i);
+        break;
+      }
+      else{
+        continue;
+      }
+    }
+  }
+  else{
+    //Class not found then if object exist add class.
+    for(int i = 0; i < model->rowCount(); i++){
+      if(model->index(i, 0).data(Qt::DisplayRole).toString().compare(varname) == 0){
+        xblocks.append(LABEL());
+        xblocks.last().objects.append(varname);
+        xblocks.last().name = block_name;
+        QList<QStandardItem*> row;
+        row.append(new QStandardItem(block_name));
+        tab9->appendRow(row);
+        model->removeRow(i);
+        break;
+      }
+      else{
+        continue;
+      }
+    }
+  }
+}
+
+void ModelDialogWizard::BlockByLabel()
+{
+  if(ui.xblock_SelectByLabel->currentIndex() > 0){
+    int labelindex = ui.xblock_SelectByLabel->currentIndex()-1;
+    QStringList lstvars =  projects_->value(selectedproject_)->getVariableLabels()[labelindex].objects;
+    QString block_name = projects_->value(selectedproject_)->getVariableLabels()[labelindex].name;
+    for(int i = 0; i < lstvars.size(); i++){
+      AddVariable2Block(block_name,  lstvars[i]);
+    }
+    ui.xblock_SelectByLabel->setCurrentIndex(0);
+  }
+  else{
+    ui.xblock_SelectByLabel->setCurrentIndex(0);
+    return;
+  }
+
+}
+
+void ModelDialogWizard::importBlock()
+{
+
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Open Variable Name List"), "", tr("Files (*.txt, *.csv)"));
+
+  if(!fileName.isEmpty()){
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+
+    //QAbstractItemModel *model = ui.listView_6->model();
+
+    QTextStream in(&file);
+    while(!in.atEnd()){
+      QString line = in.readLine();
+      QStringList linesplit = line.split(",");
+      if(linesplit.size() < 2)
+        continue;
+      else{
+        // linesplit[0]; objname
+        //linesplit[1]; Classname
+        AddVariable2Block(linesplit[1], linesplit[0]);
+      }
+    }
+  }
+  else{
+    return;
+  }
+}
+
+void ModelDialogWizard::addBlock()
+{
+  addLabelDialog groupnamedialog("Class Name");
+  if(groupnamedialog.exec() == QDialog::Accepted){
+    QModelIndexList selected = ui.listView_8->selectionModel()->selectedRows();
+    if(selected.size() > 0){
+      xblocks.append(LABEL());
+      xblocks.last().name = groupnamedialog.getLabel();
+
+      QList<QStandardItem*> row;
+      row.append(new QStandardItem(groupnamedialog.getLabel()));
+      tab9->appendRow(row);
+
+      for(int i = 0; i < selected.size(); i++){
+        QString obj = selected[i].data(Qt::DisplayRole).toString();
+        xblocks.last().objects.append(obj);
+      }
+
+      // Remove selected index from the view
+      QModelIndexList indexes;
+      while((indexes = ui.listView_8->selectionModel()->selectedIndexes()).size()) {
+        ui.listView_8->model()->removeRow(indexes.first().row());
+      }
+    }
+    else{
+      return;
+    }
+  }
+  else{
+    return;
+  }
+}
+
+void ModelDialogWizard::removeBlock()
+{
+  QModelIndexList indexes = ui.listView_9->selectionModel()->selectedIndexes();
+
+  if(indexes.size() < 1)
+    return;
+
+  for(int i = 0; i < indexes.size(); i++){
+    int indx = indexes[i].row();
+    if(indx > -1 && indx < xblocks.size()){
+      for(int i = 0; i < xblocks[indx].objects.size(); i++){
+        QList<QStandardItem*> mname;
+        mname.append(new QStandardItem(xblocks[indx].objects[i]));
+        tab6->appendRow(mname);
+      }
+      xblocks.removeAt(indx);
+      ui.listView_9->model()->removeRow(indx);
+    }
+    else{
+      return;
     }
   }
 }
@@ -476,6 +618,7 @@ void ModelDialogWizard::next()
     tab4->clear();
     tab5->clear();
     tab6->clear();
+    tab8->clear();
     for(int i = 0; i < projects_->value(selectedproject_)->getMatrix(selecteddata_)->getObjName().size(); i++){
       QList<QStandardItem*> row_tab3, row_tab6;
       row_tab3.append(new QStandardItem(projects_->value(selectedproject_)->getMatrix(selecteddata_)->getObjName()[i]));
@@ -485,10 +628,12 @@ void ModelDialogWizard::next()
     }
 
     for(int i = 1; i < projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName().size(); i++){
-      QList<QStandardItem*> xvname, yvname;
+      QList<QStandardItem*> xvname, yvname, xblockvname;
       xvname.append(new QStandardItem(projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName()[i]));
+      xblockvname.append(new QStandardItem(projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName()[i]));
       yvname.append(new QStandardItem(projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName()[i]));
       tab4->appendRow(xvname);
+      tab8->appendRow(xblockvname);
       tab5->appendRow(yvname);
     }
   }
@@ -602,6 +747,8 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
   }
   else if(type == CPCA_){
     setWindowTitle("Compute CPCA");
+    ui.xScaling->hide();
+    ui.XvariableGroupBox->hide();
     ui.yScaling->hide();
     ui.YvariableGroupBox->hide();
     ui.YclassGroupBox->hide();
@@ -682,7 +829,9 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
   tab5 = new QStandardItemModel();
   tab6 = new QStandardItemModel();
   tab7 = new QStandardItemModel();
-
+  tab8 = new QStandardItemModel();
+  tab9 = new QStandardItemModel();
+  
   ui.listView_1->setModel(tab1);
   ui.listView_2->setModel(tab2);
   ui.listView_3->setModel(tab3);
@@ -690,6 +839,8 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
   ui.listView_5->setModel(tab5);
   ui.listView_6->setModel(tab6);
   ui.listView_7->setModel(tab7);
+  ui.listView_8->setModel(tab8);
+  ui.listView_9->setModel(tab9);
 
  //Fill the table with data
   QList<QStandardItem*> projectsname;
@@ -727,12 +878,19 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
   connect(ui.listView_5->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButtons()));
   connect(ui.listView_6->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButtons()));
   connect(ui.listView_7->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButtons()));
+  connect(ui.listView_8->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButtons()));
+  connect(ui.listView_9->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(EnableDisableButtons()));
 
   connect(ui.class_SelectByLabel, SIGNAL(currentIndexChanged(int)), SLOT(ClassByLabel()));
   connect(ui.class_import, SIGNAL(clicked(bool)), SLOT(importClass()));
   connect(ui.class_addButton, SIGNAL(clicked(bool)), SLOT(addClass()));
   connect(ui.class_removeButton, SIGNAL(clicked(bool)), SLOT(removeClass()));
 
+  connect(ui.xblock_SelectByLabel, SIGNAL(currentIndexChanged(int)), SLOT(BlockByLabel()));
+  connect(ui.xblock_import, SIGNAL(clicked(bool)), SLOT(importBlock()));
+  connect(ui.xblock_addButton, SIGNAL(clicked(bool)), SLOT(addBlock()));
+  connect(ui.xblock_removeButton, SIGNAL(clicked(bool)), SLOT(removeBlock()));
+  
   connect(ui.elmethodComboBox, SIGNAL(currentIndexChanged(int)), SLOT(ELmethodChanged(int)));
 
   connect(this->button(QWizard::NextButton), SIGNAL(clicked()), this, SLOT(next()));
@@ -754,4 +912,6 @@ ModelDialogWizard::~ModelDialogWizard()
   delete tab5;
   delete tab6;
   delete tab7;
+  delete tab8;
+  delete tab9;
 }

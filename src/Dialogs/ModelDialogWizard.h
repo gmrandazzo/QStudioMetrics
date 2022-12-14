@@ -26,6 +26,7 @@ public:
   int getselectedYData(){ return ydata; }
   QStringList getObjectSelected(){ return objsel; }
   QStringList getXVarSelected(){ return xvarsel; }
+  QList<QStringList> getBlockXVarSelected(){ return blockxvarsel; }
   QStringList getYVarSelected(){ return yvarsel; }
   LABELS getClasses(){ return classes; }
   int getXScalingType(){ return xscaling; }
@@ -43,6 +44,10 @@ private slots:
   void importClass();
   void addClass();
   void removeClass();
+  void BlockByLabel();
+  void importBlock();
+  void addBlock();
+  void removeBlock();
   void EnableDisableButtons();
 
   void ELmethodChanged(int);
@@ -66,8 +71,9 @@ private:
   PROJECTS *projects_;
   ELearningParameters eparm;
   QList<int> pids;
-  QStandardItemModel *tab1, *tab2, *tab3, *tab4, *tab5, *tab6, *tab7;
+  QStandardItemModel *tab1, *tab2, *tab3, *tab4, *tab5, *tab6, *tab7, *tab8, *tab9;
   QStringList objsel, xvarsel, yvarsel;
+  QList<QStringList> blockxvarsel;
   QString modelname_;
   int selectedproject_;
   int selecteddata_, ydata; // ydata for UPLS
@@ -77,8 +83,10 @@ private:
   int xscaling, yscaling;
   uint n_pc; // Number of Principal Component
   LABELS classes;
-  int CheckClassLabelAndObject(QString label, QString objectname);
+  LABELS xblocks;
+  int CheckLabelAndObjectInLabel(QString label, QString objectname, LABELS lbl);
   void AddObject2Class(QString class_label, QString objname);
+  void AddVariable2Block(QString block_name, QString varname);
   void WindowAdjust();
 };
 

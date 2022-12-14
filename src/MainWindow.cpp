@@ -5913,7 +5913,7 @@ void MainWindow::DoCPCA()
       int pc = docpca.getNumberOfComponent();
       QString modelname = "CPCA - "+docpca.getModelName();
       QStringList objsel = docpca.getObjectSelected();
-      QList<QStringList> varsel; // = docpca.getXVarSelected();
+      QList<QStringList> varsel = docpca.getBlockXVarSelected();
 
       if(did != -1 && pid != -1){
         CalculationMenuDisable(pid);
@@ -7776,6 +7776,10 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionPCA, SIGNAL(triggered(bool)), SLOT(DoPCA()));
   connect(ui.actionPCA_Prediction, SIGNAL(triggered(bool)), SLOT(DoPCAPrediction()));
 
+  connect(ui.actionCPCA, SIGNAL(triggered(bool)), SLOT(DoCPCA()));
+  connect(ui.actionCPCA_Prediction, SIGNAL(triggered(bool)), SLOT(DoCPCAPrediction()));
+  
+  
   connect(ui.actionPLS_Regression, SIGNAL(triggered(bool)), SLOT(DoPLSRegression()));
   connect(ui.actionPLS_Discriminant_Analysis, SIGNAL(triggered(bool)), SLOT(DoPLSDA()));
   connect(ui.actionPLS_Prediction, SIGNAL(triggered(bool)), SLOT(DoPLSPrediction()));

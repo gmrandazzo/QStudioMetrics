@@ -391,7 +391,7 @@
     <item row="0" column="1">
      <layout class="QGridLayout" name="gridLayout_5">
       <item row="0" column="0" colspan="3">
-       <widget class="QGroupBox" name="groupBox_2">
+       <widget class="QGroupBox" name="xScaling">
         <property name="minimumSize">
          <size>
           <width>320</width>
@@ -997,7 +997,7 @@
        <item row="1" column="1">
         <layout class="QGridLayout" name="gridLayout_26">
          <item row="2" column="0">
-          <widget class="QPushButton" name="class_import_2">
+          <widget class="QPushButton" name="xblock_import">
            <property name="minimumSize">
             <size>
              <width>160</width>
@@ -1026,7 +1026,7 @@
           </widget>
          </item>
          <item row="5" column="0">
-          <widget class="QPushButton" name="class_removeButton_2">
+          <widget class="QPushButton" name="xblock_removeButton">
            <property name="minimumSize">
             <size>
              <width>160</width>
@@ -1048,7 +1048,7 @@
           </widget>
          </item>
          <item row="4" column="0">
-          <widget class="QPushButton" name="class_addButton_2">
+          <widget class="QPushButton" name="xblock_addButton">
            <property name="minimumSize">
             <size>
              <width>160</width>
@@ -1070,7 +1070,7 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QComboBox" name="class_SelectByLabel_2">
+          <widget class="QComboBox" name="xblock_SelectByLabel">
            <property name="minimumSize">
             <size>
              <width>160</width>
@@ -1105,7 +1105,7 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_28">
           <item row="0" column="0">
-           <widget class="QListView" name="listView_9">
+           <widget class="QListView" name="listView_8">
             <property name="minimumSize">
              <size>
               <width>140</width>
@@ -1149,7 +1149,7 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_27">
           <item row="0" column="0">
-           <widget class="QListView" name="listView_8">
+           <widget class="QListView" name="listView_9">
             <property name="minimumSize">
              <size>
               <width>140</width>
