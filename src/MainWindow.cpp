@@ -405,9 +405,12 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   }
 }
 
-bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames, QList<QStringList> block_varsel, tensor *x)
+bool MainWindow::PrepareTensor(MATRIX *indata,
+                               QStringList objnames,
+                               LABELS block_varsel,
+                               tensor *x)
 {
-  
+
   //ResizeMatrix(x, objnames.size(), varsel.size());
 
   QMap<QString, int> objmap;
@@ -435,13 +438,13 @@ bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames, QList<QStri
   QStringList varnotfound;
   for(int k = 0; k < block_varsel.size(); k++){
     aligned_objid << QList<int>();
-    for(int i = 0; i < block_varsel[k].size(); i++){
-      auto it = varmap.find(block_varsel[k][i]);
+    for(int i = 0; i < block_varsel[k].objects.size(); i++){
+      auto it = varmap.find(block_varsel[k].objects[i]);
       if(it != varmap.end()){
           aligned_varid.last().append(it.value());
       }
       else{
-        varnotfound << block_varsel[k][i];
+        varnotfound << block_varsel[k].objects[i];
       }
     }
   }
@@ -450,7 +453,7 @@ bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames, QList<QStri
   for(int k = 0; k < aligned_varid.size(); k++){
     AddTensorMatrix(x, objnames.size(), aligned_varid[k].size());
   }
-  
+
   //Copy the data
   for(int i = 0; i < aligned_objid.size(); i++){
     int ii = aligned_objid[i];
@@ -1717,6 +1720,10 @@ void MainWindow::DowngradeModelID()
           ui.treeWidget->currentItem()->parent()->child(i)->setText(9, QString::number(childid-1));
           projects->value(pid)->getPCAModel(childid)->setModelID(childid-1);
         }
+        else if(childmodeltype.compare("CPCA Model") == 0){
+          ui.treeWidget->currentItem()->parent()->child(i)->setText(9, QString::number(childid-1));
+          projects->value(pid)->getCPCAModel(childid)->setModelID(childid-1);
+        }
         else if(childmodeltype.compare("PLS Model") == 0){
           ui.treeWidget->currentItem()->parent()->child(i)->setText(9, QString::number(childid-1));
           projects->value(pid)->getPLSModel(childid)->setModelID(childid-1);
@@ -1775,6 +1782,10 @@ void MainWindow::removeModel()
       if(getCurrentModelType().compare("PCA Model") == 0){
         updateLog(QString("Deleting PCA Model %1\n").arg(getCurrentModelName()));
         projects->value(pid)->delPCAModel(mid);
+      }
+      else if(ui.treeWidget->currentItem()->text(8).compare("CPCA Model") == 0){
+        updateLog(QString("Deleting CPCA Model %1\n").arg(getCurrentModelName()));
+        projects->value(pid)->delCPCAModel(mid);
       }
       else if(ui.treeWidget->currentItem()->text(8).compare("PLS Model") == 0){
         updateLog(QString("Deleting PLS Model %1\n").arg(getCurrentModelName()));
@@ -2961,6 +2972,38 @@ void MainWindow::showPLSTScores()
   }
 }
 
+void MainWindow::showCPCAExpVar()
+{
+
+}
+
+void MainWindow::showCPCABlockLoadings()
+{
+
+}
+
+void MainWindow::showCPCABlockWeights()
+{
+
+}
+
+void MainWindow::showCPCABlockScores()
+{
+
+}
+
+void MainWindow::showCPCASuperWeights()
+{
+
+}
+
+void MainWindow::showCPCASuperScore()
+{
+
+}
+
+
+
 //          ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
 void MainWindow::showPCAPredScore()
 {
@@ -3105,6 +3148,7 @@ void MainWindow::ModelInfo()
     QString xhash = getCurrentModelXhash();
     int nobj = 0;
     int nvars = 0;
+    int nblocks = 0;
     int ntarg = 0;
     int xscaling = getCurrentModelXScalingType();
     int yscaling = getCurrentModelYScalingType();
@@ -3117,6 +3161,11 @@ void MainWindow::ModelInfo()
       textlst.append(QString("N. PCs: %1").arg(getCurrentModelNComponents()));
       nobj = projects->value(pid)->getPCAModel(mid)->getObjName().size();
       nvars = projects->value(pid)->getPCAModel(mid)->getVarName().size();
+    }
+    else if(getCurrentModelType().compare("CPCA Model") == 0){
+      textlst.append(QString("N. PCs: %1").arg(getCurrentModelNComponents()));
+      nobj = projects->value(pid)->getCPCAModel(mid)->getObjName().size();
+      nblocks = projects->value(pid)->getCPCAModel(mid)->getVarName().size();
     }
     else if(getCurrentModelType().compare("PLS Model") == 0){
       textlst.append(QString("N. LVs: %1").arg(getCurrentModelNComponents()));
@@ -3151,6 +3200,14 @@ void MainWindow::ModelInfo()
     if(nvars > 0)
       textlst.append(QString("N. variables: %1").arg(QString::number(nvars)));
 
+    if(nblocks > 0){
+      textlst.append(QString("N. Blocks: %1").arg(QString::number(nblocks)));
+      for(int i = 0; i < nblocks; i++){
+        nvars = projects->value(pid)->getCPCAModel(mid)->getVarName()[i].objects.size();
+        textlst.append(QString("N. Vars Block %1: %2").arg(QString::number(i+1)).arg(QString::number(nvars)));
+      }
+    }
+
     if(ntarg > 0)
       textlst.append(QString("N. targets: %1").arg(QString::number(ntarg)));
 
@@ -3162,7 +3219,8 @@ void MainWindow::ModelInfo()
       }
     }
 
-    if(getCurrentModelType().compare("PCA Model") == 0){
+    if(getCurrentModelType().compare("PCA Model") == 0 ||
+       getCurrentModelType().compare("CPCA Model") == 0){
       textlst.append(QString("X centered"));
     }
     else if(getCurrentModelType().compare("PLS Model") == 0){
@@ -3177,7 +3235,9 @@ void MainWindow::ModelInfo()
       }
     }
 
-    if(getCurrentModelType().compare("PCA Model") == 0 || getCurrentModelType().compare("PLS Model") == 0){
+    if(getCurrentModelType().compare("PCA Model") == 0 ||
+       getCurrentModelType().compare("CPCA Model") == 0 ||
+       getCurrentModelType().compare("PLS Model") == 0){
       if(xscaling == 0)
         textlst.append(QString("X not scaled"));
       else if(xscaling == 1)
@@ -3276,6 +3336,17 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
         menu.addAction("&Show T Score", this, SLOT(showPCAScore()));
         menu.addAction("&Show P Loadings", this, SLOT(showPCALoadings()));
         menu.addAction("&Show Explained Variance", this, SLOT(showPCAExpVar()));
+        menu.addAction("&Remove Model", this, SLOT(removeModel()));
+        menu.exec(globalPos);
+      }
+      if(modeltype.compare("CPCA Model") == 0){
+        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
+        menu.addAction("&Show Super Score", this, SLOT(showCPCASuperScore()));
+        menu.addAction("&Show Super Weights", this, SLOT(showCPCASuperWeights()));
+        menu.addAction("&Show Block Scores", this, SLOT(showCPCABlockScores()));
+        menu.addAction("&Show Block Weights", this, SLOT(showCPCABlockWeights()));
+        menu.addAction("&Show Block Loadings", this, SLOT(showCPCABlockLoadings()));
+        menu.addAction("&Show Explained Variance", this, SLOT(showCPCAExpVar()));
         menu.addAction("&Remove Model", this, SLOT(removeModel()));
         menu.exec(globalPos);
       }
@@ -3398,7 +3469,7 @@ void MainWindow::DowngradeDataID()
   if(CurrentIsData() == true){
     int pid = getCurrentDataProjectID();
     int did = getCurrentDataID();
- // Downgrading of one all the id of the other models
+    // Downgrading of one all the id of the other models
     for(int i = did+1; i < getDataCount(pid); i++){
       if(getDataItem(pid, did)->text(1).compare(getDataType(pid, i)) == 0){
         int childid = getDataItem(pid, i)->text(3).toInt();
@@ -5902,8 +5973,8 @@ void MainWindow::DoCPCAPrediction()
 void MainWindow::DoCPCA()
 {
   if(!projects->isEmpty()){
-
     ModelDialogWizard docpca(projects, CPCA_);
+
     if(docpca.exec() == QDialog::Accepted && docpca.compute() == true){
       StartRun();
 
@@ -5913,7 +5984,7 @@ void MainWindow::DoCPCA()
       int pc = docpca.getNumberOfComponent();
       QString modelname = "CPCA - "+docpca.getModelName();
       QStringList objsel = docpca.getObjectSelected();
-      QList<QStringList> varsel = docpca.getBlockXVarSelected();
+      LABELS varsel = docpca.getBlockXVarSelected();
 
       if(did != -1 && pid != -1){
         CalculationMenuDisable(pid);
@@ -5936,9 +6007,9 @@ void MainWindow::DoCPCA()
 
         tensor *x;
         initTensor(&x);
-        
+
         PrepareTensor(projects->value(pid)->getMatrix(did), objsel, varsel, x);
-        
+
         RUN obj;
         obj.setXTensor(x);
         obj.setCPCAModel(projects->value(pid)->getLastCPCAModel());
@@ -7778,8 +7849,8 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
 
   connect(ui.actionCPCA, SIGNAL(triggered(bool)), SLOT(DoCPCA()));
   connect(ui.actionCPCA_Prediction, SIGNAL(triggered(bool)), SLOT(DoCPCAPrediction()));
-  
-  
+
+
   connect(ui.actionPLS_Regression, SIGNAL(triggered(bool)), SLOT(DoPLSRegression()));
   connect(ui.actionPLS_Discriminant_Analysis, SIGNAL(triggered(bool)), SLOT(DoPLSDA()));
   connect(ui.actionPLS_Prediction, SIGNAL(triggered(bool)), SLOT(DoPLSPrediction()));

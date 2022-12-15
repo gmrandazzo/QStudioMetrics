@@ -26,7 +26,7 @@ public:
   int getselectedYData(){ return ydata; }
   QStringList getObjectSelected(){ return objsel; }
   QStringList getXVarSelected(){ return xvarsel; }
-  QList<QStringList> getBlockXVarSelected(){ return blockxvarsel; }
+  LABELS getBlockXVarSelected(){ return xblocks; }
   QStringList getYVarSelected(){ return yvarsel; }
   LABELS getClasses(){ return classes; }
   int getXScalingType(){ return xscaling; }
@@ -44,6 +44,7 @@ private slots:
   void importClass();
   void addClass();
   void removeClass();
+
   void BlockByLabel();
   void importBlock();
   void addBlock();
@@ -73,7 +74,6 @@ private:
   QList<int> pids;
   QStandardItemModel *tab1, *tab2, *tab3, *tab4, *tab5, *tab6, *tab7, *tab8, *tab9;
   QStringList objsel, xvarsel, yvarsel;
-  QList<QStringList> blockxvarsel;
   QString modelname_;
   int selectedproject_;
   int selecteddata_, ydata; // ydata for UPLS

@@ -60,13 +60,13 @@ QList< ScatterPlot * > CPCAPlot::BlockLoadingsPlot2D()
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
 
+  LABELS varname = projects->value(pid)->getCPCAModel(mid)->getVarName();
+
   for(size_t i = 0; i < projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->order; i++){
     QList<matrix*> mxlst;
     mxlst.append(projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->m[i]);
     QList<QStringList> objnamelst;
-    QList<QStringList> varname = projects->value(pid)->getCPCAModel(mid)->getVarName();
-    objnamelst.append(varname);
-
+    objnamelst.append(varname[i].objects);
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getCPCAModel(mid)->getDataHash());
 
@@ -93,17 +93,15 @@ QList< ScatterPlot * > CPCAPlot::BlockScoresPlot2D()
   QList< ScatterPlot* > plots;
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+  LABELS varname = projects->value(pid)->getCPCAModel(mid)->getVarName();
 
   for(size_t i = 0; i < projects->value(pid)->getCPCAModel(mid)->Model()->block_scores->order; i++){
     QList<matrix*> mxlst;
     mxlst.append(projects->value(pid)->getCPCAModel(mid)->Model()->block_scores->m[i]);
     QList<QStringList> objnamelst;
-    QList<QStringList> varname = projects->value(pid)->getCPCAModel(mid)->getVarName();
-    objnamelst.append(varname);//WARNING
-
+    objnamelst.append(varname[i].objects);
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getCPCAModel(mid)->getDataHash());
-
     plots.append(new ScatterPlot(mxlst,
                                 objnamelst,
                                 &projects->value(pid)->getMATRIXList(),

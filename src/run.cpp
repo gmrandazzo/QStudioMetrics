@@ -439,7 +439,9 @@ void RUN::DoCPCAPrediction()
 
 void RUN::DoCPCA()
 {
+  qDebug() << "Running CPCA";
   CPCA(ax, xscaling, pc, cpcamod->Model());
+  qDebug() << "Stop CPCA";
 }
 
 QFuture< void > RUN::RunClusterValidation()

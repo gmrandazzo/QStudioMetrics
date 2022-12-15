@@ -48,8 +48,8 @@ public:
   QString &getName(){ return name; }
   void setObjName(const QStringList &objname_){ objname = objname_; }
   QStringList &getObjName(){ return objname; }
-  void setVarName(const QList<QStringList> &varname_){ varname = varname_; }
-  QList<QStringList> &getVarName(){ return varname; }
+  void setVarName(const LABELS &varname_){ varname = varname_; }
+  LABELS &getVarName(){ return varname; }
   void setDID(int did_){ did = did_; }
   void setDataHash(QString hash_){ hash = hash_; }
   QString &getDataHash(){ return hash; }
@@ -73,15 +73,13 @@ public:
   int CPCAPredictionCount(){ return prediction.size(); }
 
   QString& getHash(){
-    if(cpcahash.size() == 0){ 
-      QStringList varname_;
-      QStringList v;
+    if(cpcahash.size() == 0){
+      LABEL v;
       foreach(v, varname)
-        varname_ << v;
-      cpcahash = GenHashFromStrlst((QStringList() << name << "cpcamodel_type")+objname+varname_); 
-    } 
-    return cpcahash; 
-    
+        cpcahash = GenHashFromStrlst((QStringList() << name << "cpcamodel_type")+objname+v.objects);
+    }
+    return cpcahash;
+
   }
 
 
@@ -89,7 +87,7 @@ private:
   CPCAMODEL *m;
   QList<CPCAPREDICTION*> prediction;
   QStringList objname;
-  QList<QStringList> varname;
+  LABELS varname;
   QString name;
   int did, xscaling, npc, modelid;
   QString hash, cpcahash;

@@ -390,15 +390,39 @@ void ModelDialogWizard::EnableDisableButtons()
   else{
     this->button(QWizard::NextButton)->setEnabled(true);
     this->button(QWizard::FinishButton)->setEnabled(false);
-
-    if(ui.listView_3->selectionModel()->selectedRows(0).size() > 0 &&
-      ui.listView_4->selectionModel()->selectedRows(0).size() > 0){
-      if(type == PCA_){
-        this->button(QWizard::FinishButton)->setEnabled(true);
+    if(ui.listView_3->selectionModel()->selectedRows(0).size() > 0){
+      // PCA_ PLS_ EPLS_ MLR_ PLS_DA_ EPLS_DA_ LDA_ MLR_
+      if(ui.listView_4->selectionModel()->selectedRows(0).size() > 0){
+        if(type == PCA_){
+          this->button(QWizard::FinishButton)->setEnabled(true);
+        }
+        else{
+          if(type == PLS_ || type == EPLS_ || type == MLR_){
+            if(ui.listView_5->selectionModel()->selectedRows(0).size() > 0){
+              this->button(QWizard::FinishButton)->setEnabled(true);
+            }
+            else{
+              this->button(QWizard::FinishButton)->setEnabled(false);
+            }
+          }
+          else if(type == LDA_ || type == PLS_DA_ || type == EPLS_DA_){
+            if(ui.listView_7->model()->rowCount() > 0){
+              this->button(QWizard::FinishButton)->setEnabled(true);
+            }
+            else{
+              this->button(QWizard::FinishButton)->setEnabled(false);
+            }
+          }
+          else{
+            // finish button disabled by default!
+            this->button(QWizard::FinishButton)->setEnabled(false);
+          }
+        }
       }
+      // CPCA_ UPCA_ UPLS_ and in general multiblock
       else{
-        if(type == PLS_ || type == EPLS_ || type == MLR_){
-          if(ui.listView_5->selectionModel()->selectedRows(0).size() > 0){
+        if(type == CPCA_){
+          if(ui.listView_9->model()->rowCount() > 0){
             this->button(QWizard::FinishButton)->setEnabled(true);
           }
           else{
@@ -406,15 +430,14 @@ void ModelDialogWizard::EnableDisableButtons()
           }
         }
         else{
-          // LDA_ and EPLS_DA_ class defined
-          if(ui.listView_7->model()->rowCount() > 0){
-            this->button(QWizard::FinishButton)->setEnabled(true);
-          }
-          else{
-            this->button(QWizard::FinishButton)->setEnabled(false);
-          }
+          // finish button disabled by default!
+          this->button(QWizard::FinishButton)->setEnabled(false);
         }
       }
+    }
+    else{
+      // finish button disabled by default!
+      this->button(QWizard::FinishButton)->setEnabled(false);
     }
   }
 }
@@ -709,23 +732,39 @@ void ModelDialogWizard::OK()
       }
     }
 
-    if(objsel.size() > 0 && xvarsel.size() > 0){
-      if(type == PCA_){
-        compute_ = true;
-        accept();
-      }
-      else{
-        if(yvarsel.size() > 0 && classes.size() == 0){
-          compute_ = true;
-          accept();
-        }
-        else if(yvarsel.size() == 0 && classes.size() > 0){
+
+    if(objsel.size() > 0){
+      if(xvarsel.size() > 0){
+        if(type == PCA_){
           compute_ = true;
           accept();
         }
         else{
-          compute_ = false;
-          reject();
+          if(yvarsel.size() > 0 && classes.size() == 0){
+            compute_ = true;
+            accept();
+          }
+          else if(yvarsel.size() == 0 && classes.size() > 0){
+            compute_ = true;
+            accept();
+          }
+          else{
+            compute_ = false;
+            reject();
+          }
+        }
+      }
+      else{
+        if(xblocks.size() > 0){
+          if(type == CPCA_){
+            xscaling = ui.xblockscalinglist->currentIndex();
+            compute_ = true;
+            accept();
+          }
+          else{
+            compute_ = false;
+            reject();
+          }
         }
       }
     }
@@ -831,7 +870,7 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
   tab7 = new QStandardItemModel();
   tab8 = new QStandardItemModel();
   tab9 = new QStandardItemModel();
-  
+
   ui.listView_1->setModel(tab1);
   ui.listView_2->setModel(tab2);
   ui.listView_3->setModel(tab3);
@@ -890,7 +929,7 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
   connect(ui.xblock_import, SIGNAL(clicked(bool)), SLOT(importBlock()));
   connect(ui.xblock_addButton, SIGNAL(clicked(bool)), SLOT(addBlock()));
   connect(ui.xblock_removeButton, SIGNAL(clicked(bool)), SLOT(removeBlock()));
-  
+
   connect(ui.elmethodComboBox, SIGNAL(currentIndexChanged(int)), SLOT(ELmethodChanged(int)));
 
   connect(this->button(QWizard::NextButton), SIGNAL(clicked()), this, SLOT(next()));
