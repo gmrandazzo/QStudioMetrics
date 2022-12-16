@@ -437,7 +437,7 @@ bool MainWindow::PrepareTensor(MATRIX *indata,
   QList<QList<int>> aligned_varid;
   QStringList varnotfound;
   for(int k = 0; k < block_varsel.size(); k++){
-    aligned_objid << QList<int>();
+    aligned_varid << QList<int>();
     for(int i = 0; i < block_varsel[k].objects.size(); i++){
       auto it = varmap.find(block_varsel[k].objects[i]);
       if(it != varmap.end()){
@@ -2974,32 +2974,175 @@ void MainWindow::showPLSTScores()
 
 void MainWindow::showCPCAExpVar()
 {
+  if(CurrentIsModel() == true){
 
+    int pid = getCurrentModelProjectID();
+    int mid = getCurrentModelID();
+    int tabid = getCurrentModelTableID();
+
+    QString projectname = projects->value(pid)->getProjectName();
+    QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+
+    QString tabname = projectname + " - " + modelname + " - CPCA Explained Variance";
+    MDIChild *child = createMdiChild();
+    child->setWindowID(tabid);
+    child->newTable(tabname);
+
+    size_t row = projects->value(pid)->getCPCAModel(mid)->Model()->total_expvar->size;
+    size_t col = 2;  // the explained variance and the sum of explained variance
+
+    child->getTable()->model()->newMatrix(row, col);
+
+    double sum = 0.f;
+    QStringList labels;
+    for(size_t i = 0; i < row; i++){
+      labels.append("PC "+QString::number(i+1));
+      setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(projects->value(pid)->getCPCAModel(mid)->Model()->total_expvar, i));
+      sum += getDVectorValue(projects->value(pid)->getCPCAModel(mid)->Model()->total_expvar, i);
+      if(sum > 100){
+        setMatrixValue(child->getTable()->model()->Matrix(), i, 1, 100);
+      }
+      else{
+        setMatrixValue(child->getTable()->model()->Matrix(), i, 1, sum);
+      }
+    }
+    child->getTable()->model()->setObjNames(labels);
+    QStringList header;
+    header << "Principal Component" << "X Exp Variance" << "Accum X Exp Variance";
+    child->getTable()->model()->setHorizontalHeaderLabels(header);
+    child->getTable()->model()->UpdateModel();
+    child->show();
+  }
 }
 
 void MainWindow::showCPCABlockLoadings()
 {
+  if(CurrentIsModel() == true){
+    int pid = getCurrentModelProjectID();
+    int mid = getCurrentModelID();
+    int tabid = getCurrentModelTableID();
 
-}
-
-void MainWindow::showCPCABlockWeights()
-{
-
+    QString projectname = projects->value(pid)->getProjectName();
+    QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+    
+    for(size_t k = 0; k < projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->order; k++){
+      QString block_name = projects->value(pid)->getCPCAModel(mid)->getVarName()[k].name;
+      QString tabname =  projectname + " - " + modelname + QString(" - CPCA Block Loadings %1").arg(block_name);
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->m[k]);
+      child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getVarName()[k].objects);
+      QStringList headername;
+      headername << firstcol_name;
+      for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->m[k]->col; c++){
+        headername << QString("PC %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(),
+              SIGNAL(TabImageSignalChanged(ImageSignal)),
+              SLOT(UpdateImageWindow(ImageSignal)));
+    }
+  }
 }
 
 void MainWindow::showCPCABlockScores()
 {
+  if(CurrentIsModel() == true){
+    int pid = getCurrentModelProjectID();
+    int mid = getCurrentModelID();
+    int tabid = getCurrentModelTableID();
 
+    QString projectname = projects->value(pid)->getProjectName();
+    QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+    
+    for(size_t k = 0; k < projects->value(pid)->getCPCAModel(mid)->Model()->block_scores->order; k++){
+      QString block_name = projects->value(pid)->getCPCAModel(mid)->getVarName()[k].name;
+      QString tabname =  projectname + " - " + modelname + QString(" - CPCA Block Scores %1").arg(block_name);
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getCPCAModel(mid)->Model()->block_scores->m[k], 
+                      &projects->value(pid)->getObjectLabels(),
+                      &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getObjName());
+      QStringList headername;
+      headername << firstcol_name;
+      for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->Model()->block_scores->m[k]->col; c++){
+        headername << QString("PC %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(),
+              SIGNAL(TabImageSignalChanged(ImageSignal)),
+              SLOT(UpdateImageWindow(ImageSignal)));
+    }
+  }
 }
 
 void MainWindow::showCPCASuperWeights()
 {
+  if(CurrentIsModel() == true){
+    int pid = getCurrentModelProjectID();
+    int mid = getCurrentModelID();
+    int tabid = getCurrentModelTableID();
 
+    QString projectname = projects->value(pid)->getProjectName();
+    QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+
+    QString tabname =  projectname + " - " + modelname + " - CPCA Super Weights";
+    QStringList block_names;
+    for(int i = 0; i < projects->value(pid)->getCPCAModel(mid)->getVarName().size(); i++)
+      block_names << projects->value(pid)->getCPCAModel(mid)->getVarName()[i].name;
+    
+    MDIChild *child = createMdiChild();
+    child->setWindowID(tabid);
+    child->newTable(tabname, projects->value(pid)->getCPCAModel(mid)->Model()->super_weights);
+    child->getTable()->model()->setObjNames(block_names);
+    QStringList headername;
+    headername << firstcol_name;
+    for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->Model()->super_weights->col; c++){
+      headername << QString("PC %1").arg(QString::number(c+1));
+    }
+    child->getTable()->model()->setHorizontalHeaderLabels(headername);
+    child->show();
+    child->getTable()->setPID(pid);
+    connect(child->getTable(),
+            SIGNAL(TabImageSignalChanged(ImageSignal)),
+            SLOT(UpdateImageWindow(ImageSignal)));
+  }
 }
 
 void MainWindow::showCPCASuperScore()
 {
+  if(CurrentIsModel() == true){
+    int pid = getCurrentModelProjectID();
+    int mid = getCurrentModelID();
+    int tabid = getCurrentModelTableID();
 
+    QString projectname = projects->value(pid)->getProjectName();
+    QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+
+    QString tabname =  projectname + " - " + modelname + " - CPCA Super Scores";
+    MDIChild *child = createMdiChild();
+    child->setWindowID(tabid);
+    child->newTable(tabname, projects->value(pid)->getCPCAModel(mid)->Model()->super_scores, 
+                    &projects->value(pid)->getObjectLabels(),
+                    &projects->value(pid)->getVariableLabels());
+    child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getObjName());
+    QStringList headername;
+    headername << firstcol_name;
+    for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->Model()->super_scores->col; c++){
+      headername << QString("PC %1").arg(QString::number(c+1));
+    }
+    child->getTable()->model()->setHorizontalHeaderLabels(headername);
+    child->show();
+    child->getTable()->setPID(pid);
+    connect(child->getTable(),
+            SIGNAL(TabImageSignalChanged(ImageSignal)),
+            SLOT(UpdateImageWindow(ImageSignal)));
+  }
 }
 
 
@@ -3344,7 +3487,6 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
         menu.addAction("&Show Super Score", this, SLOT(showCPCASuperScore()));
         menu.addAction("&Show Super Weights", this, SLOT(showCPCASuperWeights()));
         menu.addAction("&Show Block Scores", this, SLOT(showCPCABlockScores()));
-        menu.addAction("&Show Block Weights", this, SLOT(showCPCABlockWeights()));
         menu.addAction("&Show Block Loadings", this, SLOT(showCPCABlockLoadings()));
         menu.addAction("&Show Explained Variance", this, SLOT(showCPCAExpVar()));
         menu.addAction("&Remove Model", this, SLOT(removeModel()));

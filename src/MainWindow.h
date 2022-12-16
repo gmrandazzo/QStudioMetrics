@@ -158,7 +158,6 @@ private slots:
   void showCPCASuperScore();
   void showCPCASuperWeights();
   void showCPCABlockScores();
-  void showCPCABlockWeights();
   void showCPCABlockLoadings();
   void showCPCAExpVar();
 
