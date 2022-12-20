@@ -538,6 +538,21 @@ void MainWindow::TopMenuEnableDisable()
     }
   }
 
+  if(ProjectsHaveCPCA() == false){
+    ui.menuPlot_CPCA_Model->setEnabled(false);
+  }
+  else{
+    ui.menuPlot_CPCA_Model->setEnabled(true);
+    if(ProjectsHaveCPCAPrediction() == false){
+      ui.actionCPCA2DSuperScores_Plot_Prediction->setEnabled(false);
+      ui.actionCPCA2DBlockScores_Plot_Prediction->setEnabled(false);
+    }
+    else{
+      ui.actionCPCA2DSuperScores_Plot_Prediction->setEnabled(true);
+      ui.actionCPCA2DBlockScores_Plot_Prediction->setEnabled(true);
+    }
+  }
+
   if(ProjectsHavePLS() == false){
     ui.menuPlot_PLS_Model->setEnabled(false);
   }

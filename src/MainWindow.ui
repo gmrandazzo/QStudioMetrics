@@ -127,7 +127,7 @@
      <x>0</x>
      <y>0</y>
      <width>916</width>
-     <height>40</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -305,7 +305,7 @@
      <addaction name="actionEPLSPrecision_recall_curves"/>
      <addaction name="actionEPLSPrecision_Recall_AUC_recalculated_predicted"/>
     </widget>
-    <widget class="QMenu" name="menuCPCA_plots">
+    <widget class="QMenu" name="menuPlot_CPCA_Model">
      <property name="title">
       <string>CPCA plots</string>
      </property>
@@ -324,7 +324,7 @@
     </widget>
     <addaction name="menuVariable"/>
     <addaction name="menuPlot_PCA_Model"/>
-    <addaction name="menuCPCA_plots"/>
+    <addaction name="menuPlot_CPCA_Model"/>
     <addaction name="menuPlot_PLS_Model"/>
     <addaction name="menuEPLS_plots"/>
     <addaction name="menuPlot_MLR"/>
