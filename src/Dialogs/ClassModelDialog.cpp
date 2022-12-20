@@ -22,14 +22,11 @@ void ClassModelDialog::genListView(QModelIndex current)
         tab2->appendRow(mname);
       }
       
-      ui.objSelectByLabel->clear();
-      
       ui.objSelectByLabel->addItem("Select by label...");
       for(int i = 0; i < projects_->value(selectedproject_)->getObjectLabels().size(); i++){
         ui.objSelectByLabel->addItem(projects_->value(selectedproject_)->getObjectLabels()[i].name);
       }
       
-      ui.varSelectByLabel->clear();
       ui.varSelectByLabel->addItem("Select by label...");
       for(int i = 0; i < projects_->value(selectedproject_)->getVariableLabels().size(); i++){
         ui.varSelectByLabel->addItem(projects_->value(selectedproject_)->getVariableLabels()[i].name);
