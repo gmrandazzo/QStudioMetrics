@@ -68,6 +68,7 @@ ClusterModel::ClusterModel()
   initUIVector(&clusters);
   initMatrix(&centroids);
   initMatrix(&validation);
+  pid = mid = modelid = dataid = nclusters = clusteralgo = -1;
 }
 
 ClusterModel::~ClusterModel()

@@ -309,10 +309,18 @@
      <property name="title">
       <string>CPCA plots</string>
      </property>
+     <property name="icon">
+      <iconset resource="icons/icons.qrc">
+       <normaloff>:/scatter.png</normaloff>:/scatter.png</iconset>
+     </property>
      <addaction name="actionCPCA2DSuperScores_Plot"/>
      <addaction name="actionCPCA2DSuperWeights_Plot"/>
      <addaction name="actionCPCA2DBlockScores_Plot"/>
      <addaction name="actionCPCA2DBlockLoadings_Plot"/>
+     <addaction name="actionCPCA2DExplained_variance_Plot"/>
+     <addaction name="separator"/>
+     <addaction name="actionCPCA2DSuperScores_Plot_Prediction"/>
+     <addaction name="actionCPCA2DBlockScores_Plot_Prediction"/>
     </widget>
     <addaction name="menuVariable"/>
     <addaction name="menuPlot_PCA_Model"/>
@@ -1527,12 +1535,12 @@
   </action>
   <action name="actionCPCA2DSuperScores_Plot">
    <property name="text">
-    <string>t/t super scores</string>
+    <string>t/t Super Scores</string>
    </property>
   </action>
   <action name="actionCPCA2DBlockScores_Plot">
    <property name="text">
-    <string>t/t block scores</string>
+    <string>t/t Block Scores</string>
    </property>
   </action>
   <action name="actionCPCA2DSuperWeights_Plot">
@@ -1542,7 +1550,22 @@
   </action>
   <action name="actionCPCA2DBlockLoadings_Plot">
    <property name="text">
-    <string>p/p block loadings</string>
+    <string>p/p Block Loadings</string>
+   </property>
+  </action>
+  <action name="actionCPCA2DExplained_variance_Plot">
+   <property name="text">
+    <string>Explained variance</string>
+   </property>
+  </action>
+  <action name="actionCPCA2DSuperScores_Plot_Prediction">
+   <property name="text">
+    <string>t/t Super Scores with Prediction</string>
+   </property>
+  </action>
+  <action name="actionCPCA2DBlockScores_Plot_Prediction">
+   <property name="text">
+    <string>t/t/ Block Scores with Prediction</string>
    </property>
   </action>
  </widget>

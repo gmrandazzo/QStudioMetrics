@@ -60,8 +60,8 @@ private slots:
 private:
   Ui::DoClusterAnalysisDialog ui;
   int windowtype;
-  QList<MATRIX*> *mxlst;
-  QList<ARRAY*> *arlst;
+  QList<MATRIX*> mxlst;
+  QList<ARRAY*> arlst;
   QStringList hash;
   QString selectedhash;
 };

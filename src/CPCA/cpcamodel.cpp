@@ -12,6 +12,8 @@
 CPCAPREDICTION::CPCAPREDICTION()
 {
   initMatrix(&p_super_scores);
+  initTensor(&p_block_scores);
+  id = did = -1;
 }
 
 CPCAPREDICTION::~CPCAPREDICTION()
@@ -20,6 +22,7 @@ CPCAPREDICTION::~CPCAPREDICTION()
   qDebug() << "Delete CPCAPREDICTION: " << name;
   #endif
   DelMatrix(&p_super_scores);
+  DelTensor(&p_block_scores);
 }
 
 CPCAModel::~CPCAModel()

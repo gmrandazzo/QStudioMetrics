@@ -151,10 +151,16 @@ DialogPlots::DialogPlots(ProjectTree pjtree_, int dtype_)
 
   connect(ui.plotButton, SIGNAL(clicked()), SLOT(actionPlot()));
   connect(ui.cancelButton, SIGNAL(clicked()), SLOT(reject()));
-  connect(ui.listView->selectionModel(), SIGNAL(currentChanged(QModelIndex, QModelIndex)), SLOT(setProject(QModelIndex, QModelIndex)));
-  connect(ui.listView_2->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setModel(QModelIndex, QModelIndex)));
+  connect(ui.listView->selectionModel(),
+          SIGNAL(currentChanged(QModelIndex, QModelIndex)),
+          SLOT(setProject(QModelIndex, QModelIndex)));
+  connect(ui.listView_2->selectionModel(),
+          SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+          SLOT(setModel(QModelIndex, QModelIndex)));
   if(dtype == ThreeColumns){
-    connect(ui.listView_3->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(setPrediction(QModelIndex, QModelIndex)));
+    connect(ui.listView_3->selectionModel(),
+            SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+            SLOT(setPrediction(QModelIndex, QModelIndex)));
   }
   EnableDisableButtons();
 }

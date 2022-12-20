@@ -16,6 +16,7 @@ LDAPREDICTION::LDAPREDICTION()
   initMatrix(&pfeatures);
   initMatrix(&probpred);
   initMatrix(&mnpdf);
+  id = did = -1;
 }
 
 LDAPREDICTION::~LDAPREDICTION(){

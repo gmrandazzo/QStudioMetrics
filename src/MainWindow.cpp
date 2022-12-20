@@ -41,6 +41,7 @@
 #include "Plotlib/BarPlot.h"
 #include "Plotlib/SimpleLine2DPlot.h"
 #include "PCA/PCAPlot.h"
+#include "CPCA/CPCAPlot.h"
 #include "PLS/PLSPlot.h"
 #include "EPLS/EPLSPlot.h"
 #include "MLR/MLRPlot.h"
@@ -53,6 +54,8 @@ void MainWindow::CheckProjects()
 
   havepca = false;
   havepcapred = false;
+  havecpca = false;
+  havecpcapred = false;
   havepls = false;
   haveplspred = false;
   haveplsvalid = false;
@@ -80,6 +83,15 @@ void MainWindow::CheckProjects()
       }
     }
 
+    if(i.value()->CPCACount() > 0){
+      havecpca = true;
+      for(int j = 0; j < i.value()->CPCACount(); j++){
+        if(i.value()->getCPCAModelAt(j)->CPCAPredictionCount() > 0){
+          havecpcapred = true;
+        }
+      }
+    }
+    
     if(i.value()->PLSCount() > 0){
       havepls = true;
       for(int j = 0; j < i.value()->PLSCount(); j++){
@@ -1659,6 +1671,10 @@ void MainWindow::removePrediction()
           updateLog(QString("Deleting PCA Prediction %1\n").arg(getCurrentPredictionName()));
           projects->value(pid)->getPCAModel(mid)->delPCAPredictionAt(predid);
         }
+        else if(getCurrentPredictionType().compare("CPCA Prediction") == 0){
+          updateLog(QString("Deleting CPCA Prediction %1\n").arg(getCurrentPredictionName()));
+          projects->value(pid)->getCPCAModel(mid)->delCPCAPredictionAt(predid);
+        }
         else if(getCurrentPredictionType().compare("PLS Prediction") == 0){
           updateLog(QString("Deleting PLS Prediction %1\n").arg(getCurrentPredictionName()));
           projects->value(pid)->getPLSModel(mid)->delPLSPredictionAt(predid);
@@ -1824,23 +1840,24 @@ void MainWindow::showLDACovarianceGroupMatrix()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - LDA Covariance Group Matrix";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getLDAModel(mid)->Model()->inv_cov,
-      &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    child->getTable()->model()->setObjNames(projects->value(pid)->getLDAModel(mid)->getVarName());
-    QStringList headername;
-    headername << "Variables";
-    headername.append(projects->value(pid)->getLDAModel(mid)->getVarName());
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      QString tabname = projectname + " - " + modelname + " - LDA Covariance Group Matrix";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getLDAModel(mid)->Model()->inv_cov,
+        &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getLDAModel(mid)->getVarName());
+      QStringList headername;
+      headername << "Variables";
+      headername.append(projects->value(pid)->getLDAModel(mid)->getVarName());
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+    }
   }
 }
 
@@ -1850,29 +1867,30 @@ void MainWindow::showLDAPriorProbabilities()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
+      QString tabname = projectname + " - " + modelname + " - LDA Covariance Group Matrix";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      matrix *pprob;
+      initMatrix(&pprob);
+      MatrixAppendCol(pprob, projects->value(pid)->getLDAModel(mid)->Model()->pprob);
+      child->newTable(tabname, pprob, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+      QStringList objname;
+      for(size_t i = 0; i < pprob->row; i++)
+        objname.append(QString("Class %1").arg(QString::number(i+1)));
 
-    QString tabname = projectname + " - " + modelname + " - LDA Covariance Group Matrix";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    matrix *pprob;
-    initMatrix(&pprob);
-    MatrixAppendCol(pprob, projects->value(pid)->getLDAModel(mid)->Model()->pprob);
-    child->newTable(tabname, pprob, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    QStringList objname;
-    for(size_t i = 0; i < pprob->row; i++)
-      objname.append(QString("Class %1").arg(QString::number(i+1)));
-
-    child->getTable()->model()->setObjNames(objname);
-    QStringList headername;
-    headername << "Classes" << "Prior Probabilities";
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    DelMatrix(&pprob);
+      child->getTable()->model()->setObjNames(objname);
+      QStringList headername;
+      headername << "Classes" << "Prior Probabilities";
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      DelMatrix(&pprob);
+    }
   }
 }
 
@@ -1882,39 +1900,38 @@ void MainWindow::showLDAFeatures()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
+      size_t cc = 0;
+      uivector *classid = projects->value(pid)->getLDAModel(mid)->Model()->classid;
+      for(size_t k = 0; k <  projects->value(pid)->getLDAModel(mid)->Model()->features->order; k++){ /* for each class */
+        QString tabname = projectname + " - " + modelname + QString(" - LDA Features Class %1").arg(QString::number(k+1));
+        MDIChild *child = createMdiChild();
+        child->setWindowID(tabid);
+        QStringList headername, objname;
+        matrix *m;
+        initMatrix(&m);
+        MatrixCopy(projects->value(pid)->getLDAModel(mid)->Model()->features->m[k], &m);
+        child->newTable(tabname, m, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
 
-    size_t cc = 0;
-    uivector *classid = projects->value(pid)->getLDAModel(mid)->Model()->classid;
-    for(size_t k = 0; k <  projects->value(pid)->getLDAModel(mid)->Model()->features->order; k++){ /* for each class */
-      QString tabname = projectname + " - " + modelname + QString(" - LDA Features Class %1").arg(QString::number(k+1));
-      MDIChild *child = createMdiChild();
-      child->setWindowID(tabid);
-      QStringList headername, objname;
-      matrix *m;
-      initMatrix(&m);
-      MatrixCopy(projects->value(pid)->getLDAModel(mid)->Model()->features->m[k], &m);
-      child->newTable(tabname, m, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+        for(size_t i = 0; i < m->row; i++){
+          objname.append(projects->value(pid)->getLDAModel(mid)->getObjName()[classid->data[cc]]);
+          cc++;
+        }
+        child->getTable()->model()->setObjNames(objname);
 
-      for(size_t i = 0; i < m->row; i++){
-        objname.append(projects->value(pid)->getLDAModel(mid)->getObjName()[classid->data[cc]]);
-        cc++;
+        headername << "Object Name";
+        for(size_t i = 0; i < m->col; i++){
+          headername.append(QString("LD %1").arg(QString::number(i+1)));
+        }
+        child->getTable()->model()->setHorizontalHeaderLabels(headername);
+        child->show();
+        child->getTable()->setPID(pid);
+        connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        DelMatrix(&m);
       }
-      child->getTable()->model()->setObjNames(objname);
-
-      headername << "Object Name";
-      for(size_t i = 0; i < m->col; i++){
-        headername.append(QString("LD %1").arg(QString::number(i+1)));
-      }
-      child->getTable()->model()->setHorizontalHeaderLabels(headername);
-      child->show();
-      child->getTable()->setPID(pid);
-      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-
-      DelMatrix(&m);
-
     }
   }
 }
@@ -1925,38 +1942,38 @@ void MainWindow::showLDAMVNormDistrib()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
+      size_t cc = 0;
+      uivector *classid = projects->value(pid)->getLDAModel(mid)->Model()->classid;
+      for(size_t k = 0; k <  projects->value(pid)->getLDAModel(mid)->Model()->mnpdf->order; k++){ /* for each class */
+        QString tabname = projectname + " - " + modelname + QString(" -  LDA Multivariate Normal Distribution of Probabilities Class %1").arg(QString::number(k+1));
+        MDIChild *child = createMdiChild();
+        child->setWindowID(tabid);
+        QStringList headername, objname;
+        matrix *m;
+        initMatrix(&m);
+        MatrixCopy(projects->value(pid)->getLDAModel(mid)->Model()->mnpdf->m[k], &m);
+        child->newTable(tabname, m, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
 
-    size_t cc = 0;
-    uivector *classid = projects->value(pid)->getLDAModel(mid)->Model()->classid;
-    for(size_t k = 0; k <  projects->value(pid)->getLDAModel(mid)->Model()->mnpdf->order; k++){ /* for each class */
-      QString tabname = projectname + " - " + modelname + QString(" -  LDA Multivariate Normal Distribution of Probabilities Class %1").arg(QString::number(k+1));
-      MDIChild *child = createMdiChild();
-      child->setWindowID(tabid);
-      QStringList headername, objname;
-      matrix *m;
-      initMatrix(&m);
-      MatrixCopy(projects->value(pid)->getLDAModel(mid)->Model()->mnpdf->m[k], &m);
-      child->newTable(tabname, m, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+        for(size_t i = 0; i < m->row; i++){
+          objname.append(projects->value(pid)->getLDAModel(mid)->getObjName()[classid->data[cc]]);
+          cc++;
+        }
+        child->getTable()->model()->setObjNames(objname);
 
-      for(size_t i = 0; i < m->row; i++){
-        objname.append(projects->value(pid)->getLDAModel(mid)->getObjName()[classid->data[cc]]);
-        cc++;
+        headername << "Object Name";
+        for(size_t i = 0; i < m->col; i++){
+          headername.append(QString("LD %1").arg(QString::number(i+1)));
+        }
+        child->getTable()->model()->setHorizontalHeaderLabels(headername);
+        child->show();
+        child->getTable()->setPID(pid);
+        connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        DelMatrix(&m);
       }
-      child->getTable()->model()->setObjNames(objname);
-
-      headername << "Object Name";
-      for(size_t i = 0; i < m->col; i++){
-        headername.append(QString("LD %1").arg(QString::number(i+1)));
-      }
-      child->getTable()->model()->setHorizontalHeaderLabels(headername);
-      child->show();
-      child->getTable()->setPID(pid);
-      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-
-      DelMatrix(&m);
     }
   }
 }
@@ -1967,48 +1984,49 @@ void MainWindow::showLDAValidation()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
+      QString tabname = projectname + " - " + modelname + " - LDA Validation";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      matrix *valid;
+      initMatrix(&valid);
+      QStringList headername;
+      headername << "Classes";
+      for(size_t k = 0; k < projects->value(pid)->getLDAModel(mid)->Model()->roc->order; k++){
+        headername << QString("ROC FP Rate - %1").arg(QString::number(k+1))  << QString("ROC TP Rate - %1").arg(QString::number(k+1));
+        dvector *fpr = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->roc->m[k], 0);
+        dvector *tpr = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->roc->m[k], 1);
+        MatrixAppendCol(valid, fpr);
+        MatrixAppendCol(valid, tpr);
+        DelDVector(&fpr);
+        DelDVector(&tpr);
+      }
 
-    QString tabname = projectname + " - " + modelname + " - LDA Validation";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    matrix *valid;
-    initMatrix(&valid);
-    QStringList headername;
-    headername << "Classes";
-    for(size_t k = 0; k < projects->value(pid)->getLDAModel(mid)->Model()->roc->order; k++){
-      headername << QString("ROC FP Rate - %1").arg(QString::number(k+1))  << QString("ROC TP Rate - %1").arg(QString::number(k+1));
-      dvector *fpr = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->roc->m[k], 0);
-      dvector *tpr = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->roc->m[k], 1);
-      MatrixAppendCol(valid, fpr);
-      MatrixAppendCol(valid, tpr);
-      DelDVector(&fpr);
-      DelDVector(&tpr);
+      for(size_t k = 0; k < projects->value(pid)->getLDAModel(mid)->Model()->roc->order; k++){
+        headername << QString("PR Recall - %1").arg(QString::number(k+1))  << QString("PR Precision Rate - %1").arg(QString::number(k+1));
+        dvector *recall = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->pr->m[k], 0);
+        dvector *precision = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->pr->m[k], 1);
+        MatrixAppendCol(valid, recall);
+        MatrixAppendCol(valid, precision);
+        DelDVector(&recall);
+        DelDVector(&precision);
+      }
+
+      child->newTable(tabname, valid);
+      QStringList objname;
+      for(size_t i = 0; i < valid->row; i++)
+        objname.append(QString("Class %1").arg(QString::number(i+1)));
+      child->getTable()->model()->setObjNames(objname);
+
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      DelMatrix(&valid);
     }
-
-    for(size_t k = 0; k < projects->value(pid)->getLDAModel(mid)->Model()->roc->order; k++){
-      headername << QString("PR Recall - %1").arg(QString::number(k+1))  << QString("PR Precision Rate - %1").arg(QString::number(k+1));
-      dvector *recall = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->pr->m[k], 0);
-      dvector *precision = getMatrixColumn(projects->value(pid)->getLDAModel(mid)->Model()->pr->m[k], 1);
-      MatrixAppendCol(valid, recall);
-      MatrixAppendCol(valid, precision);
-      DelDVector(&recall);
-      DelDVector(&precision);
-    }
-
-    child->newTable(tabname, valid);
-    QStringList objname;
-    for(size_t i = 0; i < valid->row; i++)
-      objname.append(QString("Class %1").arg(QString::number(i+1)));
-    child->getTable()->model()->setObjNames(objname);
-
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    DelMatrix(&valid);
   }
 }
 
@@ -2019,7 +2037,6 @@ void MainWindow::showLDAPrediction()
     int mid = getCurrentPredictionModelID();
     int tabid = getCurrentPredictionTableID();
     if(pid > -1 && mid > -1 && tabid > -1){
-
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
       int predid = getCurrentPredictionID();
@@ -2104,35 +2121,36 @@ void MainWindow::showMLRCoeff()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
+      QString tabname = projectname + " - " + modelname + " - MLR Regression Coefficients";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getMLRModel(mid)->Model()->b);
 
-    QString tabname = projectname + " - " + modelname + " - MLR Regression Coefficients";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getMLRModel(mid)->Model()->b);
+      QStringList varnames = projects->value(pid)->getMLRModel(mid)->getXVarName();
+      QStringList coeffname;
+      coeffname.append("Intercept");
+      #ifdef DEBUG
+      qDebug() << varnames.size() << projects->value(pid)->getMLRModel(mid)->Model()->b->row;
+      #endif
+      for(size_t i = 1; i < projects->value(pid)->getMLRModel(mid)->Model()->b->row; i++){
+        coeffname.append(varnames[i-1]);
+      }
+      child->getTable()->model()->setObjNames(coeffname);
 
-    QStringList varnames = projects->value(pid)->getMLRModel(mid)->getXVarName();
-    QStringList coeffname;
-    coeffname.append("Intercept");
-    #ifdef DEBUG
-    qDebug() << varnames.size() << projects->value(pid)->getMLRModel(mid)->Model()->b->row;
-    #endif
-    for(size_t i = 1; i < projects->value(pid)->getMLRModel(mid)->Model()->b->row; i++){
-      coeffname.append(varnames[i-1]);
+      QStringList headername;
+      headername << "Coefficient Name";
+      for(size_t c = 0; c < projects->value(pid)->getMLRModel(mid)->Model()->b->col; c++){
+        headername << QString("Betas %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
-    child->getTable()->model()->setObjNames(coeffname);
-
-    QStringList headername;
-    headername << "Coefficient Name";
-    for(size_t c = 0; c < projects->value(pid)->getMLRModel(mid)->Model()->b->col; c++){
-      headername << QString("Betas %1").arg(QString::number(c+1));
-    }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
   }
 }
 
@@ -2142,38 +2160,39 @@ void MainWindow::showMLRValidation()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - MLR Correlation Coefficient";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname);
+      QString tabname = projectname + " - " + modelname + " - MLR Correlation Coefficient";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname);
 
 
-    dvector *r2y_model = projects->value(pid)->getMLRModel(mid)->Model()->r2y_model;
-    dvector *sdec = projects->value(pid)->getMLRModel(mid)->Model()->sdec;
-    dvector *q2y_model = projects->value(pid)->getMLRModel(mid)->Model()->q2y;
-    dvector *sdep = projects->value(pid)->getMLRModel(mid)->Model()->sdep;
-    dvector *bias = projects->value(pid)->getMLRModel(mid)->Model()->bias;
+      dvector *r2y_model = projects->value(pid)->getMLRModel(mid)->Model()->r2y_model;
+      dvector *sdec = projects->value(pid)->getMLRModel(mid)->Model()->sdec;
+      dvector *q2y_model = projects->value(pid)->getMLRModel(mid)->Model()->q2y;
+      dvector *sdep = projects->value(pid)->getMLRModel(mid)->Model()->sdep;
+      dvector *bias = projects->value(pid)->getMLRModel(mid)->Model()->bias;
 
-    QStringList labels;
-    QStringList header;
-    child->getTable()->model()->newMatrix(r2y_model->size, 5);
-    for(size_t i = 0; i < r2y_model->size; i++){
-      setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(r2y_model, i));
-      setMatrixValue(child->getTable()->model()->Matrix(), i, 1, getDVectorValue(sdec, i));
-      setMatrixValue(child->getTable()->model()->Matrix(), i, 2, getDVectorValue(q2y_model, i));
-      setMatrixValue(child->getTable()->model()->Matrix(), i, 3, getDVectorValue(sdep, i));
-      setMatrixValue(child->getTable()->model()->Matrix(), i, 4, getDVectorValue(bias, i));
-      labels.append("Y "+QString::number(i+1));
+      QStringList labels;
+      QStringList header;
+      child->getTable()->model()->newMatrix(r2y_model->size, 5);
+      for(size_t i = 0; i < r2y_model->size; i++){
+        setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(r2y_model, i));
+        setMatrixValue(child->getTable()->model()->Matrix(), i, 1, getDVectorValue(sdec, i));
+        setMatrixValue(child->getTable()->model()->Matrix(), i, 2, getDVectorValue(q2y_model, i));
+        setMatrixValue(child->getTable()->model()->Matrix(), i, 3, getDVectorValue(sdep, i));
+        setMatrixValue(child->getTable()->model()->Matrix(), i, 4, getDVectorValue(bias, i));
+        labels.append("Y "+QString::number(i+1));
+      }
+      header << "Y " << "R2" << "SDEC" <<  "Q2"  << "SDEP" << "BIAS";
+      child->getTable()->model()->setObjNames(labels);
+      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->getTable()->model()->UpdateModel();
+      child->show();
     }
-    header << "Y " << "R2" << "SDEC" <<  "Q2"  << "SDEP" << "BIAS";
-    child->getTable()->model()->setObjNames(labels);
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->getTable()->model()->UpdateModel();
-    child->show();
   }
 }
 
@@ -2183,25 +2202,26 @@ void MainWindow::showMLRRecalcY()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - MLR Recalculated Y";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getMLRModel(mid)->Model()->recalculated_y,
-      &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    child->getTable()->model()->setObjNames(projects->value(pid)->getMLRModel(mid)->getObjName());
-    QStringList headername;
-    headername << "Object Name";
-    for(size_t c = 0; c < projects->value(pid)->getMLRModel(mid)->Model()->b->col; c++){
-      headername << QString("Y %1").arg(QString::number(c+1));
+      QString tabname = projectname + " - " + modelname + " - MLR Recalculated Y";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getMLRModel(mid)->Model()->recalculated_y,
+        &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getMLRModel(mid)->getObjName());
+      QStringList headername;
+      headername << "Object Name";
+      for(size_t c = 0; c < projects->value(pid)->getMLRModel(mid)->Model()->b->col; c++){
+        headername << QString("Y %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
   }
 }
 
@@ -2211,25 +2231,26 @@ void MainWindow::showMLRValidatedPrediction()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - MLR Validated Predicted Y";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getMLRModel(mid)->Model()->predicted_y,
-      &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    child->getTable()->model()->setObjNames(projects->value(pid)->getMLRModel(mid)->getObjName());
-    QStringList headername;
-    headername << "Object Name";
-    for(size_t c = 0; c < projects->value(pid)->getMLRModel(mid)->Model()->b->col; c++){
-      headername << QString("Y %1").arg(QString::number(c+1));
+      QString tabname = projectname + " - " + modelname + " - MLR Validated Predicted Y";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getMLRModel(mid)->Model()->predicted_y,
+        &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getMLRModel(mid)->getObjName());
+      QStringList headername;
+      headername << "Object Name";
+      for(size_t c = 0; c < projects->value(pid)->getMLRModel(mid)->Model()->b->col; c++){
+        headername << QString("Y %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
   }
 }
 
@@ -2343,77 +2364,76 @@ void MainWindow::showEPLSValidation()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
+      
+      QString tabname = projectname + " - " + modelname  +" - EPLS Validation";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname);
+      
+      size_t row = projects->value(pid)->getEPLSModel(mid)->Model()->nlv;// the number of components
+      size_t col = 0;
+      if(projects->value(pid)->getEPLSModel(mid)->getAlgorithm() == EPLS_)
+        col = projects->value(pid)->getEPLSModel(mid)->r2->col + projects->value(pid)->getEPLSModel(mid)->q2->col + projects->value(pid)->getEPLSModel(mid)->sdep->col + projects->value(pid)->getEPLSModel(mid)->bias->col;
+      else // eplsda
+        col = projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated->col + projects->value(pid)->getEPLSModel(mid)->roc_auc_predicted->col + projects->value(pid)->getEPLSModel(mid)->precision_recall_ap_recalculated->col + projects->value(pid)->getEPLSModel(mid)->precision_recall_ap_predicted->col;
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
+      child->getTable()->model()->newMatrix(row, col);
 
+      QStringList labels;
+      QStringList header;
+      header << "Principal Component";
+      if(projects->value(pid)->getEPLSModel(mid)->getAlgorithm() == EPLS_){
+        for(size_t i = 0; i < row; i++){ // PC
+          labels.append("PC "+QString::number(i+1));
+          size_t l = 0;
+          for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->q2->col; j++){ // the q2 for each y
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->r2, i, j));
+            l++;
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->q2, i, j));
+            l++;
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->sdep, i, j));
+            l++;
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->bias, i, j));
+            l++;
+          }
+        }
 
-    QString tabname = projectname + " - " + modelname  +" - EPLS Validation";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname);
+        QStringList yvarname = projects->value(pid)->getEPLSModel(mid)->getYVarName();
+        for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->r2->col; j++){
+          header << QString("R^2(%1)").arg(yvarname[j]) << QString("Q^2(%1)").arg(yvarname[j]) << QString("SDEP(%1)").arg(yvarname[j]) << QString("BIAS(%1)").arg(yvarname[j]);
+        }
+      }
+      else{
+        PrintMatrix(projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated);
+        for(size_t i = 0; i < row; i++){ // PC
+          labels.append("PC "+QString::number(i+1));
+          size_t l = 0;
+          for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated->col; j++){ // the q2 for each y
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated, i, j));
+            l++;
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->roc_auc_predicted, i, j));
+            l++;
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->precision_recall_ap_recalculated, i, j));
+            l++;
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->precision_recall_ap_predicted, i, j));
+            l++;
+          }
+        }
 
-
-    size_t row = projects->value(pid)->getEPLSModel(mid)->Model()->nlv;// the number of components
-    size_t col = 0;
-    if(projects->value(pid)->getEPLSModel(mid)->getAlgorithm() == EPLS_)
-      col = projects->value(pid)->getEPLSModel(mid)->r2->col + projects->value(pid)->getEPLSModel(mid)->q2->col + projects->value(pid)->getEPLSModel(mid)->sdep->col + projects->value(pid)->getEPLSModel(mid)->bias->col;
-    else // eplsda
-      col = projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated->col + projects->value(pid)->getEPLSModel(mid)->roc_auc_predicted->col + projects->value(pid)->getEPLSModel(mid)->precision_recall_ap_recalculated->col + projects->value(pid)->getEPLSModel(mid)->precision_recall_ap_predicted->col;
-
-    child->getTable()->model()->newMatrix(row, col);
-
-    QStringList labels;
-    QStringList header;
-    header << "Principal Component";
-    if(projects->value(pid)->getEPLSModel(mid)->getAlgorithm() == EPLS_){
-      for(size_t i = 0; i < row; i++){ // PC
-        labels.append("PC "+QString::number(i+1));
-        size_t l = 0;
-        for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->q2->col; j++){ // the q2 for each y
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->r2, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->q2, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->sdep, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->bias, i, j));
-          l++;
+        LABELS classes = projects->value(pid)->getEPLSModel(mid)->getClasses();
+        for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated->col; j++){
+          header << QString("Recalculated ROC AUC (%1)").arg(classes[j].name) << QString("Predicted ROC AUC (%1)").arg(classes[j].name)  << QString("Recalculated Prec-Recall AUC (%1)").arg(classes[j].name) << QString("Predicted Prec-Recall AUC (%1)").arg(classes[j].name);
         }
       }
 
-      QStringList yvarname = projects->value(pid)->getEPLSModel(mid)->getYVarName();
-      for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->r2->col; j++){
-        header << QString("R^2(%1)").arg(yvarname[j]) << QString("Q^2(%1)").arg(yvarname[j]) << QString("SDEP(%1)").arg(yvarname[j]) << QString("BIAS(%1)").arg(yvarname[j]);
-      }
+      child->getTable()->model()->setObjNames(labels);
+      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->getTable()->model()->UpdateModel();
+      child->show();
     }
-    else{
-      PrintMatrix(projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated);
-      for(size_t i = 0; i < row; i++){ // PC
-        labels.append("PC "+QString::number(i+1));
-        size_t l = 0;
-        for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated->col; j++){ // the q2 for each y
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->roc_auc_predicted, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->precision_recall_ap_recalculated, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->precision_recall_ap_predicted, i, j));
-          l++;
-        }
-      }
-
-      LABELS classes = projects->value(pid)->getEPLSModel(mid)->getClasses();
-      for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated->col; j++){
-        header << QString("Recalculated ROC AUC (%1)").arg(classes[j].name) << QString("Predicted ROC AUC (%1)").arg(classes[j].name)  << QString("Recalculated Prec-Recall AUC (%1)").arg(classes[j].name) << QString("Predicted Prec-Recall AUC (%1)").arg(classes[j].name);
-      }
-    }
-
-    child->getTable()->model()->setObjNames(labels);
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->getTable()->model()->UpdateModel();
-    child->show();
   }
 }
 
@@ -2423,28 +2443,29 @@ void MainWindow::showEPLSValidatedPrediction()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - EPLS Model Prediction";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getEPLSModel(mid)->y_predicted, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    QStringList varname = projects->value(pid)->getEPLSModel(mid)->getObjName();
-    child->getTable()->model()->setObjNames(varname);
-    QStringList header;
-    header << firstcol_name;
-    for(size_t i = 0; i < projects->value(pid)->getEPLSModel(mid)->Model()->nlv; i++){
-      for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->Model()->ny; j++){
-        header << QString("y %1 (PC %2)").arg(QString::number(j+1)).arg(QString::number(i+1));
+      QString tabname = projectname + " - " + modelname + " - EPLS Model Prediction";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getEPLSModel(mid)->y_predicted, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+      QStringList varname = projects->value(pid)->getEPLSModel(mid)->getObjName();
+      child->getTable()->model()->setObjNames(varname);
+      QStringList header;
+      header << firstcol_name;
+      for(size_t i = 0; i < projects->value(pid)->getEPLSModel(mid)->Model()->nlv; i++){
+        for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->Model()->ny; j++){
+          header << QString("y %1 (PC %2)").arg(QString::number(j+1)).arg(QString::number(i+1));
+        }
       }
-    }
 
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+    }
   }
 }
 
@@ -2454,26 +2475,28 @@ void MainWindow::showEPLSRecalcY()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
-    QString tabname = projectname + " - " + modelname + " - PLS Recalculated Y" + " - " +  ui.treeWidget->currentItem()->text(0);
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getEPLSModel(mid)->y_recalculated, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    child->getTable()->model()->setObjNames(projects->value(pid)->getEPLSModel(mid)->getObjName());
-    QStringList header;
-    header << firstcol_name;
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
+      QString tabname = projectname + " - " + modelname + " - PLS Recalculated Y" + " - " +  ui.treeWidget->currentItem()->text(0);
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getEPLSModel(mid)->y_recalculated, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getEPLSModel(mid)->getObjName());
+      QStringList header;
+      header << firstcol_name;
 
-    for(size_t i = 0; i < projects->value(pid)->getEPLSModel(mid)->Model()->nlv; i++){
-      for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->Model()->ny; j++){
-        header << QString("y %1 (PC %2)").arg(QString::number(j+1)).arg(QString::number(i+1));
+      for(size_t i = 0; i < projects->value(pid)->getEPLSModel(mid)->Model()->nlv; i++){
+        for(size_t j = 0; j < projects->value(pid)->getEPLSModel(mid)->Model()->ny; j++){
+          header << QString("y %1 (PC %2)").arg(QString::number(j+1)).arg(QString::number(i+1));
+        }
       }
-    }
 
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+    }
   }
 }
 
@@ -2601,29 +2624,30 @@ void MainWindow::showPLSValidatedPrediction()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+      QString tabname = projectname + " - " + modelname + " - PLS Model Prediction";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->predicted_y, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+      QStringList varname = projects->value(pid)->getPLSModel(mid)->getObjName();
+      child->getTable()->model()->setObjNames(varname);
+      QStringList header;
+      header << firstcol_name;
 
-    QString tabname = projectname + " - " + modelname + " - PLS Model Prediction";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->predicted_y, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    QStringList varname = projects->value(pid)->getPLSModel(mid)->getObjName();
-    child->getTable()->model()->setObjNames(varname);
-    QStringList header;
-    header << firstcol_name;
-
-    for(int i = 0; i < projects->value(pid)->getPLSModel(mid)->getNPC(); i++){
-      for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->yloadings->row; j++){
-        header << QString("y %1 (PC %2)").arg(QString::number(j+1)).arg(QString::number(i+1));
+      for(int i = 0; i < projects->value(pid)->getPLSModel(mid)->getNPC(); i++){
+        for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->yloadings->row; j++){
+          header << QString("y %1 (PC %2)").arg(QString::number(j+1)).arg(QString::number(i+1));
+        }
       }
-    }
 
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+    }
   }
 }
 
@@ -2633,83 +2657,80 @@ void MainWindow::showPLSValidation()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+      QString tabname = projectname + " - " + modelname  +" - PLS Validation";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname);
+      size_t row = 0;
+      size_t col = 0;
+      if(projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_){
+        row = projects->value(pid)->getPLSModel(mid)->Model()->q2y->row;// the number of components
+        col = projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col + projects->value(pid)->getPLSModel(mid)->Model()->q2y->col +  projects->value(pid)->getPLSModel(mid)->Model()->sdep->col + projects->value(pid)->getPLSModel(mid)->Model()->bias->col;
+      }
+      else{
+        row = projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->row;
+        col = projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->col + projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_validation->col +  projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_recalculated->col + projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_validation->col;
+      }
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+      #ifdef DEBUG
+      qDebug() << QString("Create a matrix of %1 %2").arg(row).arg(col);
+      #endif
+      child->getTable()->model()->newMatrix(row, col);
 
+      QStringList labels;
+      QStringList header;
+      header << "Principal Component";
+      if(projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_){
+        for(size_t i = 0; i < row; i++){ // PC
+          labels.append("PC "+QString::number(i+1));
+          size_t l = 0;
+          for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->q2y->col; j++){ // the q2 for each y
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated, i, j));
+            l++;
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->q2y, i, j));
+            l++;
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->sdep, i, j));
+            l++;
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->bias, i, j));
+            l++;
+          }
+        }
 
-    QString tabname = projectname + " - " + modelname  +" - PLS Validation";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname);
+        QStringList yvarnames = projects->value(pid)->getPLSModel(mid)->getYVarName();
+        for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->q2y->col; j++){
+          header << QString("R^2(%1)").arg(yvarnames[j]) << QString("Q^2(%1)").arg(yvarnames[j]) << QString("SDEP(%1)").arg(yvarnames[j]) << QString("BIAS(%1)").arg(yvarnames[j]);
+        }
+      }
+      else{ // plsda
+        for(size_t i = 0; i < row; i++){ // PC
+          labels.append("PC "+QString::number(i+1));
+          size_t l = 0;
+          for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->col; j++){ // the q2 for each y
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated, i, j));
+            l++;
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_validation, i, j));
+            l++;
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_recalculated, i, j));
+            l++;
+            setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_validation, i, j));
+            l++;
+          }
+        }
 
-
-    size_t row = 0;
-    size_t col = 0;
-    if(projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_){
-      row = projects->value(pid)->getPLSModel(mid)->Model()->q2y->row;// the number of components
-      col = projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col + projects->value(pid)->getPLSModel(mid)->Model()->q2y->col +  projects->value(pid)->getPLSModel(mid)->Model()->sdep->col + projects->value(pid)->getPLSModel(mid)->Model()->bias->col;
-    }
-    else{
-      row = projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->row;
-      col = projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->col + projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_validation->col +  projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_recalculated->col + projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_validation->col;
-    }
-
-    #ifdef DEBUG
-    qDebug() << QString("Create a matrix of %1 %2").arg(row).arg(col);
-    #endif
-    child->getTable()->model()->newMatrix(row, col);
-
-    QStringList labels;
-    QStringList header;
-    header << "Principal Component";
-    if(projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_){
-      for(size_t i = 0; i < row; i++){ // PC
-        labels.append("PC "+QString::number(i+1));
-        size_t l = 0;
-        for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->q2y->col; j++){ // the q2 for each y
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->q2y, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->sdep, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->bias, i, j));
-          l++;
+        LABELS classes = projects->value(pid)->getPLSModel(mid)->getClasses();
+        for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->col; j++){
+          header << QString("Recalculated ROC AUC (%1)").arg(classes[j].name) << QString("Predicted ROC AUC (%1)").arg(classes[j].name) << QString("Recalculated Precision-recall AUC (%1)").arg(classes[j].name) << QString("Predicted Precision-recall AUC (%1)").arg(classes[j].name);
         }
       }
 
-      QStringList yvarnames = projects->value(pid)->getPLSModel(mid)->getYVarName();
-      for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->q2y->col; j++){
-        header << QString("R^2(%1)").arg(yvarnames[j]) << QString("Q^2(%1)").arg(yvarnames[j]) << QString("SDEP(%1)").arg(yvarnames[j]) << QString("BIAS(%1)").arg(yvarnames[j]);
-      }
+      child->getTable()->model()->setObjNames(labels);
+      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->getTable()->model()->UpdateModel();
+      child->show();
     }
-    else{ // plsda
-      for(size_t i = 0; i < row; i++){ // PC
-        labels.append("PC "+QString::number(i+1));
-        size_t l = 0;
-        for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->col; j++){ // the q2 for each y
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_validation, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_recalculated, i, j));
-          l++;
-          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->precision_recall_ap_validation, i, j));
-          l++;
-        }
-      }
-
-      LABELS classes = projects->value(pid)->getPLSModel(mid)->getClasses();
-      for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->roc_auc_recalculated->col; j++){
-        header << QString("Recalculated ROC AUC (%1)").arg(classes[j].name) << QString("Predicted ROC AUC (%1)").arg(classes[j].name) << QString("Recalculated Precision-recall AUC (%1)").arg(classes[j].name) << QString("Predicted Precision-recall AUC (%1)").arg(classes[j].name);
-      }
-    }
-
-    child->getTable()->model()->setObjNames(labels);
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->getTable()->model()->UpdateModel();
-    child->show();
   }
 }
 
@@ -2719,26 +2740,28 @@ void MainWindow::showPLSRecalcY()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-    QString tabname = projectname + " - " + modelname + " - PLS Recalculated Y" + " - " +  ui.treeWidget->currentItem()->text(0);
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->recalculated_y, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    child->getTable()->model()->setObjNames(projects->value(pid)->getPLSModel(mid)->getObjName());
-    QStringList header;
-    header << firstcol_name;
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+      QString tabname = projectname + " - " + modelname + " - PLS Recalculated Y" + " - " +  ui.treeWidget->currentItem()->text(0);
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->recalculated_y, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getPLSModel(mid)->getObjName());
+      QStringList header;
+      header << firstcol_name;
 
-    for(int i = 0; i < projects->value(pid)->getPLSModel(mid)->getNPC(); i++){
-      for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->yloadings->row; j++){
-        header << QString("y %1 (PC %2)").arg(QString::number(j+1)).arg(QString::number(i+1));
+      for(int i = 0; i < projects->value(pid)->getPLSModel(mid)->getNPC(); i++){
+        for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->yloadings->row; j++){
+          header << QString("y %1 (PC %2)").arg(QString::number(j+1)).arg(QString::number(i+1));
+        }
       }
-    }
 
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+    }
   }
 }
 
@@ -2748,55 +2771,53 @@ void MainWindow::showPLSExpVar()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+      QString tabname = projectname + " - " + modelname + " - PLS Explained Variance";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname);
+      size_t row = projects->value(pid)->getPLSModel(mid)->Model()->xvarexp->size;
+      size_t col = 2 + projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col + projects->value(pid)->getPLSModel(mid)->Model()->sdec->col; // the explained variance, the sum of explained variance, the r^2 y
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+      child->getTable()->model()->newMatrix(row, col);
 
-    QString tabname = projectname + " - " + modelname + " - PLS Explained Variance";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname);
+      double sumx = 0.f;
+      QStringList labels;
+      for(size_t i = 0; i < projects->value(pid)->getPLSModel(mid)->Model()->xvarexp->size; i++){
+        labels.append("PC "+QString::number(i+1));
+        setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(projects->value(pid)->getPLSModel(mid)->Model()->xvarexp, i));
+        sumx += getDVectorValue(projects->value(pid)->getPLSModel(mid)->Model()->xvarexp, i);
+        if(sumx > 100){
+          setMatrixValue(child->getTable()->model()->Matrix(), i, 1, 100);
+        }
+        else{
+          setMatrixValue(child->getTable()->model()->Matrix(), i, 1, sumx);
+        }
 
-    size_t row = projects->value(pid)->getPLSModel(mid)->Model()->xvarexp->size;
-  //       size_t col = 2 + projects->value(pid)->getPLSModel(mid)->Model()->r2y_model->col; // the explained variance, the sum of explained variance, the r^2 y
-    size_t col = 2 + projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col + projects->value(pid)->getPLSModel(mid)->Model()->sdec->col; // the explained variance, the sum of explained variance, the r^2 y
-
-    child->getTable()->model()->newMatrix(row, col);
-
-    double sumx = 0.f;
-    QStringList labels;
-    for(size_t i = 0; i < projects->value(pid)->getPLSModel(mid)->Model()->xvarexp->size; i++){
-      labels.append("PC "+QString::number(i+1));
-      setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(projects->value(pid)->getPLSModel(mid)->Model()->xvarexp, i));
-      sumx += getDVectorValue(projects->value(pid)->getPLSModel(mid)->Model()->xvarexp, i);
-      if(sumx > 100){
-        setMatrixValue(child->getTable()->model()->Matrix(), i, 1, 100);
+        int l = 2;
+        for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col; j++){
+          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated, i, j));
+          l++;
+          setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->sdec, i, j));
+          l++;
+        }
       }
-      else{
-        setMatrixValue(child->getTable()->model()->Matrix(), i, 1, sumx);
-      }
-
-      int l = 2;
+      child->getTable()->model()->setObjNames(labels);
+      QStringList header;
+      header << "Principal Component" << "X Exp Variance" << "Accum X Exp Variance";
       for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col; j++){
-        setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated, i, j));
-        l++;
-        setMatrixValue(child->getTable()->model()->Matrix(), i, l, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->sdec, i, j));
-        l++;
+        header << QString("r^2(y: %1)").arg(QString::number(j+1));
       }
-    }
-    child->getTable()->model()->setObjNames(labels);
-    QStringList header;
-    header << "Principal Component" << "X Exp Variance" << "Accum X Exp Variance";
-    for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col; j++){
-      header << QString("r^2(y: %1)").arg(QString::number(j+1));
-    }
 
-    for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->sdec->col; j++){
-      header << QString("SDEC(y: %1)").arg(QString::number(j+1));
+      for(size_t j = 0; j < projects->value(pid)->getPLSModel(mid)->Model()->sdec->col; j++){
+        header << QString("SDEC(y: %1)").arg(QString::number(j+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->getTable()->model()->UpdateModel();
+      child->show();
     }
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->getTable()->model()->UpdateModel();
-    child->show();
   }
 }
 
@@ -2806,28 +2827,29 @@ void MainWindow::showPLSRegCoeff()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+      QString tabname = projectname+"-PLS Rergression Coefficient";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname);
 
-    QString tabname = projectname+"-PLS Rergression Coefficient";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname);
+      child->getTable()->model()->newMatrix(projects->value(pid)->getPLSModel(mid)->Model()->b->size, 1);
 
-    child->getTable()->model()->newMatrix(projects->value(pid)->getPLSModel(mid)->Model()->b->size, 1);
-
-    QStringList labels;
-    for(size_t i = 0; i < projects->value(pid)->getPLSModel(mid)->Model()->xvarexp->size; i++){
-      labels.append("PC "+QString::number(i+1));
-      setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(projects->value(pid)->getPLSModel(mid)->Model()->b, i));
+      QStringList labels;
+      for(size_t i = 0; i < projects->value(pid)->getPLSModel(mid)->Model()->xvarexp->size; i++){
+        labels.append("PC "+QString::number(i+1));
+        setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(projects->value(pid)->getPLSModel(mid)->Model()->b, i));
+      }
+      child->getTable()->model()->setObjNames(labels);
+      QStringList header;
+      header << "Principal Component" << "Regression Coefficient";
+      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->getTable()->model()->UpdateModel();
+      child->show();
     }
-    child->getTable()->model()->setObjNames(labels);
-    QStringList header;
-    header << "Principal Component" << "Regression Coefficient";
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->getTable()->model()->UpdateModel();
-    child->show();
   }
 }
 
@@ -2837,25 +2859,26 @@ void MainWindow::showPLSWWeights()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - PLS W Weights";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->xweights);
-    QStringList varname = projects->value(pid)->getPLSModel(mid)->getXVarName();
-    child->getTable()->model()->setObjNames(varname);
-    QStringList headername;
-    headername << "Variables";
-    for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->Model()->xweights->col; c++){
-      headername << QString("PC %1").arg(QString::number(c+1));
+      QString tabname = projectname + " - " + modelname + " - PLS W Weights";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->xweights);
+      QStringList varname = projects->value(pid)->getPLSModel(mid)->getXVarName();
+      child->getTable()->model()->setObjNames(varname);
+      QStringList headername;
+      headername << "Variables";
+      for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->Model()->xweights->col; c++){
+        headername << QString("PC %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
   }
 }
 
@@ -2865,25 +2888,26 @@ void MainWindow::showPLSQLoadings()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - PLS Q Loadings";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->yloadings);
-    QStringList varname = projects->value(pid)->getPLSModel(mid)->getYVarName();
-    child->getTable()->model()->setObjNames(varname);
-    QStringList headername;
-    headername << "Variables";
-    for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->Model()->yloadings->col; c++){
-      headername << QString("PC %1").arg(QString::number(c+1));
+      QString tabname = projectname + " - " + modelname + " - PLS Q Loadings";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->yloadings);
+      QStringList varname = projects->value(pid)->getPLSModel(mid)->getYVarName();
+      child->getTable()->model()->setObjNames(varname);
+      QStringList headername;
+      headername << "Variables";
+      for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->Model()->yloadings->col; c++){
+        headername << QString("PC %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
   }
 }
 
@@ -2893,54 +2917,55 @@ void MainWindow::showPLSPLoadings()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
+      QString tabname = projectname + " - " + modelname + " - PLS P Loadings";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->xloadings);
 
-    QString tabname = projectname + " - " + modelname + " - PLS P Loadings";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->xloadings);
-
-    QStringList varname = projects->value(pid)->getPLSModel(mid)->getXVarName();
-    child->getTable()->model()->setObjNames(varname);
-    QStringList headername;
-    headername << "Variables";
-    for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->Model()->xloadings->col; c++){
-      headername << QString("PC %1").arg(QString::number(c+1));
+      QStringList varname = projects->value(pid)->getPLSModel(mid)->getXVarName();
+      child->getTable()->model()->setObjNames(varname);
+      QStringList headername;
+      headername << "Variables";
+      for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->Model()->xloadings->col; c++){
+        headername << QString("PC %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
   }
 }
 
 void MainWindow::showPLSUSCores()
 {
   if(CurrentIsModel() == true){
-
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - PLS U Scores";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->yscores, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    child->getTable()->model()->setObjNames(projects->value(pid)->getPLSModel(mid)->getObjName());
-    QStringList headername;
-    headername << firstcol_name;
-    for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->Model()->yscores->col; c++){
-      headername << QString("PC %1").arg(QString::number(c+1));
+      QString tabname = projectname + " - " + modelname + " - PLS U Scores";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->yscores, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getPLSModel(mid)->getObjName());
+      QStringList headername;
+      headername << firstcol_name;
+      for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->Model()->yscores->col; c++){
+        headername << QString("PC %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
   }
 }
 
@@ -2950,27 +2975,117 @@ void MainWindow::showPLSTScores()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+      if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - PLS T Scores";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->xscores,
-      &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    child->getTable()->model()->setObjNames(projects->value(pid)->getPLSModel(mid)->getObjName());
-    QStringList headername;
-    headername << firstcol_name;
-    for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->Model()->xscores->col; c++){
-      headername << QString("PC %1").arg(QString::number(c+1));
+      QString tabname = projectname + " - " + modelname + " - PLS T Scores";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getPLSModel(mid)->Model()->xscores,
+        &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getPLSModel(mid)->getObjName());
+      QStringList headername;
+      headername << firstcol_name;
+      for(size_t c = 0; c < projects->value(pid)->getPLSModel(mid)->Model()->xscores->col; c++){
+        headername << QString("PC %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
   }
 }
+
+void MainWindow::showCPCABlockScoresPred()
+{
+  if(CurrentIsPrediction() == true){
+    int pid = getCurrentPredictionProjectID();
+    int mid = getCurrentPredictionModelID();
+    int tabid = getCurrentPredictionTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      int predid = getCurrentPredictionID();
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+      /*
+      * block_scores sizes
+      *  - order = npc
+      *  - rows = nobjs
+      *  - col = nblocks
+      *  Reorg everything!
+      */
+      size_t nobjs = projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getPredSuperScores()->row;
+      size_t npc = projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getPredSuperScores()->col;
+      size_t nblocks = projects->value(pid)->getCPCAModel(mid)->getVarName().size();
+    
+      for(size_t k = 0; k < nblocks; k++){
+        QString block_name = projects->value(pid)->getCPCAModel(mid)->getVarName()[k].name; // not right...
+        QString tabname =  projectname + " - " + modelname + QString(" - CPCA Block Scores %1 Prediction").arg(block_name);
+        matrix *m;
+        NewMatrix(&m, nobjs, npc);
+        for(size_t i = 0; i < nobjs; i++)
+          for(size_t j = 0; j < npc; j++)
+            m->data[i][j] = projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getPredBlockScores()->m[j]->data[i][k];
+            
+        MDIChild *child = createMdiChild();
+        child->setWindowID(tabid);
+        child->newTable(tabname, m, 
+                        &projects->value(pid)->getObjectLabels(),
+                        &projects->value(pid)->getVariableLabels());
+        child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getObjName());
+        QStringList headername;
+        headername << firstcol_name;
+        for(size_t c = 0; c < m->col; c++){
+          headername << QString("PC %1").arg(QString::number(c+1));
+        }
+        child->getTable()->model()->setHorizontalHeaderLabels(headername);
+        child->show();
+        child->getTable()->setPID(pid);
+        connect(child->getTable(),
+                SIGNAL(TabImageSignalChanged(ImageSignal)),
+                SLOT(UpdateImageWindow(ImageSignal)));
+        DelMatrix(&m);
+      }
+    }
+  }
+}
+
+void MainWindow::showCPCASuperScorePred()
+{
+  if(CurrentIsPrediction() == true){
+    int pid = getCurrentPredictionProjectID();
+    int mid = getCurrentPredictionModelID();
+    int tabid = getCurrentPredictionTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      int predid = getCurrentPredictionID();
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+
+      QString tabname =  projectname + " - " + modelname + " - CPCA Super Scores";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname,
+                      projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getPredSuperScores(),
+                      &projects->value(pid)->getObjectLabels(),
+                      &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getObjName());
+  
+      QStringList headername;
+      headername << firstcol_name;
+      for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getPredSuperScores()->col; c++){
+        headername << QString("PC %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(),
+              SIGNAL(TabImageSignalChanged(ImageSignal)),
+              SLOT(UpdateImageWindow(ImageSignal)));
+      }
+    }
+}
+
 
 void MainWindow::showCPCAExpVar()
 {
@@ -2979,39 +3094,40 @@ void MainWindow::showCPCAExpVar()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+      QString tabname = projectname + " - " + modelname + " - CPCA Explained Variance";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname);
 
-    QString tabname = projectname + " - " + modelname + " - CPCA Explained Variance";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname);
+      size_t row = projects->value(pid)->getCPCAModel(mid)->Model()->total_expvar->size;
+      size_t col = 2;  // the explained variance and the sum of explained variance
 
-    size_t row = projects->value(pid)->getCPCAModel(mid)->Model()->total_expvar->size;
-    size_t col = 2;  // the explained variance and the sum of explained variance
+      child->getTable()->model()->newMatrix(row, col);
 
-    child->getTable()->model()->newMatrix(row, col);
-
-    double sum = 0.f;
-    QStringList labels;
-    for(size_t i = 0; i < row; i++){
-      labels.append("PC "+QString::number(i+1));
-      setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(projects->value(pid)->getCPCAModel(mid)->Model()->total_expvar, i));
-      sum += getDVectorValue(projects->value(pid)->getCPCAModel(mid)->Model()->total_expvar, i);
-      if(sum > 100){
-        setMatrixValue(child->getTable()->model()->Matrix(), i, 1, 100);
+      double sum = 0.f;
+      QStringList labels;
+      for(size_t i = 0; i < row; i++){
+        labels.append("PC "+QString::number(i+1));
+        setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(projects->value(pid)->getCPCAModel(mid)->Model()->total_expvar, i));
+        sum += getDVectorValue(projects->value(pid)->getCPCAModel(mid)->Model()->total_expvar, i);
+        if(sum > 100){
+          setMatrixValue(child->getTable()->model()->Matrix(), i, 1, 100);
+        }
+        else{
+          setMatrixValue(child->getTable()->model()->Matrix(), i, 1, sum);
+        }
       }
-      else{
-        setMatrixValue(child->getTable()->model()->Matrix(), i, 1, sum);
-      }
+      child->getTable()->model()->setObjNames(labels);
+      QStringList header;
+      header << "Principal Component" << "X Exp Variance" << "Accum X Exp Variance";
+      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->getTable()->model()->UpdateModel();
+      child->show();
     }
-    child->getTable()->model()->setObjNames(labels);
-    QStringList header;
-    header << "Principal Component" << "X Exp Variance" << "Accum X Exp Variance";
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->getTable()->model()->UpdateModel();
-    child->show();
   }
 }
 
@@ -3021,28 +3137,29 @@ void MainWindow::showCPCABlockLoadings()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
-    
-    for(size_t k = 0; k < projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->order; k++){
-      QString block_name = projects->value(pid)->getCPCAModel(mid)->getVarName()[k].name;
-      QString tabname =  projectname + " - " + modelname + QString(" - CPCA Block Loadings %1").arg(block_name);
-      MDIChild *child = createMdiChild();
-      child->setWindowID(tabid);
-      child->newTable(tabname, projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->m[k]);
-      child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getVarName()[k].objects);
-      QStringList headername;
-      headername << firstcol_name;
-      for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->m[k]->col; c++){
-        headername << QString("PC %1").arg(QString::number(c+1));
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+      
+      for(size_t k = 0; k < projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->order; k++){
+        QString block_name = projects->value(pid)->getCPCAModel(mid)->getVarName()[k].name;
+        QString tabname =  projectname + " - " + modelname + QString(" - CPCA Block Loadings %1").arg(block_name);
+        MDIChild *child = createMdiChild();
+        child->setWindowID(tabid);
+        child->newTable(tabname, projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->m[k]);
+        child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getVarName()[k].objects);
+        QStringList headername;
+        headername << firstcol_name;
+        for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->m[k]->col; c++){
+          headername << QString("PC %1").arg(QString::number(c+1));
+        }
+        child->getTable()->model()->setHorizontalHeaderLabels(headername);
+        child->show();
+        child->getTable()->setPID(pid);
+        connect(child->getTable(),
+                SIGNAL(TabImageSignalChanged(ImageSignal)),
+                SLOT(UpdateImageWindow(ImageSignal)));
       }
-      child->getTable()->model()->setHorizontalHeaderLabels(headername);
-      child->show();
-      child->getTable()->setPID(pid);
-      connect(child->getTable(),
-              SIGNAL(TabImageSignalChanged(ImageSignal)),
-              SLOT(UpdateImageWindow(ImageSignal)));
     }
   }
 }
@@ -3053,22 +3170,74 @@ void MainWindow::showCPCABlockScores()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+      /*
+      * block_scores sizes
+      *  - order = npc
+      *  - rows = nobjs
+      *  - col = nblocks
+      *  Reorg everything!
+      */
+      size_t nobjs = projects->value(pid)->getCPCAModel(mid)->Model()->super_scores->row;
+      size_t npc = projects->value(pid)->getCPCAModel(mid)->Model()->super_scores->col;
+      size_t nblocks = projects->value(pid)->getCPCAModel(mid)->getVarName().size();
     
-    for(size_t k = 0; k < projects->value(pid)->getCPCAModel(mid)->Model()->block_scores->order; k++){
-      QString block_name = projects->value(pid)->getCPCAModel(mid)->getVarName()[k].name;
-      QString tabname =  projectname + " - " + modelname + QString(" - CPCA Block Scores %1").arg(block_name);
+      for(size_t k = 0; k < nblocks; k++){
+        QString block_name = projects->value(pid)->getCPCAModel(mid)->getVarName()[k].name; // not right...
+        QString tabname =  projectname + " - " + modelname + QString(" - CPCA Block Scores %1").arg(block_name);
+        matrix *m;
+        NewMatrix(&m, nobjs, npc);
+        for(size_t i = 0; i < nobjs; i++)
+          for(size_t j = 0; j < npc; j++)
+            m->data[i][j] = projects->value(pid)->getCPCAModel(mid)->Model()->block_scores->m[j]->data[i][k];
+            
+        MDIChild *child = createMdiChild();
+        child->setWindowID(tabid);
+        child->newTable(tabname, m, 
+                        &projects->value(pid)->getObjectLabels(),
+                        &projects->value(pid)->getVariableLabels());
+        child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getObjName());
+        QStringList headername;
+        headername << firstcol_name;
+        for(size_t c = 0; c < m->col; c++){
+          headername << QString("PC %1").arg(QString::number(c+1));
+        }
+        child->getTable()->model()->setHorizontalHeaderLabels(headername);
+        child->show();
+        child->getTable()->setPID(pid);
+        connect(child->getTable(),
+                SIGNAL(TabImageSignalChanged(ImageSignal)),
+                SLOT(UpdateImageWindow(ImageSignal)));
+        DelMatrix(&m);
+      }
+    }
+  }
+}
+
+void MainWindow::showCPCASuperWeights()
+{
+  if(CurrentIsModel() == true){
+    int pid = getCurrentModelProjectID();
+    int mid = getCurrentModelID();
+    int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
+
+      QString tabname =  projectname + " - " + modelname + " - CPCA Super Weights";
+      QStringList block_names;
+      for(int i = 0; i < projects->value(pid)->getCPCAModel(mid)->getVarName().size(); i++)
+        block_names << projects->value(pid)->getCPCAModel(mid)->getVarName()[i].name;
+      
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
-      child->newTable(tabname, projects->value(pid)->getCPCAModel(mid)->Model()->block_scores->m[k], 
-                      &projects->value(pid)->getObjectLabels(),
-                      &projects->value(pid)->getVariableLabels());
-      child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getObjName());
+      child->newTable(tabname, projects->value(pid)->getCPCAModel(mid)->Model()->super_weights);
+      child->getTable()->model()->setObjNames(block_names);
       QStringList headername;
       headername << firstcol_name;
-      for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->Model()->block_scores->m[k]->col; c++){
+      for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->Model()->super_weights->col; c++){
         headername << QString("PC %1").arg(QString::number(c+1));
       }
       child->getTable()->model()->setHorizontalHeaderLabels(headername);
@@ -3081,73 +3250,38 @@ void MainWindow::showCPCABlockScores()
   }
 }
 
-void MainWindow::showCPCASuperWeights()
-{
-  if(CurrentIsModel() == true){
-    int pid = getCurrentModelProjectID();
-    int mid = getCurrentModelID();
-    int tabid = getCurrentModelTableID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
-
-    QString tabname =  projectname + " - " + modelname + " - CPCA Super Weights";
-    QStringList block_names;
-    for(int i = 0; i < projects->value(pid)->getCPCAModel(mid)->getVarName().size(); i++)
-      block_names << projects->value(pid)->getCPCAModel(mid)->getVarName()[i].name;
-    
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getCPCAModel(mid)->Model()->super_weights);
-    child->getTable()->model()->setObjNames(block_names);
-    QStringList headername;
-    headername << firstcol_name;
-    for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->Model()->super_weights->col; c++){
-      headername << QString("PC %1").arg(QString::number(c+1));
-    }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(),
-            SIGNAL(TabImageSignalChanged(ImageSignal)),
-            SLOT(UpdateImageWindow(ImageSignal)));
-  }
-}
-
 void MainWindow::showCPCASuperScore()
 {
   if(CurrentIsModel() == true){
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
-
-    QString tabname =  projectname + " - " + modelname + " - CPCA Super Scores";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getCPCAModel(mid)->Model()->super_scores, 
-                    &projects->value(pid)->getObjectLabels(),
-                    &projects->value(pid)->getVariableLabels());
-    child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getObjName());
-    QStringList headername;
-    headername << firstcol_name;
-    for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->Model()->super_scores->col; c++){
-      headername << QString("PC %1").arg(QString::number(c+1));
+      QString tabname =  projectname + " - " + modelname + " - CPCA Super Scores";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname,projects->value(pid)->getCPCAModel(mid)->Model()->super_scores, 
+                      &projects->value(pid)->getObjectLabels(),
+                      &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getObjName());
+      QStringList headername;
+      headername << firstcol_name;
+      for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->Model()->super_scores->col; c++){
+        headername << QString("PC %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(),
+              SIGNAL(TabImageSignalChanged(ImageSignal)),
+              SLOT(UpdateImageWindow(ImageSignal)));
     }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(),
-            SIGNAL(TabImageSignalChanged(ImageSignal)),
-            SLOT(UpdateImageWindow(ImageSignal)));
   }
 }
 
-
-
-//          ModelPrediction Name - Tab Count - pid - Model ID - xdata id - ydata id - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
 void MainWindow::showPCAPredScore()
 {
   if(CurrentIsPrediction() == true){
@@ -3179,43 +3313,43 @@ void MainWindow::showPCAPredScore()
 void MainWindow::showPCAExpVar()
 {
   if(CurrentIsModel() == true){
-
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
+      QString tabname = projectname + " - " + modelname + " - PCA Explained Variance";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname);
 
-    QString tabname = projectname + " - " + modelname + " - PCA Explained Variance";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname);
+      size_t row = projects->value(pid)->getPCAModel(mid)->Model()->varexp->size;
+      size_t col = 2;  // the explained variance and the sum of explained variance
 
-    size_t row = projects->value(pid)->getPCAModel(mid)->Model()->varexp->size;
-    size_t col = 2;  // the explained variance and the sum of explained variance
+      child->getTable()->model()->newMatrix(row, col);
 
-    child->getTable()->model()->newMatrix(row, col);
-
-    double sum = 0.f;
-    QStringList labels;
-    for(size_t i = 0; i < row; i++){
-      labels.append("PC "+QString::number(i+1));
-      setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(projects->value(pid)->getPCAModel(mid)->Model()->varexp, i));
-      sum += getDVectorValue(projects->value(pid)->getPCAModel(mid)->Model()->varexp, i);
-      if(sum > 100){
-        setMatrixValue(child->getTable()->model()->Matrix(), i, 1, 100);
+      double sum = 0.f;
+      QStringList labels;
+      for(size_t i = 0; i < row; i++){
+        labels.append("PC "+QString::number(i+1));
+        setMatrixValue(child->getTable()->model()->Matrix(), i, 0, getDVectorValue(projects->value(pid)->getPCAModel(mid)->Model()->varexp, i));
+        sum += getDVectorValue(projects->value(pid)->getPCAModel(mid)->Model()->varexp, i);
+        if(sum > 100){
+          setMatrixValue(child->getTable()->model()->Matrix(), i, 1, 100);
+        }
+        else{
+          setMatrixValue(child->getTable()->model()->Matrix(), i, 1, sum);
+        }
       }
-      else{
-        setMatrixValue(child->getTable()->model()->Matrix(), i, 1, sum);
-      }
+      child->getTable()->model()->setObjNames(labels);
+      QStringList header;
+      header << "Principal Component" << "X Exp Variance" << "Accum X Exp Variance";
+      child->getTable()->model()->setHorizontalHeaderLabels(header);
+      child->getTable()->model()->UpdateModel();
+      child->show();
     }
-    child->getTable()->model()->setObjNames(labels);
-    QStringList header;
-    header << "Principal Component" << "X Exp Variance" << "Accum X Exp Variance";
-    child->getTable()->model()->setHorizontalHeaderLabels(header);
-    child->getTable()->model()->UpdateModel();
-    child->show();
   }
 }
 
@@ -3225,26 +3359,27 @@ void MainWindow::showPCALoadings()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
 
-
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
-
-    QString tabname = projectname + " - " + modelname + " - PCA Loadings";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getPCAModel(mid)->Model()->loadings);
-    QStringList varname = projects->value(pid)->getPCAModel(mid)->getVarName();
-    child->getTable()->model()->setObjNames(varname);
-    QStringList headername;
-    headername << "Variables";
-    for(size_t c = 0; c < projects->value(pid)->getPCAModel(mid)->Model()->loadings->col; c++){
-      headername << QString("PC %1").arg(QString::number(c+1));
+      QString tabname = projectname + " - " + modelname + " - PCA Loadings";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getPCAModel(mid)->Model()->loadings);
+      QStringList varname = projects->value(pid)->getPCAModel(mid)->getVarName();
+      child->getTable()->model()->setObjNames(varname);
+      QStringList headername;
+      headername << "Variables";
+      for(size_t c = 0; c < projects->value(pid)->getPCAModel(mid)->Model()->loadings->col; c++){
+        headername << QString("PC %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));  }
+  }
 }
 
 void MainWindow::showPCAScore()
@@ -3253,24 +3388,25 @@ void MainWindow::showPCAScore()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
 
-    QString projectname = projects->value(pid)->getProjectName();
-    QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
-
-    QString tabname =  projectname + " - " + modelname + " - PCA Scores";
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newTable(tabname, projects->value(pid)->getPCAModel(mid)->Model()->scores, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-    child->getTable()->model()->setObjNames(projects->value(pid)->getPCAModel(mid)->getObjName());
-    QStringList headername;
-    headername << firstcol_name;
-    for(size_t c = 0; c < projects->value(pid)->getPCAModel(mid)->Model()->scores->col; c++){
-      headername << QString("PC %1").arg(QString::number(c+1));
+      QString tabname =  projectname + " - " + modelname + " - PCA Scores";
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname, projects->value(pid)->getPCAModel(mid)->Model()->scores, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)->getPCAModel(mid)->getObjName());
+      QStringList headername;
+      headername << firstcol_name;
+      for(size_t c = 0; c < projects->value(pid)->getPCAModel(mid)->Model()->scores->col; c++){
+        headername << QString("PC %1").arg(QString::number(c+1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
     }
-    child->getTable()->model()->setHorizontalHeaderLabels(headername);
-    child->show();
-    child->getTable()->setPID(pid);
-    connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
   }
 }
 
@@ -3280,155 +3416,156 @@ void MainWindow::ModelInfo()
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
     int tabid = getCurrentModelTableID();
+    if(pid > -1 && mid > -1 && tabid > -1){
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newModelInfo();
 
-    MDIChild *child = createMdiChild();
-    child->setWindowID(tabid);
-    child->newModelInfo();
+      QStringList textlst;
+      textlst.append(QString("Model name: %1").arg(getCurrentModelName()));
+      textlst.append(QString("Model type: %1").arg(getCurrentModelType()));
+      QString xhash = getCurrentModelXhash();
+      int nobj = 0;
+      int nvars = 0;
+      int nblocks = 0;
+      int ntarg = 0;
+      int xscaling = getCurrentModelXScalingType();
+      int yscaling = getCurrentModelYScalingType();
+      int xoid = projects->value(pid)->getMatrixID(xhash);
+      QString moname;
+      int validationtype = -1;
+      int combinationrule = -1;
 
-    QStringList textlst;
-    textlst.append(QString("Model name: %1").arg(getCurrentModelName()));
-    textlst.append(QString("Model type: %1").arg(getCurrentModelType()));
-    QString xhash = getCurrentModelXhash();
-    int nobj = 0;
-    int nvars = 0;
-    int nblocks = 0;
-    int ntarg = 0;
-    int xscaling = getCurrentModelXScalingType();
-    int yscaling = getCurrentModelYScalingType();
-    int xoid = projects->value(pid)->getMatrixID(xhash);
-    QString moname;
-    int validationtype = -1;
-    int combinationrule = -1;
-
-    if(getCurrentModelType().compare("PCA Model") == 0){
-      textlst.append(QString("N. PCs: %1").arg(getCurrentModelNComponents()));
-      nobj = projects->value(pid)->getPCAModel(mid)->getObjName().size();
-      nvars = projects->value(pid)->getPCAModel(mid)->getVarName().size();
-    }
-    else if(getCurrentModelType().compare("CPCA Model") == 0){
-      textlst.append(QString("N. PCs: %1").arg(getCurrentModelNComponents()));
-      nobj = projects->value(pid)->getCPCAModel(mid)->getObjName().size();
-      nblocks = projects->value(pid)->getCPCAModel(mid)->getVarName().size();
-    }
-    else if(getCurrentModelType().compare("PLS Model") == 0){
-      textlst.append(QString("N. LVs: %1").arg(getCurrentModelNComponents()));
-      nobj = projects->value(pid)->getPLSModel(mid)->getObjName().size();
-      nvars = projects->value(pid)->getPLSModel(mid)->getXVarName().size();
-      ntarg = projects->value(pid)->getPLSModel(mid)->getYVarName().size();
-      validationtype = projects->value(pid)->getPLSModel(mid)->getValidation();
-    }
-    else if(getCurrentModelType().compare("EPLS Model") == 0){
-      textlst.append(QString("N. LVs: %1").arg(getCurrentModelNComponents()));
-      nobj = projects->value(pid)->getEPLSModel(mid)->getObjName().size();
-      nvars = projects->value(pid)->getEPLSModel(mid)->getXVarName().size();
-      ntarg = projects->value(pid)->getEPLSModel(mid)->getYVarName().size();
-      validationtype = projects->value(pid)->getEPLSModel(mid)->getValidation();
-      combinationrule = projects->value(pid)->getEPLSModel(mid)->getCombinationRule();
-    }
-    else if(getCurrentModelType().compare("MLR Model") == 0){
-      nobj = projects->value(pid)->getMLRModel(mid)->getObjName().size();
-      nvars = projects->value(pid)->getMLRModel(mid)->getXVarName().size();
-      ntarg = projects->value(pid)->getMLRModel(mid)->getYVarName().size();
-      validationtype = projects->value(pid)->getMLRModel(mid)->getValidation();
-    }
-    else if(getCurrentModelType().compare("LDA Model") == 0){
-      nobj = projects->value(pid)->getLDAModel(mid)->getObjName().size();
-      nvars = projects->value(pid)->getLDAModel(mid)->getVarName().size();
-      ntarg = projects->value(pid)->getLDAModel(mid)->Model()->nclass;
-    }
-
-    if(nobj > 0)
-      textlst.append(QString("N. objects: %1").arg(QString::number(nobj)));
-
-    if(nvars > 0)
-      textlst.append(QString("N. variables: %1").arg(QString::number(nvars)));
-
-    if(nblocks > 0){
-      textlst.append(QString("N. Blocks: %1").arg(QString::number(nblocks)));
-      for(int i = 0; i < nblocks; i++){
-        nvars = projects->value(pid)->getCPCAModel(mid)->getVarName()[i].objects.size();
-        textlst.append(QString("N. Vars Block %1: %2").arg(QString::number(i+1)).arg(QString::number(nvars)));
+      if(getCurrentModelType().compare("PCA Model") == 0){
+        textlst.append(QString("N. PCs: %1").arg(getCurrentModelNComponents()));
+        nobj = projects->value(pid)->getPCAModel(mid)->getObjName().size();
+        nvars = projects->value(pid)->getPCAModel(mid)->getVarName().size();
       }
-    }
-
-    if(ntarg > 0)
-      textlst.append(QString("N. targets: %1").arg(QString::number(ntarg)));
-
-    if(xoid > -1)
-      textlst.append(QString("Origin data: %1").arg(projects->value(pid)->getMatrix(xoid)->getName()));
-    else{
-      if(moname.compare("Origin model not found") != 0){
-        textlst.append(QString("Origin model: %1").arg(moname));
+      else if(getCurrentModelType().compare("CPCA Model") == 0){
+        textlst.append(QString("N. PCs: %1").arg(getCurrentModelNComponents()));
+        nobj = projects->value(pid)->getCPCAModel(mid)->getObjName().size();
+        nblocks = projects->value(pid)->getCPCAModel(mid)->getVarName().size();
       }
-    }
-
-    if(getCurrentModelType().compare("PCA Model") == 0 ||
-       getCurrentModelType().compare("CPCA Model") == 0){
-      textlst.append(QString("X centered"));
-    }
-    else if(getCurrentModelType().compare("PLS Model") == 0){
-      textlst.append(QString("X and Y centered"));
-    }
-    else{ //LDA Model
-      if(getCurrentModelType().compare("MLR Model") == 0){
-        textlst.append(QString("X and Y as is"));
+      else if(getCurrentModelType().compare("PLS Model") == 0){
+        textlst.append(QString("N. LVs: %1").arg(getCurrentModelNComponents()));
+        nobj = projects->value(pid)->getPLSModel(mid)->getObjName().size();
+        nvars = projects->value(pid)->getPLSModel(mid)->getXVarName().size();
+        ntarg = projects->value(pid)->getPLSModel(mid)->getYVarName().size();
+        validationtype = projects->value(pid)->getPLSModel(mid)->getValidation();
       }
+      else if(getCurrentModelType().compare("EPLS Model") == 0){
+        textlst.append(QString("N. LVs: %1").arg(getCurrentModelNComponents()));
+        nobj = projects->value(pid)->getEPLSModel(mid)->getObjName().size();
+        nvars = projects->value(pid)->getEPLSModel(mid)->getXVarName().size();
+        ntarg = projects->value(pid)->getEPLSModel(mid)->getYVarName().size();
+        validationtype = projects->value(pid)->getEPLSModel(mid)->getValidation();
+        combinationrule = projects->value(pid)->getEPLSModel(mid)->getCombinationRule();
+      }
+      else if(getCurrentModelType().compare("MLR Model") == 0){
+        nobj = projects->value(pid)->getMLRModel(mid)->getObjName().size();
+        nvars = projects->value(pid)->getMLRModel(mid)->getXVarName().size();
+        ntarg = projects->value(pid)->getMLRModel(mid)->getYVarName().size();
+        validationtype = projects->value(pid)->getMLRModel(mid)->getValidation();
+      }
+      else if(getCurrentModelType().compare("LDA Model") == 0){
+        nobj = projects->value(pid)->getLDAModel(mid)->getObjName().size();
+        nvars = projects->value(pid)->getLDAModel(mid)->getVarName().size();
+        ntarg = projects->value(pid)->getLDAModel(mid)->Model()->nclass;
+      }
+
+      if(nobj > 0)
+        textlst.append(QString("N. objects: %1").arg(QString::number(nobj)));
+
+      if(nvars > 0)
+        textlst.append(QString("N. variables: %1").arg(QString::number(nvars)));
+
+      if(nblocks > 0){
+        textlst.append(QString("N. Blocks: %1").arg(QString::number(nblocks)));
+        for(int i = 0; i < nblocks; i++){
+          nvars = projects->value(pid)->getCPCAModel(mid)->getVarName()[i].objects.size();
+          textlst.append(QString("N. Vars Block %1: %2").arg(QString::number(i+1)).arg(QString::number(nvars)));
+        }
+      }
+
+      if(ntarg > 0)
+        textlst.append(QString("N. targets: %1").arg(QString::number(ntarg)));
+
+      if(xoid > -1)
+        textlst.append(QString("Origin data: %1").arg(projects->value(pid)->getMatrix(xoid)->getName()));
       else{
-        textlst.append(QString("X as is"));
+        if(moname.compare("Origin model not found") != 0){
+          textlst.append(QString("Origin model: %1").arg(moname));
+        }
       }
-    }
 
-    if(getCurrentModelType().compare("PCA Model") == 0 ||
-       getCurrentModelType().compare("CPCA Model") == 0 ||
-       getCurrentModelType().compare("PLS Model") == 0){
-      if(xscaling == 0)
-        textlst.append(QString("X not scaled"));
-      else if(xscaling == 1)
-        textlst.append(QString("X scaling type: %1").arg("Standard Deviation"));
-      else if(xscaling == 2)
-        textlst.append(QString("X scaling type: %1").arg("Column root mean square"));
-      else if(xscaling == 3)
-        textlst.append(QString("X scaling type: %1").arg("Pareto"));
-      else if(xscaling == 4)
-        textlst.append(QString("X scaling type: %1").arg("Min-Max range scaling"));
-      else if(xscaling == 5)
-        textlst.append(QString("X scaling type: %1").arg("Level scaling"));
-    }
+      if(getCurrentModelType().compare("PCA Model") == 0 ||
+        getCurrentModelType().compare("CPCA Model") == 0){
+        textlst.append(QString("X centered"));
+      }
+      else if(getCurrentModelType().compare("PLS Model") == 0){
+        textlst.append(QString("X and Y centered"));
+      }
+      else{ //LDA Model
+        if(getCurrentModelType().compare("MLR Model") == 0){
+          textlst.append(QString("X and Y as is"));
+        }
+        else{
+          textlst.append(QString("X as is"));
+        }
+      }
 
-    if(getCurrentModelType().compare("PLS Model") == 0){
-      if(yscaling == 0)
-        textlst.append(QString("Y not scaled"));
-      else if(yscaling == 1)
-        textlst.append(QString("Y scaling type: %1").arg("Standard Deviation"));
-      else if(yscaling == 2)
-        textlst.append(QString("Y scaling type: %1").arg("Column root mean square"));
-      else if(yscaling == 3)
-        textlst.append(QString("Y scaling type: %1").arg("Pareto"));
-      else if(yscaling == 4)
-        textlst.append(QString("Y scaling type: %1").arg("Min-Max range scaling"));
-      else if(yscaling == 5)
-        textlst.append(QString("Y scaling type: %1").arg("Level scaling"));
-    }
+      if(getCurrentModelType().compare("PCA Model") == 0 ||
+        getCurrentModelType().compare("CPCA Model") == 0 ||
+        getCurrentModelType().compare("PLS Model") == 0){
+        if(xscaling == 0)
+          textlst.append(QString("X not scaled"));
+        else if(xscaling == 1)
+          textlst.append(QString("X scaling type: %1").arg("Standard Deviation"));
+        else if(xscaling == 2)
+          textlst.append(QString("X scaling type: %1").arg("Column root mean square"));
+        else if(xscaling == 3)
+          textlst.append(QString("X scaling type: %1").arg("Pareto"));
+        else if(xscaling == 4)
+          textlst.append(QString("X scaling type: %1").arg("Min-Max range scaling"));
+        else if(xscaling == 5)
+          textlst.append(QString("X scaling type: %1").arg("Level scaling"));
+      }
 
-    if(validationtype == 0){
-      textlst.append(QString("Model Not Validated"));
-    }
-    else if(validationtype == LOO_){
-      textlst.append(QString("Model validation type: %1").arg("Leave One Out"));
-    }
-    else if(validationtype == BOOTSTRAPRGCV_){
-      textlst.append(QString("Model validation type: %1").arg("Bootstrap Random Group k-Fold Cross Validation"));
-    }
+      if(getCurrentModelType().compare("PLS Model") == 0){
+        if(yscaling == 0)
+          textlst.append(QString("Y not scaled"));
+        else if(yscaling == 1)
+          textlst.append(QString("Y scaling type: %1").arg("Standard Deviation"));
+        else if(yscaling == 2)
+          textlst.append(QString("Y scaling type: %1").arg("Column root mean square"));
+        else if(yscaling == 3)
+          textlst.append(QString("Y scaling type: %1").arg("Pareto"));
+        else if(yscaling == 4)
+          textlst.append(QString("Y scaling type: %1").arg("Min-Max range scaling"));
+        else if(yscaling == 5)
+          textlst.append(QString("Y scaling type: %1").arg("Level scaling"));
+      }
 
-    if(combinationrule == Averaging){
-      textlst.append(QString("Combination Rule: %1").arg("Averaging"));
-    }
-    else if(combinationrule == Median){
-      textlst.append(QString("Combination Rule: %1").arg("Median"));
-    }
+      if(validationtype == 0){
+        textlst.append(QString("Model Not Validated"));
+      }
+      else if(validationtype == LOO_){
+        textlst.append(QString("Model validation type: %1").arg("Leave One Out"));
+      }
+      else if(validationtype == BOOTSTRAPRGCV_){
+        textlst.append(QString("Model validation type: %1").arg("Bootstrap Random Group k-Fold Cross Validation"));
+      }
 
-    child->getModelInfoWindow()->setText(textlst);
-    child->show();
+      if(combinationrule == Averaging){
+        textlst.append(QString("Combination Rule: %1").arg("Averaging"));
+      }
+      else if(combinationrule == Median){
+        textlst.append(QString("Combination Rule: %1").arg("Median"));
+      }
+
+      child->getModelInfoWindow()->setText(textlst);
+      child->show();
+    }
   }
 }
 
@@ -3560,6 +3697,12 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
       QString predictiontype = getCurrentPredictionType();
       if(predictiontype.compare("PCA Prediction") == 0){
         menu.addAction("&Show Prediction Score", this, SLOT(showPCAPredScore()));
+        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
+        menu.exec(globalPos);
+      }
+      else if(predictiontype.compare("CPCA Prediction") == 0){
+        menu.addAction("&Show Prediction Super Score", this, SLOT(showCPCASuperScorePred()));
+        menu.addAction("&Show Prediction Block Score", this, SLOT(showCPCABlockScoresPred()));
         menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
         menu.exec(globalPos);
       }
@@ -3716,45 +3859,47 @@ void MainWindow::showData()
     int pid = getCurrentDataProjectID();
     int tabid = getCurrentDataTableID();
     int did = getCurrentDataID();
-    #ifdef DEBUG
-    qDebug() << "showData() Project ID " << pid << " Table ID " << tabid << " Data ID " << did;
-    #endif
-    QString projectname = projects->value(pid)->getProjectName();
-    if(getCurrentDataType().compare("Matrix") == 0){
-
-      QString tabname = projectname +"-Matrix-"+ getCurrentDataName();
-
-      MDIChild *child = createMdiChild();
-
+    if(pid > -1 && did > -1 && tabid > -1){
       #ifdef DEBUG
-      qDebug() << "pid: " << pid << " did " << did;
+      qDebug() << "showData() Project ID " << pid << " Table ID " << tabid << " Data ID " << did;
       #endif
-      child->setWindowID(tabid);
-      child->newTable(tabname, projects->value(pid)->getMatrix(did)->Matrix(), &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
-      child->getTable()->setPID(pid);
-      // Set Obj Label
-      child->getTable()->model()->setObjNames(projects->value(pid)->getMatrix(did)->getObjName());
-      // Set Header Label
-      child->getTable()->model()->setHorizontalHeaderLabels(projects->value(pid)->getMatrix(did)->getVarName());
+      QString projectname = projects->value(pid)->getProjectName();
+      if(getCurrentDataType().compare("Matrix") == 0){
 
-      child->show();
-      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
-    }
-    else{ // ui.treeWidget->currentItem()->text(1).compare("Array") == 0){
-      for(size_t i = 0; i < projects->value(pid)->getArray(did)->Array()->order; i++){
-        QString tabname = projectname +"-Array-Matrix-" + getCurrentDataName() + "-" + QString::number(i+1);
+        QString tabname = projectname +"-Matrix-"+ getCurrentDataName();
+
         MDIChild *child = createMdiChild();
 
+        #ifdef DEBUG
+        qDebug() << "pid: " << pid << " did " << did;
+        #endif
         child->setWindowID(tabid);
-        child->newTable(tabname, projects->value(pid)->getArray(did)->Array()->m[i], &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+        child->newTable(tabname, projects->value(pid)->getMatrix(did)->Matrix(), &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
         child->getTable()->setPID(pid);
         // Set Obj Label
-        child->getTable()->model()->setObjNames(projects->value(pid)->getArray(did)->getObjName());
+        child->getTable()->model()->setObjNames(projects->value(pid)->getMatrix(did)->getObjName());
         // Set Header Label
-        child->getTable()->model()->setHorizontalHeaderLabels(projects->value(pid)->getArray(did)->getVarName());
+        child->getTable()->model()->setHorizontalHeaderLabels(projects->value(pid)->getMatrix(did)->getVarName());
 
         child->show();
         connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+      }
+      else{ // ui.treeWidget->currentItem()->text(1).compare("Array") == 0){
+        for(size_t i = 0; i < projects->value(pid)->getArray(did)->Array()->order; i++){
+          QString tabname = projectname +"-Array-Matrix-" + getCurrentDataName() + "-" + QString::number(i+1);
+          MDIChild *child = createMdiChild();
+
+          child->setWindowID(tabid);
+          child->newTable(tabname, projects->value(pid)->getArray(did)->Array()->m[i], &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels());
+          child->getTable()->setPID(pid);
+          // Set Obj Label
+          child->getTable()->model()->setObjNames(projects->value(pid)->getArray(did)->getObjName());
+          // Set Header Label
+          child->getTable()->model()->setHorizontalHeaderLabels(projects->value(pid)->getArray(did)->getVarName());
+
+          child->show();
+          connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)), SLOT(UpdateImageWindow(ImageSignal)));
+        }
       }
     }
   }
@@ -3766,28 +3911,29 @@ void MainWindow::showDescrpitiveStatistics()
     int pid = getCurrentDataProjectID();
     int tabid = getCurrentDataTableID();
     int did = getCurrentDataID();
-
-    QString projectname = projects->value(pid)->getProjectName();
-    if(getCurrentDataType().compare("Matrix") == 0){
-      matrix *stats;
-      initMatrix(&stats);
-      MatrixColDescStat(projects->value(pid)->getMatrix(did)->Matrix(), stats);
-      QString tabname = projectname +"-Matrix-"+ getCurrentDataName()+ " Descriptive statistics";
-      MDIChild *child = createMdiChild();
-      child->setWindowID(tabid);
-      QStringList colname;
-      colname << "Variables"<< "Average" << "Median" << "Armonic average" << "Var Pop." << "Var Sample" << "SD Pop." << "SD Sample" << "CV Pop. %" << "CV Sample %" << "Min value" << "Max value" << "N. zeros" << "N. Missing values";
-      child->newTable(tabname, stats);
-      child->getTable()->setPID(pid);
-      child->getTable()->setObjLabels(&projects->value(pid)->getVariableLabels());
-      // Set Obj Label
-      QStringList objname;
-      for(int i = 1; i < projects->value(pid)->getMatrix(did)->getVarName().size(); i++)
-        objname.append(projects->value(pid)->getMatrix(did)->getVarName()[i]);
-      child->getTable()->model()->setObjNames(objname);
-      // Set Header Label
-      child->getTable()->model()->setHorizontalHeaderLabels(colname);
-      child->show();
+    if(pid > -1 && did > -1 && tabid > -1){
+      QString projectname = projects->value(pid)->getProjectName();
+      if(getCurrentDataType().compare("Matrix") == 0){
+        matrix *stats;
+        initMatrix(&stats);
+        MatrixColDescStat(projects->value(pid)->getMatrix(did)->Matrix(), stats);
+        QString tabname = projectname +"-Matrix-"+ getCurrentDataName()+ " Descriptive statistics";
+        MDIChild *child = createMdiChild();
+        child->setWindowID(tabid);
+        QStringList colname;
+        colname << "Variables"<< "Average" << "Median" << "Armonic average" << "Var Pop." << "Var Sample" << "SD Pop." << "SD Sample" << "CV Pop. %" << "CV Sample %" << "Min value" << "Max value" << "N. zeros" << "N. Missing values";
+        child->newTable(tabname, stats);
+        child->getTable()->setPID(pid);
+        child->getTable()->setObjLabels(&projects->value(pid)->getVariableLabels());
+        // Set Obj Label
+        QStringList objname;
+        for(int i = 1; i < projects->value(pid)->getMatrix(did)->getVarName().size(); i++)
+          objname.append(projects->value(pid)->getMatrix(did)->getVarName()[i]);
+        child->getTable()->model()->setObjNames(objname);
+        // Set Header Label
+        child->getTable()->model()->setHorizontalHeaderLabels(colname);
+        child->show();
+      }
     }
   }
 }
@@ -3913,6 +4059,35 @@ void MainWindow::GetPCAProjects(ProjectTree *pjtree)
         m.ptree.append(PREDICTIONTREE());
         m.ptree.last().name =  projects->value(pid)->getPCAModelAt(j)->getPCAPrediction(k)->getName();
         m.ptree.last().id = projects->value(pid)->getPCAModelAt(j)->getPCAPrediction(k)->getPredID();
+      }
+      a.mtree << m;
+    }
+
+    if(a.mtree.size() > 0){
+      (*pjtree) << a;
+    }
+    else{
+      continue;
+    }
+  }
+}
+
+void MainWindow::GetCPCAProjects(ProjectTree *pjtree)
+{
+  int i, j, k;
+  for(i = 0; i < projects->keys().size(); i++){
+    PROJECT a;
+    int pid = projects->keys()[i];
+    a.name = projects->value(pid)->getProjectName();
+    a.id = pid;
+    for(j = 0; j < projects->value(pid)->CPCACount(); j++){
+      MODELTREE m;
+      m.name = projects->value(pid)->getCPCAModelAt(j)->getName();
+      m.id = projects->value(pid)->getCPCAModelAt(j)->getModelID();
+      for(k = 0; k < projects->value(pid)->getCPCAModelAt(j)->CPCAPredictionCount(); k++){
+        m.ptree.append(PREDICTIONTREE());
+        m.ptree.last().name =  projects->value(pid)->getCPCAModelAt(j)->getCPCAPrediction(k)->getName();
+        m.ptree.last().id = projects->value(pid)->getCPCAModelAt(j)->getCPCAPrediction(k)->getPredID();
       }
       a.mtree << m;
     }
@@ -4600,6 +4775,216 @@ void MainWindow::PCA2DScorePlotPrediction()
   }
   else{
     QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+
+void MainWindow::CPCA2DSuperScorePlot()
+{
+  if(ProjectsHaveCPCA() == true){
+    ProjectTree pjtree;
+    GetCPCAProjects(&pjtree);
+    DebugProjectTree(pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      CPCAPlot cpcaplot(projects);
+      cpcaplot.setPID(dp.getProjectID());
+      cpcaplot.setMID(dp.getModelID());
+      MDIChild *graphchild = createMdiChild();
+      ScatterPlot *plot2D;
+      cpcaplot.SuperScorePlot2D(&plot2D);
+      graphchild->setWidget(plot2D);
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(),
+                                              dp.getModelID()));
+      graphchild->resize(510, 530);
+      graphchild->show();
+      connect(plot2D,
+              SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
+              SLOT(UpdateImageWindow(ImageSignal)));
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::CPCA2DSuperWeightsPlot()
+{
+  if(ProjectsHaveCPCA() == true){
+    ProjectTree pjtree;
+    GetCPCAProjects(&pjtree);
+    DebugProjectTree(pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      CPCAPlot cpcaplot(projects);
+      cpcaplot.setPID(dp.getProjectID());
+      cpcaplot.setMID(dp.getModelID());
+      MDIChild *graphchild = createMdiChild();
+      ScatterPlot *plot2D;
+      cpcaplot.SuperWeightsPlot2D(&plot2D);
+      graphchild->setWidget(plot2D);
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(),
+                                              dp.getModelID()));
+      graphchild->resize(510, 530);
+      graphchild->show();
+      connect(plot2D,
+              SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
+              SLOT(UpdateImageWindow(ImageSignal)));
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::CPCA2DBlockScoresPlot()
+{
+  if(ProjectsHaveCPCA() == true){
+    ProjectTree pjtree;
+    GetCPCAProjects(&pjtree);
+    DebugProjectTree(pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      CPCAPlot cpcaplot(projects);
+      cpcaplot.setPID(dp.getProjectID());
+      cpcaplot.setMID(dp.getModelID());
+      QList<ScatterPlot *> plots = cpcaplot.BlockScoresPlot2D();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(),
+                                                dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+        connect(plots[i],
+                SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
+                SLOT(UpdateImageWindow(ImageSignal)));
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::CPCA2DBlockLoadingsPlot()
+{
+  if(ProjectsHaveCPCA() == true){
+    ProjectTree pjtree;
+    GetCPCAProjects(&pjtree);
+    DebugProjectTree(pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      CPCAPlot cpcaplot(projects);
+      cpcaplot.setPID(dp.getProjectID());
+      cpcaplot.setMID(dp.getModelID());
+      QList<ScatterPlot *> plots = cpcaplot.BlockLoadingsPlot2D();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(),
+                                                dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+        connect(plots[i],
+                SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
+                SLOT(UpdateImageWindow(ImageSignal)));
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::CPCA2DExpVarPlot()
+{
+  if(ProjectsHaveCPCA() == true){
+    ProjectTree pjtree;
+    GetCPCAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      CPCAPlot cpcaplot(projects);
+      cpcaplot.setPID(dp.getProjectID());
+      cpcaplot.setMID(dp.getModelID());
+      MDIChild *graphchild = createMdiChild();
+      SimpleLine2DPlot *plot2D;
+      cpcaplot.ExpVarPlot(&plot2D);
+      graphchild->setWidget(plot2D);
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(), dp.getModelID()));
+      graphchild->resize(510, 530);
+      graphchild->show();
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::CPCA2DSuperScoresPlotPrediction()
+{
+  if(ProjectsHaveCPCAPrediction() == true){
+    ProjectTree pjtree;
+    GetCPCAProjects(&pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      CPCAPlot cpcaplot(projects);
+      cpcaplot.setPID(dp.getProjectID());
+      cpcaplot.setMID(dp.getModelID());
+      cpcaplot.setPREDID(dp.getPredictionID());
+      MDIChild *graphchild = createMdiChild();
+      ScatterPlot *plot2D;
+      cpcaplot.SuperScorePlotPrediction2D(&plot2D);
+      graphchild->setWidget(plot2D);
+      graphchild->setWindowID(getModelTableID(dp.getProjectID(),
+                                              dp.getModelID()));
+      graphchild->resize(510, 530);
+      graphchild->show();
+      connect(plot2D,
+              SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
+              SLOT(UpdateImageWindow(ImageSignal)));
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"), QMessageBox::Close);
+  }
+}
+
+void MainWindow::CPCA2DBlockScoresPlotPrediction()
+{
+  if(ProjectsHaveCPCAPrediction() == true){
+    ProjectTree pjtree;
+    GetCPCAProjects(&pjtree);
+    DebugProjectTree(pjtree);
+    DialogPlots dp(pjtree,  DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if(dp.exec() == QDialog::Accepted){
+      CPCAPlot cpcaplot(projects);
+      cpcaplot.setPID(dp.getProjectID());
+      cpcaplot.setMID(dp.getModelID());
+      cpcaplot.setPREDID(dp.getPredictionID());
+      QList<ScatterPlot *> plots = cpcaplot.BlockScorePlotPrediction2D();
+      for(int i = 0; i < plots.size(); i++){
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(getModelTableID(dp.getProjectID(),
+                                                dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+        connect(plots[i],
+                SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
+                SLOT(UpdateImageWindow(ImageSignal)));
+      }
+    }
+  }
+  else{
+    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"), QMessageBox::Close);
   }
 }
 
@@ -6022,14 +6407,14 @@ void MainWindow::LDAProbabilityDistributionWithPredictions()
 void MainWindow::DoCPCAPrediction()
 {
   if(!projects->isEmpty()){
-    int npca = 0;
+    int ncpca = 0;
     for(int i = 0; i < projects->values().size(); i++){
-        if(projects->values()[i]->PCACount() > 0)
-          npca++;
+        if(projects->values()[i]->CPCACount() > 0)
+          ncpca++;
     }
 
-    if(npca > 0){
-      DoPredictionDialog p(projects, PCA_);
+    if(ncpca > 0){
+      DoPredictionDialog p(projects, CPCA_);
       if(p.exec() == QDialog::Accepted && p.compute() == true){
 
         int pid = p.getselectedProject();
@@ -6042,70 +6427,61 @@ void MainWindow::DoCPCAPrediction()
 
         QString modelname = p.getPredictionName();
         QStringList objsel = p.getObjectSelected();
-        QStringList varsel = projects->value(pid)->getPCAModel(mid)->getVarName();
+        LABELS varsel = projects->value(pid)->getCPCAModel(mid)->getVarName();
 
-        matrix *x;
+        tensor *x;
+        initTensor(&x);
 
+        bool tok = PrepareTensor(projects->value(pid)->getMatrix(did), objsel, varsel, x);
 
-        NewMatrix(&x, objsel.size(), varsel.size());
-        bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, x);
-
-        if(x->col == (size_t)varsel.size() && mxok == true){
-          QString str = "--------------------\n Computing PCA Prediction for: ";
+        if(x->order == (size_t)varsel.size() && tok == true){
+          QString str = "--------------------\n Computing CPCA Prediction for: ";
           str.append(QString("%1").arg( projects->value(p.getselectedProject())->getProjectName()));
           updateLog(str);
 
-          projects->value(pid)->getPCAModel(mid)->addPCAPrediction();
-
-          projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->setName("PCA Prediction - " + modelname);
-          projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->setPredID(projects->value(pid)->getPCAModel(mid)->PCAPredictionCount()-1);
-          projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->setDID(did);
-          projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->setDataHash(projects->value(pid)->getMatrix(did)->getHash());
-          projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->setObjName(objsel);
-
+          projects->value(pid)->getCPCAModel(mid)->addCPCAPrediction();
+          projects->value(pid)->getCPCAModel(mid)->getLastCPCAPrediction()->setName("CPCA Prediction - " + modelname);
+          projects->value(pid)->getCPCAModel(mid)->getLastCPCAPrediction()->setPredID(projects->value(pid)->getCPCAModel(mid)->CPCAPredictionCount()-1);
+          projects->value(pid)->getCPCAModel(mid)->getLastCPCAPrediction()->setDID(did);
+          projects->value(pid)->getCPCAModel(mid)->getLastCPCAPrediction()->setDataHash(projects->value(pid)->getMatrix(did)->getHash());
+          projects->value(pid)->getCPCAModel(mid)->getLastCPCAPrediction()->setObjName(objsel);
 
           RUN obj;
 
-          obj.setXMatrix(x);
-          obj.setPCAModel(projects->value(pid)->getPCAModel(mid));
+          obj.setXTensor(x);
+          obj.setCPCAModel(projects->value(pid)->getCPCAModel(mid));
 
-          QFuture<void> future = obj.RunPCAPrediction();
+          QFuture<void> future = obj.RunCPCAPrediction();
 
           while(!future.isFinished()){
             QApplication::processEvents();
           }
 
           QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->getName());
+          subitem->setText(0, projects->value(pid)->getCPCAModel(mid)->getLastCPCAPrediction()->getName());
           subitem->setText(1, QString::number(tabcount_));
           subitem->setText(2, QString::number(pid));
           subitem->setText(3, QString::number(mid));
           subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
           subitem->setText(5, "");
-          subitem->setText(6, QString::number(projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->getPredID()));
-          subitem->setText(7, QString("PCA Prediction"));
-
-          #ifdef DEBUG
-          qDebug() << "Predicted Scores";
-          PrintMatrix(projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->getPredScores());
-          qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2) << subitem->text(3) << subitem->text(4) << subitem->text(5);
-          #endif
+          subitem->setText(6, QString::number(projects->value(pid)->getCPCAModel(mid)->getLastCPCAPrediction()->getPredID()));
+          subitem->setText(7, QString("CPCA Prediction"));
 
           tabcount_++;
           getModelItem(pid, mid)->addChild(subitem);
 
         }
         else{
-          QMessageBox::critical(this, tr("PCA Prediction Error"),
-                    tr("Unable to compute PCA Prediction.\n"
-                      "The number of variables differ. Please check your data."),
+          QMessageBox::critical(this, tr("CPCA Prediction Error"),
+                    tr("Unable to compute CPCA Prediction.\n"
+                      "The number of blocsk differ. Please check your data."),
                       QMessageBox::Ok);
-          updateLog(QString("Error!! Unable to compute PCA Prediction. The number of variables differ. Please check your data.\n"));
+          updateLog(QString("Error!! Unable to compute CPCA Prediction. The number of blocks differ. Please check your data.\n"));
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
         StopRun();
-        DelMatrix(&x);
+        DelTensor(&x);
         projects->value(pid)->AutoSave();
       }
     }
@@ -6273,12 +6649,6 @@ void MainWindow::DoPCAPrediction()
           subitem->setText(5, "");
           subitem->setText(6, QString::number(projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->getPredID()));
           subitem->setText(7, QString("PCA Prediction"));
-
-          #ifdef DEBUG
-          qDebug() << "Predicted Scores";
-          PrintMatrix(projects->value(pid)->getPCAModel(mid)->getLastPCAPrediction()->getPredScores());
-          qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2) << subitem->text(3) << subitem->text(4) << subitem->text(5);
-          #endif
 
           tabcount_++;
           getModelItem(pid, mid)->addChild(subitem);
@@ -7968,7 +8338,19 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   pid_ = 0; // used for mark all the projects with an unique id instead of the name. More projects can have the same name but different id!
   mid_ = 0; //used for mark all the models with an unique id
 
-  havepca = havepcapred = havepls = haveplspred = haveplsvalid = havemlr = havemlrvalid = havemlrpred = havelda = haveldapred = haveldavalid = false;
+  havepca = false;
+  havepcapred = false;
+  havecpca = false;
+  havecpcapred = false;
+  havepls = false;
+  haveplspred = false;
+  haveplsvalid = false;
+  havemlr = false;
+  havemlrvalid = false;
+  havemlrpred = false;
+  havelda = false;
+  haveldapred = false;
+  haveldavalid = false;
 
   ui.treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(ui.treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));
@@ -8021,7 +8403,14 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   //connect(ui.actionPCA2DLoadingsMVAND_Plot, SIGNAL(triggered(bool)), SLOT(PCA2DLoadingsMVANDPlot()));
   connect(ui.actionPCA2DScore_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(PCA2DScorePlotPrediction()));
 
-
+  connect(ui.actionCPCA2DSuperScores_Plot, SIGNAL(triggered(bool)), SLOT(CPCA2DSuperScorePlot()));
+  connect(ui.actionCPCA2DSuperWeights_Plot, SIGNAL(triggered(bool)), SLOT(CPCA2DSuperWeightsPlot()));
+  connect(ui.actionCPCA2DBlockScores_Plot, SIGNAL(triggered(bool)), SLOT(CPCA2DBlockScoresPlot()));
+  connect(ui.actionCPCA2DBlockLoadings_Plot, SIGNAL(triggered(bool)), SLOT(CPCA2DBlockLoadingsPlot()));
+  connect(ui.actionCPCA2DExplained_variance_Plot, SIGNAL(triggered(bool)), SLOT(CPCA2DExpVarPlot()));
+  connect(ui.actionCPCA2DSuperScores_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(CPCA2DSuperScoresPlotPrediction()));
+  connect(ui.actionCPCA2DBlockScores_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(CPCA2DBlockScoresPlotPrediction()));
+  
   connect(ui.actionPLS_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DPlot()));
   connect(ui.actionPLS2D_tt_Score_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DTTScorePlot()));
   connect(ui.actionPLS2D_pp_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DPPLoadingsPlot()));

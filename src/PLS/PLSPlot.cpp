@@ -1746,6 +1746,6 @@ void PLSPlot::T_ScorePlotPrediction3D(ScatterPlot **plot3D)
 
 PLSPlot::PLSPlot(PROJECTS* projects_)
 {
-  pid = mid = predid = -1;
+  pid = mid = predid = nlv = -1;
   projects = projects_;
 }

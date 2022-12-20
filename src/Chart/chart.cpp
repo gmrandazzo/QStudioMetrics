@@ -1044,7 +1044,7 @@ void Chart::drawGrid(QPainter *painter)
   QFontMetrics fm(font);
   qreal xmarkTextWidth = (qreal)fm.horizontalAdvance(m_xaxisname);
   // qreal markTextHeight = fm.height();
-  x = Margin + (rect.right() -rect.left())/2. - xmarkTextWidth/2.;
+  x = Margin + (rect.right() - rect.left())/2. - xmarkTextWidth/2.;
 
   painter->drawText(x, rect.bottom() + Margin/2., m_xaxisname);
 

@@ -104,10 +104,10 @@ private:
   double threshold; //used for Spearman's Selection
   //Used for MDC, MaxMinDis, Random Selection
   int metric;
-  uint nobjects;
-  uint maxnobjects;
+  int nobjects;
+  int maxnobjects;
 
-  uint nclusters;
+  int nclusters;
   int clusteralgoritm;
   int linktype;
   int objselectiontype;

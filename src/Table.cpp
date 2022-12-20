@@ -174,8 +174,8 @@ QVariant Model::data(const QModelIndex& index, int role) const
           return QVariant();
         }
         else{
-          if((uint)index.column()-1 == variable){
-            QColor color = makeColor(getMatrixValue(m, index.row(),variable), minval, maxval, mincolor, maxcolor);
+          if(index.column()-1 == variable && variable > -1){
+            QColor color = makeColor(getMatrixValue(m, index.row(), variable), minval, maxval, mincolor, maxcolor);
             return QVariant(color);
           }
           else{
@@ -418,8 +418,10 @@ void Model::UpdateModel()
 Model::Model(QObject* parent): QAbstractTableModel(parent)
 {
   isallocatedmatrix = false;
-  m = 0;
-  minval = maxval = variable = 0;
+  m = NULL;
+  minval = 0.f;
+  maxval = 0.f;
+  variable = 0;
   mincolor = QColor(Qt::green);
   maxcolor = QColor(Qt::red);
 }
@@ -429,8 +431,9 @@ Model::Model(matrix* m_, QObject* parent): QAbstractTableModel(parent)
   isallocatedmatrix = true;
   initMatrix(&m);
   MatrixCopy(m_, &m);
-//   m = m_;
-  minval = maxval = variable = 0;
+  minval = 0.f;
+  maxval = 0.f;
+  variable = 0;
   mincolor = QColor(Qt::green);
   maxcolor = QColor(Qt::red);
   for(uint i = 0; i < m->row; i++){
@@ -447,7 +450,9 @@ Model::Model(QList< QStringList > tab_, QObject* parent): QAbstractTableModel(pa
   isallocatedmatrix = false;
   m = 0;
   tab = tab_;
-  minval = maxval = variable = 0;
+  minval = 0.f;
+  maxval = 0.f;
+  variable = 0;
   mincolor = QColor(Qt::green);
   maxcolor = QColor(Qt::red);
 

@@ -44,17 +44,17 @@ void RUN::DoClustering()
 void RUN::DoRandomSelection()
 {
   srand(time(0));
-  uint i = 0;
+  int i = 0;
   while(i < nobjects){
     if(scientifisignal == SIGSCIENTIFICSTOP){
       break;
     }
     else{
-      uint id = rand() % maxnobjects;
+      int id = rand() % maxnobjects;
       if(id < maxnobjects){
         bool getid = true;
         for(uint j = 0; j < uiv->size; j++){
-          if(getUIVectorValue(uiv, j) != id){
+          if((int)getUIVectorValue(uiv, j) != id){
             continue;
           }
           else{
@@ -425,11 +425,6 @@ void RUN::DoPCA()
 
 void RUN::DoCPCAPrediction()
 {
-  void CPCAScorePredictor(tensor *x,
-                        CPCAMODEL *model,
-                        size_t npc,
-                        matrix *p_super_scores,
-                        tensor *p_block_scores);
   CPCAScorePredictor(ax,
                      cpcamod->Model(),
                      cpcamod->getNPC(),
@@ -439,9 +434,7 @@ void RUN::DoCPCAPrediction()
 
 void RUN::DoCPCA()
 {
-  qDebug() << "Running CPCA";
   CPCA(ax, xscaling, pc, cpcamod->Model());
-  qDebug() << "Stop CPCA";
 }
 
 QFuture< void > RUN::RunClusterValidation()
@@ -742,15 +735,36 @@ void RUN::AbortRun()
 RUN::RUN()
 {
   scientifisignal = SIGSCIENTIFICRUN;
-
-  pc = vt = ngroup = niter = n_yscrambling = nclusters = clusteralgoritm = -1;
-  xscaling = yscaling = 0;
+  xscaling = 0;
+  yscaling = 0;
+  pc = -1;
+  vt = -1;
+  ngroup = -1;
+  niter = -1;
+  n_yscrambling = -1;
+  metric = -1;
+  nobjects = -1;
+  maxnobjects = -1;
+  nclusters = -1;
+  clusteralgoritm = -1;
+  linktype = -1;
+  objselectiontype = -1;
+  nmaxobjects = -1;
+  nmaxclusters = -1;
+  threshold = 0.f;
   yscrambling = false;
-  m = 0;
-  uiv = 0;
-  x = 0;
-  y = 0;
-  ax = 0;
-  ay = 0;
+  m = NULL;
   uiv = NULL;
+  x = NULL;
+  y = NULL;
+  ax = NULL;
+  ay = NULL;
+  dv = NULL;
+  uiv = NULL;
+  pcamod = NULL;
+  cpcamod = NULL;
+  plsmod = NULL;
+  eplsmod = NULL;
+  mlrmodel = NULL;
+  ldamodel = NULL;
 }

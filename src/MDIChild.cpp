@@ -77,6 +77,7 @@ MDIChild::MDIChild()
 {
   table = 0;
   modinfo = 0;
+  listview = 0;
   setAttribute(Qt::WA_DeleteOnClose);
   setWindowIcon(QIcon(QPixmap(1,1)));
   id = -1;

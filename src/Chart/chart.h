@@ -101,7 +101,7 @@ private:
     void DoUnselection(int low, int high);
     void DoSelection(int low, int high);
 
-    enum { Margin = 80 };
+    double Margin = 80;
     QToolButton *zoomInButton;
     QToolButton *zoomOutButton;
 

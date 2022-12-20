@@ -15,6 +15,7 @@ PLSPREDICTION::PLSPREDICTION()
   initMatrix(&py);
   initMatrix(&r2y);
   initMatrix(&sdec);
+  id = did = -1;
 }
 
 PLSPREDICTION::~PLSPREDICTION()

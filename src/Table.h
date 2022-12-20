@@ -43,7 +43,7 @@ public:
   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
 
-  void setVariable(uint variable_){ variable = variable_; }
+  void setVariable(int variable_){ variable = variable_; }
   void setMinColumnColor(QColor mincolor_){ mincolor = mincolor_; }
   void setMaxColumnColor(QColor maxcolor_){ maxcolor = maxcolor_; }
   void setMinColumnVal(double minval_){ minval = minval_; }
@@ -65,7 +65,7 @@ private:
   QList<uint> id;
   QColor mincolor, maxcolor;
   double minval, maxval;
-  uint variable;
+  int variable;
   QColor makeColor(double val, const double& min, const double& max, const QColor& color1, const QColor& color2) const;
 };
 

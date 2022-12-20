@@ -13,7 +13,7 @@
 
 // Version
 #define major_ 2
-#define minor_ 2
+#define minor_ 3
 #define patch_ 0
 
 class MainWindow : public QMainWindow
@@ -78,6 +78,14 @@ private slots:
   void PCA2DExpVarPlot();
   void PCA2DLoadingsMVANDPlot();
   void PCA2DScorePlotPrediction();
+
+  void CPCA2DSuperScorePlot();
+  void CPCA2DSuperWeightsPlot();
+  void CPCA2DBlockScoresPlot();
+  void CPCA2DBlockLoadingsPlot();
+  void CPCA2DExpVarPlot();
+  void CPCA2DSuperScoresPlotPrediction();
+  void CPCA2DBlockScoresPlotPrediction();
 
   void PLS2DPlot();
   void PLS2DTTScorePlot();
@@ -160,6 +168,8 @@ private slots:
   void showCPCABlockScores();
   void showCPCABlockLoadings();
   void showCPCAExpVar();
+  void showCPCASuperScorePred();
+  void showCPCABlockScoresPred();
 
   void showPLSTScores();
   void showPLSUSCores();
@@ -231,6 +241,7 @@ private:
 
   void DebugProjectTree(ProjectTree pjtree);
   void GetPCAProjects(ProjectTree *pjtree);
+  void GetCPCAProjects(ProjectTree *pjtree);
   void GetPLSProjects(ProjectTree *pjtree);
   void GetEPLSProjects(ProjectTree *pjtree);
   void GetMLRProjects(ProjectTree *pjtree);
@@ -240,6 +251,8 @@ private:
   void CheckProjects();
   bool havepca,
        havepcapred,
+       havecpca,
+       havecpcapred,
        havepls,
        haveplspred,
        haveplsvalid,
@@ -289,6 +302,8 @@ private:
 
   bool ProjectsHavePCA(){ return havepca; }
   bool ProjectsHavePCAPrediction(){ return havepcapred; }
+  bool ProjectsHaveCPCA(){ return havecpca; }
+  bool ProjectsHaveCPCAPrediction(){ return havecpcapred; }
   bool ProjectsHavePLS(){ return havepls; }
   bool ProjectsHavePLSValidated(){ return haveplsvalid; }
   bool ProjectsHavePLSYScrambling(){ return haveplsyscrambling; }

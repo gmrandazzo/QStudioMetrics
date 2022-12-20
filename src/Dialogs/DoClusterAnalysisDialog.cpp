@@ -139,20 +139,19 @@ void DoClusterAnalysisDialog::GenLayerList()
 {
   selectedhash = hash[ui.listView->currentIndex().row()];
   int id = -1;
-  if(arlst != 0){
-    for(int i = 0; i < (*arlst).size(); i++){
-      if(selectedhash.compare((*arlst)[i]->getHash()) == 0){
-        id = i;
-        break;
-      }
-      else{
-        continue;
-      }
+  
+  for(int i = 0; i < arlst.size(); i++){
+    if(selectedhash.compare(arlst[i]->getHash()) == 0){
+      id = i;
+      break;
+    }
+    else{
+      continue;
     }
   }
 
   if(id != -1){
-    for(uint i = 0; i < (*arlst)[id]->Array()->order; i++){
+    for(uint i = 0; i < arlst[id]->Array()->order; i++){
       ui.layerlist->addItem(QString::number(i+1));
     }
   }
@@ -177,23 +176,23 @@ DoClusterAnalysisDialog::DoClusterAnalysisDialog(QList< MATRIX* > *mxlst_, QList
   windowtype = windowtype_;
 
   ui.jumpMethodButton->setEnabled(false);
-  mxlst = mxlst_;
-  arlst = arlst_;
+  
+  if(mxlst_ != NULL)
+    mxlst = (*mxlst_);
+  
+  if(arlst_ != NULL)
+    arlst = (*arlst_);
 
   QStringList model;
 
-  if(mxlst != 0){
-    for(int i = 0; i < (*mxlst).size(); i++){
-      hash.append((*mxlst)[i]->getHash());
-      model.append((*mxlst)[i]->getName());
-    }
+  for(int i = 0; i < mxlst.size(); i++){
+    hash.append(mxlst[i]->getHash());
+    model.append(mxlst[i]->getName());
   }
-
-  if(arlst != 0){
-    for(int i = 0; i < (*arlst).size(); i++){
-      hash.append((*arlst)[i]->getHash());
-      model.append((*arlst)[i]->getName());
-    }
+  
+  for(int i = 0; i < arlst.size(); i++){
+    hash.append(arlst[i]->getHash());
+    model.append(arlst[i]->getName());
   }
 
   ui.listView->setModel(new QStringListModel(model));

@@ -11,6 +11,7 @@
 
 UPCAPREDICTION::UPCAPREDICTION(){
   initMatrix(&pscores);
+  id = did = -1;
 }
 
 UPCAPREDICTION::~UPCAPREDICTION()

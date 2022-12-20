@@ -12,6 +12,7 @@
 PCAPREDICTION::PCAPREDICTION()
 {
   initMatrix(&pscores);
+  id = did = -1;
 }
 
 PCAPREDICTION::~PCAPREDICTION()

@@ -22,6 +22,7 @@ EPLSPREDICTION::EPLSPREDICTION()
   initMatrix(&roc_auc);
   initTensor(&precision_recall);
   initMatrix(&precision_recall_ap);
+  id = did = -1;
 }
 
 EPLSPREDICTION::~EPLSPREDICTION()

@@ -1,6 +1,6 @@
 project(QStudioMetrics)
 cmake_minimum_required(VERSION 3.22)
-set(VERSION "1.9.0")
+set(VERSION "2.3.0")
 set(AUTHOR "Giuseppe Marco Randazzo")
 set(CMAKE_AUTOMOC OFF)
 set(CMAKE_AUTOUIC ON)
@@ -61,6 +61,12 @@ if(plot_engine_tolower STREQUAL "webkit")
   message(STATUS "Plot engine: WEBKIT")
   add_definitions(-DWEBKIT)
 endif()
+
+set(CMAKE_CXX_STANDARD 20)
+
+#include(CheckCXXCompilerFlag)
+#CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+#CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 
 if(WIN32)
   message(STATUS "Build Release: WIN32")

@@ -17,13 +17,13 @@ public:
   void setMID(int mid_){ mid = mid_; }
   void setPREDID(int predid_){ predid = predid_; }
   void setGroups(LABELS g_){ g = g_; }
-  /*ScatterPlot *ScorePlot2D();*/
   void SuperScorePlot2D(ScatterPlot **plot2D);
+  void SuperWeightsPlot2D(ScatterPlot **plot2D);
   void SuperScorePlotPrediction2D(ScatterPlot **plot2D);
-  void ExpVarPlot(SimpleLine2DPlot **plot2D);
-  void SuperWeigthsPlot2D(ScatterPlot **plot2D);
+  QList< ScatterPlot * > BlockScorePlotPrediction2D();
   QList< ScatterPlot * > BlockScoresPlot2D();
   QList< ScatterPlot * > BlockLoadingsPlot2D();
+  void ExpVarPlot(SimpleLine2DPlot **plot2D);
 
 private:
   PROJECTS *projects;

@@ -14,6 +14,7 @@ MLRPREDICTION::MLRPREDICTION()
   initMatrix(&py);
   initDVector(&r2y);
   initDVector(&sdec);
+  id = did = -1;
 }
 
 MLRPREDICTION::~MLRPREDICTION(){

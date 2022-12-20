@@ -207,7 +207,7 @@ void DATAIO::GetMatrixRowCol(char *file_, const std::string  &sep, size_t *row, 
   file.open(file_, std::ios::in);
   if(!file.fail()){
     while(getline(file, line)) {
-      if(line.find("#") == 0 || line.empty()){ // skip line
+      if(line.starts_with("#") == true|| line.empty()){ // skip line
         continue;
       }
       else{
@@ -239,7 +239,7 @@ void DATAIO::ImportMatrix(char *file_, const std::string &sep, matrix *data)
   file.open(file_, std::ios::in);
   if(!file.fail()) {
     while( getline(file, line) ) {
-      if(line.find("#") == 0 || line.empty()){ // skip line
+      if(line.starts_with("#") == true|| line.empty()){ // skip line
         continue;
       }
       else{
@@ -266,11 +266,11 @@ void DATAIO::GetArrayOrderRowCol(char *file_, const std::string  &sep, size_t *o
   file.open(file_, std::ios::in);
   if(!file.fail()){
     while(getline(file, line)){
-      if(line.find("#") == 0 || line.empty()) { // skip line
+      if(line.starts_with("#") == true|| line.empty()) { // skip line
         continue;
       }
       else{
-        if(line.find("-") == 0 && line.size() == 1){
+        if(line.starts_with("-") == true && line.size() == 1){
           (*order)++;
 
           if(row_tmp > (*row)){
@@ -319,10 +319,10 @@ void DATAIO::ImportTensor(char *file_, const std::string  &sep, tensor *data)
 
   if(!file.fail()) {
     while(getline(file, line) ){
-      if(line.find("#") == 0 || line.empty()){ // skip line
+      if(line.starts_with("#") == true|| line.empty()){ // skip line
         continue;
       }
-      else if(line.find("-") == 0 && line.size() == 1){
+      else if(line.starts_with("-") == true && line.size() == 1){
         order++;
         row = 0;
       }
@@ -348,7 +348,7 @@ void DATAIO::GetVectorSize(char *file_, size_t *size_)
   file.open(file_, std::ios::in);
   if(!file.fail()) {
     while(getline(file, line)) {
-      if(line.find("#") == 0 || line.empty()){ // skip line
+      if(line.starts_with("#") == true|| line.empty()){ // skip line
         continue;
       }
       else{
@@ -372,7 +372,7 @@ void DATAIO::ImportStrvector(char *file_, strvector *strv)
   file.open(file_, std::ios::in);
   if(!file.fail()) {
     while(getline(file, line)){
-      if(line.find("#") == 0 || line.empty()){ // skip line
+      if(line.starts_with("#") == true|| line.empty()){ // skip line
         continue;
       }
       else{
@@ -397,7 +397,7 @@ void DATAIO::ImportDvector(char *file_, dvector *v)
   file.open(file_, std::ios::in);
   if(!file.fail()) {
     while(getline(file, line)){
-      if(line.find("#") == 0 || line.empty()){ // skip line
+      if(line.starts_with("#") == true|| line.empty()){ // skip line
         continue;
       }
       else{
@@ -421,7 +421,7 @@ void DATAIO::ImportUIvector(char *file_, uivector *v)
   file.open(file_, std::ios::in);
   if(!file.fail()) {
     while(getline(file, line)){
-      if(line.find("#") == 0 || line.empty()){ // skip line
+      if(line.starts_with("#") == true|| line.empty()){ // skip line
         continue;
       }
       else{
@@ -444,11 +444,11 @@ void DATAIO::GetDVectorListSize(char *file_, uivector *sizes)
   file.open(file_, std::ios::in);
   if(!file.fail()) {
     while(getline(file, line)) {
-      if(line.find("#") == 0 || line.empty()){ // skip line
+      if(line.starts_with("#") == true|| line.empty()){ // skip line
         continue;
       }
       else{
-        if(line.find("//") == 0 || line.empty()){ // skip line
+        if(line.starts_with("//") == true || line.empty()){ // skip line
           UIVectorAppend(sizes, sz);
           sz = 0;
         }
@@ -478,11 +478,11 @@ void DATAIO::ImportDvectorList(char *file_, dvectorlist *lst)
   file.open(file_, std::ios::in);
   if(!file.fail()) {
     while(getline(file, line)){
-      if(line.find("#") == 0 || line.empty()){ // skip line
+      if(line.starts_with("#") == true|| line.empty()){ // skip line
         continue;
       }
       else{
-        if(line.find("//") == 0 || line.empty()){ // skip line
+        if(line.starts_with("//") == true || line.empty()){ // skip line
           DVectorListAppend(lst, dv);
           DelDVector(&dv);
           sz = 0;
