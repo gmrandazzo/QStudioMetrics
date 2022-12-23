@@ -175,7 +175,10 @@ static inline int _index_of_(QStringList lst, QString str)
   return -1;
 }
 
-bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel, matrix *x)
+bool MainWindow::PrepareMatrix(MATRIX *indata,
+                               QStringList objnames,
+                               QStringList varsel,
+                               matrix *x)
 {
   ResizeMatrix(x, objnames.size(), varsel.size());
 
@@ -235,7 +238,12 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   }
 }
 
-bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, QStringList yvarsel, matrix *x, matrix *y)
+bool MainWindow::PrepareMatrix(MATRIX *indata,
+                               QStringList objnames,
+                               QStringList xvarsel,
+                               QStringList yvarsel,
+                               matrix *x,
+                               matrix *y)
 {
   ResizeMatrix(x, objnames.size(), xvarsel.size());
   ResizeMatrix(y, objnames.size(), yvarsel.size());
@@ -284,11 +292,6 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
     }
   }
 
-
-  //qDebug() << " aligned_id" << aligned_xvarid.size() << " " << aligned_yvarid.size() << " " << xvarsel.size() << " " << yvarsel.size();
-  //qDebug() << aligned_xvarid;
-  //qDebug() << aligned_yvarid;
-
   //Copy the data
   for(int i = 0; i < aligned_objid.size(); i++){
     int ii = aligned_objid[i];
@@ -328,15 +331,35 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
   return retval;
 }
 
-bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel, LABELS classes, matrix *x, matrix *y)
+bool MainWindow::PrepareMatrix(MATRIX *indata,
+                               QStringList objnames,
+                               QStringList xvarsel,
+                               LABELS classes,
+                               matrix *x,
+                               matrix *y)
 {
-  ResizeMatrix(x, objnames.size(), xvarsel.size());
+  QStringList real_objnames;
+  for(int c = 0; c < classes.size(); c++){
+    real_objnames << classes[c].objects;
+  }
+  
+  int i = 0; 
+  while(i < real_objnames.size()){
+    if(objnames.contains(real_objnames[i])){
+      i++;
+    }
+    else{
+      real_objnames.removeAt(i);
+    }
+  }
+  
+  ResizeMatrix(x, real_objnames.size(), xvarsel.size());
 
   if(classes.size() == 2){
-    ResizeMatrix(y, objnames.size(), 1);
+    ResizeMatrix(y, real_objnames.size(), 1);
   }
   else{
-    ResizeMatrix(y, objnames.size(), classes.size());
+    ResizeMatrix(y, real_objnames.size(), classes.size());
   }
 
   QMap<QString, int> objmap;
@@ -352,8 +375,8 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList
 
   QList<int> aligned_xvarid,  aligned_objid;
 
-  for(int i = 0; i < objnames.size(); i++){
-    auto it = objmap.find(objnames[i]);
+  for(int i = 0; i < real_objnames.size(); i++){
+    auto it = objmap.find(real_objnames[i]);
     if(it != objmap.end()){
         aligned_objid.append(it.value());
     }
@@ -492,7 +515,9 @@ bool MainWindow::PrepareTensor(MATRIX *indata,
   }
 }
 
-void MainWindow::PrepareKFoldClasses(QStringList objects, LABELS kfclasses, uivector *classes)
+void MainWindow::PrepareKFoldClasses(QStringList objects,
+                                     LABELS kfclasses,
+                                     uivector *classes)
 {
   for(int i = 0; i < objects.size(); i++){
     size_t class_indx = 0;
@@ -7407,7 +7432,6 @@ void MainWindow::DoPLS(int algtype)
       QStringList xvarsel = dopls.getXVarSelected();
       QStringList yvarsel = dopls.getYVarSelected();
       LABELS classes = dopls.getClasses();
-
       QString modelname = "PLS - " + dopls.getModelName();
 
       if(did != -1 && pid != -1 && objsel.size() > 0 && xvarsel.size() > 0 && yvarsel.size() > 0){

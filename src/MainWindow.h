@@ -272,6 +272,7 @@ private:
   void TopMenuEnableDisable();
   void CalculationMenuEnable();
   void CalculationMenuDisable(int calcpid_);
+
   bool PrepareTensor(MATRIX *indata,
                      QStringList objnames,
                      LABELS block_varsel,

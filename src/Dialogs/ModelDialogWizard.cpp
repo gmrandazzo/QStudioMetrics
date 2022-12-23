@@ -26,7 +26,7 @@ void ModelDialogWizard::WindowAdjust()
   this->move(screenGeometry.center() - this->rect().center());
 }
 
-int ModelDialogWizard::CheckLabelAndObjectInLabel(QString label, QString objectname, LABELS lbl)
+int ModelDialogWizard::CheckLabelNameInLabels(QString label, LABELS lbl)
 {
   int id = -1;
   for(int i = 0; i < lbl.size(); i++){
@@ -38,44 +38,43 @@ int ModelDialogWizard::CheckLabelAndObjectInLabel(QString label, QString objectn
       continue;
     }
   }
+  return id;
+}
 
-  if(id > -1){
-    for(int i = 0; i < lbl.size(); i++){
-      if(lbl[i].objects.contains(objectname) == true){
-        id = -1;
-        break;
-      }
-      else{
-        continue;
-      }
-    }
-    return id;
-  }
-  else{
-    //label not found
+int ModelDialogWizard::CheckNameInLabel(QString name, LABEL lbl)
+{
+  if(lbl.objects.contains(name) == true)
+    return lbl.objects.indexOf(name);
+  else
     return -1;
-  }
 }
 
 void ModelDialogWizard::AddObject2Class(QString class_name, QString objname)
 {
   QAbstractItemModel *model = ui.listView_6->model();
-  int indx = CheckLabelAndObjectInLabel(class_name, objname, classes);
-  if(indx > -1){
+  int lbl_indx = CheckLabelNameInLabels(class_name, classes);
+  if(lbl_indx > -1){
     // Class found then add object if exist
-    for(int i = 0; i < model->rowCount(); i++){
-      if(model->index(i, 0).data(Qt::DisplayRole).toString().compare(objname) == 0){
-        classes[indx].objects.append(objname);
-        model->removeRow(i);
-        break;
-      }
-      else{
-        continue;
+    int obj_indx = CheckNameInLabel(objname, classes[lbl_indx]);
+    if(obj_indx > -1){
+      //Notthing to do...
+      return;
+    }
+    else{
+      for(int i = 0; i < model->rowCount(); i++){
+        if(model->index(i, 0).data(Qt::DisplayRole).toString().compare(objname) == 0){
+          classes[lbl_indx].objects.append(objname);
+          model->removeRow(i);
+          break;
+        }
+        else{
+          continue;
+        }
       }
     }
   }
   else{
-    //Class not found then if object exist add class.
+    // Class not found then if object exist add class.
     for(int i = 0; i < model->rowCount(); i++){
       if(model->index(i, 0).data(Qt::DisplayRole).toString().compare(objname) == 0){
         classes.append(LABEL());
@@ -96,23 +95,30 @@ void ModelDialogWizard::AddObject2Class(QString class_name, QString objname)
 
 void ModelDialogWizard::AddVariable2Block(QString block_name, QString varname)
 {
-  QAbstractItemModel *model = ui.listView_9->model();
-  int indx = CheckLabelAndObjectInLabel(block_name, varname, xblocks);
-  if(indx > -1){
+  QAbstractItemModel *model = ui.listView_8->model();
+  int lbl_indx = CheckLabelNameInLabels(block_name, xblocks);
+  if(lbl_indx > -1){
     // Class found then add object if exist
-    for(int i = 0; i < model->rowCount(); i++){
-      if(model->index(i, 0).data(Qt::DisplayRole).toString().compare(varname) == 0){
-        xblocks[indx].objects.append(varname);
-        model->removeRow(i);
-        break;
-      }
-      else{
-        continue;
+    int obj_indx = CheckNameInLabel(varname, xblocks[lbl_indx]);
+    if(obj_indx > -1){
+      //Notthing to do...
+      return;
+    }
+    else{
+      for(int i = 0; i < model->rowCount(); i++){
+        if(model->index(i, 0).data(Qt::DisplayRole).toString().compare(varname) == 0){
+          xblocks[lbl_indx].objects.append(varname);
+          model->removeRow(i);
+          break;
+        }
+        else{
+          continue;
+        }
       }
     }
   }
   else{
-    //Class not found then if object exist add class.
+    // Class not found then if object exist add class.
     for(int i = 0; i < model->rowCount(); i++){
       if(model->index(i, 0).data(Qt::DisplayRole).toString().compare(varname) == 0){
         xblocks.append(LABEL());
@@ -158,21 +164,21 @@ void ModelDialogWizard::importBlock()
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
-
     //QAbstractItemModel *model = ui.listView_6->model();
 
     QTextStream in(&file);
     while(!in.atEnd()){
       QString line = in.readLine();
       QStringList linesplit = line.split(",");
-      if(linesplit.size() < 2)
+      if(linesplit.size() != 2)
         continue;
       else{
         // linesplit[0]; objname
-        //linesplit[1]; Classname
+        // linesplit[1]; Classname
         AddVariable2Block(linesplit[1], linesplit[0]);
       }
     }
+    EnableDisableButtons();
   }
   else{
     return;
@@ -357,20 +363,11 @@ void ModelDialogWizard::genListView(QModelIndex current, QModelIndex previous)
         }
       }
 
-      /*ui.objSelectByLabel->clear();
-      ui.class_SelectByLabel->clear();
-      ui.objSelectByLabel->addItem("Select by label...");
-      ui.class_SelectByLabel->addItem("Select by label...");*/
       for(int i = 0; i < projects_->value(selectedproject_)->getObjectLabels().size(); i++){
         ui.objSelectByLabel->addItem(projects_->value(selectedproject_)->getObjectLabels()[i].name);
         ui.class_SelectByLabel->addItem(projects_->value(selectedproject_)->getObjectLabels()[i].name);
       }
 
-      /*ui.xvarSelectByLabel->clear();
-      ui.yvarSelectByLabel->clear();
-      ui.xvarSelectByLabel->addItem("Select by label...");
-      ui.yvarSelectByLabel->addItem("Select by label...");
-      */
       for(int i = 0; i < projects_->value(selectedproject_)->getVariableLabels().size(); i++){
         ui.xvarSelectByLabel->addItem(projects_->value(selectedproject_)->getVariableLabels()[i].name);
         ui.yvarSelectByLabel->addItem(projects_->value(selectedproject_)->getVariableLabels()[i].name);
@@ -391,49 +388,63 @@ void ModelDialogWizard::EnableDisableButtons()
     this->button(QWizard::NextButton)->setEnabled(true);
     this->button(QWizard::FinishButton)->setEnabled(false);
     if(ui.listView_3->selectionModel()->selectedRows(0).size() > 0){
-      // PCA_ PLS_ EPLS_ MLR_ PLS_DA_ EPLS_DA_ LDA_ MLR_
-      if(ui.listView_4->selectionModel()->selectedRows(0).size() > 0){
-        if(type == PCA_){
-          this->button(QWizard::FinishButton)->setEnabled(true);
-        }
-        else{
-          if(type == PLS_ || type == EPLS_ || type == MLR_){
-            if(ui.listView_5->selectionModel()->selectedRows(0).size() > 0){
-              this->button(QWizard::FinishButton)->setEnabled(true);
-            }
-            else{
-              this->button(QWizard::FinishButton)->setEnabled(false);
-            }
-          }
-          else if(type == LDA_ || type == PLS_DA_ || type == EPLS_DA_){
-            if(ui.listView_7->model()->rowCount() > 0){
-              this->button(QWizard::FinishButton)->setEnabled(true);
-            }
-            else{
-              this->button(QWizard::FinishButton)->setEnabled(false);
-            }
-          }
-          else{
-            // finish button disabled by default!
-            this->button(QWizard::FinishButton)->setEnabled(false);
-          }
-        }
-      }
-      // CPCA_ UPCA_ UPLS_ and in general multiblock
-      else{
-        if(type == CPCA_){
-          if(ui.listView_9->model()->rowCount() > 0){
-            this->button(QWizard::FinishButton)->setEnabled(true);
-          }
-          else{
-            this->button(QWizard::FinishButton)->setEnabled(false);
-          }
-        }
-        else{
-          // finish button disabled by default!
-          this->button(QWizard::FinishButton)->setEnabled(false);
-        }
-      }
+      // PCA_ CPCA_ PLS_ EPLS_ MLR_ PLS_DA_ EPLS_DA_ LDA_ MLR_
+      if(type == PCA_ ||
+         type == PLS_ ||
+         type == PLS_DA_ ||
+         type == EPLS_ ||
+         type == EPLS_DA_ ||
+         type == MLR_ ||
+         type == LDA_){
+           if(ui.listView_4->selectionModel()->selectedRows(0).size() > 0){
+             if(type == PCA_){
+               this->button(QWizard::FinishButton)->setEnabled(true);
+             }
+             else{
+               if(type == PLS_ || type == EPLS_ || type == MLR_){
+                 if(ui.listView_5->selectionModel()->selectedRows(0).size() > 0){
+                   this->button(QWizard::FinishButton)->setEnabled(true);
+                 }
+                 else{
+                   this->button(QWizard::FinishButton)->setEnabled(false);
+                 }
+               }
+               else if(type == LDA_ || type == PLS_DA_ || type == EPLS_DA_){
+                 if(ui.listView_7->model()->rowCount() > 0){
+                   this->button(QWizard::FinishButton)->setEnabled(true);
+                 }
+                 else{
+                   this->button(QWizard::FinishButton)->setEnabled(false);
+                 }
+              }
+              else{
+                // finish button disabled by default!
+                this->button(QWizard::FinishButton)->setEnabled(false);
+              }
+           }
+         }
+         else{
+           this->button(QWizard::FinishButton)->setEnabled(false);
+         }
+       }
+       //Multiblock methods
+       else if(type == CPCA_){
+         if(type == CPCA_){
+           if(ui.listView_9->model()->rowCount() > 0){
+             this->button(QWizard::FinishButton)->setEnabled(true);
+           }
+           else{
+             this->button(QWizard::FinishButton)->setEnabled(false);
+           }
+         }
+         else{
+           // finish button disabled by default!
+           this->button(QWizard::FinishButton)->setEnabled(false);
+         }
+       }
+       else{
+         this->button(QWizard::FinishButton)->setEnabled(false);
+       }
     }
     else{
       // finish button disabled by default!
@@ -659,6 +670,7 @@ void ModelDialogWizard::next()
       tab8->appendRow(xblockvname);
       tab5->appendRow(yvname);
     }
+    EnableDisableButtons();
   }
   else{
     return;
@@ -938,7 +950,6 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_, QWidget *par
   this->button(QWizard::NextButton)->setEnabled(false);
   this->button(QWizard::FinishButton)->setEnabled(false);
   ELmethodChanged(0);
-
   WindowAdjust();
 }
 

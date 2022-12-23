@@ -11,6 +11,7 @@ QStudioMetrics is written in C++ using the Qt5 framework and run under Linux, Wi
 
 QStudioMetrics compute:
   - Principal Component Analysis (PCA)
+  - Consensus Principal Component Analysis (CPCA)
   - Partial Least Squares (PLS)
   - Multiple Linear Regression (MLR)
   - Linear Discriminant Analysis (LDA)
@@ -36,7 +37,7 @@ Install
 - c++ compiler
 - cmake >= 3.22
 - Qt6
-- libscientific >= 1.2.7
+- libscientific >= 1.4.x
 
 ## Compile from source
 
@@ -60,7 +61,4 @@ Binary releases for Windows and OSX at <https://github.com/gmrandazzo/QStudioMet
 ## Known bugs
 
 - Hierarchical clustering: the problem belongs to the original libscientific library
-
-## Cite
-
 

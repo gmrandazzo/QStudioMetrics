@@ -84,7 +84,8 @@ private:
   uint n_pc; // Number of Principal Component
   LABELS classes;
   LABELS xblocks;
-  int CheckLabelAndObjectInLabel(QString label, QString objectname, LABELS lbl);
+  int CheckLabelNameInLabels(QString label, LABELS lbl);
+  int CheckNameInLabel(QString name, LABEL lbl);
   void AddObject2Class(QString class_label, QString objname);
   void AddVariable2Block(QString block_name, QString varname);
   void WindowAdjust();
