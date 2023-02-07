@@ -55,6 +55,12 @@ jobs:
         # queries: security-extended,security-and-quality
 
 
+    - name: Install Dependencies
+      run:
+        sudo apt-get -y update
+
+        sudo apt-get -y install qt6-base-dev libqt6core5compat6-dev libglx-dev git 
+
     # Autobuild attempts to build any compiled languages  (C/C++, C#, Go, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
     - name: Autobuild
