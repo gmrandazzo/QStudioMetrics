@@ -47,6 +47,26 @@ endforeach()
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules/")
 find_package(libscientific)
 
+if(NOT ${LIBSCIENTIFIC_FOUND})
+  message(STATUS "Cloning libscientific")
+    include(ExternalProject)
+    set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
+    ExternalProject_Add(libscientific_git
+    GIT_REPOSITORY https://github.com/gmrandazzo/libscientific
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_LOCATION})
+    include_directories(${EXTERNAL_INSTALL_LOCATION}/include)
+    link_directories(${EXTERNAL_INSTALL_LOCATION}/lib)
+    if(WIN32)
+        set(LIBSCIENTIFIC_LIBRARY ${EXTERNAL_INSTALL_LOCATION}/lib/libscientific.dll)
+    elseif(APPLE)
+        set(LIBSCIENTIFIC_LIBRARY ${EXTERNAL_INSTALL_LOCATION}/lib/libscientific.dylib)
+    else()
+        set(LIBSCIENTIFIC_LIBRARY ${EXTERNAL_INSTALL_LOCATION}/lib/libscientific.so)
+    endif(WIN32)
+else()
+  include_directories(${LIBSCIENTIFIC_INCLUDE_DIRS})
+endif()
+
 # Disable some warnings
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-extra-semi")
 
@@ -108,9 +128,7 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/src
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${LIBSCIENTIFIC_INCLUDE_DIRS}
 )
-
 
 add_subdirectory(src/Chart)
 add_subdirectory (src)

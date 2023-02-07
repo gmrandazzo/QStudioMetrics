@@ -246,7 +246,7 @@ target_link_libraries(qsm-hgm PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 #target_link_libraries(qsm-mlr PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 #add_executable(qsm-lda ${QSTUDIOMETRICS_CMDLDA_SRC})
-#target_link_libraries(qsm-lda PRIVATE ${LIBSCIENTIFIC_LIBRARY})s
+#target_link_libraries(qsm-lda PRIVATE ${LIBSCIENTIFIC_LIBRARY})
 
 #add_executable(qsm-upca ${QSTUDIOMETRICS_CMDUPCA_SRC})
 #target_link_libraries(qsm-upca PRIVATE ${LIBSCIENTIFIC_LIBRARY})
