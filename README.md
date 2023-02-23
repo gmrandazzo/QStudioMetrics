@@ -2,6 +2,8 @@ QStudioMetrics
 ==============
 ![Page views](https://visitor-badge.glitch.me/badge?page_id=gmrandazzo.QStudioMetrics)
 ![GitHub all releases](https://img.shields.io/github/downloads/gmrandazzo/QStudioMetrics/total)
+[![CodeQL](https://github.com/gmrandazzo/QStudioMetrics/actions/workflows/codeql.yml/badge.svg)](https://github.com/gmrandazzo/QStudioMetrics/actions/workflows/codeql.yml)
+
 
 **QStudioMetrics is a software to develop data mining and multivariate analysis studies.**
 
