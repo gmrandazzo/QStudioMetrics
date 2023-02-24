@@ -34,7 +34,7 @@ void ImportFileDialog::AssignName(QStringList &list, QString name)
   }
 }
 
-int ImportFileDialog::getHeader(QStringList* header)
+size_t ImportFileDialog::getHeader(QStringList* header)
 {
   QFileInfo info(ui.file->text());
   if(info.exists()){
@@ -60,9 +60,9 @@ int ImportFileDialog::getHeader(QStringList* header)
   return 0;
 }
 
-QList<int> ImportFileDialog::getLineToSkip()
+QList<size_t> ImportFileDialog::getLineToSkip()
 {
-  QList<int> lskip;
+  QList<size_t> lskip;
   if(ui.ignore_lines_start_char->isChecked()){
     QFileInfo info(ui.file->text());
     if(info.exists()){
@@ -98,14 +98,14 @@ void ImportFileDialog::ImportType0()
   QFileInfo info(ui.file->text());
   if(info.exists()){
     // get line to skip
-    QList<int> lskip = getLineToSkip();
+    QList<size_t> lskip = getLineToSkip();
     // get separator
     QString sep = getSeparator();
     // Assign header to matrix
     Clean_rnames();
     AssignName(m->getVarName(), firstcol_name);
     QStringList header;
-    int header_line = getHeader(&header);
+    auto header_line = getHeader(&header);
     for(int j = 1; j < header.size(); j++){
       AssignName(m->getVarName(), header[j]);
     }
@@ -149,14 +149,14 @@ void ImportFileDialog::ImportType1()
   if(info.exists()){
 
     // get line to skip
-    QList<int> lskip = getLineToSkip();
+    QList<size_t> lskip = getLineToSkip();
     // get separator
     QString sep = getSeparator();
     // Assign header to matrix
     Clean_rnames();
     AssignName(m->getVarName(), firstcol_name);
     QStringList header;
-    int header_line = getHeader(&header);
+    size_t header_line = getHeader(&header);
     for(int j = 0; j < header.size(); j++){
       AssignName(m->getVarName(), header[j]);
     }
@@ -197,7 +197,7 @@ void ImportFileDialog::ImportType2()
   QFileInfo info(ui.file->text());
   if(info.exists()){
     // get line to skip
-    QList<int> lskip = getLineToSkip();
+    QList<size_t> lskip = getLineToSkip();
     // get separator
     QString sep = getSeparator();
 
@@ -238,7 +238,7 @@ void ImportFileDialog::ImportType3()
   QFileInfo info(ui.file->text());
   if(info.exists()){
     // get line to skip
-    QList<int> lskip = getLineToSkip();
+    QList<size_t> lskip = getLineToSkip();
     // get separator
     QString sep = getSeparator();
 
@@ -512,7 +512,7 @@ FSIZE ImportFileDialog::GetSize()
     if(!f.open(QIODevice::ReadOnly | QIODevice::Text))
       return sz;
 
-    QList<int> lskip = getLineToSkip();
+    QList<size_t> lskip = getLineToSkip();
     QString sep = getSeparator();
 
     QTextStream in(&f);

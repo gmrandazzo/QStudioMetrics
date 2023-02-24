@@ -41,7 +41,8 @@ int main(int argc, char **argv)
     help(argv);
   }
   else{
-    size_t npc = 0, ngroups = 0, iterations = 20, xautoscaling = 0 , yautoscaling = 0, nthreads = 1;
+    size_t npc = 0, ngroups = 0, iterations = 20, nthreads = 1;
+    int xautoscaling = 0 , yautoscaling = 0;
     string xinputdata, yinputdata, pathmodel, outputfile, xsep, ysep;
     bool r_genmodel, d_genmodel, genbetas, makeprediction, makecrossvalidation;
     r_genmodel = d_genmodel = genbetas = makeprediction = makecrossvalidation = false;

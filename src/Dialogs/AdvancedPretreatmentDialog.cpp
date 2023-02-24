@@ -55,7 +55,7 @@ void AdvancedPretreatmentDialog::OK()
   if(ui.addNoModVars->isChecked()){
     mx->MatrixResize(projects->value(pid)->getMatrix(mxid)->getObjName().size(), projects->value(pid)->getMatrix(mxid)->getVarName().size()-1);
     for(int j = 1; j < projects->value(pid)->getMatrix(mxid)->getVarName().size(); j++){
-      int indx = varnamestomod.indexOf(projects->value(pid)->getMatrix(mxid)->getVarName()[j]);
+      auto indx = varnamestomod.indexOf(projects->value(pid)->getMatrix(mxid)->getVarName()[j]);
       mx->getVarName().append(projects->value(pid)->getMatrix(mxid)->getVarName()[j]);
       if(indx > -1){
         for(size_t i = 0; i < nrow; i++){

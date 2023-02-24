@@ -1562,7 +1562,7 @@ void MainWindow::PlotVariableVSVariableBis(vvplotSignal vvs)
       objectslst << objects;
       vplot.setObjects(objectslst);
       // -1 because first varname is a generic name
-      vplot.setVarID1(projects->value(vvs.pid)->getMatrix(mxid)->getVarName().indexOf(vvs.vname1)-1);
+      vplot.setVarID1(projects->value(vvs.pid)->getMatrix(mxid)->getVarName().indexOf(vvs.vname1) -1);
       vplot.setVarID2(projects->value(vvs.pid)->getMatrix(mxid)->getVarName().indexOf(vvs.vname2)-1);
       vplot.setLayerID(-1);
 

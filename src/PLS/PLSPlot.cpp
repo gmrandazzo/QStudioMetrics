@@ -1094,6 +1094,7 @@ QList< SimpleLine2DPlot* > PLSPlot::RMSE()
 
     // Set the rmse values into the matrix
     uint l = 0;
+    
     for(uint j = 0; j < yval; j++){
       QString yname = projects->value(pid)->getPLSModel(mid)->getYVarName()[j];
       #ifdef DEBUG
@@ -1106,10 +1107,17 @@ QList< SimpleLine2DPlot* > PLSPlot::RMSE()
 
       setMatrixValue(m, 0, 1, 0); // SDEC in 0 pc is 0
       setMatrixValue(m, 0, 2, 0); // SDEP in 0 pc is 0
-
+      double y_max = -9999.f;
       for(uint i = 0; i < nlv; i++){
-        setMatrixValue(m, i, 1, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->sdec, i, l));
-        setMatrixValue(m, i, 2, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->sdep, i, l));
+        m->data[i][1] = projects->value(pid)->getPLSModel(mid)->Model()->sdec->data[i][l];
+        m->data[i][2] = projects->value(pid)->getPLSModel(mid)->Model()->sdep->data[i][l];
+        
+        if(m->data[i][1] > y_max)
+            y_max = m->data[i][1];
+        
+        if(m->data[i][2] > y_max)
+          y_max = m->data[i][2];
+        
       }
       l++;
 
@@ -1119,6 +1127,8 @@ QList< SimpleLine2DPlot* > PLSPlot::RMSE()
       PrintMatrix(m);
       #endif
       plots.append(new SimpleLine2DPlot(m, curvenames, QString(" %1 - %2 - RMSE Training/Validation Plot %3").arg(projectname).arg(modelname).arg(yname), "Latent Variables", "RMSE (Training/Validation)"));
+      plots.last()->setXminXmaxXTick(0, nlv, nlv);
+      plots.last()->setYminYmaxYTick(0, y_max, 10);
     }
     DelMatrix(&m);
   }
@@ -1414,9 +1424,9 @@ QList< SimpleLine2DPlot* > PLSPlot::R2R2Prediction()
         yaxisname += " / Q2";
 
       yaxisname += " / R2 Predicted";
-
-
       plots.append(new SimpleLine2DPlot(m, curvenames, QString("%1 - %2 - R2 Q2 Plot Y %3").arg(projectname).arg(modelname).arg(yname), "Latent Variables", yaxisname));
+      plots.last()->setXminXmaxXTick(0, nlv, nlv);
+      plots.last()->setYminYmaxYTick(0, 1, 10);
     }
     DelMatrix(&m);
   }
@@ -1426,7 +1436,7 @@ QList< SimpleLine2DPlot* > PLSPlot::R2R2Prediction()
 QList< SimpleLine2DPlot* > PLSPlot::RMSEPrediction()
 {
   QList< SimpleLine2DPlot* > plots;
-  if(projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_DA_){
+  if(projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_){
     QString projectname = projects->value(pid)->getProjectName();
     QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
     uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC();
@@ -1452,7 +1462,6 @@ QList< SimpleLine2DPlot* > PLSPlot::RMSEPrediction()
     // Set the sdec, r2prediction, sdep into the matrix
     uint l = 0;
     for(uint j = 0; j < yval; j++){
-
       QString yname = projects->value(pid)->getPLSModel(mid)->getYVarName()[j];
       #ifdef DEBUG
       qDebug() << "SDEC";
@@ -1469,18 +1478,28 @@ QList< SimpleLine2DPlot* > PLSPlot::RMSEPrediction()
       }
 
       curvenames << QString("RMSE (Prediction) Y %1").arg(yname);
-
+      double y_max = -9999.f;
       for(uint i = 0; i < nlv; i++){
         int k = 1;
-        setMatrixValue(m, i, k, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->sdec, i, l));
+        m->data[i][k] = projects->value(pid)->getPLSModel(mid)->Model()->sdec->data[i][l];
+        if(m->data[i][k] > y_max){
+          y_max = m->data[i][k];
+        }
         k++;
 
         if(getsdep == true){
-          setMatrixValue(m, i, k, getMatrixValue(projects->value(pid)->getPLSModel(mid)->Model()->sdep, i, l));
+          m->data[i][k] = projects->value(pid)->getPLSModel(mid)->Model()->sdep->data[i][l];
+          if(m->data[i][k] > y_max){
+            y_max = m->data[i][k];
+          }
           k++;
         }
-
-        setMatrixValue(m, i, k, getMatrixValue(projects->value(pid)->getPLSModel(mid)->getPLSPrediction(predid)->getSDEC(), i, l));
+        
+        m->data[i][k] = projects->value(pid)->getPLSModel(mid)->getPLSPrediction(predid)->getSDEC()->data[i][l];
+        if(m->data[i][k] > y_max){
+          y_max = m->data[i][k];
+        }
+        
       }
       l++;
 
@@ -1496,6 +1515,8 @@ QList< SimpleLine2DPlot* > PLSPlot::RMSEPrediction()
       yaxisname += " /Prediction)";
 
       plots.append(new SimpleLine2DPlot(m, curvenames, QString("%1 - %2 - RMSE External Prediction Plot Y %3").arg(projectname).arg(modelname).arg(yname), "Latent Variables", yaxisname));
+      plots.last()->setXminXmaxXTick(0, nlv, nlv);
+      plots.last()->setYminYmaxYTick(0, y_max, 10);
     }
     DelMatrix(&m);
   }
@@ -1741,8 +1762,7 @@ void PLSPlot::T_ScorePlotPrediction3D(ScatterPlot **plot3D)
                               QString("%1 - %2 - PLS T Score Plot Predicion").arg(projectname).arg(modelname),
                               ScatterPlot::SCORES);
   (*plot3D)->setPID(pid);
-}
-
+}   
 
 PLSPlot::PLSPlot(PROJECTS* projects_)
 {

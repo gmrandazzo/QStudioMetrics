@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     help(argv);
   }
   else{
-    size_t grid_step_size = 0, nthreads = 1;
+    size_t grid_step_size = 0;
     string inputdata, inhgm, outbins, outhgm, sep;
     sep = ", \t";
 
@@ -62,12 +62,6 @@ int main(int argc, char **argv)
       if(strcmp(argv[i], "-hgminput") == 0 || strcmp(argv[i], "-h") == 0){
         if(i+1 < argc){
           inhgm = argv[i+1];
-        }
-      }
-
-      if(strcmp(argv[i], "-nth") == 0 || strcmp(argv[i], "-n") == 0){
-        if(i+1 < argc){
-          nthreads = atoi(argv[i+1]);
         }
       }
     }

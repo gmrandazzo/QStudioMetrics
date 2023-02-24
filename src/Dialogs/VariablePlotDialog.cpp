@@ -66,7 +66,7 @@ void VariablePlotDialog::GenVariableViewAndSetHash()
     //check if the number of variable differ betweeen more matrix/array differ;
     if(nmx > 0){// are matrix
       vtype = MATRIXDATA;
-      uint ncol = projects->value(pid)->getMatrix(hash[0])->Matrix()->col;
+      auto ncol = projects->value(pid)->getMatrix(hash[0])->Matrix()->col;
       for(int i = 1; i < hash.size(); i++){
         if(projects->value(pid)->getMatrix(hash[i])->Matrix()->col != ncol){
           QMessageBox::warning(this, tr("Variable Distribution Error"), tr("Data differ in number of columns."), QMessageBox::Ok);

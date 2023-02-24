@@ -109,7 +109,7 @@ void SelectByDialog::SetSelectionView()
 
           int col = 0;
           for(int j = 0; j < varlist.size(); j++){
-            int colindex = varnames.indexOf(varlist[j]);
+            auto colindex = varnames.indexOf(varlist[j]);
             if(colindex !=  -1){
               for(uint i = 0; i < (*mxlst)[dataid]->Matrix()->row; i++){
                 setMatrixValue(m, i, col, getMatrixValue((*mxlst)[dataid]->Matrix(), i, colindex));
@@ -242,7 +242,7 @@ void SelectByDialog::SetSelectionView()
 
   if(append == true){
     for(int i = 0; i < selection.size(); i++){
-      int id = objname.indexOf(selection[i]);
+      auto id = objname.indexOf(selection[i]);
       if(id != -1){
         ui.objnamelistView->selectionModel()->select(ui.objnamelistView->model()->index(id, 0), QItemSelectionModel::Select);
       }
@@ -251,7 +251,7 @@ void SelectByDialog::SetSelectionView()
   else{
     ui.objnamelistView->selectionModel()->clear();
     for(int i = 0; i < selection.size(); i++){
-      int id = objname.indexOf(selection[i]);
+      auto id = objname.indexOf(selection[i]);
       if(id != -1){
         ui.objnamelistView->selectionModel()->select(ui.objnamelistView->model()->index(id, 0), QItemSelectionModel::Select);
       }

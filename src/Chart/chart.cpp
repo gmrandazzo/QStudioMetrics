@@ -484,7 +484,7 @@ void Chart::RemovePoint(DataPoint *dp)
   #ifdef DEBUG
   printf("Chart::RemovePoint\n");
   #endif
-  int indx = p.indexOf(dp);
+  auto indx = p.indexOf(dp);
   if(indx > -1){
     delete p[indx];
     p.remove(indx);
@@ -1241,7 +1241,7 @@ void Chart::drawScatters(QPainter *painter)
 
   // Draw all not selected if plotsettings changed
   for(int i = 0; i < p.size(); i++){
-    int indx = pforward.indexOf(i);
+    auto indx = pforward.indexOf(i);
     if(p[i]->isVisible() == true && (p[i]->isSelected() == false || indx == -1)){
       PointDraw(painter, rect, settings, p[i]);
     }
@@ -1252,7 +1252,7 @@ void Chart::drawScatters(QPainter *painter)
 
   //Draw only selected to be in forward
     for(int i = 0; i < p.size(); i++){
-    int indx = pforward.indexOf(i);
+    auto indx = pforward.indexOf(i);
     if(p[i]->isVisible() == true && (p[i]->isSelected() == true || indx > -1)){
       PointDraw(painter, rect, settings, p[i]);
       //highlight point with a red circle and give them in forward...

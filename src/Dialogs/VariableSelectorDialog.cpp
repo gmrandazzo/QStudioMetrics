@@ -82,7 +82,7 @@ if(ui.selectbyregexpButton->isChecked()){
     if(m.size() > 0 && id.size() > 0){
       for(int i = 0; i < objlst.size(); i++){
         for(int k = 0; k < id.size(); k++){
-          int indx = m[id[k]]->getObjName().indexOf(objlst[i]);
+          auto indx = m[id[k]]->getObjName().indexOf(objlst[i]);
           if(indx != -1){
             if(var == -1){ // All variables
               for(int j = 0; j < (int)m[id[k]]->Matrix()->col; j++){

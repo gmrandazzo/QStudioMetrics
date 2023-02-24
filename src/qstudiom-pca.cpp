@@ -39,7 +39,8 @@ int main(int argc, char **argv)
     help(argv);
   }
   else{
-    size_t npc = 0, autoscaling = 0;
+    size_t npc = 0;
+    int autoscaling = 0;
     string inputdata, labelfname, datamodel, outputfile, sep;
     bool genmodel, makeprediction;
     genmodel = makeprediction = false;

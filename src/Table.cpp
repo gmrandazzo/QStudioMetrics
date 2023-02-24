@@ -597,7 +597,7 @@ void Table::selectBy()
 
         int col = 0;
         for(int j = 0; j < varlist.size(); j++){
-          int colindex = currentvariables.indexOf(varlist[j]);
+          auto colindex = currentvariables.indexOf(varlist[j]);
           if(colindex !=  -1){
             for(uint i = 0; i < model()->Matrix()->row; i++){
               setMatrixValue(m, i, col, getMatrixValue(model()->Matrix(), i, colindex));
@@ -704,7 +704,7 @@ void Table::selectBy()
           ui.tableView->selectionModel()->clearSelection();
 
           for(int i = 0; i < (*objlabels)[lindex].objects.size(); i++){
-            int index = model()->getObjNames().indexOf((*objlabels)[lindex].objects[i]);
+            auto index = model()->getObjNames().indexOf((*objlabels)[lindex].objects[i]);
             if(index > -1){
               ui.tableView->selectionModel()->select(ui.tableView->model()->index(index, 0), QItemSelectionModel::Select | QItemSelectionModel::Rows);
             }
@@ -823,9 +823,8 @@ void Table::ExportTable()
       if(selectedobj.size() == model()->getObjNames().size()
         && selectedvar.size() == model()->getHorizontalHeaderLabels().size()){
         // write the entire matrix
-        int nrow = objname.size();
-        int ncol = varnames.size();
-
+        auto nrow = objname.size();
+        auto ncol = varnames.size();
 
         pdialog.setRange(0, selectedvar.size() + selectedobj.size());
         // write the header
@@ -851,7 +850,7 @@ void Table::ExportTable()
         // select object and variables to write and write it!
         QList< uint > selectedvarid;
         for(int i = 0; i < varnames.size(); i++){
-          int j = selectedvar.indexOf(varnames[i]);
+          auto j = selectedvar.indexOf(varnames[i]);
           if(j > -1){
             selectedvarid.append(i);
             selectedvar.removeAt(j);
@@ -868,7 +867,7 @@ void Table::ExportTable()
 
         QList<int> selobjid;
         for(int i = 0; i < objname.size(); i++){
-          int j = selectedobj.indexOf(objname[i]);
+          auto j = selectedobj.indexOf(objname[i]);
           if(j > -1){
             selobjid.append(i);
             selectedobj.removeAt(j);
@@ -1038,9 +1037,9 @@ void Table::SortByColumn(int col)
 void Table::SetSelectionName()
 {
 
-  int colindexessize = ui.tableView->selectionModel()->selectedColumns().size();
-  int rowindexessize = ui.tableView->selectionModel()->selectedRows().size();
-  int indexessize = ui.tableView->selectionModel()->selectedIndexes().size() - 1;
+  auto colindexessize = ui.tableView->selectionModel()->selectedColumns().size();
+  auto rowindexessize = ui.tableView->selectionModel()->selectedRows().size();
+  auto indexessize = ui.tableView->selectionModel()->selectedIndexes().size() - 1;
 
   /*
   qDebug() << "indexes " << indexessize;
@@ -1106,10 +1105,10 @@ void Table::contextMenuEvent(QContextMenuEvent *event)
     menu.addAction(copyAct);
     menu.addSeparator();
 
-    int colindexessize = ui.tableView->selectionModel()->selectedColumns().size();
-    int rowindexessize = ui.tableView->selectionModel()->selectedRows().size();
-    int indexessize = ui.tableView->selectionModel()->selectedIndexes().size() - 1;
-    int selected = ((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1); //(ceil(indexessize / (int)(model()->columnCount()+1)))+1)
+    auto colindexessize = ui.tableView->selectionModel()->selectedColumns().size();
+    auto rowindexessize = ui.tableView->selectionModel()->selectedRows().size();
+    auto indexessize = ui.tableView->selectionModel()->selectedIndexes().size() - 1;
+    auto selected = ((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1); //(ceil(indexessize / (int)(model()->columnCount()+1)))+1)
     /*
     qDebug() << "indexes " << indexessize;
     qDebug() << "col" << colindexessize << " " << (int)model()->Matrix()->col;

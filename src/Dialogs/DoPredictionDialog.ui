@@ -176,11 +176,6 @@
           <height>32</height>
          </size>
         </property>
-        <item>
-         <property name="text">
-          <string>Select by label...</string>
-         </property>
-        </item>
        </widget>
       </item>
       <item row="2" column="1">

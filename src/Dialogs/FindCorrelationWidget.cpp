@@ -202,9 +202,9 @@ void FindCorrelationWidget::Find()
       if(ui.varlist->count() > 0){
         QStringList selvarnames  = varlabels->at(ui.varlist->currentIndex()).objects;
         
-        QList< int > selvars;
+        QList<size_t> selvars;
         for(int i = 0; i < selvarnames.size(); i++){
-          int id = varname.indexOf(selvarnames[i]);
+          auto id = varname.indexOf(selvarnames[i]);
           if(id > -1 && id < (int)cmx->row){
             selvars.append(id);
           }
@@ -216,7 +216,7 @@ void FindCorrelationWidget::Find()
         for(int i = 0; i < selvars.size(); i++){
           /*for(uint j = selvars[i]+1; j < cmx->col; j++){*/
           for(uint j = 0; j < cmx->col; j++){
-            if(selvars[i] != (int)j){
+            if(selvars[i] != j){
               if(FLOAT_EQ(cmx->data[selvars[i]][j], 0, aerror) && derr->data[selvars[i]][j] < derror){
                 corr_0.append(CorrVarVarPlotSignal());
                 corr_0.last().varid1 = selvars[i];

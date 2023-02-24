@@ -109,8 +109,8 @@ typedef struct{
 /*highlight signal used in 2D plot to highlight objects (Used by FindCorrelationDialog)*/
 struct highlightSignal
 {
-  QList <int> vid1;
-  QList <int> vid2;
+  QList <ssize_t> vid1;
+  QList <ssize_t> vid2;
 };
 
 /*varvarplot signals used from loadings to plot correlations between variables*/
@@ -139,7 +139,7 @@ struct ListSignal{
 
 /*used to connect a signal from the FindCorrelationDialog to the mainwindow in order to open a variable vs variable plot */
 struct CorrVarVarPlotSignal{
-  int varid1, varid2;
+  ssize_t varid1, varid2;
 };
 
 struct LABEL{

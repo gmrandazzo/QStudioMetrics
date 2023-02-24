@@ -38,9 +38,8 @@ private:
   QStandardItemModel* model;
   QString path;
   QStringList ListRead(QString file_);
-  int CountNumberRow(QString file_);
-  int CountNumberColum(QString file_);
+  auto CountNumberRow(QString file_);
+  auto CountNumberColum(QString file_);
 };
 
 #endif
-

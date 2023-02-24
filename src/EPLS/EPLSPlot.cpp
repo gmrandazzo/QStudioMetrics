@@ -22,8 +22,8 @@ void EPLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot **plot2D)
     if(pred_id > -1){
       QStringList model_objsel = projects->value(pid)->getEPLSModel(mid)->getObjName();
       QStringList yvarsel = projects->value(pid)->getEPLSModel(mid)->getYVarName();
-      uint nobjects = model_objsel.size();
-      uint nvars = yvarsel.size();
+      auto nobjects = model_objsel.size();
+      auto nvars = yvarsel.size();
       matrix *model_predicted_y;
       NewMatrix(&model_predicted_y, nobjects, nvars);
       /*
@@ -38,7 +38,7 @@ void EPLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot **plot2D)
       */
 
       for(uint i = 0; i < nobjects; i++){
-        uint ny = nvars;
+        auto ny = nvars;
         for(uint j = 0; j < ny; j++){
           setMatrixValue(model_predicted_y, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_predicted, i, j+(ny*nlv)-ny));
         }
@@ -68,7 +68,7 @@ void EPLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot **plot2D)
 
       // Get predictions to plot...
       QStringList pred_objsel = projects->value(pid)->getEPLSModel(mid)->getEPLSPrediction(predid)->getObjName();
-      uint pred_nobjects = pred_objsel.size();
+      auto pred_nobjects = pred_objsel.size();
       matrix *pred_predicted_y;
       NewMatrix(&pred_predicted_y, pred_nobjects, nvars);
 
@@ -84,7 +84,7 @@ void EPLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot **plot2D)
       */
 
       for(uint i = 0; i < pred_nobjects; i++){
-        uint ny = nvars;
+        auto ny = nvars;
         for(uint j = 0; j < ny; j++){
           setMatrixValue(pred_predicted_y, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->getEPLSPrediction(predid)->py, i, j+(ny*nlv)-ny));
         }
@@ -151,7 +151,7 @@ void EPLSPlot::ClassPredictedVSExperimental(QList<QStringList> *cellnames, QList
   QStringList objsel = projects->value(pid)->getEPLSModel(mid)->getObjName();
   LABELS classes = projects->value(pid)->getEPLSModel(mid)->getClasses();
 
-  uint nclass = classes.size();
+  auto nclass = classes.size();
   if(nclass == 2){
     nclass = 1;
   }
@@ -230,8 +230,8 @@ void EPLSPlot::RecalcVSExperimental(ScatterPlot **plot2D)
 
   QStringList objsel = projects->value(pid)->getEPLSModel(mid)->getObjName();
   QStringList yvarsel = projects->value(pid)->getEPLSModel(mid)->getYVarName();
-  uint nobjects = objsel.size();
-  uint nvars = yvarsel.size();
+  auto nobjects = objsel.size();
+  auto nvars = yvarsel.size();
   matrix *model_recalc_y;
   NewMatrix(&model_recalc_y, nobjects, nvars);
 
@@ -247,7 +247,7 @@ void EPLSPlot::RecalcVSExperimental(ScatterPlot **plot2D)
   */
 
   for(uint i = 0; i < nobjects; i++){
-    uint ny = nvars;
+    auto ny = nvars;
     for(uint j = 0; j < ny; j++){
       setMatrixValue(model_recalc_y, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_recalculated, i, j+(ny*nlv)-ny));
     }
@@ -308,8 +308,8 @@ void EPLSPlot::RecalcResidualsVSExperimental(ScatterPlot** plot2D)
   if(did > -1){
     QStringList objsel = projects->value(pid)->getEPLSModel(mid)->getObjName();
     QStringList yvarsel = projects->value(pid)->getEPLSModel(mid)->getYVarName();
-    uint nobjects = objsel.size();
-    uint nvars = yvarsel.size();
+    auto nobjects = objsel.size();
+    auto nvars = yvarsel.size();
     matrix *recalc_res;
     NewMatrix(&recalc_res, nobjects, nvars);
 
@@ -325,7 +325,7 @@ void EPLSPlot::RecalcResidualsVSExperimental(ScatterPlot** plot2D)
     */
 
     for(uint i = 0; i < nobjects; i++){
-      uint ny = nvars;
+      auto ny = nvars;
       for(uint j = 0; j < ny; j++){
         setMatrixValue(recalc_res, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_recalculated_residuals, i, j+(ny*nlv)-ny));
       }
@@ -382,7 +382,7 @@ void EPLSPlot::ClassRecalcVSExperimental(QList<QStringList> *cellnames, QList<QL
   QStringList objsel = projects->value(pid)->getEPLSModel(mid)->getObjName();
   LABELS classes = projects->value(pid)->getEPLSModel(mid)->getClasses();
 
-  uint nclass = classes.size();
+  auto nclass = classes.size();
   if(nclass == 2){
     nclass = 1;
   }
@@ -463,8 +463,8 @@ void EPLSPlot::PredictedVSExperimental(ScatterPlot **plot2D)
   if(did > -1){
     QStringList objsel = projects->value(pid)->getEPLSModel(mid)->getObjName();
     QStringList yvarsel = projects->value(pid)->getEPLSModel(mid)->getYVarName();
-    uint nobjects = objsel.size();
-    uint nvars = yvarsel.size();
+    auto nobjects = objsel.size();
+    auto nvars = yvarsel.size();
     matrix *model_pred_y;
     NewMatrix(&model_pred_y, nobjects, nvars);
 
@@ -480,7 +480,7 @@ void EPLSPlot::PredictedVSExperimental(ScatterPlot **plot2D)
     */
 
     for(uint i = 0; i < nobjects; i++){
-      uint ny = nvars;
+      auto ny = nvars;
       for(uint j = 0; j < ny; j++){
         setMatrixValue(model_pred_y, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_predicted, i, j+(ny*nlv)-ny));
       }
@@ -542,8 +542,8 @@ void EPLSPlot::PredictedResidualsVSExperimental(ScatterPlot** plot2D)
   if(did > -1){
     QStringList objsel = projects->value(pid)->getEPLSModel(mid)->getObjName();
     QStringList yvarsel = projects->value(pid)->getEPLSModel(mid)->getYVarName();
-    uint nobjects = objsel.size();
-    uint nvars = yvarsel.size();
+    auto nobjects = objsel.size();
+    auto nvars = yvarsel.size();
     matrix *pred_res;
     NewMatrix(&pred_res, nobjects, nvars);
 
@@ -559,7 +559,7 @@ void EPLSPlot::PredictedResidualsVSExperimental(ScatterPlot** plot2D)
     */
 
     for(uint i = 0; i < nobjects; i++){
-      uint ny = nvars;
+      auto ny = nvars;
       for(uint j = 0; j < ny; j++){
         setMatrixValue(pred_res, i, j, getMatrixValue(projects->value(pid)->getEPLSModel(mid)->y_predicted_residuals, i, j+(ny*nlv)-ny));
       }
@@ -610,7 +610,7 @@ QList< SimpleLine2DPlot* > EPLSPlot::ROCAUCs()
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
   uint nlv = projects->value(pid)->getEPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
-  uint yval = projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated->col;
+  auto yval = projects->value(pid)->getEPLSModel(mid)->roc_auc_recalculated->col;
   matrix *m;
 
   QStringList curvenames;
@@ -697,7 +697,7 @@ QList< SimpleLine2DPlot* > EPLSPlot::PrecisionRecallAveragePrecision()
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
   uint nlv = projects->value(pid)->getEPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
-  uint yval = projects->value(pid)->getEPLSModel(mid)->precision_recall_ap_predicted->col;
+  auto yval = projects->value(pid)->getEPLSModel(mid)->precision_recall_ap_predicted->col;
   matrix *m;
 
   QStringList curvenames;
@@ -782,7 +782,7 @@ QList< SimpleLine2DPlot* > EPLSPlot::R2Q2()
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
   uint nlv = projects->value(pid)->getEPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
-  uint yval = projects->value(pid)->getEPLSModel(mid)->r2->col;
+  auto yval = projects->value(pid)->getEPLSModel(mid)->r2->col;
   matrix *m;
 
   QStringList curvenames;
@@ -839,7 +839,7 @@ QList< SimpleLine2DPlot* > EPLSPlot::R2R2Prediction()
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
   uint nlv = projects->value(pid)->getEPLSModel(mid)->getNPC() + 1; // +1 because we start from 0
-  uint yval = projects->value(pid)->getEPLSModel(mid)->r2->col;
+  auto yval = projects->value(pid)->getEPLSModel(mid)->r2->col;
 
   bool getq2 = false;
   matrix *m;

@@ -37,7 +37,7 @@ ScatterPlot* VariablePlot::VariableVSVariable()
       int nobj = 0;
       for(int j = 0; j < xhash.size(); j++){
         for(uint k = 0; k < projects->value(pid)->getMatrix(xhash[j])->Matrix()->row; k++){
-          int indx = objects_[i].indexOf(projects->value(pid)->getMatrix(xhash[j])->getObjName()[k]);
+          auto indx = objects_[i].indexOf(projects->value(pid)->getMatrix(xhash[j])->getObjName()[k]);
           if(indx > -1){
             nobj++;
           }
@@ -53,7 +53,7 @@ ScatterPlot* VariablePlot::VariableVSVariable()
       MatrixSet(mxlst.last(), 0.f);
       for(int j = 0; j < xhash.size(); j++){
         for(uint k = 0; k < projects->value(pid)->getMatrix(xhash[j])->Matrix()->row; k++){
-          int indx = objects_[i].indexOf(projects->value(pid)->getMatrix(xhash[j])->getObjName()[k]);
+          auto indx = objects_[i].indexOf(projects->value(pid)->getMatrix(xhash[j])->getObjName()[k]);
           if(indx > -1){
             QString str = projects->value(pid)->getMatrix(xhash[j])->getObjName()[k];
             selobjects.last().append(str);

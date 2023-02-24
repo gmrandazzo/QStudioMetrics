@@ -151,7 +151,7 @@ ClassDialog::ClassDialog(QStringList objenames, QList <CLASSES> *classes_)
   QStringList objtoadd = objenames;
   for(int i = 0; i < (*classes_).size(); i++){
     for(int j = 0; j < (*classes_)[i].objlst.size(); j++){
-      int indx = objtoadd.indexOf((*classes_)[i].objlst[j]);
+      auto indx = objtoadd.indexOf((*classes_)[i].objlst[j]);
       if(indx > 0)
         objtoadd.removeAt(indx);
     }

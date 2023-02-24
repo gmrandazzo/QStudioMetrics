@@ -70,7 +70,7 @@ public:
   }
   CPCAPREDICTION *getCPCAPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
   CPCAPREDICTION *getLastCPCAPrediction(){ return prediction.last(); }
-  int CPCAPredictionCount(){ return prediction.size(); }
+  auto CPCAPredictionCount(){ return prediction.size(); }
 
   QString& getHash(){
     if(cpcahash.size() == 0){

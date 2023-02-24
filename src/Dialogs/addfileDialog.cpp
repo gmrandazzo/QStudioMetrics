@@ -8,9 +8,9 @@
 #include <QMessageBox>
 #include "qstudiometricstypes.h"
 
-int AddFileDialog::CountNumberColum(QString file_)
+auto AddFileDialog::CountNumberColum(QString file_)
 {
-  int ncol = 0;
+  ssize_t ncol = 0;
   QFile file(file_);
   file.open(QIODevice::ReadOnly | QIODevice::Text);
   QTextStream in(&file);
@@ -27,9 +27,9 @@ int AddFileDialog::CountNumberColum(QString file_)
   return ncol;
 }
 
-int AddFileDialog::CountNumberRow(QString file_)
+auto AddFileDialog::CountNumberRow(QString file_)
 {
-  int nrow = 0;
+  ssize_t nrow = 0;
   QFile file(file_);
   file.open(QIODevice::ReadOnly | QIODevice::Text);
   QTextStream in(&file);
@@ -205,8 +205,8 @@ void AddFileDialog::Preview()
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
       return;
 
-    int file_nrow = CountNumberRow(ui.file->text());
-    int file_ncol = CountNumberColum(ui.file->text());
+    auto file_nrow = CountNumberRow(ui.file->text());
+    auto file_ncol = CountNumberColum(ui.file->text());
 
     QStringList objname;
     if(!getFileObjName().isEmpty()){

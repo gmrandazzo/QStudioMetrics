@@ -2062,7 +2062,7 @@ ScatterPlot::ScatterPlot(QList<matrix*> &mx_, QList<matrix*> &my_, dvector* b_, 
     setWindowTitle(windowtitle);
 
     //chek for the max of col that could be plot:
-    int maxcol = p[0].coord.size();
+    auto maxcol = p[0].coord.size();
     for(int i = 1; i < p.size(); i++){
       if(p[i].coord.size() < maxcol){
         maxcol = p[i].coord.size();
@@ -2139,7 +2139,7 @@ ScatterPlot::ScatterPlot(QList<matrix*>& mx_, QList<matrix*>& my_, dvector* b_, 
     setWindowTitle(windowtitle);
 
     //chek for the max of col that could be plot:
-    int maxcol = p[0].coord.size();
+    auto maxcol = p[0].coord.size();
     for(int i = 1; i < p.size(); i++){
       if(p[i].coord.size() < maxcol){
         maxcol = p[i].coord.size();
@@ -2220,7 +2220,7 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
     setWindowTitle(windowtitle);
 
     //chek for the max of col that could be plot:
-    int maxcol = p[0].coord.size();
+    auto maxcol = p[0].coord.size();
     for(int i = 1; i < p.size(); i++){
       if(p[i].coord.size() < maxcol){
         maxcol = p[i].coord.size();
@@ -2290,7 +2290,7 @@ ScatterPlot::ScatterPlot(QList< matrix* >& mx_, QList< matrix* >& my_, QList< QS
     setWindowTitle(windowtitle);
 
     //chek for the max of col that could be plot:
-    int maxcol = p[0].coord.size();
+    auto maxcol = p[0].coord.size();
     for(int i = 1; i < p.size(); i++){
       if(p[i].coord.size() < maxcol){
         maxcol = p[i].coord.size();

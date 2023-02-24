@@ -114,7 +114,7 @@ public:
 
   EPLSPREDICTION *getEPLSPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
   EPLSPREDICTION *getLastEPLSPrediction(){ return prediction.last(); }
-  int EPLSPredictionCount(){ return prediction.size(); }
+  auto EPLSPredictionCount(){ return prediction.size(); }
 
   QString& getHash(){ if(eplshash.size() == 0){ eplshash = GenHashFromStrlst((QStringList() << name << "eplsmodel_type")+objname+xvarname+yvarname); } return eplshash; }
 

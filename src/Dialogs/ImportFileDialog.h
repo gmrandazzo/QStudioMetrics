@@ -53,8 +53,8 @@ private:
   QString getLabel();
 
   FSIZE GetSize();
-  int getHeader(QStringList *header);
-  QList<int> getLineToSkip();
+  size_t getHeader(QStringList *header);
+  QList<size_t> getLineToSkip();
 
 
   void ImportType0();

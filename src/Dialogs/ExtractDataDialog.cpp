@@ -188,7 +188,7 @@ void ExtractDataDialog::ObjectsSelectBy()
 
       int col = 0;
       for(int j = 0; j < varlist.size(); j++){
-        int colindex = varnames.indexOf(varlist[j]);
+        auto colindex = varnames.indexOf(varlist[j]);
         if(colindex !=  -1){
           for(uint i = 0; i < projects_->value(pid)->getMatrix(dataid)->Matrix()->row; i++){
             setMatrixValue(m, i, col, getMatrixValue(projects_->value(pid)->getMatrix(dataid)->Matrix(), i, colindex));
