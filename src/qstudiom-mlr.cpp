@@ -121,8 +121,8 @@ int main(int argc, char **argv)
       NewMLRModel(&m);
 
       if(verbose == true){
-        printf("x row %lu col %lu\n", xdata->row, xdata->col);
-        printf("y row %lu col %lu\n", ydata->row, ydata->col);
+        printf("x row %zu col %zu\n", xdata->row, xdata->col);
+        printf("y row %zu col %zu\n", ydata->row, ydata->col);
       }
 
       MLR(xdata, ydata, m, NULL);

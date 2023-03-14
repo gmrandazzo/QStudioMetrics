@@ -85,7 +85,7 @@ public:
   }
   LDAPREDICTION *getLDAPrediction(int id){ Q_ASSERT(id < prediction.size()); return prediction[id]; }
   LDAPREDICTION *getLastLDAPrediction(){ return prediction.last(); }
-  int LDAPredictionCount(){ return prediction.size(); }
+  auto LDAPredictionCount(){ return prediction.size(); }
   QString& getHash(){ if(ldahash.size() == 0){ ldahash = GenHashFromStrlst((QStringList() << name << "ldamodel_type")+objname+varname); } return ldahash; }
 
 private:

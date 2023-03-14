@@ -4,6 +4,7 @@
 #include <QtNetwork/QHostInfo>
 #include <QDir>
 #include <QFile>
+#include <QStringList>
 
 #include "DATAIO.h"
 #include "MainWindow.h"
@@ -12,12 +13,12 @@ int main(int argc, char *argv[])
 {
   #ifdef BUILDEXEC
   QFileInfo finfo(argv[0]);
-  /*#ifdef OSX
+  #ifdef OSX
   QStringList paths;
   paths << finfo.absolutePath()+"/../Frameworks";
   paths << finfo.absolutePath()+"/../PlugIns";
   QCoreApplication::setLibraryPaths(paths);
-  #endif*/
+  #endif
 
   #ifdef WIN32
   QStringList paths;
@@ -26,7 +27,7 @@ int main(int argc, char *argv[])
   QCoreApplication::setLibraryPaths(paths);
   #endif
   #endif
-
+  
   //qDebug() << QCoreApplication::libraryPaths();
 
   QApplication app(argc, argv);

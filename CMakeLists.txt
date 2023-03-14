@@ -91,12 +91,11 @@ set(CMAKE_CXX_STANDARD 20)
 if(WIN32)
   message(STATUS "Build Release: WIN32")
   # add -static if you whant to compile with gcc lib static
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall -DRELEASE -DWIN32 -Wno-long-long")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall -DRELEASE -DWIN32 -DBUILDEXEC -Wno-long-long")
   # add to the linker flags the static library -static-libgcc -static-libstdc++
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-undefined -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s -Wl,-O1")
   SET_PROPERTY(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE QT_NO_DEBUG)
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-  add_definitions(-DBUILDEXEC -DWIN32)
 elseif(APPLE)
   if(cmake_build_type_tolower STREQUAL "debug")
     message(STATUS "Build Debug: APPLE")

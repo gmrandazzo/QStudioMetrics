@@ -147,9 +147,9 @@ int main(int argc, char **argv)
       PLSMODEL *m;
       NewPLSModel(&m);
 
-      printf("N. LVs: %lu\n", npc);
-      printf("x row %lu col %lu\n", xdata->row, xdata->col);
-      printf("y row %lu col %lu\n", ydata->row, ydata->col);
+      printf("N. LVs: %zu\n", npc);
+      printf("x row %zu col %zu\n", xdata->row, xdata->col);
+      printf("y row %zu col %zu\n", ydata->row, ydata->col);
 
       PLS(xdata, ydata, npc, xautoscaling, yautoscaling, m, NULL);
       if(r_genmodel == true)

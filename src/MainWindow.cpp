@@ -91,7 +91,7 @@ void MainWindow::CheckProjects()
         }
       }
     }
-    
+
     if(i.value()->PLSCount() > 0){
       havepls = true;
       for(int j = 0; j < i.value()->PLSCount(); j++){
@@ -342,8 +342,8 @@ bool MainWindow::PrepareMatrix(MATRIX *indata,
   for(int c = 0; c < classes.size(); c++){
     real_objnames << classes[c].objects;
   }
-  
-  int i = 0; 
+
+  int i = 0;
   while(i < real_objnames.size()){
     if(objnames.contains(real_objnames[i])){
       i++;
@@ -352,7 +352,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata,
       real_objnames.removeAt(i);
     }
   }
-  
+
   ResizeMatrix(x, real_objnames.size(), xvarsel.size());
 
   if(classes.size() == 2){
@@ -2407,12 +2407,12 @@ void MainWindow::showEPLSValidation()
     if(pid > -1 && mid > -1 && tabid > -1){
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getEPLSModel(mid)->getName();
-      
+
       QString tabname = projectname + " - " + modelname  +" - EPLS Validation";
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname);
-      
+
       size_t row = projects->value(pid)->getEPLSModel(mid)->Model()->nlv;// the number of components
       size_t col = 0;
       if(projects->value(pid)->getEPLSModel(mid)->getAlgorithm() == EPLS_)
@@ -3058,7 +3058,7 @@ void MainWindow::showCPCABlockScoresPred()
       size_t nobjs = projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getPredSuperScores()->row;
       size_t npc = projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getPredSuperScores()->col;
       size_t nblocks = projects->value(pid)->getCPCAModel(mid)->getVarName().size();
-    
+
       for(size_t k = 0; k < nblocks; k++){
         QString block_name = projects->value(pid)->getCPCAModel(mid)->getVarName()[k].name; // not right...
         QString tabname =  projectname + " - " + modelname + QString(" - CPCA Block Scores %1 Prediction").arg(block_name);
@@ -3067,10 +3067,10 @@ void MainWindow::showCPCABlockScoresPred()
         for(size_t i = 0; i < nobjs; i++)
           for(size_t j = 0; j < npc; j++)
             m->data[i][j] = projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getPredBlockScores()->m[j]->data[i][k];
-            
+
         MDIChild *child = createMdiChild();
         child->setWindowID(tabid);
-        child->newTable(tabname, m, 
+        child->newTable(tabname, m,
                         &projects->value(pid)->getObjectLabels(),
                         &projects->value(pid)->getVariableLabels());
         child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getObjName());
@@ -3110,7 +3110,7 @@ void MainWindow::showCPCASuperScorePred()
                       &projects->value(pid)->getObjectLabels(),
                       &projects->value(pid)->getVariableLabels());
       child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getObjName());
-  
+
       QStringList headername;
       headername << firstcol_name;
       for(size_t c = 0; c < projects->value(pid)->getCPCAModel(mid)->getCPCAPrediction(predid)->getPredSuperScores()->col; c++){
@@ -3180,7 +3180,7 @@ void MainWindow::showCPCABlockLoadings()
     if(pid > -1 && mid > -1 && tabid > -1){
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
-      
+
       for(size_t k = 0; k < projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->order; k++){
         QString block_name = projects->value(pid)->getCPCAModel(mid)->getVarName()[k].name;
         QString tabname =  projectname + " - " + modelname + QString(" - CPCA Block Loadings %1").arg(block_name);
@@ -3223,7 +3223,7 @@ void MainWindow::showCPCABlockScores()
       size_t nobjs = projects->value(pid)->getCPCAModel(mid)->Model()->super_scores->row;
       size_t npc = projects->value(pid)->getCPCAModel(mid)->Model()->super_scores->col;
       size_t nblocks = projects->value(pid)->getCPCAModel(mid)->getVarName().size();
-    
+
       for(size_t k = 0; k < nblocks; k++){
         QString block_name = projects->value(pid)->getCPCAModel(mid)->getVarName()[k].name; // not right...
         QString tabname =  projectname + " - " + modelname + QString(" - CPCA Block Scores %1").arg(block_name);
@@ -3232,10 +3232,10 @@ void MainWindow::showCPCABlockScores()
         for(size_t i = 0; i < nobjs; i++)
           for(size_t j = 0; j < npc; j++)
             m->data[i][j] = projects->value(pid)->getCPCAModel(mid)->Model()->block_scores->m[j]->data[i][k];
-            
+
         MDIChild *child = createMdiChild();
         child->setWindowID(tabid);
-        child->newTable(tabname, m, 
+        child->newTable(tabname, m,
                         &projects->value(pid)->getObjectLabels(),
                         &projects->value(pid)->getVariableLabels());
         child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getObjName());
@@ -3270,7 +3270,7 @@ void MainWindow::showCPCASuperWeights()
       QStringList block_names;
       for(int i = 0; i < projects->value(pid)->getCPCAModel(mid)->getVarName().size(); i++)
         block_names << projects->value(pid)->getCPCAModel(mid)->getVarName()[i].name;
-      
+
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname, projects->value(pid)->getCPCAModel(mid)->Model()->super_weights);
@@ -3303,7 +3303,7 @@ void MainWindow::showCPCASuperScore()
       QString tabname =  projectname + " - " + modelname + " - CPCA Super Scores";
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
-      child->newTable(tabname,projects->value(pid)->getCPCAModel(mid)->Model()->super_scores, 
+      child->newTable(tabname,projects->value(pid)->getCPCAModel(mid)->Model()->super_scores,
                       &projects->value(pid)->getObjectLabels(),
                       &projects->value(pid)->getVariableLabels());
       child->getTable()->model()->setObjNames(projects->value(pid)->getCPCAModel(mid)->getObjName());
@@ -3465,16 +3465,16 @@ void MainWindow::ModelInfo()
       textlst.append(QString("Model name: %1").arg(getCurrentModelName()));
       textlst.append(QString("Model type: %1").arg(getCurrentModelType()));
       QString xhash = getCurrentModelXhash();
-      int nobj = 0;
-      int nvars = 0;
-      int nblocks = 0;
-      int ntarg = 0;
-      int xscaling = getCurrentModelXScalingType();
-      int yscaling = getCurrentModelYScalingType();
-      int xoid = projects->value(pid)->getMatrixID(xhash);
+      auto nobj = 0;
+      auto nvars = 0;
+      auto nblocks = 0;
+      auto ntarg = 0;
+      auto xscaling = getCurrentModelXScalingType();
+      auto yscaling = getCurrentModelYScalingType();
+      auto xoid = projects->value(pid)->getMatrixID(xhash);
       QString moname;
-      int validationtype = -1;
-      int combinationrule = -1;
+      auto validationtype = -1;
+      auto combinationrule = -1;
 
       if(getCurrentModelType().compare("PCA Model") == 0){
         textlst.append(QString("N. PCs: %1").arg(getCurrentModelNComponents()));
@@ -4454,11 +4454,16 @@ void MainWindow::SaveAs()
     savedialog.setPath(lastpath);
     if(savedialog.exec() == QDialog::Accepted){
       QString fproject = projects->value(savedialog.getProjectID())->SaveSQLData(savedialog.getPathToSave());
-      if(recents.contains(fproject) == false){
-        recents[3] = recents[2];
-        recents[2] = recents[1];
-        recents[1] = recents[0];
-        recents[0] = QString("%1:%2").arg(projects->value(savedialog.getProjectID())->getProjectName()).arg(fproject);
+      if(fproject.isEmpty()){
+        QMessageBox::warning(this, tr("Warning!"), tr("Unable to save the project!\n"), QMessageBox::Close);
+      }
+      else{
+        if(recents.contains(fproject) == false){
+          recents[3] = recents[2];
+          recents[2] = recents[1];
+          recents[1] = recents[0];
+          recents[0] = QString("%1:%2").arg(projects->value(savedialog.getProjectID())->getProjectName()).arg(fproject);
+        }
       }
     }
   }
@@ -8449,7 +8454,7 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   connect(ui.actionCPCA2DExplained_variance_Plot, SIGNAL(triggered(bool)), SLOT(CPCA2DExpVarPlot()));
   connect(ui.actionCPCA2DSuperScores_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(CPCA2DSuperScoresPlotPrediction()));
   connect(ui.actionCPCA2DBlockScores_Plot_Prediction, SIGNAL(triggered(bool)), SLOT(CPCA2DBlockScoresPlotPrediction()));
-  
+
   connect(ui.actionPLS_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DPlot()));
   connect(ui.actionPLS2D_tt_Score_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DTTScorePlot()));
   connect(ui.actionPLS2D_pp_Loadings_Plot, SIGNAL(triggered(bool)), SLOT(PLS2DPPLoadingsPlot()));

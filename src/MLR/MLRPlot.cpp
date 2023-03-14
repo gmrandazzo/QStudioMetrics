@@ -16,8 +16,8 @@ void MLRPlot::RecalcVSExperimentalAndPrediction(ScatterPlot **plot2D)
     if(pred_id > -1){
       QStringList objsel = projects->value(pid)->getMLRModel(mid)->getObjName();
       QStringList yvarsel = projects->value(pid)->getMLRModel(mid)->getYVarName();
-      uint nobjects = objsel.size();
-      uint nvars = yvarsel.size();
+      auto nobjects = objsel.size();
+      auto nvars = yvarsel.size();
       matrix *recalc_y;
       initMatrix(&recalc_y);
       MatrixCopy(projects->value(pid)->getMLRModel(mid)->Model()->recalculated_y, &recalc_y);

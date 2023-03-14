@@ -35,7 +35,7 @@ int main(int argc, char **argv)
     help(argv);
   }
   else{
-    int n_clusters, init = 1, nthreads = 1;
+    int n_clusters = 0, init = 1, nthreads = 1;
     string inputdata, outcentroids, outputfile, sep;
     sep = ", \t";
 
