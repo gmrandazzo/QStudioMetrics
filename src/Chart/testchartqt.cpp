@@ -109,7 +109,7 @@ void _2DScattePlotExample(ChartQt *chart)
 
 void _2DScattePlotExampleBIS(ChartQt *chart)
 {
-  int n_points = 500;
+  int n_points = 5000;
   QRandomGenerator rndgen(n_points);
   for(int i = 0; i < n_points; i++){
     #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
@@ -152,16 +152,16 @@ int main(int argc, char *argv[])
   QPlotVersion(&major, &minor, &patch);
   printf("QPlot Version %d.%d.%d\n", major, minor, patch);
   //_2DScattePlotExample(&chart);
-  //_2DScattePlotExampleBIS(&chart);
-  _BarPlotExample(&chart);
+  _2DScattePlotExampleBIS(&chart);
+  //_BarPlotExample(&chart);
   //_CurvePlotExample(&chart);
-
   chart.setXaxisName("X axis");
   chart.setYaxisName("Y axis");
   chart.setPlotTitle("Test Plot...");
   chart.Plot();
   chart.resize(400, 300);
   chart.show();
+    
 
   return app.exec();
 }

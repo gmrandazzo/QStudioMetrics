@@ -29,7 +29,12 @@ void RUN::DoClustering()
       KMeans(m, nclusters+1, clusteralgoritm, uiv, NULL, QThread::idealThreadCount(), &scientifisignal);
     }
     else{
-      HierarchicalClustering(m, nclusters+1, uiv, NULL, dendogram, (enum LinkageType)linktype, QThread::idealThreadCount(), &scientifisignal);
+      HierarchicalClustering(m,
+			     nclusters+1,
+                             uiv,
+                             dendogram,
+                             (enum LinkageType)linktype,
+                             QThread::idealThreadCount());
     }
   }
   else{

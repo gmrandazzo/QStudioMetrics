@@ -799,7 +799,7 @@ ChartQt::ChartQt(QWidget *parent) : QChartView(new QChart(), parent), m_isTouchi
 {
     //setRubberBand(QChartView::RectangleRubberBand); Disable default zoom in/out
     setRubberBand(QChartView::NoRubberBand);
-
+    setRenderHint(QPainter::Antialiasing);
     /*
     zoomInButton = new QToolButton(this);
     zoomInButton->setIcon(QIcon(":/images/zoomin.png"));

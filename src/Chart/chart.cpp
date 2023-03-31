@@ -29,7 +29,7 @@ Chart::Chart(QWidget *parent) : QWidget(parent)
   labeldetail = false;
 
   QPalette Pal(palette());
-
+  
   // set black background
   Pal.setColor(QPalette::Window, Qt::white);
   setBackgroundRole(QPalette::Light);
