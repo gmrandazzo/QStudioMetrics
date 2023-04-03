@@ -7,6 +7,10 @@ QStudioMetrics
 
 **QStudioMetrics is a software to develop data mining and multivariate analysis studies.**
 
+Discoveries often arise from exploratory data analysis and come from a hypothesis-free manner
+alongside hypothesis-driven approaches. QStudioMetrics is a toolbox that allows a conversation between you,
+the data, and the hypotheses. It will enable you to explore and query the data and integrate your personal experience for new discoveries.
+
 ![ScreenShot](https://github.com/gmrandazzo/QStudioMetrics/blob/master/vars/qsmgui.png)
 
 QStudioMetrics is written in C++ using the Qt5 framework and run under Linux, Windows and OSX.
