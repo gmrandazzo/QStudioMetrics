@@ -716,13 +716,38 @@ void ModelDialogWizard::OK()
       eparm.trainsize = ui.trainSizeSpinBox->value()/100.;
       eparm.r_fix = ui.nvarsSpinBox->value();
     }
-
-    for(int i = 0; i < ui.listView_3->model()->rowCount(); i++){
-      if(ui.listView_3->selectionModel()->isSelected(ui.listView_3->model()->index(i, 0)) == true){
-        objsel.append(ui.listView_3->model()->index(i, 0).data(Qt::DisplayRole).toString());
+    
+    // Here we have a selection of objects on the panel of objects
+    // Plus we have a selection from class list from an external list.
+    // We need to be sure that the objects in the final class list are part
+    // of the object selected in the first panel!
+    if(type == LDA_ || type == PLS_DA_ || type == EPLS_DA_){
+      for(int i = 0; i < ui.listView_3->model()->rowCount(); i++){
+        if(ui.listView_3->selectionModel()->isSelected(ui.listView_3->model()->index(i, 0)) == true){
+          QString objname = ui.listView_3->model()->index(i, 0).data(Qt::DisplayRole).toString();
+          for(int j = 0; j < classes.size(); j++){
+            if(classes[j].objects.contains(objname)){
+              objsel.append(objname);
+              break;
+            }
+            else{
+              continue;
+            }
+          }
+        }
+        else{
+          continue;
+        }
       }
-      else{
-        continue;
+    }
+    else{
+      for(int i = 0; i < ui.listView_3->model()->rowCount(); i++){
+        if(ui.listView_3->selectionModel()->isSelected(ui.listView_3->model()->index(i, 0)) == true){
+          objsel.append(ui.listView_3->model()->index(i, 0).data(Qt::DisplayRole).toString());
+        }
+        else{
+          continue;
+        }
       }
     }
 
@@ -756,7 +781,7 @@ void ModelDialogWizard::OK()
             compute_ = true;
             accept();
           }
-          else if(yvarsel.size() == 0 && classes.size() > 0){
+          else if(yvarsel.size() == 0 && classes.size() >= 2){ // at list a binary classification!
             compute_ = true;
             accept();
           }

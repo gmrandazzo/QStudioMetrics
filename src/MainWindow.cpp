@@ -288,7 +288,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata,
         aligned_yvarid.append(it.value());
     }
     else{
-      xvarnotfound << yvarsel[i];
+      yvarnotfound << yvarsel[i];
     }
   }
 
@@ -338,28 +338,14 @@ bool MainWindow::PrepareMatrix(MATRIX *indata,
                                matrix *x,
                                matrix *y)
 {
-  QStringList real_objnames;
-  for(int c = 0; c < classes.size(); c++){
-    real_objnames << classes[c].objects;
-  }
 
-  int i = 0;
-  while(i < real_objnames.size()){
-    if(objnames.contains(real_objnames[i])){
-      i++;
-    }
-    else{
-      real_objnames.removeAt(i);
-    }
-  }
-
-  ResizeMatrix(x, real_objnames.size(), xvarsel.size());
+  ResizeMatrix(x, objnames.size(), xvarsel.size());
 
   if(classes.size() == 2){
-    ResizeMatrix(y, real_objnames.size(), 1);
+    ResizeMatrix(y, objnames.size(), 1);
   }
   else{
-    ResizeMatrix(y, real_objnames.size(), classes.size());
+    ResizeMatrix(y, objnames.size(), classes.size());
   }
 
   QMap<QString, int> objmap;
@@ -375,8 +361,8 @@ bool MainWindow::PrepareMatrix(MATRIX *indata,
 
   QList<int> aligned_xvarid,  aligned_objid;
 
-  for(int i = 0; i < real_objnames.size(); i++){
-    auto it = objmap.find(real_objnames[i]);
+  for(int i = 0; i < objnames.size(); i++){
+    auto it = objmap.find(objnames[i]);
     if(it != objmap.end()){
         aligned_objid.append(it.value());
     }
