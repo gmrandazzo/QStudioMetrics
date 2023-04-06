@@ -18,7 +18,19 @@ void PLSPlot::TU_Plot(ScatterPlot **plot2D)
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
   yhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
-  (*plot2D) = new ScatterPlot(mx, my, b, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "t", "u", projectname + modelname + " - PLS Plot", ScatterPlot::SCORES);
+  (*plot2D) = new ScatterPlot(mx,
+                              my,
+                              b,
+                              objname,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "t",
+                              "u",
+                              projectname + modelname + " - PLS Plot",
+                              ScatterPlot::SCORES);
   (*plot2D)->setPID(pid);
   (*plot2D)->resize(500, 300);
 }
@@ -34,7 +46,17 @@ void PLSPlot::T_ScorePlot2D(ScatterPlot **plot2D)
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
   yhash.append(projects->value(pid)->getPLSModel(mid)->getDataHash());
-  (*plot2D) = new ScatterPlot(mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash, &projects->value(pid)->getObjectLabels(), &projects->value(pid)->getVariableLabels(), "t", "t", QString(projectname + modelname + " - PLS T/T Score Plot"), ScatterPlot::SCORES);
+  (*plot2D) = new ScatterPlot(mxlst,
+                              objnamelst,
+                              &projects->value(pid)->getMATRIXList(),
+                              xhash,
+                              yhash,
+                              &projects->value(pid)->getObjectLabels(),
+                              &projects->value(pid)->getVariableLabels(),
+                              "t",
+                              "t",
+                              QString(projectname + modelname + " - PLS T/T Score Plot"),
+                              ScatterPlot::SCORES);
   (*plot2D)->setPID(pid);
 }
 

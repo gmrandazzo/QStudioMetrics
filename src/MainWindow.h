@@ -40,6 +40,7 @@ private slots:
   void OpenRecent3();
   void OpenRecent4();
   void SaveAs();
+  void SaveAllProjects();
   void Quit();
 
   void AddRemoveObjLabel();
@@ -223,10 +224,11 @@ private:
   Ui::MainWindow ui;
   MDIChild *createMdiChild();
   void closeMDI(const int &id);
+  void closeEvent(QCloseEvent *bar);
 
   QString key;
   QString confdir;
-  QStringList recents;
+  QList<RECENTMODELS> recents;
   PROJECTS *projects;
   QString lastpath;
 
@@ -238,7 +240,10 @@ private:
   bool stoprun;
 
   void updateLog(QString);
-
+  void RecentsProjectSwap(RECENTMODELS m);
+  QList<RECENTMODELS> GetRecentModels();
+  void LoadRecentsModelsFile();
+  void WriteRecentsModelsFile();
   void DebugProjectTree(ProjectTree pjtree);
   void GetPCAProjects(ProjectTree *pjtree);
   void GetCPCAProjects(ProjectTree *pjtree);

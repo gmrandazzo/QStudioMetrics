@@ -149,6 +149,19 @@ struct LABEL{
 
 typedef QList<LABEL> LABELS; // QString is the labelname QStringList is the objectname selected
 
+struct RECENTMODELS{
+  QString name;
+  QString path;
+
+  bool operator==(const RECENTMODELS& omod) const
+  {
+    if(name.compare(omod.name) == 0 && 
+       path.compare(omod.path) == 0)
+      return true;
+    return false;
+  }
+};
+
 struct IMAGE{
   QString name;
   QString filepath;

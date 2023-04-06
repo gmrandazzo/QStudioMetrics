@@ -3993,14 +3993,15 @@ void MainWindow::removeProject()
           closeMDI(getPredictionTableIDAt(pid, i, j));
         }
       }
-
-      QString fproject = projects->value(pid)->getProjectPath();
-      if(recents.contains(fproject) == false){
-        recents[3] = recents[2];
-        recents[2] = recents[1];
-        recents[1] = recents[0];
-        recents[0] = fproject;
+      
+      /*
+      RECENTMODELS m; 
+      m.path = projects->value(pid)->getProjectPath();
+      m.name = projects->value(pid)->getProjectName();
+      if(recents.contains(m) == false){
+        RecentsProjectSwap(m);
       }
+      */
 
       delete projects->value(pid);
       projects->remove(pid);
@@ -4023,6 +4024,12 @@ void MainWindow::removeProject()
       UpdateImageWindow(is);
     }
   }
+}
+
+void MainWindow::closeEvent(QCloseEvent *bar)
+{
+  //SaveAllProjects();
+  bar->accept();
 }
 
 void MainWindow::closeMDI(const int &id)
@@ -4049,6 +4056,127 @@ void MainWindow::updateLog( QString str )
 {
   ui.log->append(str);
   qApp->processEvents();
+}
+
+void MainWindow::RecentsProjectSwap(RECENTMODELS m)
+{
+  recents[3].path = recents[2].path;
+  recents[3].name = recents[2].name;
+
+  recents[2].path = recents[1].path;
+  recents[2].name = recents[1].name;
+
+  recents[1].path = recents[0].path;
+  recents[1].name = recents[0].name;
+
+  recents[0].path = m.path;
+  recents[0].name = m.name;
+}
+
+QList<RECENTMODELS> MainWindow::GetRecentModels()
+{
+  QFile file(confdir+"recents");
+  QList<RECENTMODELS> rlst;
+  if(file.open(QIODevice::ReadOnly | QIODevice::Text)){
+    while(!file.atEnd()){
+      QString line = file.readLine();
+      QStringList tmpname = line.split(":");
+      if(tmpname.size() == 2){
+        QFileInfo fi(tmpname[1].trimmed());
+        if(fi.exists() == true){
+          rlst.append(RECENTMODELS());
+          rlst.last().name = tmpname[0];
+          rlst.last().path = tmpname[1].trimmed();
+        }
+        else{
+          rlst.append(RECENTMODELS());
+          rlst.last().name = "-";
+        }
+      }
+      else{
+        continue;
+      }
+    }
+    file.close();
+  }
+
+  if(rlst.size() < 4){
+    for(int i = rlst.size(); i < 4; i++){
+      rlst.append(RECENTMODELS());
+      rlst.last().name = "-";
+    }
+  }
+
+  return rlst;
+}
+
+void MainWindow::LoadRecentsModelsFile()
+{
+  QList<RECENTMODELS> rlst = GetRecentModels();
+  recents.clear();
+  for(int i = 0; i < rlst.size(); i++){
+    QString model_name = rlst[i].name;
+    QString model_path = rlst[i].path;
+    if(i == 0){
+      ui.action_1->setText(model_name);
+      recents.append(rlst[i]);
+      connect(ui.action_1, SIGNAL(triggered(bool)), SLOT(OpenRecent1()));
+    }
+    else if(i == 1){
+      ui.action_2->setText(model_name);
+      recents.append(rlst[i]);
+      connect(ui.action_2, SIGNAL(triggered(bool)), SLOT(OpenRecent2()));
+    }
+    else if(i == 2){
+      ui.action_3->setText(model_name);
+      recents.append(rlst[i]);
+      connect(ui.action_3, SIGNAL(triggered(bool)), SLOT(OpenRecent3()));
+    }
+    else{
+      ui.action_4->setText(model_name);
+      recents.append(rlst[i]);
+      connect(ui.action_4, SIGNAL(triggered(bool)), SLOT(OpenRecent4()));
+    }
+  }
+}
+
+void MainWindow::WriteRecentsModelsFile()
+{
+  bool recents_changed = false;
+  QList<RECENTMODELS> rlst = GetRecentModels();
+  if(rlst.size() > 0){
+    for(int i = 0; i < rlst.size(); i++){
+      if(recents[i].name.compare(rlst[i].name) == 0 && 
+        recents[i].path.compare(rlst[i].path) == 0){
+        recents_changed = true;
+        break;
+      }
+      else{
+        continue;;
+      }
+    }
+  }
+  else{
+    recents_changed = true;
+  }
+
+  
+  
+  if(recents_changed == true){
+    QFile file(confdir+"recents");
+    file.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream out(&file);
+    for(int i = 0; i < recents.size(); i++){
+      if(recents[i].name.compare("-") != 0 && recents[i].name.size() > 0){
+        QFileInfo fi(recents[i].path);
+        out << recents[i].name << ":" << recents[i].path.trimmed() << "\n";
+      }
+      else{
+        continue;
+      }
+    }
+    file.close();
+  }
 }
 
 void MainWindow::DebugProjectTree(ProjectTree pjtree)
@@ -4352,6 +4480,7 @@ int MainWindow::ProjectOpen(QString fproject)
   projects->insert(pid_, new DATA());
   projects->value(pid_)->setProjectID(pid_);
   projects->value(pid_)->setProjectPath(fproject);
+
   QString projectename = info.absoluteFilePath().split("/", Qt::SkipEmptyParts).last().remove(".qsm");
   updateLog(QString("Importing Project: %1\n").arg(projectename));
   QTreeWidgetItem *item = new QTreeWidgetItem;
@@ -4396,41 +4525,39 @@ int MainWindow::ProjectOpen(QString fproject)
 
 void MainWindow::OpenProject()
 {
-  /*
-  QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), lastpath, QFileDialog::ShowDirsOnly |
-  QFileDialog::DontResolveSymlinks);
-  */
   QString fproject = QString::fromUtf8(QFileDialog::getOpenFileName(this, tr("Open File"), lastpath, tr("QSM Session(*.qsm)"), 0, QFileDialog::DontUseNativeDialog).toUtf8());
   ProjectOpen(fproject);
   QFileInfo fi(fproject);
   if(fi.exists() == true){
-    if(recents.contains(fproject) == false){
-      recents[3] = recents[2];
-      recents[2] = recents[1];
-      recents[1] = recents[0];
-      recents[0] = fproject;
+    RECENTMODELS m;
+    m.name = fi.fileName().replace(".qsm", "");
+    m.path = fproject;
+    if(recents.contains(m) == false){
+      RecentsProjectSwap(m);
+      WriteRecentsModelsFile();
+      LoadRecentsModelsFile();
     }
   }
 }
 
 void MainWindow::OpenRecent1()
 {
-  ProjectOpen(recents[0]);
+  ProjectOpen(recents[0].path);
 }
 
 void MainWindow::OpenRecent2()
 {
-  ProjectOpen(recents[1]);
+  ProjectOpen(recents[1].path);
 }
 
 void MainWindow::OpenRecent3()
 {
-  ProjectOpen(recents[2]);
+  ProjectOpen(recents[2].path);
 }
 
 void MainWindow::OpenRecent4()
 {
-  ProjectOpen(recents[3]);
+  ProjectOpen(recents[3].path);
 }
 
 void MainWindow::SaveAs()
@@ -4444,11 +4571,13 @@ void MainWindow::SaveAs()
         QMessageBox::warning(this, tr("Warning!"), tr("Unable to save the project!\n"), QMessageBox::Close);
       }
       else{
-        if(recents.contains(fproject) == false){
-          recents[3] = recents[2];
-          recents[2] = recents[1];
-          recents[1] = recents[0];
-          recents[0] = QString("%1:%2").arg(projects->value(savedialog.getProjectID())->getProjectName()).arg(fproject);
+        RECENTMODELS m;
+        m.name = projects->value(savedialog.getProjectID())->getProjectName();
+        m.path = projects->value(savedialog.getProjectID())->getProjectPath();
+        if(recents.contains(m) == false){  
+          RecentsProjectSwap(m);
+          WriteRecentsModelsFile();
+          LoadRecentsModelsFile();
         }
       }
     }
@@ -4584,34 +4713,49 @@ void MainWindow::AddRemoveObjLabel()
   ldialog.exec();
 }
 
-void MainWindow::Quit()
+void MainWindow::SaveAllProjects()
 {
-  if(projects->size() > 0){
-    QMessageBox msgBox;
-    msgBox.setText("Are you sure to exit?");
-    msgBox.setInformativeText("Do you want to save your changes?");
-    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Save);
-    int ret = msgBox.exec();
-    switch (ret) {
-      case QMessageBox::Save:
-        SaveAs();
+  int i = 0;
+  while(i < projects->size()){
+    if(projects->value(i)->AutoSave() == true){
+      i++;
+    }
+    else{
+      QMessageBox msgBox;
+      msgBox.setText(QString("Project %1 not saved.").arg(projects->value(i)->getProjectName()));
+      msgBox.setInformativeText("Do you want to save your changes?");
+      msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+      msgBox.setDefaultButton(QMessageBox::Save);
+      int ret = msgBox.exec();
+      switch (ret) {
+        case QMessageBox::Save:
+          // Save and move on!
+          SaveAs();
+          i++;
+          break;
+        case QMessageBox::Discard:
+          // Don't Save was clicked
+          // Just move on!
+          i++;
+          break;
+      case QMessageBox::Cancel:
+        // Cancel was clicked
+        // Dont save and end the close process
+        return;
         break;
-      case QMessageBox::Discard:
-    // Don't Save was clicked
-        close();
+      default:
+        // should never be reached
+        i++;
         break;
-    case QMessageBox::Cancel:
-    // Cancel was clicked
-      break;
-    default:
-    // should never be reached
-      break;
+      }
     }
   }
-  else{
-    close();
-  }
+}
+
+void MainWindow::Quit()
+{
+  SaveAllProjects();
+  close();
 }
 
 void MainWindow::PlotVariableVSVariable()
@@ -6985,10 +7129,10 @@ void MainWindow::DoEPLSValidation()
       TopMenuEnableDisable();
       CalculationMenuEnable();
       StopRun();
-      projects->value(pid)->AutoSave();
       DelMatrix(&x);
       DelMatrix(&y);
       DelUIVector(&kfc);
+      projects->value(pid)->AutoSave();
     }
     else{
       QMessageBox::critical(this, tr("EPLS Validation Error"), "Unable to compute EPLS Validation.\nData are lost.", QMessageBox::Ok);
@@ -7385,10 +7529,10 @@ void MainWindow::DoPLSValidation()
         TopMenuEnableDisable();
         CalculationMenuEnable();
         StopRun();
-        projects->value(pid)->AutoSave();
         DelMatrix(&x);
         DelMatrix(&y);
         DelUIVector(&kfc);
+        projects->value(pid)->AutoSave();
       }
       else{
         QMessageBox::critical(this, tr("PLS Validation Error"), "Unable to compute PLS Validation.\nData are lost.", QMessageBox::Ok);
@@ -8300,58 +8444,7 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
   //#endif
 
   confdir = confdir_;
-  QFile file(confdir+"recents");
-  if(file.open(QIODevice::ReadOnly | QIODevice::Text)){
-    int c = 0;
-    while(!file.atEnd()){
-      QString line = file.readLine();
-      QStringList tmpname = line.split(":");
-      if(tmpname.size() == 2){
-        QFileInfo fi(tmpname.last().trimmed());
-        if(fi.exists() == true){
-          if(c == 0){
-            ui.action_1->setText(tmpname.first());
-            recents.append(tmpname.last().trimmed());
-            connect(ui.action_1, SIGNAL(triggered(bool)), SLOT(OpenRecent1()));
-            c++;
-          }
-          else if(c == 1){
-            ui.action_2->setText(tmpname.first());
-            recents.append(tmpname.last().trimmed());
-            connect(ui.action_2, SIGNAL(triggered(bool)), SLOT(OpenRecent2()));
-            c++;
-          }
-          else if(c == 2){
-            ui.action_3->setText(tmpname.first());
-            recents.append(tmpname.last().trimmed());
-            connect(ui.action_3, SIGNAL(triggered(bool)), SLOT(OpenRecent3()));
-            c++;
-          }
-          else if(c == 3){
-            ui.action_4->setText(tmpname.first());
-            recents.append(tmpname.last().trimmed());
-            connect(ui.action_4, SIGNAL(triggered(bool)), SLOT(OpenRecent4()));
-            c++;
-          }
-          else{
-            break;
-          }
-        }
-        else{
-          continue;
-        }
-      }
-      else{
-        continue;
-      }
-    }
-  }
-
-  if(recents.size() < 4){
-    for(int i = recents.size(); i < 4; i++){
-      recents.append("-");
-    }
-  }
+  LoadRecentsModelsFile();
 
   ui.progressframe->hide();
   ImageWindow();
@@ -8520,21 +8613,6 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0)
 
 MainWindow::~MainWindow()
 {
-
-  // Write Last file to recents..
-  QFile file(confdir+"recents");
-  file.open(QIODevice::WriteOnly | QIODevice::Text);
-  QTextStream out(&file);
-  for(int i = 0; i < recents.size(); i++){
-    if(recents[i].compare("-") != 0){
-      QFileInfo fi(recents[i]);
-      out << fi.fileName().replace(".qsm","").trimmed() << ":" << recents[i].trimmed() << "\n";
-    }
-    else{
-      out << "-\n";
-    }
-  }
-
   //Free Memory
   QMap<int, DATA*>::const_iterator i = projects->constBegin();
   while (i != projects->constEnd()) {

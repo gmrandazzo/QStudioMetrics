@@ -211,8 +211,7 @@ public:
   bool isSQLDatabase(QString sqlfile);
   void OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_, int *mid_, QStringList *log);
   QString SaveSQLData(QString dbName);
-  void AutoSave(); // To work first SaveData.
-  QString getAutoSaveFile(){ return projectfautosave; }
+  bool AutoSave(); // To work first SaveData.
   void addMatrix();
   void addMatrix(MATRIX *mx);
   void addArray();
@@ -314,7 +313,8 @@ private:
   void saveMatrixToSQL(QSqlQuery *query, MATRIX *m);
   void saveArrayToSQL(QSqlQuery *query, ARRAY *a);
 
-  QString projectpath, projectname, projectfautosave;
+  QString projectpath;
+  QString projectname;
   QList<MATRIX*> matrix_;
   QList<ARRAY*> array_;
   QList<PCAModel*> pcamodel;

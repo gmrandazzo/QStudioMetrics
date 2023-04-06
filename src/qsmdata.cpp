@@ -224,6 +224,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
   db.setDatabaseName(sqlfile);
   db.open();
   if(db.isOpen()){
+    projectpath = sqlfile;
     QSqlQuery query = QSqlQuery(db);
     query.exec("SELECT * from matrixTable");
     while (query.next()){
@@ -1004,9 +1005,9 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
   }
 }
 
-void DATA::AutoSave()
+bool DATA::AutoSave()
 {
-  QFileInfo check_file(projectfautosave);
+  QFileInfo check_file(projectpath);
   if(check_file.exists() && check_file.isFile()){
     GenericProgressDialog pbdialog;
     pbdialog.setRange(0,5);
@@ -1014,10 +1015,10 @@ void DATA::AutoSave()
     pbdialog.show();
     SaveSQLData(check_file.absolutePath());
     pbdialog.setValue(5);
-    return;
+    return true;
   }
   else
-    return;
+    return false;
 }
 
 void DATA::saveMatrixToSQL(QSqlQuery *query, MATRIX *m)
@@ -1061,6 +1062,7 @@ QString DATA::SaveSQLData(QString savepath)
   pbdialog.hideCancel();
   pbdialog.show();
   QString dbName = savepath+"/"+getProjectName()+".qsm";
+  projectpath = dbName;
   //QString dbName( "myDatabase.db3" );
   QFile::remove(dbName);
   QSqlDatabase db = QSqlDatabase::addDatabase( "QSQLITE" );

@@ -151,7 +151,7 @@ void EPLSPlot::ClassPredictedVSExperimental(QList<QStringList> *cellnames, QList
   QStringList objsel = projects->value(pid)->getEPLSModel(mid)->getObjName();
   LABELS classes = projects->value(pid)->getEPLSModel(mid)->getClasses();
 
-  auto nclass = classes.size();
+  size_t nclass = classes.size();
   if(nclass == 2){
     nclass = 1;
   }
@@ -382,7 +382,7 @@ void EPLSPlot::ClassRecalcVSExperimental(QList<QStringList> *cellnames, QList<QL
   QStringList objsel = projects->value(pid)->getEPLSModel(mid)->getObjName();
   LABELS classes = projects->value(pid)->getEPLSModel(mid)->getClasses();
 
-  auto nclass = classes.size();
+  size_t nclass = classes.size();
   if(nclass == 2){
     nclass = 1;
   }
