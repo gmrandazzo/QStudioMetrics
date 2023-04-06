@@ -4075,12 +4075,12 @@ void MainWindow::RecentsProjectSwap(RECENTMODELS m)
 
 QList<RECENTMODELS> MainWindow::GetRecentModels()
 {
-  QFile file(confdir+"recents");
+  QFile file(QFileInfo(QString("%1/%2").arg(confdir).arg("recents")).absoluteFilePath());
   QList<RECENTMODELS> rlst;
   if(file.open(QIODevice::ReadOnly | QIODevice::Text)){
     while(!file.atEnd()){
       QString line = file.readLine();
-      QStringList tmpname = line.split(":");
+      QStringList tmpname = line.split(";");
       if(tmpname.size() == 2){
         QFileInfo fi(tmpname[1].trimmed());
         if(fi.exists() == true){
@@ -4118,9 +4118,11 @@ void MainWindow::LoadRecentsModelsFile()
     QString model_name = rlst[i].name;
     QString model_path = rlst[i].path;
     if(i == 0){
+      qDebug() << model_name;
       ui.action_1->setText(model_name);
       recents.append(rlst[i]);
       connect(ui.action_1, SIGNAL(triggered(bool)), SLOT(OpenRecent1()));
+      qDebug() << ui.action_1->text();
     }
     else if(i == 1){
       ui.action_2->setText(model_name);
@@ -4163,13 +4165,13 @@ void MainWindow::WriteRecentsModelsFile()
   
   
   if(recents_changed == true){
-    QFile file(confdir+"recents");
+    QFile file(QFileInfo(QString("%1/%2").arg(confdir).arg("recents")).absoluteFilePath());
     file.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream out(&file);
     for(int i = 0; i < recents.size(); i++){
       if(recents[i].name.compare("-") != 0 && recents[i].name.size() > 0){
         QFileInfo fi(recents[i].path);
-        out << recents[i].name << ":" << recents[i].path.trimmed() << "\n";
+        out << recents[i].name << ";" << recents[i].path.trimmed() << "\n";
       }
       else{
         continue;
@@ -4479,9 +4481,9 @@ int MainWindow::ProjectOpen(QString fproject)
   QFileInfo info(fproject);
   projects->insert(pid_, new DATA());
   projects->value(pid_)->setProjectID(pid_);
-  projects->value(pid_)->setProjectPath(fproject);
+  projects->value(pid_)->setProjectPath(info.absoluteFilePath().toUtf8().data());
 
-  QString projectename = info.absoluteFilePath().split("/", Qt::SkipEmptyParts).last().remove(".qsm");
+  QString projectename = info.fileName().replace(".qsm", "");
   updateLog(QString("Importing Project: %1\n").arg(projectename));
   QTreeWidgetItem *item = new QTreeWidgetItem;
   item->setText(0, projectename);
@@ -4498,8 +4500,8 @@ int MainWindow::ProjectOpen(QString fproject)
   ui.treeWidget->addTopLevelItem(item);
 
   QStringList log;
-  if(projects->value(pid_)->isSQLDatabase(fproject.toUtf8().data()) == true){
-    projects->value(pid_)->OpenSQLData(fproject.toUtf8().data(), ui.treeWidget, &tabcount_, &mid_, &log);
+  if(projects->value(pid_)->isSQLDatabase(info.absoluteFilePath().toUtf8().data()) == true){
+    projects->value(pid_)->OpenSQLData(info.absoluteFilePath().toUtf8().data(), ui.treeWidget, &tabcount_, &mid_, &log);
   }
   else{
     // OLD Version
@@ -4527,11 +4529,11 @@ void MainWindow::OpenProject()
 {
   QString fproject = QString::fromUtf8(QFileDialog::getOpenFileName(this, tr("Open File"), lastpath, tr("QSM Session(*.qsm)"), 0, QFileDialog::DontUseNativeDialog).toUtf8());
   ProjectOpen(fproject);
-  QFileInfo fi(fproject);
-  if(fi.exists() == true){
+  QFileInfo info(fproject);
+  if(info.exists() == true){
     RECENTMODELS m;
-    m.name = fi.fileName().replace(".qsm", "");
-    m.path = fproject;
+    m.name = info.fileName().replace(".qsm", "");
+    m.path = info.absoluteFilePath().toUtf8().data();
     if(recents.contains(m) == false){
       RecentsProjectSwap(m);
       WriteRecentsModelsFile();
