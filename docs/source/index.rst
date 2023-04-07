@@ -10,6 +10,8 @@ Welcome to QStudioMetrics's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   Install
+   Licensing
 
 
 Indices and tables
