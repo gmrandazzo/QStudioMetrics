@@ -58,6 +58,10 @@ make
 
 Binary releases for Windows and OSX at <https://github.com/gmrandazzo/QStudioMetrics/releases>.
 
+## Documentation
+
+https://qstudiometrics.readthedocs.io/en/latest/
+
 
 ## Supported platforms
 - Linux
