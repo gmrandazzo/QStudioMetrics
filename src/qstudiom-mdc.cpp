@@ -21,11 +21,10 @@ int main(int argc, char **argv)
     }
 
     if(argc == 4){
-      MDC(x, 0, 0, idsel, nthreads , NULL);
+      MDC(x, 0, 0, idsel, nthreads);
     }
     else{
-      //MDC(x, atoi(argv[3]), 0, &idsel, nthreads, NULL);
-      MaxDis(x, atoi(argv[3]), 0, idsel, nthreads, NULL);
+      MaxDis_Fast(x, atoi(argv[3]), 0, idsel, nthreads);
     }
     DATAIO::WriteUIvector(argv[2], idsel);
     DelMatrix(&x);

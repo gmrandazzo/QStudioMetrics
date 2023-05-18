@@ -15,10 +15,10 @@
 void RUN::DoClusterValidation()
 {
   if(vt == BOOTSTRAPRGCV_){
-    KMeansRandomGroupsCV(m, nmaxclusters, clusteralgoritm, ngroup, niter, dv, QThread::idealThreadCount(), &scientifisignal);
+    KMeansRandomGroupsCV(m, nmaxclusters, clusteralgoritm, ngroup, niter, dv, QThread::idealThreadCount());
   }
   else{
-    KMeansJumpMethod(m, nmaxclusters, clusteralgoritm, dv, QThread::idealThreadCount(), &scientifisignal);
+    KMeansJumpMethod(m, nmaxclusters, clusteralgoritm, dv, QThread::idealThreadCount());
   }
 }
 
@@ -26,7 +26,7 @@ void RUN::DoClustering()
 {
   if(objselectiontype == 3){ /*get all objects...*/
     if(clusteralgoritm < 4){
-      KMeans(m, nclusters+1, clusteralgoritm, uiv, NULL, QThread::idealThreadCount(), &scientifisignal);
+      KMeans(m, nclusters+1, clusteralgoritm, uiv, NULL, QThread::idealThreadCount());
     }
     else{
       HierarchicalClustering(m,
@@ -40,7 +40,7 @@ void RUN::DoClustering()
   else{
     matrix *centroids;
     initMatrix(&centroids);
-    KMeans(m, nclusters+1, clusteralgoritm, uiv, centroids, QThread::idealThreadCount(), &scientifisignal);
+    KMeans(m, nclusters+1, clusteralgoritm, uiv, centroids, QThread::idealThreadCount());
     PruneResults(m, centroids, nmaxobjects, objselectiontype, uiv, QThread::idealThreadCount());
     DelMatrix(&centroids);
   }
@@ -84,12 +84,12 @@ void RUN::DoRandomSelection()
 
 void RUN::DoMaxDisSelection()
 {
-  MaxDis(m, nobjects, metric, uiv, QThread::idealThreadCount(), &scientifisignal);
+  MaxDis_Fast(m, nobjects, metric, uiv, QThread::idealThreadCount());
 }
 
 void RUN::DoMDCSelection()
 {
-  MDC(m, nobjects, metric, uiv, QThread::idealThreadCount(), &scientifisignal);
+  MDC(m, nobjects, metric, uiv, QThread::idealThreadCount());
 }
 
 void RUN::DoLDAPrediction()
