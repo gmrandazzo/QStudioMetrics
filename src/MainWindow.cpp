@@ -4657,7 +4657,7 @@ void MainWindow::AdvancedPretreatment()
 void MainWindow::ShowObjVarList(ListSignal lsig)
 {
   #ifdef DEBUG
-  qDebug() << "ShowObjVarList(ListSignal lsig) " << lsig.pid << " " << lsig.idobjlist;
+  qDebug() << "ShowObjVarList(ListSignal lsig) " << lsig.pid << " " << lsig.id << " " << lsig.type;
   #endif
   if(lsig.pid != -1 && lsig.pid < projects->size()){
     if(lsig.id != -1 && lsig.type == OBJLABELST && lsig.id < projects->value(lsig.pid)->getObjectLabels().size()){
@@ -7019,13 +7019,13 @@ void MainWindow::DoEPLSPrediction()
         subitem->setText(6, QString::number(projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getPredID()));
         subitem->setText(7, QString("EPLS Prediction"));
 
-        #ifdef DEBUG
-        qDebug() << "X Predicted Scores";
-        PrintArray(projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getXPredScores());
-        qDebug() << "Y Dipendent Value Predicted";
-        PrintMatrix(projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getYDipVar());
-        qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2) << subitem->text(3) << subitem->text(4) << subitem->text(5);
-        #endif
+        //#ifdef DEBUG
+        //qDebug() << "X Predicted Scores";
+        //PrintArray(projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getXPredScores());
+        //qDebug() << "Y Dipendent Value Predicted";
+        //PrintMatrix(projects->value(pid)->getEPLSModel(mid)->getLastEPLSPrediction()->getYDipVar());
+        //qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2) << subitem->text(3) << subitem->text(4) << subitem->text(5);
+        //#endif
 
         tabcount_++;
 
@@ -8224,11 +8224,8 @@ void MainWindow::DoMLRValidation()
 
         if(stoprun == false){
         #ifdef DEBUG
-        qDebug() << "r2x validation";
-        PrintDVector(projects->value(pid)->getMLRModel(mid)->Model()->r2x_validation);
-
         qDebug() << "q2y validation";
-        PrintMatrix(projects->value(pid)->getMLRModel(mid)->Model()->q2y);
+        PrintDVector(projects->value(pid)->getMLRModel(mid)->Model()->q2y);
         #endif
 
           projects->value(pid)->getMLRModel(mid)->setValidation(vt);
@@ -8305,7 +8302,7 @@ void MainWindow::DoMLR()
         if(stoprun == false){
           WaitRun();
           #ifdef DEBUG
-          PrintMLRModel(projects->value(pid)->getMLRModel(mid_)->Model());
+          PrintMLR(projects->value(pid)->getMLRModel(mid_)->Model());
           #endif
 
           QTreeWidgetItem *subitem = new QTreeWidgetItem;
@@ -8399,8 +8396,6 @@ void MainWindow::Test()
       qDebug() << i.value()->getVariableLabels()[j].name  << " selected objects " << i.value()->getVariableLabels()[j].objects;
     }
 
-    ui.imageLabel->setPixmap(0);
-
     qDebug() << QString("%1 PCA Models").arg(QString::number(i.value()->PCACount()));
     for(int j = 0; j < i.value()->PCACount(); j++){
       qDebug() << "Mod Name: " <<  i.value()->getPCAModelAt(j)->getName() << " PC: " << i.value()->getPCAModelAt(j)->getNPC() << "Model Position: " << i.value()->getPCAModelAt(j)->getModelID() << " Data Matrix: " << i.value()->getPCAModelAt(j)->getDataHash();
@@ -8421,13 +8416,13 @@ void MainWindow::Test()
 
 
 
-    qDebug() << QString("%1 EPLS Models").arg(QString::number(i.value()->EPLSCount()));
-    for(int j = 0; j < i.value()->EPLSCount(); j++){
-      qDebug() << "Mod Name: " <<  i.value()->getEPLSModelAt(j)->getName() << "Model Position: " << i.value()->getEPLSModelAt(j)->getModelID() << "PID " << i.value()->getEPLSModelAt(j)->getProjectID();
-      PrintMatrix(i.value()->getEPLSModelAt(j)->getMap());
-      PrintUIVector(i.value()->getEPLSModelAt(j)->getSelectedVariables());
-      PrintUIVector(i.value()->getEPLSModelAt(j)->getVariableDistribution());
-    }
+    //qDebug() << QString("%1 EPLS Models").arg(QString::number(i.value()->EPLSCount()));
+    //for(int j = 0; j < i.value()->EPLSCount(); j++){
+    //  qDebug() << "Mod Name: " <<  i.value()->getEPLSModelAt(j)->getName() << "Model Position: " << i.value()->getEPLSModelAt(j)->getModelID() << "PID " << i.value()->getEPLSModelAt(j)->getProjectID();
+    //  PrintMatrix(i.value()->getEPLSModelAt(j)->getMap());
+    //  PrintUIVector(i.value()->getEPLSModelAt(j)->getSelectedVariables());
+    //  PrintUIVector(i.value()->getEPLSModelAt(j)->getVariableDistribution());
+    //}
   }
 #endif
 }

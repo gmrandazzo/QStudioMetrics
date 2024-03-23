@@ -151,8 +151,8 @@ int main(int argc, char *argv[])
   int major, minor, patch;
   QPlotVersion(&major, &minor, &patch);
   printf("QPlot Version %d.%d.%d\n", major, minor, patch);
-  //_2DScattePlotExample(&chart);
-  _2DScattePlotExampleBIS(&chart);
+  _2DScattePlotExample(&chart);
+  //_2DScattePlotExampleBIS(&chart);
   //_BarPlotExample(&chart);
   //_CurvePlotExample(&chart);
   chart.setXaxisName("X axis");

@@ -524,7 +524,7 @@ void Table::copy()
     selected_text.append(QLatin1Char('\n'));
     #ifdef DEBUG
     qDebug()<< "Copy Action";
-    qDebug()<< selected_text<<endl;
+    qDebug()<< selected_text;
     #endif
     QApplication::clipboard()->setText( selected_text );
   }

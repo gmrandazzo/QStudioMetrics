@@ -1060,7 +1060,7 @@ QList< SimpleLine2DPlot* > PLSPlot::R2Q2()
       QString yname = projects->value(pid)->getPLSModel(mid)->getYVarName()[j];
       #ifdef DEBUG
       qDebug() << "r2";
-      PrintMatrix(projects->value(pid)->getPLSModel(mid)->Model()->r2y_model);
+      PrintMatrix(projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated);
       qDebug() << "q2";
       PrintMatrix(projects->value(pid)->getPLSModel(mid)->Model()->q2y);
       #endif
@@ -1383,7 +1383,7 @@ QList< SimpleLine2DPlot* > PLSPlot::R2R2Prediction()
       QString yname = projects->value(pid)->getPLSModel(mid)->getYVarName()[j];
       #ifdef DEBUG
       qDebug() << "r2";
-      PrintMatrix(projects->value(pid)->getPLSModel(mid)->Model()->r2y_model);
+      PrintMatrix(projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated);
       qDebug() << "q2";
       PrintMatrix(projects->value(pid)->getPLSModel(mid)->Model()->q2y);
       #endif
