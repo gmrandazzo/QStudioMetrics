@@ -10,33 +10,33 @@
 
 #include "ui_ExportTableDialog.h"
 
-class ExportTableDialog : public QDialog
-{
+class ExportTableDialog : public QDialog {
   Q_OBJECT
-  
+
 public:
-  ExportTableDialog(QStringList objname, QStringList varname, LABELS *objectlabels_, LABELS *varlabels_);
-  
-  void setPath(QString path_){ path = path_; }
+  ExportTableDialog(QStringList objname, QStringList varname,
+                    LABELS *objectlabels_, LABELS *varlabels_);
+
+  void setPath(QString path_) { path = path_; }
   QString getFileName();
   QString getSeparator();
   QStringList getSelectedObjects();
   QStringList getSelectedVariables();
-  
+
 private slots:
   void SaveAs();
   void EnableOKButton();
-  
+
   void ObjSelectAll();
   void ObjInvertSelection();
   void ObjUnselectAll();
   void ObjSelectBy();
-  
+
   void VarSelectAll();
   void VarInvertSelection();
   void VarUnselectAll();
   void VarSelectBy();
-  
+
 private:
   Ui::ExportTableDialog ui;
   QString path;
@@ -48,6 +48,4 @@ private:
   QStringList selected_variables;
 };
 
-
 #endif
-

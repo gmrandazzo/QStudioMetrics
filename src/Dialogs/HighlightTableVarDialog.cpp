@@ -2,57 +2,63 @@
 #include "qstudiometricstypes.h"
 #include <QColorDialog>
 
-void HighlightTableVarDialog::Cancel()
-{
-  reject();
-}
+void HighlightTableVarDialog::Cancel() { reject(); }
 
-void HighlightTableVarDialog::OK()
-{
-  accept();
-}
+void HighlightTableVarDialog::OK() { accept(); }
 
-void HighlightTableVarDialog::SetMaxColor()
-{
+void HighlightTableVarDialog::SetMaxColor() {
   colormax = QColorDialog::getColor(colormax, this);
-  ui.actionSelectColorMax->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(colormax.red()).arg(colormax.green()).arg(colormax.blue()));
+  ui.actionSelectColorMax->setStyleSheet(
+      QString("background-color: rgb(%1, %2, %3);")
+          .arg(colormax.red())
+          .arg(colormax.green())
+          .arg(colormax.blue()));
 }
 
-void HighlightTableVarDialog::SetMinColor()
-{
+void HighlightTableVarDialog::SetMinColor() {
   colormin = QColorDialog::getColor(colormin, this);
-  ui.actionSelectColorMin->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(colormin.red()).arg(colormin.green()).arg(colormin.blue()));
+  ui.actionSelectColorMin->setStyleSheet(
+      QString("background-color: rgb(%1, %2, %3);")
+          .arg(colormin.red())
+          .arg(colormin.green())
+          .arg(colormin.blue()));
 }
 
-void HighlightTableVarDialog::SetVariable()
-{
+void HighlightTableVarDialog::SetVariable() {
   var = ui.varlist->currentIndex();
 }
 
-HighlightTableVarDialog::HighlightTableVarDialog(QStringList varname): QDialog()
-{
+HighlightTableVarDialog::HighlightTableVarDialog(QStringList varname)
+    : QDialog() {
   ui.setupUi(this);
-  
+
   var = 0;
-  
+
   colormin = QColor(Qt::green);
-  ui.actionSelectColorMin->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(colormin.red()).arg(colormin.green()).arg(colormin.blue()));
-  
+  ui.actionSelectColorMin->setStyleSheet(
+      QString("background-color: rgb(%1, %2, %3);")
+          .arg(colormin.red())
+          .arg(colormin.green())
+          .arg(colormin.blue()));
+
   colormax = QColor(Qt::red);
-  ui.actionSelectColorMax->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(colormax.red()).arg(colormax.green()).arg(colormax.blue()));
-  
-  for(int i = 0; i < varname.size(); i++){
-    if(varname[i].compare(firstcol_name,  Qt::CaseInsensitive) == 0 || 
-      varname[i].compare("Principal Component",  Qt::CaseInsensitive) == 0 || 
-      varname[i].compare("Variables",  Qt::CaseInsensitive) == 0 ||
-      varname[i].compare("Models Name",  Qt::CaseInsensitive) == 0){
+  ui.actionSelectColorMax->setStyleSheet(
+      QString("background-color: rgb(%1, %2, %3);")
+          .arg(colormax.red())
+          .arg(colormax.green())
+          .arg(colormax.blue()));
+
+  for (int i = 0; i < varname.size(); i++) {
+    if (varname[i].compare(firstcol_name, Qt::CaseInsensitive) == 0 ||
+        varname[i].compare("Principal Component", Qt::CaseInsensitive) == 0 ||
+        varname[i].compare("Variables", Qt::CaseInsensitive) == 0 ||
+        varname[i].compare("Models Name", Qt::CaseInsensitive) == 0) {
       continue;
-    }
-    else{
+    } else {
       ui.varlist->addItem(varname[i]);
     }
   }
-  
+
   connect(ui.varlist, SIGNAL(currentIndexChanged(int)), SLOT(SetVariable()));
   connect(ui.okButton, SIGNAL(clicked(bool)), SLOT(OK()));
   connect(ui.cancelButton, SIGNAL(clicked(bool)), SLOT(Cancel()));

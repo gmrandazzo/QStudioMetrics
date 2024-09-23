@@ -9,34 +9,32 @@
 #include <QDebug>
 #endif
 
-MLRPREDICTION::MLRPREDICTION()
-{
+MLRPREDICTION::MLRPREDICTION() {
   initMatrix(&py);
   initDVector(&r2y);
   initDVector(&sdec);
   id = did = -1;
 }
 
-MLRPREDICTION::~MLRPREDICTION(){
-  #ifdef DEBUG
+MLRPREDICTION::~MLRPREDICTION() {
+#ifdef DEBUG
   qDebug() << "Delete MLRPREDICTION: " << name;
-  #endif
+#endif
   DelMatrix(&py);
   DelDVector(&r2y);
   DelDVector(&sdec);
 }
 
-MLRModel::MLRModel(){
+MLRModel::MLRModel() {
   NewMLRModel(&m);
   did = modelid = -1;
   validation = 0;
 }
 
-MLRModel::~MLRModel()
-{
-  #ifdef DEBUG
+MLRModel::~MLRModel() {
+#ifdef DEBUG
   qDebug() << "Delete MLR Model: " << name;
-  #endif
+#endif
   delMLRPredictions();
   DelMLRModel(&m);
 }

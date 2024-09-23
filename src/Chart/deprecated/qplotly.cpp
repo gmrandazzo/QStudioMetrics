@@ -8,355 +8,308 @@
 #include <QStringList>
 #include <QTextStream>
 #include <QThread>
-#include <QtConcurrent/QtConcurrent>
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QtConcurrent/QtConcurrent>
 
 #ifdef WEBKIT
-#include <QWebView>
 #include <QSettings>
+#include <QWebView>
 #else
-#include <QWebEngineView>
-#include <QWebEngineProfile>
 #include <QWebEngineFullScreenRequest>
+#include <QWebEngineProfile>
+#include <QWebEngineView>
 #endif
-
 
 #include <QDebug>
 
 #ifdef WEBKIT
-CustomNetworkCookieJar::CustomNetworkCookieJar( QObject * p_pParent )
-    : QNetworkCookieJar( p_pParent )
-{
-}
+CustomNetworkCookieJar::CustomNetworkCookieJar(QObject *p_pParent)
+    : QNetworkCookieJar(p_pParent) {}
 
-CustomNetworkCookieJar::~CustomNetworkCookieJar()
-{
-}
+CustomNetworkCookieJar::~CustomNetworkCookieJar() {}
 
-bool CustomNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> & p_grCookieList, const QUrl &p_grUrl)
-{
-    for(int i = 0; i < p_grCookieList.size(); i++){
-       QString cookie = QString("%1=%2").arg(QString(p_grCookieList[i].name())).arg(QString(p_grCookieList[i].value()));
-       emit cookiesChanged(cookie);
-    }
-    return true;
+bool CustomNetworkCookieJar::setCookiesFromUrl(
+    const QList<QNetworkCookie> &p_grCookieList, const QUrl &p_grUrl) {
+  for (int i = 0; i < p_grCookieList.size(); i++) {
+    QString cookie = QString("%1=%2")
+                         .arg(QString(p_grCookieList[i].name()))
+                         .arg(QString(p_grCookieList[i].value()));
+    emit cookiesChanged(cookie);
+  }
+  return true;
 }
 #endif
 
-
-void QPlotlyWindow::Demo()
-{
+void QPlotlyWindow::Demo() {
   code.clear();
   code += "<html>";
-  code +="<head>";
-  code +="<!-- Plotly.js -->";
-  code +="<script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>";
-  code +="</head>";
-  code +="<body>";
-  code +="<div id=\"myDiv\"  style=\"height: 100%;width: 100%;\"><!-- Plotly chart will be drawn inside this DIV --></div>";
-  code +="<script>";
-  code +="var trace1 = {";
-  code +="x: [1, 2, 3, 4],";
-  code +="y: [10, 15, 13, 17],";
-  code +="mode: 'markers'";
-  code +="};";
-  code +="var trace2 = {";
-  code +="x: [2, 3, 4, 5],";
-  code +="y: [16, 5, 11, 10],";
-  code +="mode: 'lines'";
-  code +="};";
-  code +="var trace3 = {";
-  code +="x: [1, 2, 3, 4],";
-  code +="y: [12, 9, 15, 12],";
-  code +="mode: 'lines+markers'";
-  code +="};";
-  code +="var data = [ trace1, trace2, trace3 ];";
-  code +="var layout = {};";
-  code +="var d3 = Plotly.d3;";
-  code +="var gd3 = d3.select(\"div[id='myDiv']\");";
-  code +="var gd = gd3.node();";
-  code +="Plotly.newPlot('myDiv', data, layout);";
-  code +="window.addEventListener('resize', function() { Plotly.Plots.resize(gd); });";
-  code +="</script>";
-  code +="</body>";
+  code += "<head>";
+  code += "<!-- Plotly.js -->";
+  code += "<script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>";
+  code += "</head>";
+  code += "<body>";
+  code += "<div id=\"myDiv\"  style=\"height: 100%;width: 100%;\"><!-- Plotly "
+          "chart will be drawn inside this DIV --></div>";
+  code += "<script>";
+  code += "var trace1 = {";
+  code += "x: [1, 2, 3, 4],";
+  code += "y: [10, 15, 13, 17],";
+  code += "mode: 'markers'";
+  code += "};";
+  code += "var trace2 = {";
+  code += "x: [2, 3, 4, 5],";
+  code += "y: [16, 5, 11, 10],";
+  code += "mode: 'lines'";
+  code += "};";
+  code += "var trace3 = {";
+  code += "x: [1, 2, 3, 4],";
+  code += "y: [12, 9, 15, 12],";
+  code += "mode: 'lines+markers'";
+  code += "};";
+  code += "var data = [ trace1, trace2, trace3 ];";
+  code += "var layout = {};";
+  code += "var d3 = Plotly.d3;";
+  code += "var gd3 = d3.select(\"div[id='myDiv']\");";
+  code += "var gd = gd3.node();";
+  code += "Plotly.newPlot('myDiv', data, layout);";
+  code += "window.addEventListener('resize', function() { "
+          "Plotly.Plots.resize(gd); });";
+  code += "</script>";
+  code += "</body>";
   code += "</html>";
 }
 
-QUrl QPlotlyWindow::WriteTemporaryPage(QString code)
-{
+QUrl QPlotlyWindow::WriteTemporaryPage(QString code) {
   if (dir.isValid()) {
-    //#ifdef DEBUG
-    //printf("QPlotlyWindow::WriteTemporaryPage\n");
+    // #ifdef DEBUG
+    // printf("QPlotlyWindow::WriteTemporaryPage\n");
     qDebug() << "Path is" << dir.path();
-    //#endif
+    // #endif
 
     dir.setAutoRemove(false);
 
     QString f_path = QString("%1/index.html").arg(dir.path());
-    //qDebug() << f_path;
+    // qDebug() << f_path;
     QFile f(f_path);
-    if(f.open(QIODevice::WriteOnly | QIODevice::Text)){
+    if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
       QTextStream stream(&f);
       stream << code;
       f.close();
       return QUrl::fromLocalFile(f_path);
-    }
-    else{
+    } else {
       return QUrl();
     }
   }
   return QUrl();
 }
 
-void QPlotlyWindow::ModifyTemporaryPage(QString code, QList<int> line_ids)
-{
+void QPlotlyWindow::ModifyTemporaryPage(QString code, QList<int> line_ids) {
   QString f_path = QString("%1/index.html").arg(dir.path());
   QFile f(f_path);
-  for(int i = 0; i < line_ids.size(); i++){
+  for (int i = 0; i < line_ids.size(); i++) {
     return;
   }
   return;
 }
 
-void QPlotlyWindow::setAxisValueSize(int size)
-{
+void QPlotlyWindow::setAxisValueSize(int size) { return; }
+
+void QPlotlyWindow::setXLabelSize(int size) { return; }
+
+void QPlotlyWindow::setXminXmaxXTick(double xmin, double xmax, int xtick) {
   return;
 }
 
-void QPlotlyWindow::setXLabelSize(int size)
-{
+void QPlotlyWindow::getXminXmaxXTick(double *xmin, double *xmax, int *xtick) {
   return;
 }
 
-void QPlotlyWindow::setXminXmaxXTick(double xmin, double xmax, int xtick)
-{
+void QPlotlyWindow::setYLabelSize(int size) { return; }
+
+void QPlotlyWindow::setYminYmaxYTick(double ymin, double ymax, int ytick) {
   return;
 }
 
-void QPlotlyWindow::getXminXmaxXTick(double *xmin, double *xmax, int *xtick)
-{
+void QPlotlyWindow::getYminYmaxYTick(double *ymin, double *ymax, int *ytick) {
   return;
 }
 
-void QPlotlyWindow::setYLabelSize(int size)
-{
-  return;
-}
+void QPlotlyWindow::setXaxisName(QString xaxisname_) { xaxisname = xaxisname_; }
 
-void QPlotlyWindow::setYminYmaxYTick(double ymin, double ymax, int ytick)
-{
-  return;
-}
+void QPlotlyWindow::setYaxisName(QString yaxisname_) { yaxisname = yaxisname_; }
 
-void QPlotlyWindow::getYminYmaxYTick(double *ymin, double *ymax, int *ytick)
-{
-  return;
-}
+void QPlotlyWindow::setZaxisName(QString zaxisname_) { zaxisname = zaxisname_; }
 
-void QPlotlyWindow::setXaxisName(QString xaxisname_)
-{
-  xaxisname = xaxisname_;
-}
-
-void QPlotlyWindow::setYaxisName(QString yaxisname_)
-{
-  yaxisname = yaxisname_;
-}
-
-void QPlotlyWindow::setZaxisName(QString zaxisname_)
-{
-  zaxisname = zaxisname_;
-}
-
-void QPlotlyWindow::setPlotTitle(QString plot_title_)
-{
+void QPlotlyWindow::setPlotTitle(QString plot_title_) {
   plot_title = plot_title_;
 }
 
-void QPlotlyWindow::setPlotTitleSize(int size)
-{
-  return;
-}
+void QPlotlyWindow::setPlotTitleSize(int size) { return; }
 
-void QPlotlyWindow::addPoint(qreal x, qreal y, QString name)
-{
-  #ifdef DEBUG
+void QPlotlyWindow::addPoint(qreal x, qreal y, QString name) {
+#ifdef DEBUG
   printf("QPlotlyWindow::addPoint(qreal x, qreal y, QString name)\n");
-  #endif
+#endif
   p.append(new DataPoint(x, y, name));
 }
 
-void QPlotlyWindow::addPoint(qreal x, qreal y, QString name, QColor color, int radius)
-{
-  #ifdef DEBUG
-  printf("QPlotlyWindow::addPoint(qreal x, qreal y, QString name, QColor color, int radius)\n");
-  #endif
+void QPlotlyWindow::addPoint(qreal x, qreal y, QString name, QColor color,
+                             int radius) {
+#ifdef DEBUG
+  printf("QPlotlyWindow::addPoint(qreal x, qreal y, QString name, QColor "
+         "color, int radius)\n");
+#endif
   p.append(new DataPoint(x, y, name));
   p.last()->setColor(color);
   p.last()->setRadius(radius);
 }
 
-void QPlotlyWindow::addPoint(qreal x, qreal y, qreal z, QString name)
-{
+void QPlotlyWindow::addPoint(qreal x, qreal y, qreal z, QString name) {
   pt = _3D;
-  #ifdef DEBUG
+#ifdef DEBUG
   printf("QPlotlyWindow::addPoint(qreal x, qreal y, QString name)\n");
-  #endif
+#endif
   p.append(new DataPoint(x, y, z, name));
 }
 
-void QPlotlyWindow::addPoint(qreal x, qreal y, qreal z, QString name, QColor color, int radius)
-{
+void QPlotlyWindow::addPoint(qreal x, qreal y, qreal z, QString name,
+                             QColor color, int radius) {
   pt = _3D;
-  #ifdef DEBUG
-  printf("QPlotlyWindow::addPoint(qreal x, qreal y, QString name, QColor color, int radius)\n");
-  #endif
+#ifdef DEBUG
+  printf("QPlotlyWindow::addPoint(qreal x, qreal y, QString name, QColor "
+         "color, int radius)\n");
+#endif
   p.append(new DataPoint(x, y, z, name));
   p.last()->setColor(color);
   p.last()->setRadius(radius);
 }
 
-void QPlotlyWindow::addCurve(QVector< QPointF > curve, QString name, QColor color)
-{
-  #ifdef DEBUG
+void QPlotlyWindow::addCurve(QVector<QPointF> curve, QString name,
+                             QColor color) {
+#ifdef DEBUG
   printf("QPlotlyWindow::addCurve\n");
-  #endif
+#endif
   c.append(DataCurve(curve, name, color));
 }
 
-void QPlotlyWindow::setCurveStyle(int indx, LTYPE cs){
-  if(indx < c.size()){
+void QPlotlyWindow::setCurveStyle(int indx, LTYPE cs) {
+  if (indx < c.size()) {
     c[indx].setStyle(cs);
   }
 }
 
-void QPlotlyWindow::addBars(QStringList x, QVector<qreal> y, QStringList text, QColor color)
-{
-  #ifdef DEBUG
-  printf("QPlotlyWindow::addBars(QStringList x, QVector<qreal> y, QStringList text)\n");
-  #endif
+void QPlotlyWindow::addBars(QStringList x, QVector<qreal> y, QStringList text,
+                            QColor color) {
+#ifdef DEBUG
+  printf("QPlotlyWindow::addBars(QStringList x, QVector<qreal> y, QStringList "
+         "text)\n");
+#endif
   xtickangle = -45;
   b.append(new DataBar(x, y, text));
   b.last()->setColor(color);
 }
 
-int QPlotlyWindow::PointSize() const
-{
-  #ifdef DEBUG
+int QPlotlyWindow::PointSize() const {
+#ifdef DEBUG
   printf("QPlotlyWindow::PointSize\n");
-  #endif
+#endif
   return p.size();
 }
 
-DataPoint* QPlotlyWindow::getPoint(int id)
-{
-  #ifdef DEBUG
+DataPoint *QPlotlyWindow::getPoint(int id) {
+#ifdef DEBUG
   printf("QPlotlyWindow::getPoint\n");
-  #endif
-  if(id < p.size())
+#endif
+  if (id < p.size())
     return p[id];
   else
     return 0;
 }
 
-void QPlotlyWindow::RemovePointAt(int id)
-{
-  #ifdef DEBUG
+void QPlotlyWindow::RemovePointAt(int id) {
+#ifdef DEBUG
   printf("QPlotlyWindow::RemovePointAt\n");
-  #endif
-  if(id < p.size()){
+#endif
+  if (id < p.size()) {
     delete p[id];
     p.remove(id);
   }
 }
 
-void QPlotlyWindow::RemovePoint(DataPoint *dp)
-{
-  #ifdef DEBUG
+void QPlotlyWindow::RemovePoint(DataPoint *dp) {
+#ifdef DEBUG
   printf("QPlotlyWindow::RemovePoint\n");
-  #endif
+#endif
   int indx = p.indexOf(dp);
-  if(indx > -1){
+  if (indx > -1) {
     delete p[indx];
     p.remove(indx);
   }
 }
 
-void QPlotlyWindow::RemoveAllPoints()
-{
-  #ifdef DEBUG
+void QPlotlyWindow::RemoveAllPoints() {
+#ifdef DEBUG
   printf("QPlotlyWindow::RemoveAllPoints\n");
-  #endif
-  for(int i = 0; i < p.size(); i++){
+#endif
+  for (int i = 0; i < p.size(); i++) {
     delete p[i];
   }
   p.clear();
 }
 
-
-QVector< DataCurve > QPlotlyWindow::getCurves()
-{
-  #ifdef DEBUG
+QVector<DataCurve> QPlotlyWindow::getCurves() {
+#ifdef DEBUG
   printf("QPlotlyWindow::getCurves\n");
-  #endif
+#endif
   return c;
 }
 
-void QPlotlyWindow::RemoveCurveAt(int cid)
-{
-  #ifdef DEBUG
+void QPlotlyWindow::RemoveCurveAt(int cid) {
+#ifdef DEBUG
   printf("QPlotlyWindow::RemoveCurveAt\n");
-  #endif
+#endif
   c.remove(cid);
 }
 
-void QPlotlyWindow::RemoveAllCurves()
-{
-  #ifdef DEBUG
+void QPlotlyWindow::RemoveAllCurves() {
+#ifdef DEBUG
   printf("QPlotlyWindow::RemoveAllCurves\n");
-  #endif
+#endif
   c.clear();
 }
 
-void QPlotlyWindow::Center()
-{
-  return;
-}
+void QPlotlyWindow::Center() { return; }
 
-void QPlotlyWindow::Refresh()
-{
-  //printf("Refresh\n");
-  // instead of  Plotly.update('graph', data_update) do a replot!
+void QPlotlyWindow::Refresh() {
+  // printf("Refresh\n");
+  //  instead of  Plotly.update('graph', data_update) do a replot!
   Plot();
 }
 
-void QPlotlyWindow::SelectAll()
-{
+void QPlotlyWindow::SelectAll() {
   selected_points.clear();
-  for(int i = 0; i < p.size(); i++){
+  for (int i = 0; i < p.size(); i++) {
     p[i]->setSelection(true);
     selected_points << i;
   }
 }
 
-void QPlotlyWindow::ClearSelection()
-{
-  #ifdef DEBUG
+void QPlotlyWindow::ClearSelection() {
+#ifdef DEBUG
   printf("QPlotlyWindow::ClearSelection");
-  #endif
-  for(int i = 0; i < selected_points.size(); i++){
+#endif
+  for (int i = 0; i < selected_points.size(); i++) {
     p[selected_points[i]]->setSelection(false);
   }
   selected_points.clear();
 }
 
-void QPlotlyWindow::SaveAsImage(QString imgname)
-{
-  #ifdef DEBUG
+void QPlotlyWindow::SaveAsImage(QString imgname) {
+#ifdef DEBUG
   printf("QPlotlyWindow::SaveAsImage\n");
-  #endif
+#endif
   /*
   QByteArray bytes;
   QBuffer buffer(&bytes);
@@ -389,26 +342,26 @@ void QPlotlyWindow::SaveAsImage(QString imgname)
   else{
     pixmap.save(imgname+".png");
   }
-   QMessageBox::information(this, "Plot Saved!", QString("The plot has been saved as %1").arg(imgname), QMessageBox::Ok);
+   QMessageBox::information(this, "Plot Saved!", QString("The plot has been
+  saved as %1").arg(imgname), QMessageBox::Ok);
    */
 }
 
 void QPlotlyWindow::close() {}
 
-QStringList QPlotlyWindow::JSonScatterWorker(int from, int to)
-{
-  //qDebug() << "Run from " << from << " to " << to;
-  //Simple visible point
+QStringList QPlotlyWindow::JSonScatterWorker(int from, int to) {
+  // qDebug() << "Run from " << from << " to " << to;
+  // Simple visible point
   QString x = "", y = "", text = "", color = "", msize = "", msymbol = "";
-  //Simple point marked with label
+  // Simple point marked with label
   QString xm = "", ym = "", textm = "", colorm = "", msizem = "", msymbolm = "";
-  //Simple point selected
+  // Simple point selected
   QString xs = "", ys = "", texts = "", colors = "", msizes = "", msymbols = "";
 
-  if(to > p.size()-1)
-    to = p.size()-1;
+  if (to > p.size() - 1)
+    to = p.size() - 1;
 
-  for(int i = from; i < to; i++){
+  for (int i = from; i < to; i++) {
     int r_, g_, b_, a_;
     r_ = p[i]->getColor().red();
     g_ = p[i]->getColor().green();
@@ -417,59 +370,59 @@ QStringList QPlotlyWindow::JSonScatterWorker(int from, int to)
 
     MarkerType mtype = p[i]->marker();
 
-    if(p[i]->isVisible() == true){
-      if(p[i]->isLabelVisible() == true){
+    if (p[i]->isVisible() == true) {
+      if (p[i]->isLabelVisible() == true) {
         xm += QString("%1,").arg(p[i]->x());
         ym += QString("%1,").arg(p[i]->y());
         textm += QString("'%1',").arg(p[i]->getName());
-        colorm += QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+        colorm +=
+            QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
         msizem += QString("%1,").arg(p[i]->radius());
-        if(mtype == CIRCLE){
+        if (mtype == CIRCLE) {
           msymbolm += QString("'circle',");
-        }
-        else if(mtype == SQUARE){
+        } else if (mtype == SQUARE) {
           msymbolm += QString("'square',");
-        }
-        else{
+        } else {
           msymbolm += QString("'triangle-down',");
         }
-      }
-      else{
-        if(p[i]->isSelected() == true || selected_points.contains(i) == true){
+      } else {
+        if (p[i]->isSelected() == true || selected_points.contains(i) == true) {
           xs += QString("%1,").arg(p[i]->x());
           ys += QString("%1,").arg(p[i]->y());
           texts += QString("'%1',").arg(p[i]->getName());
-          colors += QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+          colors += QString("'rgba(%1, %2, %3, %4)',")
+                        .arg(r_)
+                        .arg(g_)
+                        .arg(b_)
+                        .arg(a_);
           msizes += QString("%1,").arg(p[i]->radius());
-          if(mtype == CIRCLE){
+          if (mtype == CIRCLE) {
             msymbols += QString("'circle',");
-          }
-          else if(mtype == SQUARE){
+          } else if (mtype == SQUARE) {
             msymbols += QString("'square',");
-          }
-          else{
+          } else {
             msymbols += QString("'triangle-down',");
           }
-        }
-        else{
+        } else {
           x += QString("%1,").arg(p[i]->x());
           y += QString("%1,").arg(p[i]->y());
           text += QString("'%1',").arg(p[i]->getName());
-          color += QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+          color += QString("'rgba(%1, %2, %3, %4)',")
+                       .arg(r_)
+                       .arg(g_)
+                       .arg(b_)
+                       .arg(a_);
           msize += QString("%1,").arg(p[i]->radius());
-          if(mtype == CIRCLE){
+          if (mtype == CIRCLE) {
             msymbol += QString("'circle',");
-          }
-          else if(mtype == SQUARE){
+          } else if (mtype == SQUARE) {
             msymbol += QString("'square',");
-          }
-          else{
+          } else {
             msymbol += QString("'triangle-down',");
           }
         }
       }
-    }
-    else{
+    } else {
       continue;
     }
   }
@@ -498,15 +451,17 @@ QStringList QPlotlyWindow::JSonScatterWorker(int from, int to)
   return rval;
 }
 
-QString QPlotlyWindow::genJSONScatter()
-{
+QString QPlotlyWindow::genJSONScatter() {
   QString json;
-  //Simple visible point
-  QString x = "x: [", y = "y: [", text = "text: [", color = "color: [", msize = "size: [", msymbol = "symbol: [";
-  //Simple point marked with label
-  QString xm = "x: [", ym = "y: [", textm = "text: [", colorm = "color: [", msizem = "size: [", msymbolm = "symbol: [";
-  //Simple point selected
-  QString xs = "x: [", ys = "y: [", texts = "text: [", colors = "color: [", msizes = "size: [", msymbols = "symbol: [";
+  // Simple visible point
+  QString x = "x: [", y = "y: [", text = "text: [", color = "color: [",
+          msize = "size: [", msymbol = "symbol: [";
+  // Simple point marked with label
+  QString xm = "x: [", ym = "y: [", textm = "text: [", colorm = "color: [",
+          msizem = "size: [", msymbolm = "symbol: [";
+  // Simple point selected
+  QString xs = "x: [", ys = "y: [", texts = "text: [", colors = "color: [",
+          msizes = "size: [", msymbols = "symbol: [";
 
   /* MULTITHREAD
   int nth = QThread::idealThreadCount();
@@ -521,11 +476,11 @@ QString QPlotlyWindow::genJSONScatter()
   int from = 0, to = step;
   for(int i = 0; i < nth; i++){
     futures.append(QFuture<QStringList>());
-    //futures.append(QtConcurrent::run([=](int from, int to){ QPlotlyWindow::JSonScatterWorker(from, to); }));
-    //futures.append(QtConcurrent::run([this]{ QPlotlyWindow::JSonScatterWorker(from, to); } ));
-    from = to;
-    if(from+step > p.size()-1){
-      to = p.size()-1;
+    //futures.append(QtConcurrent::run([=](int from, int to){
+  QPlotlyWindow::JSonScatterWorker(from, to); }));
+    //futures.append(QtConcurrent::run([this]{
+  QPlotlyWindow::JSonScatterWorker(from, to); } )); from = to; if(from+step >
+  p.size()-1){ to = p.size()-1;
     }
     else{
       to+=step;
@@ -557,69 +512,73 @@ QString QPlotlyWindow::genJSONScatter()
 
   END MULTITHREAD IMPLEMENTATION*/
 
-
   /* SINGLE THREAD IMPLEMENTATION */
-  for(int i = 0; i < p.size()-1; i++){
+  for (int i = 0; i < p.size() - 1; i++) {
     int r_, g_, b_, a_;
     r_ = p[i]->getColor().red();
     g_ = p[i]->getColor().green();
     b_ = p[i]->getColor().blue();
     a_ = p[i]->getColor().alpha();
 
-    if(p[i]->isVisible() == true){
-      if(p[i]->isLabelVisible() == true){
+    if (p[i]->isVisible() == true) {
+      if (p[i]->isLabelVisible() == true) {
         xm += QString("%1,").arg(p[i]->x());
         ym += QString("%1,").arg(p[i]->y());
         textm += QString("'%1',").arg(p[i]->getName());
-        colorm += QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+        colorm +=
+            QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
         msizem += QString("%1,").arg(p[i]->radius());
-      }
-      else{
-        if(p[i]->isSelected() == true){
+      } else {
+        if (p[i]->isSelected() == true) {
           xs += QString("%1,").arg(p[i]->x());
           ys += QString("%1,").arg(p[i]->y());
           texts += QString("'%1',").arg(p[i]->getName());
-          colors += QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+          colors += QString("'rgba(%1, %2, %3, %4)',")
+                        .arg(r_)
+                        .arg(g_)
+                        .arg(b_)
+                        .arg(a_);
           msizes += QString("%1,").arg(p[i]->radius());
-        }
-        else{
+        } else {
           x += QString("%1,").arg(p[i]->x());
           y += QString("%1,").arg(p[i]->y());
           text += QString("'%1',").arg(p[i]->getName());
-          color += QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+          color += QString("'rgba(%1, %2, %3, %4)',")
+                       .arg(r_)
+                       .arg(g_)
+                       .arg(b_)
+                       .arg(a_);
           msize += QString("%1,").arg(p[i]->radius());
         }
       }
-    }
-    else{
+    } else {
       continue;
     }
   }
   /* END SINGLE THREAD IMPLEMENTATION */
 
-  int last_id = p.size()-1;
+  int last_id = p.size() - 1;
 
-  if(p[last_id]->isVisible() == true){
+  if (p[last_id]->isVisible() == true) {
     int r_, g_, b_, a_;
     r_ = p[last_id]->getColor().red();
     g_ = p[last_id]->getColor().green();
     b_ = p[last_id]->getColor().blue();
     a_ = p[last_id]->getColor().alpha();
 
-    if(p[last_id]->isLabelVisible() == true){
+    if (p[last_id]->isLabelVisible() == true) {
       xm += QString("%1]").arg(p[last_id]->x());
       ym += QString("%1]").arg(p[last_id]->y());
       textm += QString("'%1']").arg(p[last_id]->getName());
-      colorm += QString("'rgba(%1, %2, %3, %4)']").arg(r_).arg(g_).arg(b_).arg(a_);
+      colorm +=
+          QString("'rgba(%1, %2, %3, %4)']").arg(r_).arg(g_).arg(b_).arg(a_);
       msizem += QString("%1]").arg(p[last_id]->radius());
 
-      if(p[last_id]->marker() == CIRCLE){
+      if (p[last_id]->marker() == CIRCLE) {
         msymbolm += QString("'circle']");
-      }
-      else if(p[last_id]->marker() == SQUARE){
+      } else if (p[last_id]->marker() == SQUARE) {
         msymbolm += QString("'square']");
-      }
-      else{
+      } else {
         msymbolm += QString("'triangle-down']");
       }
 
@@ -635,21 +594,20 @@ QString QPlotlyWindow::genJSONScatter()
       colors += QString("]");
       msizes += QString("]");
       msymbols += QString("]");
-    }
-    else{
-      if(p[last_id]->isSelected() == true || selected_points.contains(last_id) == true){
+    } else {
+      if (p[last_id]->isSelected() == true ||
+          selected_points.contains(last_id) == true) {
         xs += QString("%1]").arg(p[last_id]->x());
         ys += QString("%1]").arg(p[last_id]->y());
         texts += QString("'%1']").arg(p[last_id]->getName());
-        colors += QString("'rgba(%1, %2, %3, %4)']").arg(r_).arg(g_).arg(b_).arg(a_);
+        colors +=
+            QString("'rgba(%1, %2, %3, %4)']").arg(r_).arg(g_).arg(b_).arg(a_);
         msizes += QString("%1]").arg(p[last_id]->radius());
-        if(p[last_id]->marker() == CIRCLE){
+        if (p[last_id]->marker() == CIRCLE) {
           msymbols += QString("'circle']");
-        }
-        else if(p[last_id]->marker() == SQUARE){
+        } else if (p[last_id]->marker() == SQUARE) {
           msymbols += QString("'square']");
-        }
-        else{
+        } else {
           msymbols += QString("'triangle-down']");
         }
         x += QString("]");
@@ -664,20 +622,18 @@ QString QPlotlyWindow::genJSONScatter()
         colorm += QString("]");
         msizem += QString("]");
         msymbolm += QString("]");
-      }
-      else{
+      } else {
         x += QString("%1]").arg(p[last_id]->x());
         y += QString("%1]").arg(p[last_id]->y());
         text += QString("'%1']").arg(p[last_id]->getName());
-        color += QString("'rgba(%1, %2, %3, %4)']").arg(r_).arg(g_).arg(b_).arg(a_);
+        color +=
+            QString("'rgba(%1, %2, %3, %4)']").arg(r_).arg(g_).arg(b_).arg(a_);
         msize += QString("%1]").arg(p[last_id]->radius());
-        if(p[last_id]->marker() == CIRCLE){
+        if (p[last_id]->marker() == CIRCLE) {
           msymbol += QString("'circle']");
-        }
-        else if(p[last_id]->marker() == SQUARE){
+        } else if (p[last_id]->marker() == SQUARE) {
           msymbol += QString("'square']");
-        }
-        else{
+        } else {
           msymbol += QString("'triangle-down']");
         }
         xm += QString("]");
@@ -694,8 +650,7 @@ QString QPlotlyWindow::genJSONScatter()
         msymbols += QString("]");
       }
     }
-  }
-  else{
+  } else {
     x += QString("]");
     y += QString("]");
     text += QString("'']");
@@ -717,72 +672,110 @@ QString QPlotlyWindow::genJSONScatter()
   }
 
   QString scatter_type;
-  if(p.size() > 10000){
+  if (p.size() > 10000) {
     scatter_type = "scattergl";
-  }
-  else{
+  } else {
     scatter_type = "scatter";
   }
 
-  json += QString("var id%1 = { %2, %3, %4, mode: 'markers', marker: { %5, opacity: 0.9, %6, %7 }, type: '%8' };").arg(trace_id).arg(x).arg(y).arg(text).arg(msize).arg(color).arg(msymbol).arg(scatter_type);
+  json += QString("var id%1 = { %2, %3, %4, mode: 'markers', marker: { %5, "
+                  "opacity: 0.9, %6, %7 }, type: '%8' };")
+              .arg(trace_id)
+              .arg(x)
+              .arg(y)
+              .arg(text)
+              .arg(msize)
+              .arg(color)
+              .arg(msymbol)
+              .arg(scatter_type);
   trace_id++;
-  json += QString("var id%1 = { %2, %3, %4, mode: 'markers+text', textposition: 'top center', textfont: { family: 'Raleway, sans-serif' }, marker: { %5, opacity: 0.9, %6, %7 }, type: '%8' };").arg(trace_id).arg(xm).arg(ym).arg(textm).arg(msizem).arg(colorm).arg(msymbolm).arg(scatter_type);
+  json +=
+      QString("var id%1 = { %2, %3, %4, mode: 'markers+text', textposition: "
+              "'top center', textfont: { family: 'Raleway, sans-serif' }, "
+              "marker: { %5, opacity: 0.9, %6, %7 }, type: '%8' };")
+          .arg(trace_id)
+          .arg(xm)
+          .arg(ym)
+          .arg(textm)
+          .arg(msizem)
+          .arg(colorm)
+          .arg(msymbolm)
+          .arg(scatter_type);
   trace_id++;
-  json += QString("var id%1 = { %2, %3, %4, mode: 'markers', marker: { %5, opacity: 0.9, %6, %7, line: { color: 'rgb(231, 99, 250)', width: 1} }, type: '%8' };").arg(trace_id).arg(xs).arg(ys).arg(texts).arg(msizes).arg(colors).arg(msymbols).arg(scatter_type);
+  json += QString("var id%1 = { %2, %3, %4, mode: 'markers', marker: { %5, "
+                  "opacity: 0.9, %6, %7, line: { color: 'rgb(231, 99, 250)', "
+                  "width: 1} }, type: '%8' };")
+              .arg(trace_id)
+              .arg(xs)
+              .arg(ys)
+              .arg(texts)
+              .arg(msizes)
+              .arg(colors)
+              .arg(msymbols)
+              .arg(scatter_type);
   trace_id++;
   return json;
 }
 
-QStringList QPlotlyWindow::JSon3DScatterWorker(int from, int to)
-{
+QStringList QPlotlyWindow::JSon3DScatterWorker(int from, int to) {
   QString x = "", y = "", z = "", text = "", color = "", symbol = "";
-  for(int i = from; i < to; i++){
-    if(p[i]->isVisible() == true){
+  for (int i = from; i < to; i++) {
+    if (p[i]->isVisible() == true) {
       int r_, g_, b_, a_;
       r_ = p[i]->getColor().red();
       g_ = p[i]->getColor().green();
       b_ = p[i]->getColor().blue();
       a_ = p[i]->getColor().alpha();
       MarkerType mtype = p[i]->marker();
-      if(p[i]->isLabelVisible() == true){
-        //json += QString("var id%1 = { x: [%2], y: [%3], text: ['%4'], mode: 'markers+text', textposition: 'top center', textfont: { family: 'Raleway, sans-serif' }, marker: { size: %5, opacity: 0.9, color: 'rgba(%6, %7, %8, %9)' }, type: 'scatter' };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
-        //json += QString("var id%1 = { x: [%2], y: [%3], z: [%4] text: ['%5'], mode: 'markers+text', textposition: 'top center', textfont: { family: 'Raleway, sans-serif' }, marker: { size: %6, opacity: 0.9, color: 'rgba(%7, %8, %9, %10)', symbol: 'circle', }, type: 'scatter3d' };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->z()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
-        x+=QString("%1,").arg(p[i]->x());
-        y+=QString("%1,").arg(p[i]->y());
-        z+=QString("%1,").arg(p[i]->z());
-        text+=QString("'%1',").arg(p[i]->getName());
-        color+=QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
-        if(mtype == CIRCLE){
+      if (p[i]->isLabelVisible() == true) {
+        // json += QString("var id%1 = { x: [%2], y: [%3], text: ['%4'], mode:
+        // 'markers+text', textposition: 'top center', textfont: { family:
+        // 'Raleway, sans-serif' }, marker: { size: %5, opacity: 0.9, color:
+        // 'rgba(%6, %7, %8, %9)' }, type: 'scatter'
+        // };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
+        // json += QString("var id%1 = { x: [%2], y: [%3], z: [%4] text: ['%5'],
+        // mode: 'markers+text', textposition: 'top center', textfont: { family:
+        // 'Raleway, sans-serif' }, marker: { size: %6, opacity: 0.9, color:
+        // 'rgba(%7, %8, %9, %10)', symbol: 'circle', }, type: 'scatter3d'
+        // };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->z()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
+        x += QString("%1,").arg(p[i]->x());
+        y += QString("%1,").arg(p[i]->y());
+        z += QString("%1,").arg(p[i]->z());
+        text += QString("'%1',").arg(p[i]->getName());
+        color +=
+            QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+        if (mtype == CIRCLE) {
           symbol += QString("'circle',");
-        }
-        else if(mtype == SQUARE){
+        } else if (mtype == SQUARE) {
           symbol += QString("'square',");
+        } else {
+          symbol += QString("'cross',");
         }
-        else{
+      } else {
+        // json += QString("var id%1 = { x: [%2], y: [%3], text: ['%4'], mode:
+        // 'markers', marker: { size: %5, opacity: 0.9, color: 'rgba(%6, %7, %8,
+        // %9)' }, type: 'scatter'
+        // };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
+        // json += QString("var id%1 = { x: [%2], y: [%3], z: [%4], text:
+        // ['%5'], mode: 'markers', marker: { size: %6, opacity: 0.9, color:
+        // 'rgba(%7, %8, %9, %10)', symbol: 'circle', }, type: 'scatter3d'
+        // };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->z()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
+        x += QString("%1,").arg(p[i]->x());
+        y += QString("%1,").arg(p[i]->y());
+        z += QString("%1,").arg(p[i]->z());
+        text += QString("'%1',").arg(p[i]->getName());
+        color +=
+            QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+        if (mtype == CIRCLE) {
+          symbol += QString("'circle',");
+        } else if (mtype == SQUARE) {
+          symbol += QString("'square',");
+        } else {
           symbol += QString("'cross',");
         }
       }
-      else{
-        //json += QString("var id%1 = { x: [%2], y: [%3], text: ['%4'], mode: 'markers', marker: { size: %5, opacity: 0.9, color: 'rgba(%6, %7, %8, %9)' }, type: 'scatter' };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
-        //json += QString("var id%1 = { x: [%2], y: [%3], z: [%4], text: ['%5'], mode: 'markers', marker: { size: %6, opacity: 0.9, color: 'rgba(%7, %8, %9, %10)', symbol: 'circle', }, type: 'scatter3d' };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->z()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
-        x+=QString("%1,").arg(p[i]->x());
-        y+=QString("%1,").arg(p[i]->y());
-        z+=QString("%1,").arg(p[i]->z());
-        text+=QString("'%1',").arg(p[i]->getName());
-        color+=QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
-        if(mtype == CIRCLE){
-          symbol += QString("'circle',");
-        }
-        else if(mtype == SQUARE){
-          symbol += QString("'square',");
-        }
-        else{
-          symbol += QString("'cross',");
-        }
-      }
-      //trace_id++;
-    }
-    else{
+      // trace_id++;
+    } else {
       continue;
     }
   }
@@ -797,10 +790,10 @@ QStringList QPlotlyWindow::JSon3DScatterWorker(int from, int to)
   return res;
 }
 
-QString QPlotlyWindow::genJSON3DScatter()
-{
+QString QPlotlyWindow::genJSON3DScatter() {
   QString json;
-  QString x = "x:[", y = "y:[", z = "z:[", text = "text:[", color = "color:[", symbol = "symbol: [";
+  QString x = "x:[", y = "y:[", z = "z:[", text = "text:[", color = "color:[",
+          symbol = "symbol: [";
 
   /* MULTITHREAD
   int nth = QThread::idealThreadCount();
@@ -814,11 +807,11 @@ QString QPlotlyWindow::genJSON3DScatter()
   QList<QFuture<QStringList>> futures;
   int from = 0, to = step;
   for(int i = 0; i < nth; i++){
-    futures.append(QtConcurrent::run(qOverload<QStringList>(&QPlotlyWindow::JSon3DScatterWorker), from, to));
-    //futures.append(QtConcurrent::run([&](int from, int to){ &QPlotlyWindow::JSon3DScatterWorker(from, to); }));
-    from = to;
-    if(from+step > p.size()-1){
-      to = p.size()-1;
+    futures.append(QtConcurrent::run(qOverload<QStringList>(&QPlotlyWindow::JSon3DScatterWorker),
+  from, to));
+    //futures.append(QtConcurrent::run([&](int from, int to){
+  &QPlotlyWindow::JSon3DScatterWorker(from, to); })); from = to; if(from+step >
+  p.size()-1){ to = p.size()-1;
     }
     else{
       to+=step;
@@ -838,78 +831,96 @@ QString QPlotlyWindow::genJSON3DScatter()
   */
 
   /* SINGLE THREAD IMPLEMENTATION */
-  for(int i = 0; i < p.size()-1; i++){
-    if(p[i]->isVisible() == true){
+  for (int i = 0; i < p.size() - 1; i++) {
+    if (p[i]->isVisible() == true) {
       int r_, g_, b_, a_;
       r_ = p[i]->getColor().red();
       g_ = p[i]->getColor().green();
       b_ = p[i]->getColor().blue();
       a_ = p[i]->getColor().alpha();
-      if(p[i]->isLabelVisible() == true){
-        //json += QString("var id%1 = { x: [%2], y: [%3], text: ['%4'], mode: 'markers+text', textposition: 'top center', textfont: { family: 'Raleway, sans-serif' }, marker: { size: %5, opacity: 0.9, color: 'rgba(%6, %7, %8, %9)' }, type: 'scatter' };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
-        //json += QString("var id%1 = { x: [%2], y: [%3], z: [%4] text: ['%5'], mode: 'markers+text', textposition: 'top center', textfont: { family: 'Raleway, sans-serif' }, marker: { size: %6, opacity: 0.9, color: 'rgba(%7, %8, %9, %10)', symbol: 'circle', }, type: 'scatter3d' };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->z()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
-        x+=QString("%1,").arg(p[i]->x());
-        y+=QString("%1,").arg(p[i]->y());
-        z+=QString("%1,").arg(p[i]->z());
-        text+=QString("'%1',").arg(p[i]->getName());
-        color+=QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+      if (p[i]->isLabelVisible() == true) {
+        // json += QString("var id%1 = { x: [%2], y: [%3], text: ['%4'], mode:
+        // 'markers+text', textposition: 'top center', textfont: { family:
+        // 'Raleway, sans-serif' }, marker: { size: %5, opacity: 0.9, color:
+        // 'rgba(%6, %7, %8, %9)' }, type: 'scatter'
+        // };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
+        // json += QString("var id%1 = { x: [%2], y: [%3], z: [%4] text: ['%5'],
+        // mode: 'markers+text', textposition: 'top center', textfont: { family:
+        // 'Raleway, sans-serif' }, marker: { size: %6, opacity: 0.9, color:
+        // 'rgba(%7, %8, %9, %10)', symbol: 'circle', }, type: 'scatter3d'
+        // };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->z()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
+        x += QString("%1,").arg(p[i]->x());
+        y += QString("%1,").arg(p[i]->y());
+        z += QString("%1,").arg(p[i]->z());
+        text += QString("'%1',").arg(p[i]->getName());
+        color +=
+            QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
+      } else {
+        // json += QString("var id%1 = { x: [%2], y: [%3], text: ['%4'], mode:
+        // 'markers', marker: { size: %5, opacity: 0.9, color: 'rgba(%6, %7, %8,
+        // %9)' }, type: 'scatter'
+        // };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
+        // json += QString("var id%1 = { x: [%2], y: [%3], z: [%4], text:
+        // ['%5'], mode: 'markers', marker: { size: %6, opacity: 0.9, color:
+        // 'rgba(%7, %8, %9, %10)', symbol: 'circle', }, type: 'scatter3d'
+        // };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->z()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
+        x += QString("%1,").arg(p[i]->x());
+        y += QString("%1,").arg(p[i]->y());
+        z += QString("%1,").arg(p[i]->z());
+        text += QString("'%1',").arg(p[i]->getName());
+        color +=
+            QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
       }
-      else{
-        //json += QString("var id%1 = { x: [%2], y: [%3], text: ['%4'], mode: 'markers', marker: { size: %5, opacity: 0.9, color: 'rgba(%6, %7, %8, %9)' }, type: 'scatter' };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
-        //json += QString("var id%1 = { x: [%2], y: [%3], z: [%4], text: ['%5'], mode: 'markers', marker: { size: %6, opacity: 0.9, color: 'rgba(%7, %8, %9, %10)', symbol: 'circle', }, type: 'scatter3d' };").arg(trace_id).arg(p[i]->x()).arg(p[i]->y()).arg(p[i]->z()).arg(p[i]->getName()).arg(p[i]->radius()).arg(r_).arg(g_).arg(b_).arg(a_);
-        x+=QString("%1,").arg(p[i]->x());
-        y+=QString("%1,").arg(p[i]->y());
-        z+=QString("%1,").arg(p[i]->z());
-        text+=QString("'%1',").arg(p[i]->getName());
-        color+=QString("'rgba(%1, %2, %3, %4)',").arg(r_).arg(g_).arg(b_).arg(a_);
-      }
-      //trace_id++;
-    }
-    else{
+      // trace_id++;
+    } else {
       continue;
     }
   }
   /*END SINGLE THREAD */
 
-  size_t last_id = p.size()-1;
+  size_t last_id = p.size() - 1;
   int r_, g_, b_, a_;
   r_ = p[last_id]->getColor().red();
   g_ = p[last_id]->getColor().green();
   b_ = p[last_id]->getColor().blue();
   a_ = p[last_id]->getColor().alpha();
 
-  x+=QString("%1]").arg(p[last_id]->x());
-  y+=QString("%1]").arg(p[last_id]->y());
-  z+=QString("%1]").arg(p[last_id]->z());
-  text+=QString("'%1']").arg(p[last_id]->getName());
-  color+=QString("'rgba(%1, %2, %3, %4)']").arg(r_).arg(g_).arg(b_).arg(a_);
-  if(p[last_id]->marker() == CIRCLE){
-    symbol +=QString("'circle']");
-  }
-  else if(p[last_id]->marker() == SQUARE){
-    symbol +=QString("'square']");
-  }
-  else{
-    symbol +=QString("'cross']");
+  x += QString("%1]").arg(p[last_id]->x());
+  y += QString("%1]").arg(p[last_id]->y());
+  z += QString("%1]").arg(p[last_id]->z());
+  text += QString("'%1']").arg(p[last_id]->getName());
+  color += QString("'rgba(%1, %2, %3, %4)']").arg(r_).arg(g_).arg(b_).arg(a_);
+  if (p[last_id]->marker() == CIRCLE) {
+    symbol += QString("'circle']");
+  } else if (p[last_id]->marker() == SQUARE) {
+    symbol += QString("'square']");
+  } else {
+    symbol += QString("'cross']");
   }
 
-
-  json += QString("var id%1 = { %2, %3, %4, %5, mode: 'markers', marker: { size: 5, opacity: 0.9, %6, %7 }, type: 'scatter3d' };").arg(trace_id).arg(x).arg(y).arg(z).arg(text).arg(color).arg(symbol);
+  json += QString("var id%1 = { %2, %3, %4, %5, mode: 'markers', marker: { "
+                  "size: 5, opacity: 0.9, %6, %7 }, type: 'scatter3d' };")
+              .arg(trace_id)
+              .arg(x)
+              .arg(y)
+              .arg(z)
+              .arg(text)
+              .arg(color)
+              .arg(symbol);
   trace_id++;
 
   return json;
 }
 
-QString QPlotlyWindow::genJSONCurve()
-{
+QString QPlotlyWindow::genJSONCurve() {
   QString json;
-  for(int j = 0; j < c.size(); j++){
+  for (int j = 0; j < c.size(); j++) {
     json += QString("var id%1 = {").arg(QString::number(trace_id));
     QString x, y, name;
     x += "x: [";
     y += "y: [";
-    QVector <QPointF> cp = c[j].getPoints();
-    for(int i = 0; i < cp.size()-1; i++){
+    QVector<QPointF> cp = c[j].getPoints();
+    for (int i = 0; i < cp.size() - 1; i++) {
       x += QString("%1,").arg(cp[i].x());
       y += QString("%1,").arg(cp[i].y());
     }
@@ -927,21 +938,32 @@ QString QPlotlyWindow::genJSONCurve()
     int r_, g_, b_, a_;
     c[j].color().getRgb(&r_, &g_, &b_, &a_);
     if (c[j].getStyle() == LM)
-      json += QString("marker: { size: %1, color: 'rgb(%2, %3, %4, %5)', opacity: 0.8 },").arg(QString::number(c[j].radius())).arg(r_).arg(g_).arg(b_).arg(a_);
-    json += QString("line: { color: 'rgb(%1, %2, %3, %4)', width: %5, opacity: 0.8 }").arg(r_).arg(g_).arg(b_).arg(a_).arg(c[j].width());
+      json += QString("marker: { size: %1, color: 'rgb(%2, %3, %4, %5)', "
+                      "opacity: 0.8 },")
+                  .arg(QString::number(c[j].radius()))
+                  .arg(r_)
+                  .arg(g_)
+                  .arg(b_)
+                  .arg(a_);
+    json +=
+        QString(
+            "line: { color: 'rgb(%1, %2, %3, %4)', width: %5, opacity: 0.8 }")
+            .arg(r_)
+            .arg(g_)
+            .arg(b_)
+            .arg(a_)
+            .arg(c[j].width());
     json += "};";
     trace_id++;
   }
   return json;
 }
 
-
-QString QPlotlyWindow::genJSONBar()
-{
+QString QPlotlyWindow::genJSONBar() {
   QString json;
   int i, j;
-  for(i = 0; i < b.size(); i++){
-    if(b[i]->isVisible() == true){
+  for (i = 0; i < b.size(); i++) {
+    if (b[i]->isVisible() == true) {
       int r_, g_, b_, a_;
       r_ = b[i]->getColor().red();
       g_ = b[i]->getColor().green();
@@ -950,129 +972,164 @@ QString QPlotlyWindow::genJSONBar()
       QString x = "[";
       QString y = "[";
       QString text = "[";
-      for(j = 0; j < b[i]->x().size()-1; j++){
-        x+= QString("'%1',").arg(b[i]->x()[j]);
-        y+= QString("%1,").arg(b[i]->y()[j]);
-        text+= QString("'%1',").arg(b[i]->getText()[j]);
+      for (j = 0; j < b[i]->x().size() - 1; j++) {
+        x += QString("'%1',").arg(b[i]->x()[j]);
+        y += QString("%1,").arg(b[i]->y()[j]);
+        text += QString("'%1',").arg(b[i]->getText()[j]);
       }
-      int last_id = b[i]->x().size()-1;
-      x+= QString("'%1']").arg(b[i]->x()[last_id]);
-      y+=QString("%1]").arg(b[i]->y()[last_id]);
-      text+=QString("'%1']").arg(b[i]->getText()[last_id]);
+      int last_id = b[i]->x().size() - 1;
+      x += QString("'%1']").arg(b[i]->x()[last_id]);
+      y += QString("%1]").arg(b[i]->y()[last_id]);
+      text += QString("'%1']").arg(b[i]->getText()[last_id]);
 
-      if(b[i]->isTextVisible() == true){
-        //json += QString("var id%1 = { x: ['%2'], y: [%3], width: ['%4'], text: ['%5'], mode: 'markers+text', textposition: 'top center', textfont: { family: 'Raleway, sans-serif' }, marker: { opacity: 0.9, color: 'rgba(%6, %7, %8, %9)' }, type: 'bar' };").arg(trace_id).arg(b[i]->x()).arg(b[i]->y()).arg(b[i]->width()).arg(b[i]->getText()).arg(r_).arg(g_).arg(b_).arg(a_);
-        json += QString("var id%1 = { x: %2, y: %3, text: %4, mode: 'markers+text', textposition: 'top center', textfont: { family: 'Raleway, sans-serif' }, marker: { opacity: 0.9, color: 'rgba(%5, %6, %7, %8)' }, type: 'bar' };").arg(trace_id).arg(x).arg(y).arg(text).arg(r_).arg(g_).arg(b_).arg(a_);
-      }
-      else{
-        json += QString("var id%1 = { x: %2, y: %3, text: %4, mode: 'markers', marker: { opacity: 0.9, color: 'rgba(%5, %6, %7, %8)' }, type: 'bar' };").arg(trace_id).arg(x).arg(y).arg(text).arg(r_).arg(g_).arg(b_).arg(a_);
+      if (b[i]->isTextVisible() == true) {
+        // json += QString("var id%1 = { x: ['%2'], y: [%3], width: ['%4'],
+        // text: ['%5'], mode: 'markers+text', textposition: 'top center',
+        // textfont: { family: 'Raleway, sans-serif' }, marker: { opacity: 0.9,
+        // color: 'rgba(%6, %7, %8, %9)' }, type: 'bar'
+        // };").arg(trace_id).arg(b[i]->x()).arg(b[i]->y()).arg(b[i]->width()).arg(b[i]->getText()).arg(r_).arg(g_).arg(b_).arg(a_);
+        json += QString("var id%1 = { x: %2, y: %3, text: %4, mode: "
+                        "'markers+text', textposition: 'top center', textfont: "
+                        "{ family: 'Raleway, sans-serif' }, marker: { opacity: "
+                        "0.9, color: 'rgba(%5, %6, %7, %8)' }, type: 'bar' };")
+                    .arg(trace_id)
+                    .arg(x)
+                    .arg(y)
+                    .arg(text)
+                    .arg(r_)
+                    .arg(g_)
+                    .arg(b_)
+                    .arg(a_);
+      } else {
+        json += QString("var id%1 = { x: %2, y: %3, text: %4, mode: 'markers', "
+                        "marker: { opacity: 0.9, color: 'rgba(%5, %6, %7, %8)' "
+                        "}, type: 'bar' };")
+                    .arg(trace_id)
+                    .arg(x)
+                    .arg(y)
+                    .arg(text)
+                    .arg(r_)
+                    .arg(g_)
+                    .arg(b_)
+                    .arg(a_);
       }
       trace_id++;
-    }
-    else{
+    } else {
       continue;
     }
   }
   return json;
 }
 
-void QPlotlyWindow::Plot()
-{
-  if(p.size() > 0 || c.size() > 0 || b.size() > 0){
+void QPlotlyWindow::Plot() {
+  if (p.size() > 0 || c.size() > 0 || b.size() > 0) {
     trace_id = 1;
     code.clear();
     code += "<html>";
-    code +="<head>";
+    code += "<head>";
 
-    code +="<!-- Plotly.js -->";
-    QString plotly_file = QString("%1/plotly-latest.min.js").arg(qApp->applicationDirPath());
+    code += "<!-- Plotly.js -->";
+    QString plotly_file =
+        QString("%1/plotly-latest.min.js").arg(qApp->applicationDirPath());
     QFile file(plotly_file);
-    if(!file.open(QIODevice::ReadOnly | QIODevice::Text)){
-      code +="<script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>";
-    }
-    else{
-      code +="<script>";
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      code +=
+          "<script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>";
+    } else {
+      code += "<script>";
       QByteArray barr = file.readAll();
       file.close();
       code += QString(barr);
-      code +="</script>";
+      code += "</script>";
     }
     // insert a script to read/write txt files
-    code +="</head>";
-    code +="<body>";
+    code += "</head>";
+    code += "<body>";
 
-    //code +="<p id='selid' hidden></p>";
-    code +="<div id=\"myDiv\"  style=\"height: 100%;width: 100%;\"><!-- Plotly chart will be drawn inside this DIV --></div>";
-    code +="<script>";
+    // code +="<p id='selid' hidden></p>";
+    code += "<div id=\"myDiv\"  style=\"height: 100%;width: 100%;\"><!-- "
+            "Plotly chart will be drawn inside this DIV --></div>";
+    code += "<script>";
 
-    if(b.size() == 0){
-      if(p.size() > 0){
-        if(pt == _2D){
+    if (b.size() == 0) {
+      if (p.size() > 0) {
+        if (pt == _2D) {
           // Prepare code for scatter plot
           code += genJSONScatter();
-        }
-        else{
+        } else {
           code += genJSON3DScatter();
         }
       }
 
-      if(c.size() > 0 && pt == _2D){
+      if (c.size() > 0 && pt == _2D) {
         // Prepare code for curve plot)
         code += genJSONCurve();
       }
-    }
-    else{
+    } else {
       // Prepare code for bar plot
       code += genJSONBar();
     }
 
-    code +="var data = [";
-    for(int i = 1; i < trace_id-1; i++)
+    code += "var data = [";
+    for (int i = 1; i < trace_id - 1; i++)
       code += QString(" id%1,").arg(i);
-    code += QString(" id%1];").arg(trace_id-1);
+    code += QString(" id%1];").arg(trace_id - 1);
 
-
-    //code +="var layout = {};";
-    if(pt == _3D){
-      code += QString("var layout = { showlegend: false, title: '%1', xaxis: { title: '%2'}, yaxis: { title: '%3'}, zaxis: { title: '%4'}, margin: {l: 0, r: 0, b:0, t: 0}};").arg(plot_title).arg(xaxisname).arg(yaxisname).arg(zaxisname);
+    // code +="var layout = {};";
+    if (pt == _3D) {
+      code += QString("var layout = { showlegend: false, title: '%1', xaxis: { "
+                      "title: '%2'}, yaxis: { title: '%3'}, zaxis: { title: "
+                      "'%4'}, margin: {l: 0, r: 0, b:0, t: 0}};")
+                  .arg(plot_title)
+                  .arg(xaxisname)
+                  .arg(yaxisname)
+                  .arg(zaxisname);
+    } else {
+      code += QString("var layout = { showlegend: false, title: '%1', xaxis: { "
+                      "title: '%2', tickangle: '%3'}, yaxis: { title: '%4', "
+                      "tickangle: '%5'}, barmode: 'group' };")
+                  .arg(plot_title)
+                  .arg(xaxisname)
+                  .arg(xtickangle)
+                  .arg(yaxisname)
+                  .arg(ytickangle);
     }
-    else{
-      code += QString("var layout = { showlegend: false, title: '%1', xaxis: { title: '%2', tickangle: '%3'}, yaxis: { title: '%4', tickangle: '%5'}, barmode: 'group' };").arg(plot_title).arg(xaxisname).arg(xtickangle).arg(yaxisname).arg(ytickangle);
-    }
 
-    code +="var d3 = Plotly.d3;";
-    code +="var gd3 = d3.select(\"div[id='myDiv']\");";
-    code +="var gd = gd3.node();";
-    code +="Plotly.newPlot('myDiv', data, layout);";
+    code += "var d3 = Plotly.d3;";
+    code += "var gd3 = d3.select(\"div[id='myDiv']\");";
+    code += "var gd = gd3.node();";
+    code += "Plotly.newPlot('myDiv', data, layout);";
 
     // Add plot interactions
     code += "var myPlot = document.getElementById('myDiv');";
     code += "myPlot.on('plotly_click', function() {";
-    //code += "alert('You clicked this Plotly chart!');";
+    // code += "alert('You clicked this Plotly chart!');";
     code += "});";
-    //Point selection. all selected points will be sent to cookie. Then
+    // Point selection. all selected points will be sent to cookie. Then
     code += "myPlot.on('plotly_selected', function(eventData) {";
-    //code += "alert('You selected some points in this Plotly chart!');";
+    // code += "alert('You selected some points in this Plotly chart!');";
     code += "if (eventData.points.length > 0){";
     code += "document.cookie = 'selpnt=start';";
     code += "eventData.points.forEach(function(pt) {";
-    //code += "console.log(pt);";
-    code += "document.cookie = 'point=x: '+pt.x+' y: '+pt.y +' z: '+pt.z + ' name: '+ pt.text;";
-    //code += "alert('x: '+pt.x+' y: '+pt.y + ' name: '+ pt.text);";
-      //x.push(pt.x);
-      //y.push(pt.y);
-      //code += "colors[pt.pointNumber] = color1;";
+    // code += "console.log(pt);";
+    code += "document.cookie = 'point=x: '+pt.x+' y: '+pt.y +' z: '+pt.z + ' "
+            "name: '+ pt.text;";
+    // code += "alert('x: '+pt.x+' y: '+pt.y + ' name: '+ pt.text);";
+    // x.push(pt.x);
+    // y.push(pt.y);
+    // code += "colors[pt.pointNumber] = color1;";
     code += "});";
     code += "document.cookie = 'selpnt=end';";
-    //code += "return points;";
+    // code += "return points;";
     code += "}";
     code += "else { return undefined; }";
     code += "});";
 
     // Add resize event
-    code +="window.addEventListener('resize', function() { Plotly.Plots.resize(gd); });";
-    code +="</script>";
-    code +="</body>";
+    code += "window.addEventListener('resize', function() { "
+            "Plotly.Plots.resize(gd); });";
+    code += "</script>";
+    code += "</body>";
     code += "</html>";
   }
 
@@ -1093,52 +1150,49 @@ void QPlotlyWindow::Plot()
     this->setLayout(mainLayout);
 
     cookie_store = wview->page()->profile()->cookieStore();
-    connect(cookie_store, &QWebEngineCookieStore::cookieAdded, this, &QPlotlyWindow::handleCookieAdded);
+    connect(cookie_store, &QWebEngineCookieStore::cookieAdded, this,
+  &QPlotlyWindow::handleCookieAdded);
   }
   */
-  if(code.size() > 0){
+  if (code.size() > 0) {
     page = WriteTemporaryPage(code);
     wview->load(page);
-    //wview->load(QUrl(QStringLiteral("https://www.google.com")));
-    //nam->cookieJar()->cookiesForUrl(QUrl(QStringLiteral("https://www.google.com")));
+    // wview->load(QUrl(QStringLiteral("https://www.google.com")));
+    // nam->cookieJar()->cookiesForUrl(QUrl(QStringLiteral("https://www.google.com")));
   }
 }
 
 class DataPointIsEqual {
   DataPoint p1;
+
 public:
-  DataPointIsEqual(DataPoint &p):p1(p){}
-  bool operator()(DataPoint *p2) const
-  {
-    //QEPSILON and FLOAT_EQ DEFINED IN DATAPOINT.H
-    if(FLOAT_EQ(p1.x(), p2->x(), QEPSILON) &&
-       FLOAT_EQ(p1.y(), p2->y(), QEPSILON) &&
-       FLOAT_EQ(p1.z(), p2->z(), QEPSILON)){
-      if(p1.getName().compare(p2->getName()) == 0){
+  DataPointIsEqual(DataPoint &p) : p1(p) {}
+  bool operator()(DataPoint *p2) const {
+    // QEPSILON and FLOAT_EQ DEFINED IN DATAPOINT.H
+    if (FLOAT_EQ(p1.x(), p2->x(), QEPSILON) &&
+        FLOAT_EQ(p1.y(), p2->y(), QEPSILON) &&
+        FLOAT_EQ(p1.z(), p2->z(), QEPSILON)) {
+      if (p1.getName().compare(p2->getName()) == 0) {
         return true;
-      }
-      else{
+      } else {
         return false;
       }
-    }
-    else{
+    } else {
       return false;
     }
   }
 };
 
-int QPlotlyWindow::FindPoint(qreal x, qreal y, qreal z, QString name_)
-{
+int QPlotlyWindow::FindPoint(qreal x, qreal y, qreal z, QString name_) {
   DataPoint f(x, y, z, name_);
-  //int indx = std::find(p.begin(), p.end(), &f) - p.begin();
+  // int indx = std::find(p.begin(), p.end(), &f) - p.begin();
   int indx = std::find_if(p.begin(), p.end(), DataPointIsEqual(f)) - p.begin();
-  if(indx == p.size()){
+  if (indx == p.size()) {
     return -1;
-  }
-  else{
+  } else {
     return indx;
   }
-  //return p.indexOf(&f);
+  // return p.indexOf(&f);
   /*for(int i = 0; i < p.size(); i++){
     if(p[i]->compare(f) == true){
       return i;
@@ -1158,64 +1212,59 @@ int QPlotlyWindow::FindPoint(qreal x, qreal y, qreal z, QString name_)
 }
 
 #ifdef WEBKIT
-void QPlotlyWindow::WebKithandleCookieAdded(QString cookie)
-{
-  //qDebug() << cookie;
+void QPlotlyWindow::WebKithandleCookieAdded(QString cookie) {
+  // qDebug() << cookie;
   CookieParser(cookie);
 }
 #else
-void QPlotlyWindow::WebEnginehandleCookieAdded(const QNetworkCookie &cookie)
-{
+void QPlotlyWindow::WebEnginehandleCookieAdded(const QNetworkCookie &cookie) {
   QString cookie_(cookie.toRawForm());
   CookieParser(cookie_);
-  #ifdef DEBUG
+#ifdef DEBUG
   qDebug() << cookie_ << "\n";
-  #endif
+#endif
 }
 #endif
 
-void QPlotlyWindow::CookieParser(QString cookie)
-{
-  if(cookie.contains("selpnt=start") == true){
-    #ifdef DEBUG
+void QPlotlyWindow::CookieParser(QString cookie) {
+  if (cookie.contains("selpnt=start") == true) {
+#ifdef DEBUG
     qDebug() << "Clear previous selection";
-    #endif
-    for(int i = 0; i < selected_points.size(); i++){
+#endif
+    for (int i = 0; i < selected_points.size(); i++) {
       p[selected_points[i]]->setSelection(false);
     }
     selected_points.clear();
-  }
-  else if(cookie.contains("point=") == true){
-    #ifdef DEBUG
+  } else if (cookie.contains("point=") == true) {
+#ifdef DEBUG
     qDebug() << cookie.split(";");
-    #endif
+#endif
     QStringList vars = cookie.split(";")[0].split(" ");
-    //point=x: 2 y: 2 z: 2 name: due; path=/var/folders/1z/j2xq6qss7s93bmf23nzcskp00000gp/T/testqplotly-YlDhEE"
+    // point=x: 2 y: 2 z: 2 name: due;
+    // path=/var/folders/1z/j2xq6qss7s93bmf23nzcskp00000gp/T/testqplotly-YlDhEE"
     qreal x = 0.f, y = 0.f, z = 0.f;
     x = atof(vars[1].toStdString().c_str());
     y = atof(vars[3].toStdString().c_str());
-    if(vars[5].compare("undefined") != 0)
+    if (vars[5].compare("undefined") != 0)
       z = atof(vars[5].toStdString().c_str());
     QString name = vars[7];
     int id = FindPoint(x, y, z, name);
-    #ifdef DEBUG
+#ifdef DEBUG
     qDebug() << "Find Point Result: " << id;
-    #endif
+#endif
 
-    if(id > -1){
+    if (id > -1) {
       selected_points << id;
       p[id]->setSelection(true);
-      //qDebug() << "id Nr. " << selected_points.last();
-    }
-    else{
-      //Refresh();
+      // qDebug() << "id Nr. " << selected_points.last();
+    } else {
+      // Refresh();
       update();
     }
-  }
-  else if(cookie.contains("selpnt=end") == true){
-    #ifdef DEBUG
+  } else if (cookie.contains("selpnt=end") == true) {
+#ifdef DEBUG
     qDebug() << "End point selection";
-    #endif
+#endif
     /* Selection END!
      for(size_t i = 0; i < selected_points.size(); i++){
       qDebug() << selected_points[i] << "\n";
@@ -1223,13 +1272,11 @@ void QPlotlyWindow::CookieParser(QString cookie)
     Refresh(); // OK THIS
     update();
   }
-  //Refresh();
+  // Refresh();
   update();
 }
 
-
-QPlotlyWindow::QPlotlyWindow(QWidget *parent) : QWidget(parent)
-{
+QPlotlyWindow::QPlotlyWindow(QWidget *parent) : QWidget(parent) {
   pt = _2D;
   xaxisname = "X axis";
   yaxisname = "Y axis";
@@ -1239,49 +1286,51 @@ QPlotlyWindow::QPlotlyWindow(QWidget *parent) : QWidget(parent)
   xtickangle = ytickangle = 0;
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
-  #ifdef WEBKIT
+#ifdef WEBKIT
   wview = new QWebView(this);
-  #else
+#else
   wview = new QWebEngineView(this);
-  #endif
+#endif
   this->setMinimumSize(this->size());
   wview->resize(this->size());
-  //wview->page()->profile()->setPersistentCookiesPolicy(QWebEngineProfile::ForcePersistentCookies);
+  // wview->page()->profile()->setPersistentCookiesPolicy(QWebEngineProfile::ForcePersistentCookies);
   mainLayout->addWidget(wview);
   this->setLayout(mainLayout);
-  //cookie halding
-  #ifdef WEBKIT
+// cookie halding
+#ifdef WEBKIT
   /* 1) get QWebPage and grap the underlying QNetworkAccessManager
    * 2) Set a custom cookieJar that overrides the functions to set cookies.
-   * 3) When a cookie is added emit a signal and get it in a format that you need
+   * 3) When a cookie is added emit a signal and get it in a format that you
+   * need
    */
   cookieJar = new CustomNetworkCookieJar();
 
   nam = new QNetworkAccessManager();
   nam->setCookieJar(cookieJar);
   wview->page()->setNetworkAccessManager(nam);
-  connect(nam->cookieJar(), SIGNAL(cookiesChanged(QString)), this, SLOT(WebKithandleCookieAdded(QString)));
-  #else
+  connect(nam->cookieJar(), SIGNAL(cookiesChanged(QString)), this,
+          SLOT(WebKithandleCookieAdded(QString)));
+#else
   cookie_store = wview->page()->profile()->cookieStore();
-  connect(cookie_store, &QWebEngineCookieStore::cookieAdded, this, &QPlotlyWindow::WebEnginehandleCookieAdded);
-  #endif
+  connect(cookie_store, &QWebEngineCookieStore::cookieAdded, this,
+          &QPlotlyWindow::WebEnginehandleCookieAdded);
+#endif
 }
 
-QPlotlyWindow::~QPlotlyWindow()
-{
+QPlotlyWindow::~QPlotlyWindow() {
   // Free the memory!
   dir.remove();
   delete wview;
 
-  #ifdef WEBKIT
+#ifdef WEBKIT
   delete cookieJar;
   delete nam;
-  #endif
+#endif
 
-  for(int i = 0; i < p.size(); i++){
+  for (int i = 0; i < p.size(); i++) {
     delete p[i];
   }
-  for(int i = 0; i < b.size(); i++){
+  for (int i = 0; i < b.size(); i++) {
     delete b[i];
   }
 }

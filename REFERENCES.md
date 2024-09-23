@@ -1,4 +1,3 @@
-
 ## Citations
 
 - [2022 Hyuk-Kwon Kwon et al. Treating ‘Septic’ With Enhanced Antibiotics and ‘Arthritis’ by Mitigation of Excessive Inflammation](https://www.frontiersin.org/articles/10.3389/fcimb.2022.897291/full)

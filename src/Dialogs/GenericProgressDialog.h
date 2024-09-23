@@ -5,8 +5,7 @@
 
 #include "ui_GenericProgressDialog.h"
 
-class GenericProgressDialog: public QDialog
-{
+class GenericProgressDialog : public QDialog {
   Q_OBJECT
 
 public:
@@ -15,20 +14,18 @@ public:
   void setMin(int min);
   void setMax(int max);
   void setValue(int value);
-  
+
   void showcancel();
   void hideCancel();
-  
+
 private slots:
   void Cancel();
 
 signals:
   void runCancelled();
-  
+
 private:
   Ui::GenericProgressDialog ui;
-
 };
 
 #endif
-

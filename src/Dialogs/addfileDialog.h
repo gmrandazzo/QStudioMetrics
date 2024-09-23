@@ -3,14 +3,13 @@
 
 #include <QDialog>
 #include <QStandardItemModel>
-#include <QStringList>
 #include <QString>
+#include <QStringList>
 // #include "Table.h"
 
 #include "ui_addfileDialog.h"
 
-class AddFileDialog: public QDialog
-{
+class AddFileDialog : public QDialog {
   Q_OBJECT
 
 public:
@@ -22,9 +21,9 @@ public:
   QString getSkipChar();
   QString getFileObjName();
   QString getFileVarName();
-  void setPath(QString &path_){ path = path_; }
+  void setPath(QString &path_) { path = path_; }
   void setSimpleOpen();
-  
+
 private slots:
   void Open();
   void OpenFileObjName();
@@ -32,10 +31,9 @@ private slots:
   void Accept();
   void Preview();
 
-  
 private:
   Ui::AddFileDialog ui;
-  QStandardItemModel* model;
+  QStandardItemModel *model;
   QString path;
   QStringList ListRead(QString file_);
   auto CountNumberRow(QString file_);

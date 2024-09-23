@@ -9,8 +9,7 @@
 #include <QDebug>
 #endif
 
-UPLSPREDICTION::UPLSPREDICTION()
-{
+UPLSPREDICTION::UPLSPREDICTION() {
   initMatrix(&pxscores);
   initArray(&py);
   initArray(&r2y);
@@ -18,27 +17,26 @@ UPLSPREDICTION::UPLSPREDICTION()
   id = did = -1;
 }
 
-UPLSPREDICTION::~UPLSPREDICTION(){
-  #ifdef DEBUG
+UPLSPREDICTION::~UPLSPREDICTION() {
+#ifdef DEBUG
   qDebug() << "Delete UPLSPREDICTION: " << name;
-  #endif
+#endif
   DelMatrix(&pxscores);
   DelArray(&py);
   DelArray(&r2y);
   DelArray(&sdec);
 }
 
-UPLSModel::UPLSModel(){
+UPLSModel::UPLSModel() {
   NewUPLSModel(&m);
   xid = yid = xscaling = yscaling = npc = modelid = -1;
   validation = 0;
 }
 
-UPLSModel::~UPLSModel()
-{
-  #ifdef DEBUG
+UPLSModel::~UPLSModel() {
+#ifdef DEBUG
   qDebug() << "Delete UPLS Model: " << name;
-  #endif
+#endif
   delUPLSPredictions();
   DelUPLSModel(&m);
 }

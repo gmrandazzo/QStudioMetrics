@@ -2,34 +2,30 @@
 
 #include <QColorDialog>
 
-void SelectionStyleDialog::CheckUncheck()
-{
+void SelectionStyleDialog::CheckUncheck() {
 
-  if(ui.SizeGroupBox->isChecked() == true){
+  if (ui.SizeGroupBox->isChecked() == true) {
     ui.actionSymbolType->setEnabled(true);
-  }
-  else{
+  } else {
     ui.actionSymbolType->setEnabled(false);
   }
 
-  if(ui.ColorGroupBox->isChecked() == true){
-    if(ui.solidcolor->isChecked() == true){
+  if (ui.ColorGroupBox->isChecked() == true) {
+    if (ui.solidcolor->isChecked() == true) {
       ui.actionSelectColor->setEnabled(true);
       ui.colorLabel->setEnabled(true);
       ui.colorvarlist->setEnabled(false);
       ui.actionSelectColorMin->setEnabled(false);
       ui.actionSelectColorMax->setEnabled(false);
 
-    }
-    else{
+    } else {
       ui.actionSelectColor->setEnabled(false);
       ui.colorLabel->setEnabled(false);
       ui.colorvarlist->setEnabled(true);
       ui.actionSelectColorMin->setEnabled(true);
       ui.actionSelectColorMax->setEnabled(true);
     }
-  }
-  else{
+  } else {
     ui.actionSelectColor->setEnabled(false);
     ui.colorLabel->setEnabled(false);
     ui.colorvarlist->setEnabled(false);
@@ -37,22 +33,20 @@ void SelectionStyleDialog::CheckUncheck()
     ui.actionSelectColorMax->setEnabled(false);
   }
 
-  if(ui.SizeGroupBox->isChecked() == true){
+  if (ui.SizeGroupBox->isChecked() == true) {
     ui.ColorGroupBox->setEnabled(true);
-    if(ui.fixedsize->isChecked() == true){
+    if (ui.fixedsize->isChecked() == true) {
       ui.actionSymbolSize->setEnabled(true);
       ui.sizevarlist->setEnabled(false);
       ui.actionSymbolSizeMin->setEnabled(false);
       ui.actionSymbolSizeMax->setEnabled(false);
-    }
-    else{
+    } else {
       ui.actionSymbolSize->setEnabled(false);
       ui.sizevarlist->setEnabled(true);
       ui.actionSymbolSizeMin->setEnabled(true);
       ui.actionSymbolSizeMax->setEnabled(true);
     }
-  }
-  else{
+  } else {
     ui.actionSymbolSize->setEnabled(false);
     ui.sizevarlist->setEnabled(false);
     ui.actionSymbolSizeMin->setEnabled(false);
@@ -60,136 +54,115 @@ void SelectionStyleDialog::CheckUncheck()
   }
 }
 
-void SelectionStyleDialog::SetMaxSymbolColor()
-{
+void SelectionStyleDialog::SetMaxSymbolColor() {
   color3 = QColorDialog::getColor(color3, this);
-  ui.actionSelectColorMax->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(color3.red()).arg(color3.green()).arg(color3.blue()));
+  ui.actionSelectColorMax->setStyleSheet(
+      QString("background-color: rgb(%1, %2, %3);")
+          .arg(color3.red())
+          .arg(color3.green())
+          .arg(color3.blue()));
 }
 
-void SelectionStyleDialog::SetMinSymbolColor()
-{
+void SelectionStyleDialog::SetMinSymbolColor() {
   color2 = QColorDialog::getColor(color2, this);
-  ui.actionSelectColorMin->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(color2.red()).arg(color2.green()).arg(color2.blue()));
+  ui.actionSelectColorMin->setStyleSheet(
+      QString("background-color: rgb(%1, %2, %3);")
+          .arg(color2.red())
+          .arg(color2.green())
+          .arg(color2.blue()));
 }
 
-void SelectionStyleDialog::SetSolidSymbolColor()
-{
+void SelectionStyleDialog::SetSolidSymbolColor() {
   color1 = QColorDialog::getColor(color1, this);
-  ui.colorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(color1.red()).arg(color1.green()).arg(color1.blue()));
+  ui.colorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);")
+                                   .arg(color1.red())
+                                   .arg(color1.green())
+                                   .arg(color1.blue()));
 }
 
-void SelectionStyleDialog::Cancel()
-{
-  reject();
-}
+void SelectionStyleDialog::Cancel() { reject(); }
 
-void SelectionStyleDialog::OK()
-{
-  accept();
-}
+void SelectionStyleDialog::OK() { accept(); }
 
-QString SelectionStyleDialog::getVariableSymbolSize()
-{
+QString SelectionStyleDialog::getVariableSymbolSize() {
 
   return ui.sizevarlist->currentText();
 }
 
-int SelectionStyleDialog::getMaxSymbolSize()
-{
+int SelectionStyleDialog::getMaxSymbolSize() {
   return ui.actionSymbolSizeMax->value();
 }
 
-int SelectionStyleDialog::getMinSymbolSize()
-{
+int SelectionStyleDialog::getMinSymbolSize() {
   return ui.actionSymbolSizeMin->value();
 }
 
-int SelectionStyleDialog::getFixedSymbolSize()
-{
+int SelectionStyleDialog::getFixedSymbolSize() {
   return ui.actionSymbolSize->value();
 }
 
-QString SelectionStyleDialog::getVariableSymbolColor()
-{
+QString SelectionStyleDialog::getVariableSymbolColor() {
   return ui.colorvarlist->currentText();
 }
 
-QColor& SelectionStyleDialog::getMaxSymbolColor()
-{
-  return color3;
-}
+QColor &SelectionStyleDialog::getMaxSymbolColor() { return color3; }
 
-QColor& SelectionStyleDialog::getMinSymbolColor()
-{
-  return color2;
-}
+QColor &SelectionStyleDialog::getMinSymbolColor() { return color2; }
 
-QColor& SelectionStyleDialog::getSolidSymbolColor()
-{
-  return color1;
-}
+QColor &SelectionStyleDialog::getSolidSymbolColor() { return color1; }
 
-int SelectionStyleDialog::getSymbolType()
-{
+int SelectionStyleDialog::getSymbolType() {
   return ui.actionSymbolType->currentIndex();
 }
 
-SelectionStyleDialog::ChangeType SelectionStyleDialog::ChangeSize()
-{
-  if(ui.SizeGroupBox->isChecked()){
-    if(ui.fixedsize->isChecked()){
+SelectionStyleDialog::ChangeType SelectionStyleDialog::ChangeSize() {
+  if (ui.SizeGroupBox->isChecked()) {
+    if (ui.fixedsize->isChecked()) {
       return FIXED;
-    }
-    else{
+    } else {
       return GRADIENT;
     }
-  }
-  else{
+  } else {
     return NOCHANGE;
   }
 }
 
-SelectionStyleDialog::ChangeType SelectionStyleDialog::ChangeColor()
-{
-  if(ui.ColorGroupBox->isChecked()){
-    if(ui.solidcolor->isChecked()){
+SelectionStyleDialog::ChangeType SelectionStyleDialog::ChangeColor() {
+  if (ui.ColorGroupBox->isChecked()) {
+    if (ui.solidcolor->isChecked()) {
       return FIXED;
-    }
-    else{
+    } else {
       return GRADIENT;
     }
-  }
-  else{
+  } else {
     return NOCHANGE;
   }
 }
 
-int SelectionStyleDialog::ChangeShape()
-{
-  if(ui.ShapeGroupBox->isChecked()){
+int SelectionStyleDialog::ChangeShape() {
+  if (ui.ShapeGroupBox->isChecked()) {
     return 1;
-  }
-  else{
+  } else {
     return 0;
   }
 }
 
-void SelectionStyleDialog::setSymbolNames(QStringList snames)
-{
+void SelectionStyleDialog::setSymbolNames(QStringList snames) {
   ui.actionSymbolType->clear();
-  for(int i = 0; i < snames.size(); i++){
+  for (int i = 0; i < snames.size(); i++) {
     ui.actionSymbolType->addItem(snames[i]);
   }
 }
 
-
-SelectionStyleDialog::SelectionStyleDialog(): QDialog()
-{
+SelectionStyleDialog::SelectionStyleDialog() : QDialog() {
   ui.setupUi(this);
 
   ui.solidcolor->setChecked(true);
   color1 = QColor(Qt::black);
-  ui.colorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(color1.red()).arg(color1.green()).arg(color1.blue()));
+  ui.colorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);")
+                                   .arg(color1.red())
+                                   .arg(color1.green())
+                                   .arg(color1.blue()));
   ui.fixedsize->setChecked(true);
   ui.ShapeGroupBox->setCheckable(false);
   ui.ColorGroupBox->setCheckable(false);
@@ -211,32 +184,42 @@ SelectionStyleDialog::SelectionStyleDialog(): QDialog()
 
   adjustSize();
 
-  connect(ui.actionSelectColor, SIGNAL(clicked(bool)), SLOT(SetSolidSymbolColor()));
+  connect(ui.actionSelectColor, SIGNAL(clicked(bool)),
+          SLOT(SetSolidSymbolColor()));
   connect(ui.okButton, SIGNAL(clicked(bool)), SLOT(OK()));
   connect(ui.cancelButton, SIGNAL(clicked(bool)), SLOT(Cancel()));
 }
 
-SelectionStyleDialog::SelectionStyleDialog(QStringList &varnames_): QDialog()
-{
+SelectionStyleDialog::SelectionStyleDialog(QStringList &varnames_) : QDialog() {
   ui.setupUi(this);
 
   ui.solidcolor->setChecked(true);
   color1 = QColor(Qt::black);
-  ui.colorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(color1.red()).arg(color1.green()).arg(color1.blue()));
+  ui.colorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);")
+                                   .arg(color1.red())
+                                   .arg(color1.green())
+                                   .arg(color1.blue()));
   color2 = QColor(Qt::green);
-  ui.actionSelectColorMin->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(color2.red()).arg(color2.green()).arg(color2.blue()));
+  ui.actionSelectColorMin->setStyleSheet(
+      QString("background-color: rgb(%1, %2, %3);")
+          .arg(color2.red())
+          .arg(color2.green())
+          .arg(color2.blue()));
   color3 = QColor(Qt::blue);
-  ui.actionSelectColorMax->setStyleSheet(QString("background-color: rgb(%1, %2, %3);").arg(color3.red()).arg(color3.green()).arg(color3.blue()));
+  ui.actionSelectColorMax->setStyleSheet(
+      QString("background-color: rgb(%1, %2, %3);")
+          .arg(color3.red())
+          .arg(color3.green())
+          .arg(color3.blue()));
   ui.fixedsize->setChecked(true);
   ui.colorvarlist->clear();
   ui.sizevarlist->clear();
   varnames = varnames_;
 
-  for(int i = 0; i < varnames.size(); i++){
-    if(varnames[i].compare(firstcol_name,  Qt::CaseInsensitive) == 0){
+  for (int i = 0; i < varnames.size(); i++) {
+    if (varnames[i].compare(firstcol_name, Qt::CaseInsensitive) == 0) {
       continue;
-    }
-    else{
+    } else {
       ui.sizevarlist->addItem(varnames[i]);
       ui.colorvarlist->addItem(varnames[i]);
     }
@@ -246,9 +229,12 @@ SelectionStyleDialog::SelectionStyleDialog(QStringList &varnames_): QDialog()
 
   adjustSize();
 
-  connect(ui.actionSelectColor, SIGNAL(clicked(bool)), SLOT(SetSolidSymbolColor()));
-  connect(ui.actionSelectColorMin, SIGNAL(clicked(bool)), SLOT(SetMinSymbolColor()));
-  connect(ui.actionSelectColorMax, SIGNAL(clicked(bool)), SLOT(SetMaxSymbolColor()));
+  connect(ui.actionSelectColor, SIGNAL(clicked(bool)),
+          SLOT(SetSolidSymbolColor()));
+  connect(ui.actionSelectColorMin, SIGNAL(clicked(bool)),
+          SLOT(SetMinSymbolColor()));
+  connect(ui.actionSelectColorMax, SIGNAL(clicked(bool)),
+          SLOT(SetMaxSymbolColor()));
   connect(ui.okButton, SIGNAL(clicked(bool)), SLOT(OK()));
   connect(ui.cancelButton, SIGNAL(clicked(bool)), SLOT(Cancel()));
 

@@ -1,26 +1,24 @@
 #ifndef HIGHLIGHTTABLEVARDIALOG_H
 #define HIGHLIGHTTABLEVARDIALOG_H
 
-#include <QDialog>
-#include <QColor>
 #include "ui_HighlightTableVarDialog.h"
-
+#include <QColor>
+#include <QDialog>
 
 extern "C" {
-  #include "scientific.h"
+#include "scientific.h"
 }
 
-class HighlightTableVarDialog: public QDialog
-{
+class HighlightTableVarDialog : public QDialog {
   Q_OBJECT
-  
+
 public:
-  HighlightTableVarDialog(QStringList varname);  
-  
-  int getVariableType(){ return var; }
-  QColor& getMinColor(){ return colormin; }
-  QColor& getMaxColor(){ return colormax; }
-  
+  HighlightTableVarDialog(QStringList varname);
+
+  int getVariableType() { return var; }
+  QColor &getMinColor() { return colormin; }
+  QColor &getMaxColor() { return colormax; }
+
 public slots:
   void Cancel();
   void OK();
@@ -35,4 +33,3 @@ private:
 };
 
 #endif
-

@@ -1,15 +1,13 @@
 #ifndef LISTVIEW_H
 #define LISTVIEW_H
 
-#include <QWidget>
-#include <QStringList>
 #include <QContextMenuEvent>
+#include <QStringList>
+#include <QWidget>
 
 #include "ui_ListView.h"
 
-
-class ListView : public QWidget
-{
+class ListView : public QWidget {
   Q_OBJECT
 
 public:
@@ -24,7 +22,7 @@ private:
   Ui::ListView ui;
 
 protected:
-   void contextMenuEvent(QContextMenuEvent *event);
+  void contextMenuEvent(QContextMenuEvent *event);
 };
 
 #endif

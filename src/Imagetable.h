@@ -1,12 +1,12 @@
 #ifndef IMAGETABLE_H
 #define IMAGETABLE_H
 
-#include <scientific.h>
-#include <QWidget>
-#include <QStringList>
 #include <QFile>
-#include <QTextStream>
 #include <QStandardItemModel> // Remove this
+#include <QStringList>
+#include <QTextStream>
+#include <QWidget>
+#include <scientific.h>
 
 #include <QAbstractTableModel>
 
@@ -18,16 +18,14 @@
 
 #include <iostream>
 
-
-class ImageTableModel : public QAbstractTableModel
-{
-    Q_OBJECT
+class ImageTableModel : public QAbstractTableModel {
+  Q_OBJECT
 public:
-    ImageTableModel(QObject *parent);
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override ;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+  ImageTableModel(QObject *parent);
+  int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+  int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+  QVariant data(const QModelIndex &index,
+                int role = Qt::DisplayRole) const override;
 };
-
 
 #endif

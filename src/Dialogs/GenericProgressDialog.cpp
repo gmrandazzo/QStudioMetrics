@@ -1,45 +1,28 @@
 #include "GenericProgressDialog.h"
 #include <QScreen>
 
-void GenericProgressDialog::setValue(int value)
-{
+void GenericProgressDialog::setValue(int value) {
   ui.progressBar->setValue(value);
 }
 
-void GenericProgressDialog::setMax(int max)
-{
-  ui.progressBar->setMaximum(max);
-}
+void GenericProgressDialog::setMax(int max) { ui.progressBar->setMaximum(max); }
 
-void GenericProgressDialog::setMin(int min)
-{
-  ui.progressBar->setMinimum(min);
-}
+void GenericProgressDialog::setMin(int min) { ui.progressBar->setMinimum(min); }
 
-void GenericProgressDialog::setRange(int min, int max)
-{
+void GenericProgressDialog::setRange(int min, int max) {
   ui.progressBar->setRange(min, max);
 }
 
-void GenericProgressDialog::hideCancel()
-{
-  ui.cancelButton->hide();
-}
+void GenericProgressDialog::hideCancel() { ui.cancelButton->hide(); }
 
-void GenericProgressDialog::showcancel()
-{
-  ui.cancelButton->show();
-}
+void GenericProgressDialog::showcancel() { ui.cancelButton->show(); }
 
-void GenericProgressDialog::Cancel()
-{
-  emit runCancelled();
-}
+void GenericProgressDialog::Cancel() { emit runCancelled(); }
 
-GenericProgressDialog::GenericProgressDialog(): QDialog()
-{
+GenericProgressDialog::GenericProgressDialog() : QDialog() {
   ui.setupUi(this);
-  setWindowFlags(((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowCloseButtonHint));
+  setWindowFlags(
+      ((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowCloseButtonHint));
   setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
   QScreen *screen = QGuiApplication::primaryScreen();

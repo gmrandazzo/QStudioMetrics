@@ -9,30 +9,27 @@
 #include <QDebug>
 #endif
 
-UPCAPREDICTION::UPCAPREDICTION(){
+UPCAPREDICTION::UPCAPREDICTION() {
   initMatrix(&pscores);
   id = did = -1;
 }
 
-UPCAPREDICTION::~UPCAPREDICTION()
-{
-  #ifdef DEBUG
+UPCAPREDICTION::~UPCAPREDICTION() {
+#ifdef DEBUG
   qDebug() << "Delete UPCAPREDICTION: " << name;
-  #endif
+#endif
   DelMatrix(&pscores);
 }
 
-UPCAModel::UPCAModel()
-{
+UPCAModel::UPCAModel() {
   NewUPCAModel(&m);
   did = xscaling = npc = modelid = -1;
 }
 
-UPCAModel::~UPCAModel()
-{
-  #ifdef DEBUG
+UPCAModel::~UPCAModel() {
+#ifdef DEBUG
   qDebug() << "Delete UPCA Model: " << name;
-  #endif
+#endif
   delUPCAPredictions();
   DelUPCAModel(&m);
 }

@@ -6,17 +6,18 @@
 #include <QString>
 #include <QStringList>
 
-#include "ui_SelectByDialog.h"
 #include "qsmdata.h"
+#include "ui_SelectByDialog.h"
 
-class SelectByDialog: public QDialog
-{
+class SelectByDialog : public QDialog {
   Q_OBJECT
 
 public:
-  SelectByDialog(QStringList objname_, matrix* coordinate_, QList<MATRIX*> *mxlst_, QList<int> mxid_, LABELS *objlabel_, LABELS *varlabel_);
+  SelectByDialog(QStringList objname_, matrix *coordinate_,
+                 QList<MATRIX *> *mxlst_, QList<int> mxid_, LABELS *objlabel_,
+                 LABELS *varlabel_);
   ~SelectByDialog();
-  QList< int > GetSelectedObjID(){ return selectedobjid; }
+  QList<int> GetSelectedObjID() { return selectedobjid; }
 
 private slots:
   void UpdateSelectionCounter();
@@ -34,15 +35,15 @@ private slots:
 private:
   Ui::SelectByDialog ui;
   QStringList selectedobjname;
-  QList< int > selectedobjid;
+  QList<int> selectedobjid;
   QStringList objname;
-  matrix* coordinate;
-  QList<MATRIX*> *mxlst;
+  matrix *coordinate;
+  QList<MATRIX *> *mxlst;
   QList<int> mxid;
   LABELS *objlabel, *varlabel;
   bool append;
   bool abort;
-  //Used for other selection...
+  // Used for other selection...
   int selectiontype, metric, nobjects, datatype, dataid, layerid;
   QString label;
   QStringList varlist;

@@ -1,16 +1,15 @@
-//SearchOnTableDialog.h
+// SearchOnTableDialog.h
 #ifndef SEARCHONTABLEDIALOG_H
 #define SEARCHONTABLEDIALOG_H
 
-#include <scientific.h>
 #include <QDialog>
-#include <QString> 
-#include <QStringList> 
+#include <QString>
+#include <QStringList>
+#include <scientific.h>
 
 #include "ui_SearchOnTableDialog.h"
 
-class SearchOnTableDialog: public QDialog
-{
+class SearchOnTableDialog : public QDialog {
   Q_OBJECT
 
 public:
@@ -19,12 +18,12 @@ public:
   QString getLabel();
   double getMin();
   double getMax();
-  
+
 private slots:
   void showForm();
   void Ok();
   void Cancel();
-  
+
 private:
   Ui::SearchOnTableDialog ui;
 };

@@ -1,82 +1,92 @@
-//QStudiom-hypergridmap
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <string>
-#include <sstream>
+// QStudiom-hypergridmap
 #include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 #include "DATAIO.h"
 
-#include <vector>
-#include <getopt.h>
 #include <cstring>
+#include <getopt.h>
+#include <vector>
 using namespace std;
 
 #include "scientific.h"
 
-void help(char **argv)
-{
+void help(char **argv) {
   std::cout << "Usage" << endl;
-  std::cout << "Make a model: " << argv[0] <<"\t -i <input file>" << "\t-b <output bin appartenence>" << "\t-g <grid step size>\t-o <output grid map>\t-nth <number of threads>" <<std::endl;
-  std::cout << "Predict     : " << argv[0] <<"\t -i <input file>" << "\t-h <hyper grid map dir>" << "\t-b <output bin appartenence>\t-nth <number of threads>" <<std::endl;
-  std::cout << "\n\t ---------------------------------------------------------------------------- " << std::endl;
-  std::cout << "\t | "<< argv[0] << " was writen by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>  |" << std::endl;
-  std::cout << "\t ---------------------------------------------------------------------------- \n" << std::endl;
+  std::cout
+      << "Make a model: " << argv[0] << "\t -i <input file>"
+      << "\t-b <output bin appartenence>"
+      << "\t-g <grid step size>\t-o <output grid map>\t-nth <number of threads>"
+      << std::endl;
+  std::cout << "Predict     : " << argv[0] << "\t -i <input file>"
+            << "\t-h <hyper grid map dir>"
+            << "\t-b <output bin appartenence>\t-nth <number of threads>"
+            << std::endl;
+  std::cout << "\n\t "
+               "---------------------------------------------------------------"
+               "------------- "
+            << std::endl;
+  std::cout
+      << "\t | " << argv[0]
+      << " was writen by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>  |"
+      << std::endl;
+  std::cout << "\t "
+               "---------------------------------------------------------------"
+               "------------- \n"
+            << std::endl;
 }
 
-int main(int argc, char **argv)
-{
-  if(argc <= 1){
+int main(int argc, char **argv) {
+  if (argc <= 1) {
     help(argv);
-  }
-  else{
+  } else {
     size_t grid_step_size = 0;
     string inputdata, inhgm, outbins, outhgm, sep;
     sep = ", \t";
 
-    for(int i = 0; i < argc; i++){
-      if(strcmp(argv[i], "-input") == 0 || strcmp(argv[i], "-i") == 0){
-        if(i+1 < argc){
-          inputdata = argv[i+1];
+    for (int i = 0; i < argc; i++) {
+      if (strcmp(argv[i], "-input") == 0 || strcmp(argv[i], "-i") == 0) {
+        if (i + 1 < argc) {
+          inputdata = argv[i + 1];
         }
       }
 
-      if(strcmp(argv[i], "-out") == 0 || strcmp(argv[i], "-o") == 0){
-        if(i+1 < argc){
-          outhgm = argv[i+1];
+      if (strcmp(argv[i], "-out") == 0 || strcmp(argv[i], "-o") == 0) {
+        if (i + 1 < argc) {
+          outhgm = argv[i + 1];
         }
       }
 
-      if(strcmp(argv[i], "-outbins") == 0 || strcmp(argv[i], "-b") == 0){
-        if(i+1 < argc)
-          outbins = argv[i+1];
+      if (strcmp(argv[i], "-outbins") == 0 || strcmp(argv[i], "-b") == 0) {
+        if (i + 1 < argc)
+          outbins = argv[i + 1];
       }
 
-      if(strcmp(argv[i], "-grid") == 0 || strcmp(argv[i], "-g") == 0){
-        if(i+1 < argc){
-          grid_step_size = atoi(argv[i+1]);
+      if (strcmp(argv[i], "-grid") == 0 || strcmp(argv[i], "-g") == 0) {
+        if (i + 1 < argc) {
+          grid_step_size = atoi(argv[i + 1]);
         }
       }
 
-      if(strcmp(argv[i], "-hgminput") == 0 || strcmp(argv[i], "-h") == 0){
-        if(i+1 < argc){
-          inhgm = argv[i+1];
+      if (strcmp(argv[i], "-hgminput") == 0 || strcmp(argv[i], "-h") == 0) {
+        if (i + 1 < argc) {
+          inhgm = argv[i + 1];
         }
       }
     }
 
-
-    if(!inputdata.empty() &&
-      !outbins.empty() &&
-      !outhgm.empty() &&
-      inhgm.empty() &&
-      grid_step_size > 0){ // make a model
+    if (!inputdata.empty() && !outbins.empty() && !outhgm.empty() &&
+        inhgm.empty() && grid_step_size > 0) { // make a model
       matrix *data;
       initMatrix(&data);
-      DATAIO::ImportMatrix((char*)inputdata.c_str(), sep, data);
-      
-      // Calculate the manhattan distance from the centroid of points and the mahlanobis Distance
+      DATAIO::ImportMatrix((char *)inputdata.c_str(), sep, data);
+
+      // Calculate the manhattan distance from the centroid of points and the
+      // mahlanobis Distance
       /*
       matrix *centroid;
       NewMatrix(&centroid, 1, data->col);
@@ -123,17 +133,17 @@ int main(int argc, char **argv)
       NewHyperGridMap(&hgm);
       HyperGridMap(data, grid_step_size, &bins_id, &hgm);
       printf("Total number of bins : %e %zu\n", hgm->bsize, hgm->gsize);
-      DATAIO::MakeDir((char*)outhgm.c_str());
-      string gmap_dir = outhgm+"/gmap.txt";
-      string colavg_dir = outhgm+"/colavg.txt";
-      string colscaling_dir = outhgm+"/colscaling.txt";
+      DATAIO::MakeDir((char *)outhgm.c_str());
+      string gmap_dir = outhgm + "/gmap.txt";
+      string colavg_dir = outhgm + "/colavg.txt";
+      string colscaling_dir = outhgm + "/colscaling.txt";
       /*string centroid_dir = outhgm+"/centroid.txt";
       string invcov_dir = outhgm+"/invcov.txt";
       string dsts_dir = outhgm+"/dists.txt";*/
-      DATAIO::WriteMatrix((char*)gmap_dir.c_str(), hgm->gmap);
-      //DATAIO::WriteMatrix((char*)dsts_dir.c_str(), dsts);
-      DATAIO::WriteDvector((char*)colavg_dir.c_str(), hgm->colaverage);
-      DATAIO::WriteDvector((char*)colscaling_dir.c_str(), hgm->colscaling);
+      DATAIO::WriteMatrix((char *)gmap_dir.c_str(), hgm->gmap);
+      // DATAIO::WriteMatrix((char*)dsts_dir.c_str(), dsts);
+      DATAIO::WriteDvector((char *)colavg_dir.c_str(), hgm->colaverage);
+      DATAIO::WriteDvector((char *)colscaling_dir.c_str(), hgm->colscaling);
       /* Store the centroid
       DATAIO::WriteMatrix((char*)centroid_dir.c_str(), centroid);*/
       /* Store the inverse covariance matrix
@@ -141,11 +151,12 @@ int main(int argc, char **argv)
 
       ofstream fbins;
       fbins.open(outbins);
-      for(size_t i = 0; i < bins_id->nobj; i++){
+      for (size_t i = 0; i < bins_id->nobj; i++) {
         std::string hashstr;
-        for(size_t j = 0; j < bins_id->hash_size-1; j++)
+        for (size_t j = 0; j < bins_id->hash_size - 1; j++)
           hashstr += std::to_string(bins_id->hash[i][j]) + "-";
-        hashstr += std::to_string(bins_id->hash[i][bins_id->hash_size-1]) + "\n";
+        hashstr +=
+            std::to_string(bins_id->hash[i][bins_id->hash_size - 1]) + "\n";
         fbins << hashstr;
       }
       fbins.close();
@@ -156,24 +167,21 @@ int main(int argc, char **argv)
       /*DelMatrix(&dsts);
       DelMatrix(&centroid);
       DelMatrix(&invcov);*/
-    }
-    else if(!inputdata.empty() &&
-            !inhgm.empty() &&
-            !outbins.empty() &&
-            outhgm.empty() &&
-            grid_step_size == 0){ // make prediction
+    } else if (!inputdata.empty() && !inhgm.empty() && !outbins.empty() &&
+               outhgm.empty() && grid_step_size == 0) { // make prediction
       matrix *data;
       initMatrix(&data);
-      DATAIO::ImportMatrix((char*)inputdata.c_str(), sep, data);
+      DATAIO::ImportMatrix((char *)inputdata.c_str(), sep, data);
       hgmbins *bins_id;
       HyperGridModel *hgm;
       NewHyperGridMap(&hgm);
-      string gmap_dir = inhgm+"/gmap.txt";
-      DATAIO::ImportMatrix((char*)gmap_dir.c_str(), sep, hgm->gmap);
-      grid_step_size = ceil((hgm->gmap->data[0][1]-hgm->gmap->data[0][0])/hgm->gmap->data[0][2]);
+      string gmap_dir = inhgm + "/gmap.txt";
+      DATAIO::ImportMatrix((char *)gmap_dir.c_str(), sep, hgm->gmap);
+      grid_step_size = ceil((hgm->gmap->data[0][1] - hgm->gmap->data[0][0]) /
+                            hgm->gmap->data[0][2]);
       hgm->gsize = grid_step_size;
       hgm->bsize = 1;
-      for(size_t i = 0; i < hgm->gmap->col; i++){
+      for (size_t i = 0; i < hgm->gmap->col; i++) {
         hgm->bsize *= grid_step_size;
       }
       /*
@@ -218,9 +226,9 @@ int main(int argc, char **argv)
 
       ofstream fbins;
       fbins.open(outbins);
-      for(size_t i = 0; i < bins_id->nobj; i++){
+      for (size_t i = 0; i < bins_id->nobj; i++) {
         std::string hashstr;
-        for(size_t j = 0; j < bins_id->hash_size; j++)
+        for (size_t j = 0; j < bins_id->hash_size; j++)
           hashstr += std::to_string(bins_id->hash[i][j]);
         fbins << hashstr << "\n";
       }
@@ -232,8 +240,7 @@ int main(int argc, char **argv)
       /*DelDVector(&colavg);
       DelMatrix(&invcov);
       DelMatrix(&dsts);*/
-    }
-    else{
+    } else {
       cout << "No option selected." << endl;
     }
   }

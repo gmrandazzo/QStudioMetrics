@@ -1,68 +1,32 @@
 #include "PlotSettingsDialog.h"
 
-int PlotSettingsDialog::getPlotTitleSize()
-{
-  return ui.titleSize->value();
-}
+int PlotSettingsDialog::getPlotTitleSize() { return ui.titleSize->value(); }
 
-int PlotSettingsDialog::getAxisValueSize()
-{
-  return ui.axisValueSize->value();
-}
+int PlotSettingsDialog::getAxisValueSize() { return ui.axisValueSize->value(); }
 
-int PlotSettingsDialog::getXlabelSize()
-{
-  return ui.xLabelSize->value();
-}
+int PlotSettingsDialog::getXlabelSize() { return ui.xLabelSize->value(); }
 
-double PlotSettingsDialog::getXmin()
-{
-  return ui.xMin->value();
-}
+double PlotSettingsDialog::getXmin() { return ui.xMin->value(); }
 
-double PlotSettingsDialog::getXmax()
-{
-  return ui.xMax->value();
-}
+double PlotSettingsDialog::getXmax() { return ui.xMax->value(); }
 
-int PlotSettingsDialog::getXTick()
-{
-  return ui.xTick->value();
-}
+int PlotSettingsDialog::getXTick() { return ui.xTick->value(); }
 
-int PlotSettingsDialog::getYlabelSize()
-{
-  return ui.yLabelSize->value();
-}
+int PlotSettingsDialog::getYlabelSize() { return ui.yLabelSize->value(); }
 
+double PlotSettingsDialog::getYmin() { return ui.yMin->value(); }
 
-double PlotSettingsDialog::getYmin()
-{
-  return ui.yMin->value();
-}
+double PlotSettingsDialog::getYmax() { return ui.yMax->value(); }
 
-double PlotSettingsDialog::getYmax()
-{
-  return ui.yMax->value();
-}
+int PlotSettingsDialog::getYTick() { return ui.yTick->value(); }
 
-int PlotSettingsDialog::getYTick()
-{
-   return ui.yTick->value();
-}
+void PlotSettingsDialog::Cancel() { return reject(); }
 
-void PlotSettingsDialog::Cancel()
-{
-  return reject();
-}
+void PlotSettingsDialog::OK() { return accept(); }
 
-void PlotSettingsDialog::OK()
-{
-  return accept();
-}
-
-PlotSettingsDialog::PlotSettingsDialog(double xmin, double xmax, int xtick, double ymin, double ymax, int ytick): QDialog(0)
-{
+PlotSettingsDialog::PlotSettingsDialog(double xmin, double xmax, int xtick,
+                                       double ymin, double ymax, int ytick)
+    : QDialog(0) {
   ui.setupUi(this);
   ui.xMin->setValue(xmin);
   ui.xMax->setValue(xmax);

@@ -1,25 +1,23 @@
 #ifndef DATACURVE_H
 #define DATACURVE_H
 
-#include <QtGlobal>
 #include <QColor>
-#include <QVector>
-#include <QPointF>
 #include <QList>
 #include <QMetaType>
+#include <QPointF>
 #include <QString>
+#include <QVector>
+#include <QtGlobal>
 
-enum LTYPE
-{
-   L, //Lines
-   LM//Lines and markers
+enum LTYPE {
+  L, // Lines
+  LM // Lines and markers
 };
 
-class DataCurve
-{
+class DataCurve {
 public:
   DataCurve();
-  DataCurve(QVector< QPointF > curve, QString name, QColor color);
+  DataCurve(QVector<QPointF> curve, QString name, QColor color);
 
   void addPoint(qreal x, qreal y);
   void setName(QString name);
@@ -29,7 +27,7 @@ public:
   void setVisible(bool visible);
   void setStyle(LTYPE lt_);
 
-  QVector <QPointF> getPoints() const;
+  QVector<QPointF> getPoints() const;
   QString name() const;
   QColor color() const;
   LTYPE getStyle() const;
@@ -38,7 +36,7 @@ public:
   bool isVisible() const;
 
 private:
-  QVector < QPointF> m_curve;
+  QVector<QPointF> m_curve;
   QString m_name;
   QColor m_color;
   int m_radius;

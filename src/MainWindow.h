@@ -2,8 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QMdiSubWindow>
 #include <QMap>
+#include <QMdiSubWindow>
 #include <QString>
 
 #include "ui_MainWindow.h"
@@ -16,8 +16,7 @@
 #define minor_ 4
 #define patch_ 2
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
   Q_OBJECT
 
 public:
@@ -26,7 +25,8 @@ public:
 
   /*used by data in OpenData*/
   static QTreeWidgetItem *getProjectItem(int pid, QTreeWidget *treeWidget);
-  static QTreeWidgetItem *getModelItem(int pid, int mid, QTreeWidget *treeWidget);
+  static QTreeWidgetItem *getModelItem(int pid, int mid,
+                                       QTreeWidget *treeWidget);
 
 protected:
   void changeEvent(QEvent *e);
@@ -155,7 +155,7 @@ private slots:
   void removeData();
   void DowngradeDataID();
 
-  void ShowContextMenu(const QPoint& pos);
+  void ShowContextMenu(const QPoint &pos);
 
   void ModelInfo();
 
@@ -233,8 +233,9 @@ private:
   QString lastpath;
 
   int tabcount_;
-  int pid_; // Prediction ID that is unique for each project and increment always
-  int mid_; // model id that is unique for each model and increment always
+  int pid_;    // Prediction ID that is unique for each project and increment
+               // always
+  int mid_;    // model id that is unique for each model and increment always
   int calcpid; // used when a calculation is running on a pid
 
   bool stoprun;
@@ -254,106 +255,80 @@ private:
 
   int ProjectOpen(QString);
   void CheckProjects();
-  bool havepca,
-       havepcapred,
-       havecpca,
-       havecpcapred,
-       havepls,
-       haveplspred,
-       haveplsvalid,
-       haveplsyscrambling,
-       haveepls,
-       haveeplspred,
-       haveeplsvalid,
-       haveeplsyscrambling,
-       havemlr,
-       havemlrpred,
-       havemlrvalid,
-       havemlryscrambling,
-       havelda,
-       haveldapred,
-       haveldavalid;
+  bool havepca, havepcapred, havecpca, havecpcapred, havepls, haveplspred,
+      haveplsvalid, haveplsyscrambling, haveepls, haveeplspred, haveeplsvalid,
+      haveeplsyscrambling, havemlr, havemlrpred, havemlrvalid,
+      havemlryscrambling, havelda, haveldapred, haveldavalid;
 
   void TopMenuEnableDisable();
   void CalculationMenuEnable();
   void CalculationMenuDisable(int calcpid_);
 
-  bool PrepareTensor(MATRIX *indata,
-                     QStringList objnames,
-                     LABELS block_varsel,
+  bool PrepareTensor(MATRIX *indata, QStringList objnames, LABELS block_varsel,
                      tensor *x);
 
-  bool PrepareMatrix(MATRIX *indata,
-                     QStringList objnames,
-                     QStringList xvarsel,
-                     LABELS classes,
-                     matrix *x,
-                     matrix *y);
+  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel,
+                     LABELS classes, matrix *x, matrix *y);
 
-  bool PrepareMatrix(MATRIX *indata,
-                     QStringList objnames,
-                     QStringList xvarsel,
-                     QStringList yvarsel,
-                     matrix *x,
-                     matrix *y);
+  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel,
+                     QStringList yvarsel, matrix *x, matrix *y);
 
-  bool PrepareMatrix(MATRIX *indata,
-                     QStringList objnames,
-                     QStringList varsel,
+  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel,
                      matrix *x);
 
-  void PrepareKFoldClasses(QStringList objects,
-                           LABELS kfclasses,
+  void PrepareKFoldClasses(QStringList objects, LABELS kfclasses,
                            uivector *classes);
 
-  bool ProjectsHavePCA(){ return havepca; }
-  bool ProjectsHavePCAPrediction(){ return havepcapred; }
-  bool ProjectsHaveCPCA(){ return havecpca; }
-  bool ProjectsHaveCPCAPrediction(){ return havecpcapred; }
-  bool ProjectsHavePLS(){ return havepls; }
-  bool ProjectsHavePLSValidated(){ return haveplsvalid; }
-  bool ProjectsHavePLSYScrambling(){ return haveplsyscrambling; }
-  bool ProjectsHavePLSPrediction(){ return haveplspred; }
+  bool ProjectsHavePCA() { return havepca; }
+  bool ProjectsHavePCAPrediction() { return havepcapred; }
+  bool ProjectsHaveCPCA() { return havecpca; }
+  bool ProjectsHaveCPCAPrediction() { return havecpcapred; }
+  bool ProjectsHavePLS() { return havepls; }
+  bool ProjectsHavePLSValidated() { return haveplsvalid; }
+  bool ProjectsHavePLSYScrambling() { return haveplsyscrambling; }
+  bool ProjectsHavePLSPrediction() { return haveplspred; }
 
-  bool ProjectsHaveEPLS(){ return haveepls; }
-  bool ProjectsHaveEPLSValidated(){ return haveeplsvalid; }
-  bool ProjectsHaveEPLSYScrambling(){ return haveeplsyscrambling; }
-  bool ProjectsHaveEPLSPrediction(){ return haveeplspred; }
+  bool ProjectsHaveEPLS() { return haveepls; }
+  bool ProjectsHaveEPLSValidated() { return haveeplsvalid; }
+  bool ProjectsHaveEPLSYScrambling() { return haveeplsyscrambling; }
+  bool ProjectsHaveEPLSPrediction() { return haveeplspred; }
 
-  bool ProjectsHaveMLR(){ return havemlr; }
-  bool ProjectsHaveMLRValidated(){ return havemlrvalid; };
-  bool ProjectsHaveMLRPrediction(){ return havemlrpred; };
-  bool ProjectsHaveMLRYScrambling(){ return havemlryscrambling; }
-  bool ProjectsHaveLDA(){ return havelda; }
-  bool ProjectsHaveLDAValidated(){ return haveldavalid; };
-  bool ProjectsHaveLDAPrediction(){ return haveldapred; };
+  bool ProjectsHaveMLR() { return havemlr; }
+  bool ProjectsHaveMLRValidated() { return havemlrvalid; };
+  bool ProjectsHaveMLRPrediction() { return havemlrpred; };
+  bool ProjectsHaveMLRYScrambling() { return havemlryscrambling; }
+  bool ProjectsHaveLDA() { return havelda; }
+  bool ProjectsHaveLDAValidated() { return haveldavalid; };
+  bool ProjectsHaveLDAPrediction() { return haveldapred; };
 
-
-/* QMAP <int pid, PROJECT()>
- *
- * pid - pid  (2)
- *    |
- *    | Data   // child 0
- *    |   |
- *    |   Name - Type - Tab Count - Data Project ID (Data Position) - pid  (5)
- *    |
- *    | Models  // child 1
- *        |
- *        Name - Tab Count - pid - xhash - yhash - x Scaling type - y Scaling type - number of components - Model Type - Model ID (Model Position)  (10)
- *          |
- *         ModelPrediction Name - Tab Count - pid - Model ID - xhash - yhash - Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
- *
- * Type could be "Matrix" or "Array"
- * Tab count is an id used to know what tables are opened and to close the deleted table
- * Data Position is used to retrieve the Data Position inside the QList<MATRIX>,  QList<Array> QList<PCAModel> etc...
- * Model Type can be PCA Model, PLS Model, LDA Model, MLR Model
- *
- * Each time that implement a model yuou have to add also other routines in:
- * - OpenProject
- * - SaveProject
- * - DowngradeModel
- * - RemoveModel
- */
+  /* QMAP <int pid, PROJECT()>
+   *
+   * pid - pid  (2)
+   *    |
+   *    | Data   // child 0
+   *    |   |
+   *    |   Name - Type - Tab Count - Data Project ID (Data Position) - pid  (5)
+   *    |
+   *    | Models  // child 1
+   *        |
+   *        Name - Tab Count - pid - xhash - yhash - x Scaling type - y Scaling
+   * type - number of components - Model Type - Model ID (Model Position)  (10)
+   *          |
+   *         ModelPrediction Name - Tab Count - pid - Model ID - xhash - yhash -
+   * Data Position - Data Type (PCA Prediction, PLS Prediction, ...) (8)
+   *
+   * Type could be "Matrix" or "Array"
+   * Tab count is an id used to know what tables are opened and to close the
+   * deleted table Data Position is used to retrieve the Data Position inside
+   * the QList<MATRIX>,  QList<Array> QList<PCAModel> etc... Model Type can be
+   * PCA Model, PLS Model, LDA Model, MLR Model
+   *
+   * Each time that implement a model yuou have to add also other routines in:
+   * - OpenProject
+   * - SaveProject
+   * - DowngradeModel
+   * - RemoveModel
+   */
 
   // Project Section
   QTreeWidgetItem *getCurrentProjectItem();
@@ -405,7 +380,6 @@ private:
   int getModelIDAt(int pid, int id);
   bool IsModelAt(int pid, int id);
 
-
   QString getCurrentModelName();
   int getCurrentModelTableID();
   int getCurrentModelProjectID();
@@ -442,8 +416,8 @@ private:
   QString getPredictionType(int pid, int mid, int predid);
   bool IsPrediction(int pid, int mid, int predid);
 
-  // id is the model id position in the array that is different infront of mid model unique id
-  // function used during iteration along the menu
+  // id is the model id position in the array that is different infront of mid
+  // model unique id function used during iteration along the menu
   int getPredictionCountAt(int pid, int id);
   QString getPredictionNameAt(int pid, int id, int predid);
   int getPredictionTableIDAt(int pid, int id, int predid);
@@ -455,6 +429,5 @@ private:
   QString getPredictionTypeAt(int pid, int id, int predid);
   bool IsPredictionAt(int pid, int id, int predid);
 };
-
 
 #endif

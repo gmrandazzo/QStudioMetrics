@@ -2,29 +2,29 @@
 #define DOPREDICTIONDIALOG_H
 
 #include <QDialog>
-#include <QString>
 #include <QStandardItemModel>
+#include <QString>
 
-#include "ui_DoPredictionDialog.h"
 #include "qsmdata.h"
 #include "qstudiometricstypes.h"
+#include "ui_DoPredictionDialog.h"
 
-class DoPredictionDialog : public QDialog
-{
+class DoPredictionDialog : public QDialog {
   Q_OBJECT
 
 public:
-  DoPredictionDialog(PROJECTS *projects, int type_); // 0 pca, 1 pls, 2 upca, 3 upls
+  DoPredictionDialog(PROJECTS *projects,
+                     int type_); // 0 pca, 1 pls, 2 upca, 3 upls
   ~DoPredictionDialog();
 
-  bool compute(){ return compute_; }
-  int getselectedProject(){ return selectedproject_; }
-  QString getPredictionName(){ return ui.predname->text(); }
-  int getselectedData(){ return selecteddata_; }
-  int getselectedYData(){ return selectedydata_; }
-  int getselectedModel(){ return selectedmodel_; }
-  QStringList getObjectSelected(){ return objsel; }
-  QStringList getYVariableSelected(){ return yvarsel; }
+  bool compute() { return compute_; }
+  int getselectedProject() { return selectedproject_; }
+  QString getPredictionName() { return ui.predname->text(); }
+  int getselectedData() { return selecteddata_; }
+  int getselectedYData() { return selectedydata_; }
+  int getselectedModel() { return selectedmodel_; }
+  QStringList getObjectSelected() { return objsel; }
+  QStringList getYVariableSelected() { return yvarsel; }
 
 private slots:
   void previous();

@@ -2,4 +2,3 @@
 cmake .. -DCMAKE_PREFIX_PATH=/usr/local/Cellar/qt5/
 
 make
-

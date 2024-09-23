@@ -1,13 +1,12 @@
 #ifndef MODELINFO_H
 #define MODELINFO_H
 
-#include <QWidget>
+#include "ui_ModelInfo.h"
 #include <QString>
 #include <QStringList>
-#include "ui_ModelInfo.h"
+#include <QWidget>
 
-class ModelInfo : public QWidget
-{
+class ModelInfo : public QWidget {
   Q_OBJECT
 
 public:

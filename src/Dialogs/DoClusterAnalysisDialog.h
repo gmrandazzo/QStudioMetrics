@@ -1,16 +1,15 @@
 #ifndef DOCLUSTERANALYSISDIALOG_H
 #define DOCLUSTERANALYSISDIALOG_H
 
+#include "qsmdata.h"
 #include <QDialog>
 #include <QStandardItemModel>
-#include <QStringList>
 #include <QString>
-#include "qsmdata.h"
+#include <QStringList>
 
 #include "ui_DoClusterAnalysisDialog.h"
 
-class DoClusterAnalysisDialog: public QDialog
-{
+class DoClusterAnalysisDialog : public QDialog {
   Q_OBJECT
 
 public:
@@ -29,42 +28,41 @@ public:
     FAROBJECTS = 1,
     ALLOBJECTS = 3
   };
-  
-  DoClusterAnalysisDialog(QList<MATRIX*> *mxlst, QList<ARRAY*> *arlst, int windowtype);
+
+  DoClusterAnalysisDialog(QList<MATRIX *> *mxlst, QList<ARRAY *> *arlst,
+                          int windowtype);
 
   int getAlgorithmType();
   int getNumberOfClusters();
-  
+
   int getDataType(); /*0 for current plot coordinates; 1 for Source Data*/
   QString getDataHash();
   int getLayerID(); /*used for array*/
-  
+
   bool SaveClusterLabels();
   QString getClusterLabelSufix();
-  
+
   int getExtractObjects();
   int getNMaxObjects();
-  
+
   bool ValidateCluster();
   int getVaidationType();
-  int getMaxClustersNumber();  
+  int getMaxClustersNumber();
   int getNGroups();
   int getNIterations();
-  
-  
+
 private slots:
   void EnableDisable();
   void GenLayerList();
   void OK();
-  
+
 private:
   Ui::DoClusterAnalysisDialog ui;
   int windowtype;
-  QList<MATRIX*> mxlst;
-  QList<ARRAY*> arlst;
+  QList<MATRIX *> mxlst;
+  QList<ARRAY *> arlst;
   QStringList hash;
   QString selectedhash;
 };
 
 #endif
-

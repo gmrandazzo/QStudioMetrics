@@ -1,23 +1,22 @@
 #ifndef DATAPOINT_H
 #define DATAPOINT_H
 
-#include <QtGlobal>
 #include <QColor>
 #include <QList>
 #include <QMetaType>
+#include <QtGlobal>
 #include <cmath>
 
 #ifdef DEBUG
 #include <QDebug>
 #endif
 
-#define QEPSILON 1e-3  /* Define your own tolerance*/
-#define FLOAT_EQ(x,v, EPSILON) (((v - EPSILON) < x) && (x <( v + EPSILON)))
+#define QEPSILON 1e-3 /* Define your own tolerance*/
+#define FLOAT_EQ(x, v, EPSILON) (((v - EPSILON) < x) && (x < (v + EPSILON)))
 
-enum MarkerType{ CIRCLE, SQUARE, TRIANGLE };
+enum MarkerType { CIRCLE, SQUARE, TRIANGLE };
 
-class DataPoint
-{
+class DataPoint {
 public:
   DataPoint();
   DataPoint(qreal x, qreal y, QString name);
@@ -50,19 +49,16 @@ public:
   int width() const;
   MarkerType marker() const;
 
-  bool compare(DataPoint& p)
-  {
-    if(FLOAT_EQ(this->x(), p.x(), QEPSILON) &&
-       FLOAT_EQ(this->y(), p.y(), QEPSILON) &&
-       FLOAT_EQ(this->z(), p.z(), QEPSILON)){
-      if(this->getName().compare(p.getName()) == 0){
+  bool compare(DataPoint &p) {
+    if (FLOAT_EQ(this->x(), p.x(), QEPSILON) &&
+        FLOAT_EQ(this->y(), p.y(), QEPSILON) &&
+        FLOAT_EQ(this->z(), p.z(), QEPSILON)) {
+      if (this->getName().compare(p.getName()) == 0) {
         return true;
-      }
-      else{
+      } else {
         return false;
       }
-    }
-    else{
+    } else {
       return false;
     }
   }

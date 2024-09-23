@@ -1,23 +1,20 @@
 #ifndef ADVANCEDPRETREATMENTDIALOG_H
 #define ADVANCEDPRETREATMENTDIALOG_H
 
-
 #include <QDialog>
 #include <QStandardItemModel>
 
-#include "ui_AdvancedPretreatmentDialog.h"
 #include "qsmdata.h"
+#include "ui_AdvancedPretreatmentDialog.h"
 
-
-class AdvancedPretreatmentDialog : public QDialog
-{
+class AdvancedPretreatmentDialog : public QDialog {
   Q_OBJECT
 
 public:
   explicit AdvancedPretreatmentDialog(PROJECTS *projects_);
   ~AdvancedPretreatmentDialog();
-  MATRIX *getMergedMatrix(){ return mx; }
-  int getProjectID(){ return pid; }
+  MATRIX *getMergedMatrix() { return mx; }
+  int getProjectID() { return pid; }
 private slots:
   void OK();
   void EnableOKButton();
@@ -33,9 +30,8 @@ private:
   PROJECTS *projects;
   MATRIX *mx;
   QStandardItemModel *tab1, *tab2, *tab3;
-  QList <int> pids;
+  QList<int> pids;
   int pid, mxid;
 };
-
 
 #endif

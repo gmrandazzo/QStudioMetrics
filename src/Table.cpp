@@ -1,39 +1,36 @@
 #include "Table.h"
-#include <QList>
-#include <QString>
-#include <QStringList>
+#include <QApplication>
 #include <QClipboard>
 #include <QContextMenuEvent>
-#include <QMessageBox>
-#include <QMenu>
-#include <QList>
-#include <QApplication>
-#include <QTextStream>
-#include <QPainter>
-#include <QStandardItemModel>
-#include <QStandardItem>
 #include <QFileDialog>
+#include <QList>
+#include <QMenu>
+#include <QMessageBox>
+#include <QPainter>
+#include <QStandardItem>
+#include <QStandardItemModel>
+#include <QString>
+#include <QStringList>
+#include <QTextStream>
 
 #ifdef DEBUG
 #include <QDebug>
 #endif
 
-
 #include "qsmdata.h"
 #include "run.h"
 
-#include "Dialogs/LabelDialog.h"
-#include "Dialogs/SearchOnTableDialog.h"
-#include "Dialogs/HighlightTableVarDialog.h"
-#include "Dialogs/ObjectSelectorDialog.h"
 #include "Dialogs/ExportTableDialog.h"
-
+#include "Dialogs/HighlightTableVarDialog.h"
+#include "Dialogs/LabelDialog.h"
+#include "Dialogs/ObjectSelectorDialog.h"
+#include "Dialogs/SearchOnTableDialog.h"
 
 #include <fstream>
 #include <iostream>
 
-QColor Model::makeColor(double val, const double& min, const double& max, const QColor& color1, const QColor& color2) const
-{
+QColor Model::makeColor(double val, const double &min, const double &max,
+                        const QColor &color1, const QColor &color2) const {
   /*
   colorA = [0, 0, 255] # blue
   colorB = [255, 0, 0] # red
@@ -43,151 +40,139 @@ QColor Model::makeColor(double val, const double& min, const double& max, const 
   color[i] = colorA[i] + val * (colorB[i] - colorA[i])
   return color1
   */
-  double normval = (val - min) / (max -min);
+  double normval = (val - min) / (max - min);
   QColor ncolor;
   ncolor.setRed(color1.red() + (normval * (color2.red() - color1.red())));
-  ncolor.setGreen(color1.green() + (normval * (color2.green() - color1.green())));
+  ncolor.setGreen(color1.green() +
+                  (normval * (color2.green() - color1.green())));
   ncolor.setBlue(color1.blue() + (normval * (color2.blue() - color1.blue())));
   return ncolor;
 }
 
-int Model::columnCount(const QModelIndex& parent) const
-{
+int Model::columnCount(const QModelIndex &parent) const {
   Q_UNUSED(parent);
-  if(m == 0){
-    if(tab.size() > 0){
-      return tab.last().size()+1;
-    }
-    else{
+  if (m == 0) {
+    if (tab.size() > 0) {
+      return tab.last().size() + 1;
+    } else {
       return 0;
     }
-  }
-  else{
-    return (int)m->col+1;
+  } else {
+    return (int)m->col + 1;
   }
 }
 
-int Model::rowCount(const QModelIndex& parent) const
-{
+int Model::rowCount(const QModelIndex &parent) const {
   Q_UNUSED(parent);
-  if(m == 0){
-    if(tab.size() > 0){
+  if (m == 0) {
+    if (tab.size() > 0) {
       return tab.size();
-    }
-    else{
+    } else {
       return 0;
     }
-  }
-  else
+  } else
     return (int)m->row;
 }
 
-QVariant Model::headerData(int section, Qt::Orientation orientation, int role) const
-{
-  if(role != Qt::DisplayRole)
+QVariant Model::headerData(int section, Qt::Orientation orientation,
+                           int role) const {
+  if (role != Qt::DisplayRole)
     return QVariant();
 
-  if(orientation == Qt::Horizontal){
-    if(section > header.size() || section < 0){
-//       return QVariant();
-      return QString("[%1] ~ NO VAR NAME FOUND").arg(QString::number(section+1));
-    }
-    else{
-      if(section == 0){
+  if (orientation == Qt::Horizontal) {
+    if (section > header.size() || section < 0) {
+      //       return QVariant();
+      return QString("[%1] ~ NO VAR NAME FOUND")
+          .arg(QString::number(section + 1));
+    } else {
+      if (section == 0) {
         return header.at(section);
-      }
-      else{
-        if(section < header.size()){
-          return QString("[%1] ~ %2").arg(QString::number(section)).arg(header.at(section));
-        }
-        else{
-          return QString("[%1] ~ Error!! No column name!!").arg(QString::number(section));
+      } else {
+        if (section < header.size()) {
+          return QString("[%1] ~ %2")
+              .arg(QString::number(section))
+              .arg(header.at(section));
+        } else {
+          return QString("[%1] ~ Error!! No column name!!")
+              .arg(QString::number(section));
         }
       }
     }
   }
 
-  if(orientation == Qt::Vertical){
-    if(section > id.size()){
+  if (orientation == Qt::Vertical) {
+    if (section > id.size()) {
       return QVariant();
-    }
-    else{
+    } else {
       return id.at(section);
     }
   }
   return QVariant();
 }
 
-QVariant Model::data(const QModelIndex& index, int role) const
-{
-  if(!index.isValid()){
+QVariant Model::data(const QModelIndex &index, int role) const {
+  if (!index.isValid()) {
     return QVariant();
-  }
-  else{
-    if(role == Qt::DisplayRole){
-      if(m != 0){
-        if(index.row() > (int)m->row || index.row() < 0 || index.column() > (int)m->col+1 || index.column() < 0) // +1 for the label column
+  } else {
+    if (role == Qt::DisplayRole) {
+      if (m != 0) {
+        if (index.row() > (int)m->row || index.row() < 0 ||
+            index.column() > (int)m->col + 1 ||
+            index.column() < 0) // +1 for the label column
           return QVariant();
-        else{
-          if(index.column() == 0){
-            if(index.row() < labels.size()){
+        else {
+          if (index.column() == 0) {
+            if (index.row() < labels.size()) {
               return labels.at(index.row());
-            }
-            else{
+            } else {
               QString val = "####";
               return val;
             }
-          }
-          else{
-            QString val = QString::number(getMatrixValue(m, index.row(), index.column()-1)); // -1 for the label column
+          } else {
+            QString val = QString::number(getMatrixValue(
+                m, index.row(), index.column() - 1)); // -1 for the label column
             return val;
           }
         }
-      }
-      else if(tab.size() > 0){
-        if(index.row() > tab.size() || index.row() < 0 || index.column() > tab.first().size()+1 || index.column() < 0){ // +1 for the label column
+      } else if (tab.size() > 0) {
+        if (index.row() > tab.size() || index.row() < 0 ||
+            index.column() > tab.first().size() + 1 ||
+            index.column() < 0) { // +1 for the label column
           return QVariant();
-        }
-        else{
-          if(index.column() == 0){
-            if(index.row() < labels.size()){
+        } else {
+          if (index.column() == 0) {
+            if (index.row() < labels.size()) {
               return labels.at(index.row());
-            }
-            else{
+            } else {
               QString val = "####";
               return val;
             }
-          }
-          else{
-            QString val = tab[index.row()][index.column()-1]; // -1 for the label column
+          } else {
+            QString val =
+                tab[index.row()][index.column() - 1]; // -1 for the label column
             return val;
           }
         }
-      }
-      else{
+      } else {
         return QVariant();
       }
-    }
-    else if(role == Qt::BackgroundRole){
-      if(m != 0){
-        if(std::abs(minval) == std::abs(maxval)){
+    } else if (role == Qt::BackgroundRole) {
+      if (m != 0) {
+        if (std::abs(minval) == std::abs(maxval)) {
           return QVariant();
-        }
-        else{
-          if(index.column()-1 == variable && variable > -1){
-            QColor color = makeColor(getMatrixValue(m, index.row(), variable), minval, maxval, mincolor, maxcolor);
+        } else {
+          if (index.column() - 1 == variable && variable > -1) {
+            QColor color = makeColor(getMatrixValue(m, index.row(), variable),
+                                     minval, maxval, mincolor, maxcolor);
             return QVariant(color);
-          }
-          else{
+          } else {
             return QVariant();
           }
         }
-      }
-      else{
+      } else {
         return QVariant();
       }
-    }
-    else{
+    } else {
       return QVariant();
     }
   }
@@ -201,11 +186,9 @@ QVariant Model::data(const QModelIndex& index, int role) const
   else{
     if(m != 0){
       if(role == Qt::DisplayRole){
-        if(index.row() > (int)m->row || index.row() < 0 || index.column() > (int)m->col+1 || index.column() < 0) // +1 for the label column
-          return QVariant();
-        else{
-          if(index.column() == 0){
-            if(index.row() < labels.size()){
+        if(index.row() > (int)m->row || index.row() < 0 || index.column() >
+(int)m->col+1 || index.column() < 0) // +1 for the label column return
+QVariant(); else{ if(index.column() == 0){ if(index.row() < labels.size()){
               return labels.at(index.row());
             }
             else{
@@ -214,8 +197,8 @@ QVariant Model::data(const QModelIndex& index, int role) const
             }
           }
           else{
-            QString val = QString::number(getMatrixValue(m, index.row(), index.column()-1)); // -1 for the label column
-            return val;
+            QString val = QString::number(getMatrixValue(m, index.row(),
+index.column()-1)); // -1 for the label column return val;
           }
         }
       }
@@ -225,8 +208,8 @@ QVariant Model::data(const QModelIndex& index, int role) const
         }
         else{
           if((uint)index.column()-1 == variable){
-            QColor color = makeColor(getMatrixValue(m, index.row(),variable), minval, maxval, mincolor, maxcolor);
-            return QVariant(color);
+            QColor color = makeColor(getMatrixValue(m, index.row(),variable),
+minval, maxval, mincolor, maxcolor); return QVariant(color);
           }
           else{
             return QVariant();
@@ -240,7 +223,8 @@ QVariant Model::data(const QModelIndex& index, int role) const
     else if(tab.size() > 0){
       qDebug() << "Role " << role << Qt::DisplayRole;
       if(role == Qt::DisplayRole){
-        if(index.row() > (int)tab.size() || index.row() < 0 || index.column() > (int)tab.first().size()+1 || index.column() < 0){ // +1 for the label column
+        if(index.row() > (int)tab.size() || index.row() < 0 || index.column() >
+(int)tab.first().size()+1 || index.column() < 0){ // +1 for the label column
           qDebug() << "Esco Qua 1";
           return QVariant();
         }
@@ -255,8 +239,8 @@ QVariant Model::data(const QModelIndex& index, int role) const
             }
           }
           else{
-            QString val = tab[index.row()][index.column()-1]; // -1 for the label column
-            return val;
+            QString val = tab[index.row()][index.column()-1]; // -1 for the
+label column return val;
           }
         }
       }
@@ -290,8 +274,7 @@ bool Model::setData(matrix* m_, int role)
 }
 */
 
-void Model::setObjNames(QStringList labels_)
-{
+void Model::setObjNames(QStringList labels_) {
   labels.clear();
   labels.append(labels_);
 
@@ -318,105 +301,91 @@ void Model::setObjNames(QStringList labels_)
   */
 }
 
-void Model::setHorizontalHeaderLabels(QStringList& headerlabels)
-{
+void Model::setHorizontalHeaderLabels(QStringList &headerlabels) {
   header = headerlabels;
 }
 
-void Model::setItem(uint row, uint col, double value)
-{
-  if(row < m->row && col < m->col)
+void Model::setItem(uint row, uint col, double value) {
+  if (row < m->row && col < m->col)
     setMatrixValue(m, row, col, value);
 }
 
-void Model::init_Matrix()
-{
+void Model::init_Matrix() {
   isallocatedmatrix = true;
   initMatrix(&m);
 }
 
-void Model::newMatrix(uint row, uint col)
-{
+void Model::newMatrix(uint row, uint col) {
   isallocatedmatrix = true;
   NewMatrix(&m, row, col);
 
   labels.clear();
-  for(uint i = 0; i < m->row; i++){
+  for (uint i = 0; i < m->row; i++) {
     labels << "####";
-    id.append(i+1);
+    id.append(i + 1);
   }
 
   header.clear();
   header.append(firstcol_name);
-  for(uint j = 0; j < m->col; j++){
-    header.append(QString::number(j+1));
+  for (uint j = 0; j < m->col; j++) {
+    header.append(QString::number(j + 1));
   }
 
   UpdateModel();
 }
 
-void Model::newMatrix(uint row, uint col, QStringList objnames, QStringList headernames)
-{
+void Model::newMatrix(uint row, uint col, QStringList objnames,
+                      QStringList headernames) {
   isallocatedmatrix = true;
   NewMatrix(&m, row, col);
 
   labels.clear();
-  if(objnames.size() < (int)m->row){
+  if (objnames.size() < (int)m->row) {
     int c = 0;
-    for(int i = 0; i < (int)m->row; i++){
-      if(i < objnames.size()){
+    for (int i = 0; i < (int)m->row; i++) {
+      if (i < objnames.size()) {
         labels << objnames[i];
-      }
-      else{
-        labels << QString("Obj %1").arg(c+1);
+      } else {
+        labels << QString("Obj %1").arg(c + 1);
         c++;
       }
-      id.append(i+1);
+      id.append(i + 1);
     }
-  }
-  else{
-    for(int i = 0; i < (int)m->row; i++){
+  } else {
+    for (int i = 0; i < (int)m->row; i++) {
       labels << objnames[i];
-      id.append(i+1);
+      id.append(i + 1);
     }
   }
 
   header.clear();
 
-  if(headernames.size() < (int)m->col){
+  if (headernames.size() < (int)m->col) {
     int c = 0;
-    for(int j = 0; j < (int)m->col; j++){
-      if(j < headernames.size()){
+    for (int j = 0; j < (int)m->col; j++) {
+      if (j < headernames.size()) {
         header.append(headernames[j]);
-      }
-      else{
-        header.append(QString("Col %1").arg(c+1));
+      } else {
+        header.append(QString("Col %1").arg(c + 1));
         c++;
       }
     }
-  }
-  else{
-    for(int j = 0; j < (int)m->col; j++){
+  } else {
+    for (int j = 0; j < (int)m->col; j++) {
       header.append(headernames[j]);
     }
   }
   UpdateModel();
 }
 
-
-void Model::delMatrix()
-{
+void Model::delMatrix() {
   DelMatrix(&m);
   isallocatedmatrix = false;
 }
 
-void Model::UpdateModel()
-{
- emit layoutChanged();
-}
+void Model::UpdateModel() { emit layoutChanged(); }
 
-Model::Model(QObject* parent): QAbstractTableModel(parent)
-{
+Model::Model(QObject *parent) : QAbstractTableModel(parent) {
   isallocatedmatrix = false;
   m = NULL;
   minval = 0.f;
@@ -426,8 +395,7 @@ Model::Model(QObject* parent): QAbstractTableModel(parent)
   maxcolor = QColor(Qt::red);
 }
 
-Model::Model(matrix* m_, QObject* parent): QAbstractTableModel(parent)
-{
+Model::Model(matrix *m_, QObject *parent) : QAbstractTableModel(parent) {
   isallocatedmatrix = true;
   initMatrix(&m);
   MatrixCopy(m_, &m);
@@ -436,17 +404,17 @@ Model::Model(matrix* m_, QObject* parent): QAbstractTableModel(parent)
   variable = 0;
   mincolor = QColor(Qt::green);
   maxcolor = QColor(Qt::red);
-  for(uint i = 0; i < m->row; i++){
+  for (uint i = 0; i < m->row; i++) {
     labels << "####";
-    id.append(i+1);
+    id.append(i + 1);
   }
   header.append(firstcol_name);
-  for(uint j = 0; j < m->col; j++)
-    header.append(QString::number(j+1));
+  for (uint j = 0; j < m->col; j++)
+    header.append(QString::number(j + 1));
 }
 
-Model::Model(QList< QStringList > tab_, QObject* parent): QAbstractTableModel(parent)
-{
+Model::Model(QList<QStringList> tab_, QObject *parent)
+    : QAbstractTableModel(parent) {
   isallocatedmatrix = false;
   m = 0;
   tab = tab_;
@@ -456,64 +424,62 @@ Model::Model(QList< QStringList > tab_, QObject* parent): QAbstractTableModel(pa
   mincolor = QColor(Qt::green);
   maxcolor = QColor(Qt::red);
 
-  for(int i = 0; i < tab.size(); i++){
+  for (int i = 0; i < tab.size(); i++) {
     labels << "####";
-    id.append(i+1);
+    id.append(i + 1);
   }
   header.append(firstcol_name);
-  for(int j = 0; j < tab.last().size(); j++)
-    header.append(QString::number(j+1));
+  for (int j = 0; j < tab.last().size(); j++)
+    header.append(QString::number(j + 1));
 }
 
-
-Model::~Model()
-{
-  if(isallocatedmatrix == true){
+Model::~Model() {
+  if (isallocatedmatrix == true) {
     delMatrix();
-    #ifdef DEBUG
-    qDebug()<< "~Model() Deleting Matrix";
-    #endif
+#ifdef DEBUG
+    qDebug() << "~Model() Deleting Matrix";
+#endif
   }
 }
 
 // Function used by qStableSort in copy
-static bool indexesByRow(const QModelIndex& one, const QModelIndex& two )
-{
-  return one.row()<two.row();
+static bool indexesByRow(const QModelIndex &one, const QModelIndex &two) {
+  return one.row() < two.row();
 }
 
-void Table::copy()
-{
+void Table::copy() {
   QModelIndexList indexes = ui.tableView->selectionModel()->selectedIndexes();
-  if(indexes.size() < 1)
+  if (indexes.size() < 1)
     return;
-  else if( indexes.size() == 1){ // copy one cell
-//     selected_cell;
+  else if (indexes.size() == 1) { // copy one cell
+                                  //     selected_cell;
     QString selected_cell(model_->data(indexes.first()).toString());
-    QApplication::clipboard()->setText( selected_cell );
-//     qDebug()<<  selected_cell;
-  }
-  else{ // copy more cell and row
-    //Sort the indexes list maintain the relative order of column by row ascening
-    std::stable_sort(indexes.begin(), indexes.end(), indexesByRow );
+    QApplication::clipboard()->setText(selected_cell);
+    //     qDebug()<<  selected_cell;
+  } else { // copy more cell and row
+    // Sort the indexes list maintain the relative order of column by row
+    // ascening
+    std::stable_sort(indexes.begin(), indexes.end(), indexesByRow);
 
     // get a pair of indexes to find the row changes
     QModelIndex previous = indexes.first();
     indexes.removeFirst();
     QString selected_text;
     QModelIndex current;
-    Q_FOREACH(current, indexes){
+    Q_FOREACH (current, indexes) {
       QVariant _data = model_->data(previous);
       QString text = _data.toString();
       // Append the text in one in one cell
       selected_text.append(text);
       // If you are at the start of the row the row number of the previous index
-      // isn't the same.  Text is followed by a row separator, which is a newline.
-      if ( current.row() != previous.row() ){
+      // isn't the same.  Text is followed by a row separator, which is a
+      // newline.
+      if (current.row() != previous.row()) {
         selected_text.append(QLatin1Char('\n'));
       }
-      // Otherwise it's the same row, so append a column separator, which is a tab.
-      else{
+      // Otherwise it's the same row, so append a column separator, which is a
+      // tab.
+      else {
         selected_text.append(QLatin1Char('\t'));
       }
       previous = current;
@@ -522,24 +488,23 @@ void Table::copy()
     // add last element
     selected_text.append(model_->data(current).toString());
     selected_text.append(QLatin1Char('\n'));
-    #ifdef DEBUG
-    qDebug()<< "Copy Action";
-    qDebug()<< selected_text;
-    #endif
-    QApplication::clipboard()->setText( selected_text );
+#ifdef DEBUG
+    qDebug() << "Copy Action";
+    qDebug() << selected_text;
+#endif
+    QApplication::clipboard()->setText(selected_text);
   }
 }
 
-void Table::addObjectLabel()
-{
+void Table::addObjectLabel() {
   QModelIndexList rowindexes = ui.tableView->selectionModel()->selectedRows();
 
-  if(rowindexes.size() < 1)
+  if (rowindexes.size() < 1)
     return;
-  else{
+  else {
     QStringList selectedobj;
     QModelIndex current;
-    Q_FOREACH(current, rowindexes){
+    Q_FOREACH (current, rowindexes) {
       selectedobj.append(model_->getObjNames()[current.row()]);
     }
 
@@ -548,47 +513,45 @@ void Table::addObjectLabel()
   }
 }
 
-void Table::addVariableLabel()
-{
-  QModelIndexList colindexes = ui.tableView->selectionModel()->selectedColumns();
+void Table::addVariableLabel() {
+  QModelIndexList colindexes =
+      ui.tableView->selectionModel()->selectedColumns();
 
-  if(colindexes.size() < 1){
+  if (colindexes.size() < 1) {
     return;
-  }
-  else{
+  } else {
     QStringList selectevars;
     QModelIndex current;
-    Q_FOREACH(current, colindexes){
+    Q_FOREACH (current, colindexes) {
       selectevars.append(model_->getHorizontalHeaderLabels()[current.column()]);
     }
 
-    #ifdef DEBUG
+#ifdef DEBUG
     qDebug() << "Selected Variables... " << selectevars;
-    #endif
+#endif
 
     LabelDialog ldialog(varlabels, selectevars, LabelDialog::VARLABELS);
     ldialog.exec();
   }
 }
 
-
-void Table::selectBy()
-{
+void Table::selectBy() {
   QStringList currentvariables = model()->getHorizontalHeaderLabels();
   currentvariables.removeAll(firstcol_name);
   currentvariables.removeAll("Principal Component");
   currentvariables.removeAll("Variables");
 
   ObjectSelectorDialog objseldialog(currentvariables, objlabels, varlabels);
-  if(objseldialog.exec() == QDialog::Accepted){
+  if (objseldialog.exec() == QDialog::Accepted) {
     int selectiontype = objseldialog.getSelectionType();
     int metric = objseldialog.getMetric();
     int nobjects = objseldialog.getNumberOfObjects();
     QString label = objseldialog.getLabel();
     QStringList varlist = objseldialog.getVariableList();
 
-    if(selectiontype == MOSTDESCRIPTIVECOMPOUND || selectiontype == MAXIMUMDISSIMILARITYMAXMIN){
-      if(metric != -1 && nobjects != -1 && varlist.size() > 0){
+    if (selectiontype == MOSTDESCRIPTIVECOMPOUND ||
+        selectiontype == MAXIMUMDISSIMILARITYMAXMIN) {
+      if (metric != -1 && nobjects != -1 && varlist.size() > 0) {
         matrix *m;
         uivector *selected;
         RUN obj;
@@ -596,20 +559,21 @@ void Table::selectBy()
         NewMatrix(&m, model()->Matrix()->row, varlist.size());
 
         int col = 0;
-        for(int j = 0; j < varlist.size(); j++){
+        for (int j = 0; j < varlist.size(); j++) {
           auto colindex = currentvariables.indexOf(varlist[j]);
-          if(colindex !=  -1){
-            for(uint i = 0; i < model()->Matrix()->row; i++){
-              setMatrixValue(m, i, col, getMatrixValue(model()->Matrix(), i, colindex));
+          if (colindex != -1) {
+            for (uint i = 0; i < model()->Matrix()->row; i++) {
+              setMatrixValue(m, i, col,
+                             getMatrixValue(model()->Matrix(), i, colindex));
             }
             col++;
+          } else {
+#ifdef DEBUG
+            qDebug() << "Error in selection columnindex this variable "
+                     << varlist[j] << "seems to be not present.";
+#endif
+            continue;
           }
-          else{
-            #ifdef DEBUG
-            qDebug() << "Error in selection columnindex this variable " << varlist[j] << "seems to be not present.";
-            #endif
-	    continue;
-	  }
         }
         obj.setMatrix(m);
 
@@ -621,41 +585,38 @@ void Table::selectBy()
 
         StartSelectionRun();
         QFuture<void> future;
-        if(selectiontype == MOSTDESCRIPTIVECOMPOUND){
+        if (selectiontype == MOSTDESCRIPTIVECOMPOUND) {
           future = obj.RunMDCSelection();
-        }
-        else{
+        } else {
           future = obj.RunMaxDisSelection();
-
         }
 
-        while(!future.isFinished()){
-          if(stoprun == true){
+        while (!future.isFinished()) {
+          if (stoprun == true) {
             future.cancel();
-          }
-          else{
+          } else {
             QApplication::processEvents();
           }
         }
 
         ui.tableView->selectionModel()->clearSelection();
 
-        for(uint i = 0; i < selected->size; i++){
-          if(getUIVectorValue(selected, i) < model()->Matrix()->row){
-            ui.tableView->selectionModel()->select(ui.tableView->model()->index(getUIVectorValue(selected, i), 0), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        for (uint i = 0; i < selected->size; i++) {
+          if (getUIVectorValue(selected, i) < model()->Matrix()->row) {
+            ui.tableView->selectionModel()->select(
+                ui.tableView->model()->index(getUIVectorValue(selected, i), 0),
+                QItemSelectionModel::Select | QItemSelectionModel::Rows);
           }
         }
 
         DelMatrix(&m);
         DelUIVector(&selected);
         StopSelectionRun();
-      }
-      else{
+      } else {
         return;
       }
-    }
-    else if(selectiontype == RANDOMSELECTION){
-      if(nobjects != -1){
+    } else if (selectiontype == RANDOMSELECTION) {
+      if (nobjects != -1) {
         uivector *selected;
         RUN obj;
 
@@ -666,100 +627,101 @@ void Table::selectBy()
         obj.setNumberMaxOfObject(model()->Matrix()->row);
 
         StartSelectionRun();
-        QFuture<void> future = obj.RunRandomSelection();;
+        QFuture<void> future = obj.RunRandomSelection();
+        ;
 
-        while(!future.isFinished())
+        while (!future.isFinished())
           QApplication::processEvents();
 
         ui.tableView->selectionModel()->clearSelection();
 
-        for(uint i = 0; i < selected->size; i++){
-          if(getUIVectorValue(selected, i) < model()->Matrix()->row){
-            ui.tableView->selectionModel()->select(ui.tableView->model()->index(getUIVectorValue(selected, i), 0), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        for (uint i = 0; i < selected->size; i++) {
+          if (getUIVectorValue(selected, i) < model()->Matrix()->row) {
+            ui.tableView->selectionModel()->select(
+                ui.tableView->model()->index(getUIVectorValue(selected, i), 0),
+                QItemSelectionModel::Select | QItemSelectionModel::Rows);
           }
         }
 
         DelUIVector(&selected);
         StopSelectionRun();
-      }
-      else{
+      } else {
         return;
       }
-    }
-    else{
-      if(label.size() > 0){
+    } else {
+      if (label.size() > 0) {
         int lindex = -1;
-        for(int i = 0; i < (*objlabels).size(); i++){
-          if((*objlabels)[i].name.compare(label) == 0){
+        for (int i = 0; i < (*objlabels).size(); i++) {
+          if ((*objlabels)[i].name.compare(label) == 0) {
             lindex = i;
             break;
-          }
-          else{
+          } else {
             continue;
           }
         }
 
-        if(lindex > -1){
+        if (lindex > -1) {
 
           ui.tableView->selectionModel()->clearSelection();
 
-          for(int i = 0; i < (*objlabels)[lindex].objects.size(); i++){
-            auto index = model()->getObjNames().indexOf((*objlabels)[lindex].objects[i]);
-            if(index > -1){
-              ui.tableView->selectionModel()->select(ui.tableView->model()->index(index, 0), QItemSelectionModel::Select | QItemSelectionModel::Rows);
-            }
-            else{
+          for (int i = 0; i < (*objlabels)[lindex].objects.size(); i++) {
+            auto index =
+                model()->getObjNames().indexOf((*objlabels)[lindex].objects[i]);
+            if (index > -1) {
+              ui.tableView->selectionModel()->select(
+                  ui.tableView->model()->index(index, 0),
+                  QItemSelectionModel::Select | QItemSelectionModel::Rows);
+            } else {
               continue;
             }
           }
 
-        }
-        else{
+        } else {
           return;
         }
-      }
-      else{
+      } else {
         return;
       }
     }
   }
 }
 
-void Table::searchBy()
-{
+void Table::searchBy() {
   SearchOnTableDialog sotd(model()->getHorizontalHeaderLabels());
-  if(sotd.exec() == QDialog::Accepted){
-    if(sotd.getSelectionType() == 0){ // select by objname
+  if (sotd.exec() == QDialog::Accepted) {
+    if (sotd.getSelectionType() == 0) { // select by objname
       QString label = sotd.getLabel();
 
       ui.tableView->selectionModel()->clearSelection();
 
-      for(int i = 0; i < model()->getObjNames().size(); i++){
-        if(model()->getObjNames()[i].contains(label, Qt::CaseInsensitive)== true){
-          if(i < (int)model()->Matrix()->row){
-            ui.tableView->selectionModel()->select(ui.tableView->model()->index(i, 0), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+      for (int i = 0; i < model()->getObjNames().size(); i++) {
+        if (model()->getObjNames()[i].contains(label, Qt::CaseInsensitive) ==
+            true) {
+          if (i < (int)model()->Matrix()->row) {
+            ui.tableView->selectionModel()->select(
+                ui.tableView->model()->index(i, 0),
+                QItemSelectionModel::Select | QItemSelectionModel::Rows);
             ui.tableView->scrollTo(ui.tableView->model()->index(i, 0));
-          }
-          else{
+          } else {
             continue;
           }
         }
       }
-    }
-    else{ // select by descriptor
+    } else { // select by descriptor
       int descriptor = sotd.getSelectionType() - 1;
 
       double min = sotd.getMin(), max = sotd.getMax();
 
-      if(descriptor < (int)model()->Matrix()->col){
+      if (descriptor < (int)model()->Matrix()->col) {
         ui.tableView->selectionModel()->clearSelection();
-        for(uint i = 0; i < model()->Matrix()->row; i++){
+        for (uint i = 0; i < model()->Matrix()->row; i++) {
           double val = getMatrixValue(model()->Matrix(), i, descriptor);
-          if(val >= min && val <= max){
-            ui.tableView->selectionModel()->select(ui.tableView->model()->index(i, 0), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+          if (val >= min && val <= max) {
+            ui.tableView->selectionModel()->select(
+                ui.tableView->model()->index(i, 0),
+                QItemSelectionModel::Select | QItemSelectionModel::Rows);
             ui.tableView->scrollTo(ui.tableView->model()->index(i, 0));
-          }
-          else{
+          } else {
             continue;
           }
         }
@@ -768,10 +730,9 @@ void Table::searchBy()
   }
 }
 
-void Table::highlitingCell()
-{
+void Table::highlitingCell() {
   HighlightTableVarDialog hdialog(model()->getHorizontalHeaderLabels());
-  if(hdialog.exec() == QDialog::Accepted){
+  if (hdialog.exec() == QDialog::Accepted) {
     QColor colormin, colormax;
     colormin = hdialog.getMinColor();
     colormax = hdialog.getMaxColor();
@@ -786,15 +747,17 @@ void Table::highlitingCell()
     model()->setMinColumnColor(colormin);
     model()->setMaxColumnColor(colormax);
 
-    ui.tableView->scrollTo(ui.tableView->model()->index(ui.tableView->currentIndex().row(), var));
+    ui.tableView->scrollTo(
+        ui.tableView->model()->index(ui.tableView->currentIndex().row(), var));
   }
 }
 
-void Table::ExportTable()
-{
-  ExportTableDialog exptabdialog(model()->getObjNames(), model()->getHorizontalHeaderLabels(), objlabels, varlabels);
+void Table::ExportTable() {
+  ExportTableDialog exptabdialog(model()->getObjNames(),
+                                 model()->getHorizontalHeaderLabels(),
+                                 objlabels, varlabels);
 
-  if(exptabdialog.exec() == QDialog::Accepted){
+  if (exptabdialog.exec() == QDialog::Accepted) {
 
     pdialog.setRange(0, 0);
     pdialog.hideCancel();
@@ -803,12 +766,13 @@ void Table::ExportTable()
 
     QString fname = exptabdialog.getFileName();
     QString sep = exptabdialog.getSeparator();
-    if(fname.contains(".txt", Qt::CaseInsensitive) == false || fname.contains(".csv", Qt::CaseInsensitive) == false)
+    if (fname.contains(".txt", Qt::CaseInsensitive) == false ||
+        fname.contains(".csv", Qt::CaseInsensitive) == false)
       fname.append(".csv");
 
     std::ofstream out;
     out.open(fname.toStdString().c_str());
-    if (out.is_open()){
+    if (out.is_open()) {
       QStringList selectedobj = exptabdialog.getSelectedObjects();
       QStringList selectedvar = exptabdialog.getSelectedVariables();
 
@@ -820,38 +784,39 @@ void Table::ExportTable()
       out.setf(std::ios_base::right, std::ios_base::adjustfield);
       out.setf(std::ios::fixed, std::ios::floatfield);
 
-      if(selectedobj.size() == model()->getObjNames().size()
-        && selectedvar.size() == model()->getHorizontalHeaderLabels().size()){
+      if (selectedobj.size() == model()->getObjNames().size() &&
+          selectedvar.size() == model()->getHorizontalHeaderLabels().size()) {
         // write the entire matrix
         auto nrow = objname.size();
         auto ncol = varnames.size();
 
         pdialog.setRange(0, selectedvar.size() + selectedobj.size());
         // write the header
-        for(int j = 0; j < ncol-1; j++){
+        for (int j = 0; j < ncol - 1; j++) {
           out << varnames[j].toStdString() << sep_;
         }
-        out << varnames.last().toStdString() <<  std::endl;
+        out << varnames.last().toStdString() << std::endl;
 
-        for(int i = 0; i < nrow; i++){
+        for (int i = 0; i < nrow; i++) {
           out << objname[i].toStdString() << sep_;
-          for(int j = 0; j < ncol-2; j++){ // -2 because the first col is the object name and the last column is writed with an excape char
+          for (int j = 0; j < ncol - 2;
+               j++) { // -2 because the first col is the object name and the
+                      // last column is writed with an excape char
             out << mxtowrite->data[i][j] << sep_;
             pdialog.setValue(barvalue);
             barvalue++;
             QApplication::processEvents();
           }
-          out << mxtowrite->data[i][mxtowrite->col-1] <<  std::endl;
+          out << mxtowrite->data[i][mxtowrite->col - 1] << std::endl;
         }
-      }
-      else{
-        pdialog.setRange(0, selectedvar.size() + selectedobj.size()*2);
+      } else {
+        pdialog.setRange(0, selectedvar.size() + selectedobj.size() * 2);
 
         // select object and variables to write and write it!
-        QList< uint > selectedvarid;
-        for(int i = 0; i < varnames.size(); i++){
+        QList<uint> selectedvarid;
+        for (int i = 0; i < varnames.size(); i++) {
           auto j = selectedvar.indexOf(varnames[i]);
-          if(j > -1){
+          if (j > -1) {
             selectedvarid.append(i);
             selectedvar.removeAt(j);
           }
@@ -859,16 +824,16 @@ void Table::ExportTable()
           barvalue++;
           QApplication::processEvents();
 
-          if(selectedvar.size() == 0)
+          if (selectedvar.size() == 0)
             break;
           else
             continue;
         }
 
         QList<int> selobjid;
-        for(int i = 0; i < objname.size(); i++){
+        for (int i = 0; i < objname.size(); i++) {
           auto j = selectedobj.indexOf(objname[i]);
-          if(j > -1){
+          if (j > -1) {
             selobjid.append(i);
             selectedobj.removeAt(j);
           }
@@ -876,50 +841,47 @@ void Table::ExportTable()
           barvalue++;
           QApplication::processEvents();
 
-          if(selectedobj.size() == 0)
+          if (selectedobj.size() == 0)
             break;
           else
             continue;
         }
 
-
-
         // write the header
-        for(int j = 0; j < selectedvarid.size()-1; j++){
+        for (int j = 0; j < selectedvarid.size() - 1; j++) {
           out << varnames[selectedvarid[j]].toStdString() << sep_;
         }
-        out << varnames[selectedvarid.last()].toStdString() <<  std::endl;
+        out << varnames[selectedvarid.last()].toStdString() << std::endl;
 
-        if(selectedvarid[0] == 0){ // write the object name
-          for(int i = 0; i < selobjid.size(); i++){
-            uint row =  selobjid[i];
-            if(selectedvarid.size() > 1){
+        if (selectedvarid[0] == 0) { // write the object name
+          for (int i = 0; i < selobjid.size(); i++) {
+            uint row = selobjid[i];
+            if (selectedvarid.size() > 1) {
               out << objname[row].toStdString() << sep_;
-            // 1 because is the object and the possible data to write...
-              for(int j = 1; j < selectedvarid.size()-1; j++){
-                out << mxtowrite->data[row][selectedvarid[j]-1] << sep_;
+              // 1 because is the object and the possible data to write...
+              for (int j = 1; j < selectedvarid.size() - 1; j++) {
+                out << mxtowrite->data[row][selectedvarid[j] - 1] << sep_;
               }
-              out << mxtowrite->data[row][selectedvarid.last()-1] <<  std::endl;
-            }
-            else{
-              out << objname[row].toStdString() <<  std::endl;
+              out << mxtowrite->data[row][selectedvarid.last() - 1]
+                  << std::endl;
+            } else {
+              out << objname[row].toStdString() << std::endl;
             }
             pdialog.setValue(barvalue);
             barvalue++;
             QApplication::processEvents();
           }
-        }
-        else{
-          for(int i = 0; i < selobjid.size(); i++){
-            uint row =  selobjid[i];
-            for(int j = 0; j < selectedvarid.size()-1; j++){
-              out << mxtowrite->data[row][selectedvarid[j]-1] << sep_;
+        } else {
+          for (int i = 0; i < selobjid.size(); i++) {
+            uint row = selobjid[i];
+            for (int j = 0; j < selectedvarid.size() - 1; j++) {
+              out << mxtowrite->data[row][selectedvarid[j] - 1] << sep_;
             }
-            out << mxtowrite->data[row][selectedvarid.last()-1] <<  std::endl;
+            out << mxtowrite->data[row][selectedvarid.last() - 1] << std::endl;
 
-          pdialog.setValue(barvalue);
-          barvalue++;
-          QApplication::processEvents();
+            pdialog.setValue(barvalue);
+            barvalue++;
+            QApplication::processEvents();
           }
         }
       }
@@ -929,18 +891,17 @@ void Table::ExportTable()
   }
 }
 
-void Table::resetHighliting()
-{
+void Table::resetHighliting() {
   model()->setMinColumnVal(0.f);
   model()->setMaxColumnVal(0.f);
   model()->setMinColumnVal(0);
 }
 
 #include <QPrinter>
-void Table::SaveAsImage()
-{
-  QString fname = QFileDialog::getSaveFileName(this, tr("Save table as image..."), QString(), tr("PNG files(*.png)"));
-  if(!fname.isEmpty()){
+void Table::SaveAsImage() {
+  QString fname = QFileDialog::getSaveFileName(
+      this, tr("Save table as image..."), QString(), tr("PNG files(*.png)"));
+  if (!fname.isEmpty()) {
 
     QPixmap pixmap(ui.tableView->sizeHint());
     ui.tableView->render(&pixmap);
@@ -959,59 +920,56 @@ void Table::SaveAsImage()
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setRenderHint(QPainter::TextAntialiasing, true);
     painter.drawPixmap(rect(), pixmap);*/
-
-
   }
 }
 
-void Table::SortByColumn(int col)
-{
+void Table::SortByColumn(int col) {
 
-  #ifdef DEBUG
+#ifdef DEBUG
   qDebug() << "Sort by column " << col;
-  #endif
-  if(col == 0){
+#endif
+  if (col == 0) {
     matrix *m = model()->Matrix();
 
     QStringList objnames, new_objnames;
     objnames.append(model()->getObjNames());
 
-    QList<QPair<QString, uint> > array_;
-    for(uint i = 0; i < (uint)objnames.size(); i++){
+    QList<QPair<QString, uint>> array_;
+    for (uint i = 0; i < (uint)objnames.size(); i++) {
       array_.append(qMakePair(objnames[i], i));
     }
     // Ordering ascending
-    if(ui.tableView->horizontalHeader()->sortIndicatorOrder() == Qt::AscendingOrder)
+    if (ui.tableView->horizontalHeader()->sortIndicatorOrder() ==
+        Qt::AscendingOrder)
       std::sort(array_.begin(), array_.end(), QPairComparerAscending());
     else
       std::sort(array_.begin(), array_.end(), QPairComparerDescending());
-
 
     matrix *tmp;
     initMatrix(&tmp);
     model()->getObjNames().clear();
     MatrixCopy(m, &tmp);
-    for(int i = 0; i < array_.size(); i++){
-      for(uint j = 0; j < tmp->col; j++){
+    for (int i = 0; i < array_.size(); i++) {
+      for (uint j = 0; j < tmp->col; j++) {
         setMatrixValue(m, i, j, getMatrixValue(tmp, array_[i].second, j));
       }
       new_objnames.append(array_[i].first);
     }
     DelMatrix(&tmp);
     model()->setObjNames(new_objnames);
-  }
-  else{
+  } else {
     matrix *m = model()->Matrix();
 
     QStringList objnames, new_objnames;
     objnames.append(model()->getObjNames());
 
-    QList<QPair<double, uint> > array_;
-    for(uint i = 0; i < m->row; i++){
-      array_.append(qMakePair(getMatrixValue(m, i, col-1), i));
+    QList<QPair<double, uint>> array_;
+    for (uint i = 0; i < m->row; i++) {
+      array_.append(qMakePair(getMatrixValue(m, i, col - 1), i));
     }
 
-    if(ui.tableView->horizontalHeader()->sortIndicatorOrder() == Qt::AscendingOrder)
+    if (ui.tableView->horizontalHeader()->sortIndicatorOrder() ==
+        Qt::AscendingOrder)
       std::sort(array_.begin(), array_.end(), QPairComparerAscending());
     else
       std::sort(array_.begin(), array_.end(), QPairComparerDescending());
@@ -1020,8 +978,8 @@ void Table::SortByColumn(int col)
     initMatrix(&tmp);
     model()->getObjNames().clear();
     MatrixCopy(m, &tmp);
-    for(int i = 0; i < array_.size(); i++){
-      for(uint j = 0; j < tmp->col; j++){
+    for (int i = 0; i < array_.size(); i++) {
+      for (uint j = 0; j < tmp->col; j++) {
         setMatrixValue(m, i, j, getMatrixValue(tmp, array_[i].second, j));
       }
       new_objnames.append(objnames[array_[i].second]);
@@ -1033,44 +991,51 @@ void Table::SortByColumn(int col)
   model()->UpdateModel();
 }
 
+void Table::SetSelectionName() {
 
-void Table::SetSelectionName()
-{
-
-  auto colindexessize = ui.tableView->selectionModel()->selectedColumns().size();
+  auto colindexessize =
+      ui.tableView->selectionModel()->selectedColumns().size();
   auto rowindexessize = ui.tableView->selectionModel()->selectedRows().size();
-  auto indexessize = ui.tableView->selectionModel()->selectedIndexes().size() - 1;
+  auto indexessize =
+      ui.tableView->selectionModel()->selectedIndexes().size() - 1;
 
   /*
   qDebug() << "indexes " << indexessize;
   qDebug() << "col" << colindexessize << " " << (int)model()->Matrix()->col;
   qDebug() << "row" << rowindexessize;
-  qDebug() << "Selected: " << ((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1);
-  qDebug() << "#############################################";
+  qDebug() << "Selected: " << ((ceil(indexessize /
+  (int)(model()->Matrix()->col+1)))+1); qDebug() <<
+  "#############################################";
  */
 
-//   if(((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1) == rowindexessize && rowindexessize > 0){
-  if(((ceil(indexessize / (int)(model()->columnCount()+1)))+1) == rowindexessize && rowindexessize > 0){
+  //   if(((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1) ==
+  //   rowindexessize && rowindexessize > 0){
+  if (((ceil(indexessize / (int)(model()->columnCount() + 1))) + 1) ==
+          rowindexessize &&
+      rowindexessize > 0) {
     ts.pid = pid;
     ts.imgname.clear();
-    ts.imgname.append(ui.tableView->model()->index(ui.tableView->currentIndex().row(), 0).data(Qt::DisplayRole).toString());
+    ts.imgname.append(ui.tableView->model()
+                          ->index(ui.tableView->currentIndex().row(), 0)
+                          .data(Qt::DisplayRole)
+                          .toString());
     emit TabImageSignalChanged(ts);
-  }
-  else{
-    if(colindexessize > 0){
+  } else {
+    if (colindexessize > 0) {
       ts.pid = pid;
-      if(ui.tableView->currentIndex().column() < model()->getHorizontalHeaderLabels().size()){
+      if (ui.tableView->currentIndex().column() <
+          model()->getHorizontalHeaderLabels().size()) {
         ts.imgname.clear();
-        ts.imgname.append(model()->getHorizontalHeaderLabels()[ui.tableView->currentIndex().column()]);
+        ts.imgname.append(
+            model()->getHorizontalHeaderLabels()[ui.tableView->currentIndex()
+                                                     .column()]);
         emit TabImageSignalChanged(ts);
-      }
-      else{
+      } else {
         ts.pid = -1;
         ts.imgname.clear();
         emit TabImageSignalChanged(ts);
       }
-    }
-    else{
+    } else {
       ts.pid = -1;
       ts.imgname.clear();
       emit TabImageSignalChanged(ts);
@@ -1078,37 +1043,32 @@ void Table::SetSelectionName()
   }
 }
 
-void Table::stopRun()
-{
-  StopSelectionRun();
-}
+void Table::stopRun() { StopSelectionRun(); }
 
-void Table::contextMenuEvent(QContextMenuEvent *event)
-{
-  if(model_){
-    QAction *copyAct = 0,
-            *addObjLabel = 0,
-            *addVarLabel = 0,
-            *searchAct = 0,
-            *selectByAct = 0,
-            *highlitingCell = 0,
-            *resethighliting = 0,
+void Table::contextMenuEvent(QContextMenuEvent *event) {
+  if (model_) {
+    QAction *copyAct = 0, *addObjLabel = 0, *addVarLabel = 0, *searchAct = 0,
+            *selectByAct = 0, *highlitingCell = 0, *resethighliting = 0,
             *exportTable = 0;
 
     copyAct = new QAction(tr("&Copy"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
     copyAct->setStatusTip(tr("Copy the current selection's contents to the "
-                              "clipboard"));
+                             "clipboard"));
     connect(copyAct, SIGNAL(triggered()), this, SLOT(copy()));
 
     QMenu menu(this);
     menu.addAction(copyAct);
     menu.addSeparator();
 
-    auto colindexessize = ui.tableView->selectionModel()->selectedColumns().size();
+    auto colindexessize =
+        ui.tableView->selectionModel()->selectedColumns().size();
     auto rowindexessize = ui.tableView->selectionModel()->selectedRows().size();
-    auto indexessize = ui.tableView->selectionModel()->selectedIndexes().size() - 1;
-    auto selected = ((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1); //(ceil(indexessize / (int)(model()->columnCount()+1)))+1)
+    auto indexessize =
+        ui.tableView->selectionModel()->selectedIndexes().size() - 1;
+    auto selected =
+        ((ceil(indexessize / (int)(model()->Matrix()->col + 1))) +
+         1); //(ceil(indexessize / (int)(model()->columnCount()+1)))+1)
     /*
     qDebug() << "indexes " << indexessize;
     qDebug() << "col" << colindexessize << " " << (int)model()->Matrix()->col;
@@ -1117,9 +1077,10 @@ void Table::contextMenuEvent(QContextMenuEvent *event)
     qDebug() << "#############################################";
     */
 
-    if(objlabels != 0){
-  //     if(((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1) == rowindexessize && rowindexessize > 0){
-      if(selected == rowindexessize && rowindexessize > 0){
+    if (objlabels != 0) {
+      //     if(((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1) ==
+      //     rowindexessize && rowindexessize > 0){
+      if (selected == rowindexessize && rowindexessize > 0) {
         addObjLabel = new QAction(("&Add Object Label"), this);
         addObjLabel->setStatusTip(tr("Add Label to selected objects"));
         connect(addObjLabel, SIGNAL(triggered()), this, SLOT(addObjectLabel()));
@@ -1127,22 +1088,23 @@ void Table::contextMenuEvent(QContextMenuEvent *event)
       }
     }
 
-    if(varlabels != 0){
-      if(colindexessize > 0){
+    if (varlabels != 0) {
+      if (colindexessize > 0) {
         addVarLabel = new QAction(("&Add Variable Label"), this);
         addVarLabel->setStatusTip(tr("Add Label to selected Variables"));
-        connect(addVarLabel, SIGNAL(triggered()), this, SLOT(addVariableLabel()));
+        connect(addVarLabel, SIGNAL(triggered()), this,
+                SLOT(addVariableLabel()));
         menu.addAction(addVarLabel);
       }
     }
 
-    if(model()->Matrix() != 0){
+    if (model()->Matrix() != 0) {
       searchAct = new QAction(tr("&Search by column.."), this);
       searchAct->setStatusTip(tr("Search objects in the table by column..."));
       connect(searchAct, SIGNAL(triggered()), this, SLOT(searchBy()));
       menu.addAction(searchAct);
 
-      if(varlabels != 0){
+      if (varlabels != 0) {
         selectByAct = new QAction(tr("&Select objects by"), this);
         selectByAct->setStatusTip(tr("Select objects in the table by..."));
         connect(selectByAct, SIGNAL(triggered()), this, SLOT(selectBy()));
@@ -1153,12 +1115,14 @@ void Table::contextMenuEvent(QContextMenuEvent *event)
 
       highlitingCell = new QAction(tr("&Highliting Column"), this);
       highlitingCell->setStatusTip(tr("Highliting Cell from min to max"));
-      connect(highlitingCell, SIGNAL(triggered()), this, SLOT(highlitingCell()));
+      connect(highlitingCell, SIGNAL(triggered()), this,
+              SLOT(highlitingCell()));
       menu.addAction(highlitingCell);
 
       resethighliting = new QAction(tr("&Reset Highliting"), this);
       resethighliting->setStatusTip(tr("Reset the table Highliting"));
-      connect(resethighliting, SIGNAL(triggered()), this, SLOT(resetHighliting()));
+      connect(resethighliting, SIGNAL(triggered()), this,
+              SLOT(resetHighliting()));
       menu.addAction(resethighliting);
       menu.addSeparator();
     }
@@ -1176,15 +1140,14 @@ void Table::contextMenuEvent(QContextMenuEvent *event)
     delete highlitingCell;
     delete resethighliting;
 
-    if(addObjLabel != 0){
+    if (addObjLabel != 0) {
       delete addObjLabel;
     }
 
-    if(addVarLabel != 0){
+    if (addVarLabel != 0) {
       delete addVarLabel;
     }
-  }
-  else{
+  } else {
     QAction *saveAsImage = 0;
 
     saveAsImage = new QAction(tr("&Save As Image..."), this);
@@ -1196,12 +1159,10 @@ void Table::contextMenuEvent(QContextMenuEvent *event)
     menu.exec(event->globalPos());
 
     delete saveAsImage;
-
   }
 }
 
-void Table::StartSelectionRun()
-{
+void Table::StartSelectionRun() {
   stoprun = false;
   pdialog.setMin(0);
   pdialog.setMax(0);
@@ -1209,8 +1170,7 @@ void Table::StartSelectionRun()
   pdialog.show();
 }
 
-void Table::StopSelectionRun()
-{
+void Table::StopSelectionRun() {
   stoprun = true;
   pdialog.setMin(0);
   pdialog.setMax(100);
@@ -1218,8 +1178,7 @@ void Table::StopSelectionRun()
   pdialog.hide();
 }
 
-Table::Table(QWidget *parent) : QWidget(parent)
-{
+Table::Table(QWidget *parent) : QWidget(parent) {
   ui.setupUi(this);
   model_ = new Model(this);
   imgtabmodel_ = 0;
@@ -1227,17 +1186,19 @@ Table::Table(QWidget *parent) : QWidget(parent)
   ui.tableView->setModel(model_);
   ui.tableView->adjustSize();
   ui.tableView->installEventFilter(this);
-//   ui.tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+  //   ui.tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
   ui.tableView->horizontalHeader()->setDefaultSectionSize(200);
   objlabels = 0;
   varlabels = 0;
   connect(&pdialog, SIGNAL(runCancelled()), SLOT(stopRun()));
-  connect(ui.tableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(SetSelectionName()));
-  connect(ui.tableView->horizontalHeader(),SIGNAL(sectionClicked(int)), SLOT(SortByColumn(int)));
+  connect(ui.tableView->selectionModel(),
+          SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
+          SLOT(SetSelectionName()));
+  connect(ui.tableView->horizontalHeader(), SIGNAL(sectionClicked(int)),
+          SLOT(SortByColumn(int)));
 }
 
-Table::Table(matrix* m, QWidget* parent): QWidget(parent)
-{
+Table::Table(matrix *m, QWidget *parent) : QWidget(parent) {
   ui.setupUi(this);
   model_ = new Model(m, this);
   imgtabmodel_ = 0;
@@ -1245,17 +1206,20 @@ Table::Table(matrix* m, QWidget* parent): QWidget(parent)
   ui.tableView->setModel(model_);
   ui.tableView->adjustSize();
   ui.tableView->installEventFilter(this);
-//   ui.tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+  //   ui.tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
   ui.tableView->horizontalHeader()->setDefaultSectionSize(200);
   objlabels = 0;
   varlabels = 0;
   connect(&pdialog, SIGNAL(runCancelled()), SLOT(stopRun()));
-  connect(ui.tableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(SetSelectionName()));
-  connect(ui.tableView->horizontalHeader(),SIGNAL(sectionClicked(int)), SLOT(SortByColumn(int)));
+  connect(ui.tableView->selectionModel(),
+          SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
+          SLOT(SetSelectionName()));
+  connect(ui.tableView->horizontalHeader(), SIGNAL(sectionClicked(int)),
+          SLOT(SortByColumn(int)));
 }
 
-Table::Table(matrix* m, LABELS* objlabels_, LABELS* varlabels_, QWidget* parent): QWidget(parent)
-{
+Table::Table(matrix *m, LABELS *objlabels_, LABELS *varlabels_, QWidget *parent)
+    : QWidget(parent) {
   ui.setupUi(this);
   model_ = new Model(m, this);
   imgtabmodel_ = 0;
@@ -1266,15 +1230,19 @@ Table::Table(matrix* m, LABELS* objlabels_, LABELS* varlabels_, QWidget* parent)
   ui.tableView->setModel(model_);
   ui.tableView->adjustSize();
   ui.tableView->installEventFilter(this);
-//   ui.tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+  //   ui.tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
   ui.tableView->horizontalHeader()->setDefaultSectionSize(200);
   connect(&pdialog, SIGNAL(runCancelled()), SLOT(stopRun()));
-  connect(ui.tableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(SetSelectionName()));
-  connect(ui.tableView->horizontalHeader(),SIGNAL(sectionClicked(int)), SLOT(SortByColumn(int)));
+  connect(ui.tableView->selectionModel(),
+          SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
+          SLOT(SetSelectionName()));
+  connect(ui.tableView->horizontalHeader(), SIGNAL(sectionClicked(int)),
+          SLOT(SortByColumn(int)));
 }
 
-Table::Table(QList< QStringList > tab, LABELS* objlabels_, LABELS* varlabels_, QWidget* parent): QWidget(parent)
-{
+Table::Table(QList<QStringList> tab, LABELS *objlabels_, LABELS *varlabels_,
+             QWidget *parent)
+    : QWidget(parent) {
   ui.setupUi(this);
   model_ = new Model(tab, this);
   imgtabmodel_ = 0;
@@ -1286,26 +1254,30 @@ Table::Table(QList< QStringList > tab, LABELS* objlabels_, LABELS* varlabels_, Q
   ui.tableView->adjustSize();
   ui.tableView->installEventFilter(this);
   ui.tableView->setSortingEnabled(false);
-//   ui.tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+  //   ui.tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
   ui.tableView->horizontalHeader()->setDefaultSectionSize(200);
   connect(&pdialog, SIGNAL(runCancelled()), SLOT(stopRun()));
-  connect(ui.tableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(SetSelectionName()));
+  connect(ui.tableView->selectionModel(),
+          SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
+          SLOT(SetSelectionName()));
 
-//   connect(ui.tableView->horizontalHeader(),SIGNAL(sectionClicked(int)), SLOT(SortByColumn(int)));
+  //   connect(ui.tableView->horizontalHeader(),SIGNAL(sectionClicked(int)),
+  //   SLOT(SortByColumn(int)));
 }
 
-Table::Table(QStringList names, QList<QPixmap> images, QList<QColor> colors, QWidget *parent): QWidget(parent)
-{
+Table::Table(QStringList names, QList<QPixmap> images, QList<QColor> colors,
+             QWidget *parent)
+    : QWidget(parent) {
   ui.setupUi(this);
   model_ = 0;
-  int nrows = (int)ceil(names.size()/10.f);
+  int nrows = (int)ceil(names.size() / 10.f);
   imgtabmodel_ = new QStandardItemModel(nrows, 10, this);
   ui.tableView->setModel(imgtabmodel_);
 
   int k = 0;
-  for(int i = 0; i < nrows; i++){
-    for(int j = 0; j < 10; j++){
-      if(k < names.size()){
+  for (int i = 0; i < nrows; i++) {
+    for (int j = 0; j < 10; j++) {
+      if (k < names.size()) {
 
         QLabel *image = new QLabel();
         image->setMinimumSize(50, 50);
@@ -1321,11 +1293,15 @@ Table::Table(QStringList names, QList<QPixmap> images, QList<QColor> colors, QWi
         label->setAutoFillBackground(true);
         label->setPalette(pal);*/
         label->setText(names[k]);
-        QVariant variant= colors[k];
+        QVariant variant = colors[k];
         QString colcode = variant.toString();
-        label->setStyleSheet("QLabel { background-color :"+colcode+" ; border-style: outset; border-width: 2px; border-radius: 10px; border-color: beige; font: bold 9px; min-width: 10em; padding: 6px; color : black; }");
+        label->setStyleSheet(
+            "QLabel { background-color :" + colcode +
+            " ; border-style: outset; border-width: 2px; border-radius: 10px; "
+            "border-color: beige; font: bold 9px; min-width: 10em; padding: "
+            "6px; color : black; }");
         QVBoxLayout *layout = new QVBoxLayout;
-        if(images[k].isNull() == false)
+        if (images[k].isNull() == false)
           layout->addWidget(image);
 
         layout->addWidget(label);
@@ -1333,36 +1309,35 @@ Table::Table(QStringList names, QList<QPixmap> images, QList<QColor> colors, QWi
         cell->setLayout(layout);
 
         imgtabmodel_->setItem(i, j, new QStandardItem(QString("")));
-        ui.tableView->setIndexWidget(imgtabmodel_->index(i , j), cell);
+        ui.tableView->setIndexWidget(imgtabmodel_->index(i, j), cell);
         k++;
-      }
-      else{
+      } else {
         continue;
       }
     }
   }
 
   pid = -1;
-  //ui.tableView->setModel(imgtabmodel_);
+  // ui.tableView->setModel(imgtabmodel_);
 
   ui.tableView->adjustSize();
   ui.tableView->installEventFilter(this);
   ui.tableView->setSortingEnabled(false);
-//   ui.tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+  //   ui.tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
   ui.tableView->verticalHeader()->setDefaultSectionSize(150);
   ui.tableView->horizontalHeader()->setDefaultSectionSize(150);
-  //ui.tableView->horizontalHeader()->sectionResizeMode(QHeaderView::Stretch);
-  //ui.tableView->verticalHeader()->sectionResizeMode(QHeaderView::Stretch);
-//   connect(ui.tableView->horizontalHeader(),SIGNAL(sectionClicked(int)), SLOT(SortByColumn(int)));
+  // ui.tableView->horizontalHeader()->sectionResizeMode(QHeaderView::Stretch);
+  // ui.tableView->verticalHeader()->sectionResizeMode(QHeaderView::Stretch);
+  //   connect(ui.tableView->horizontalHeader(),SIGNAL(sectionClicked(int)),
+  //   SLOT(SortByColumn(int)));
 }
 
-Table::~Table()
-{
-  #ifdef DEBUG
-  qDebug()<<"~Table() Delete model_\n";
-  #endif
-  if(model_)
+Table::~Table() {
+#ifdef DEBUG
+  qDebug() << "~Table() Delete model_\n";
+#endif
+  if (model_)
     delete model_;
-  else if(imgtabmodel_)
+  else if (imgtabmodel_)
     delete imgtabmodel_;
 }

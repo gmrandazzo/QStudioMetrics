@@ -2,16 +2,17 @@
 #define QSTUDIOMETRICSDATAOPERATIONS_H
 #include "qstudiometricstypes.h"
 
-#include <iostream>
+#include <QCryptographicHash>
 #include <QString>
 #include <QStringList>
-#include <QCryptographicHash>
-#include <string>
+#include <iostream>
 #include <scientific.h>
+#include <string>
 
 // Conversion functions for sql export
 // N.B.: To serialize vector,matrix and tensor is utilised a std::string
-// to avoid double conversion problems and truncated floating points present in QString
+// to avoid double conversion problems and truncated floating points present in
+// QString
 LABELS DeserializeLABELS(QString serialized_l);
 QString SerializeLABELS(LABELS l);
 QStringList DeserializeQStringList(QString serialized_lst);
@@ -29,6 +30,5 @@ QString SerializeTensor(tensor *ar);
 // Serialze the matrix and return a QCryptographicHash in hexadecimal
 
 QString GenHashFromStrlst(QStringList slst);
-
 
 #endif

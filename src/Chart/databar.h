@@ -1,20 +1,18 @@
 #ifndef DATABAR_H
 #define DATABAR_H
 
-#include <QtGlobal>
 #include <QColor>
 #include <QList>
-#include <QVector>
-#include <QStringList>
 #include <QMetaType>
+#include <QStringList>
+#include <QVector>
+#include <QtGlobal>
 
-
-class DataBar
-{
+class DataBar {
 public:
   DataBar();
   DataBar(QStringList x, QVector<qreal> y);
-  DataBar(QStringList x,  QVector<qreal> y, QStringList text);
+  DataBar(QStringList x, QVector<qreal> y, QStringList text);
 
   void setX(QStringList x);
   void setY(QVector<qreal> y);

@@ -9,8 +9,7 @@
 #include <QDebug>
 #endif
 
-PLSPREDICTION::PLSPREDICTION()
-{
+PLSPREDICTION::PLSPREDICTION() {
   initMatrix(&pxscores);
   initMatrix(&py);
   initMatrix(&r2y);
@@ -18,11 +17,10 @@ PLSPREDICTION::PLSPREDICTION()
   id = did = -1;
 }
 
-PLSPREDICTION::~PLSPREDICTION()
-{
-  #ifdef DEBUG
+PLSPREDICTION::~PLSPREDICTION() {
+#ifdef DEBUG
   qDebug() << "Delete PLSPREDICTION: " << name;
-  #endif
+#endif
 
   DelMatrix(&pxscores);
   DelMatrix(&py);
@@ -30,19 +28,17 @@ PLSPREDICTION::~PLSPREDICTION()
   DelMatrix(&sdec);
 }
 
-PLSModel::PLSModel()
-{
+PLSModel::PLSModel() {
   NewPLSModel(&m);
   did = xscaling = yscaling = npc = modelid = -1;
   validation = 0;
   algtype = PLS_;
 }
 
-PLSModel::~PLSModel()
-{
-  #ifdef DEBUG
-  qDebug() << "Delete PLS Model: "<< name;
-  #endif
+PLSModel::~PLSModel() {
+#ifdef DEBUG
+  qDebug() << "Delete PLS Model: " << name;
+#endif
   delPLSPredictions();
   DelPLSModel(&m);
 }

@@ -1,9 +1,8 @@
-#include <iostream>
 #include "DATAIO.h"
+#include <iostream>
 #include <scientific.h>
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   PCAMODEL *m;
   NewPCAModel(&m);
 

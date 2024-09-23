@@ -1,85 +1,80 @@
 #include "MDIChild.h"
-#include <QProgressDialog>
-#include <QStringListModel>
-#include <QScreen>
 #include "ListView.h"
+#include <QProgressDialog>
+#include <QScreen>
+#include <QStringListModel>
 
-void MDIChild::newModelInfo()
-{
+void MDIChild::newModelInfo() {
   setWindowTitle("Model Info");
   modinfo = new ModelInfo(this);
   setWidget(modinfo);
   modinfo->Adjust();
-  setWindowIcon(QIcon(QPixmap(1,1)));
+  setWindowIcon(QIcon(QPixmap(1, 1)));
   adjustSize();
 }
 
-void MDIChild::newListView(QString& tabname, QStringList lst)
-{
+void MDIChild::newListView(QString &tabname, QStringList lst) {
   setWindowTitle(tabname);
   listview = new ListView(lst);
   setWidget(listview);
-  setWindowIcon(QIcon(QPixmap(1,1)));
+  setWindowIcon(QIcon(QPixmap(1, 1)));
   adjustSize();
 }
 
-void MDIChild::newTable (QString& tabname_)
-{
+void MDIChild::newTable(QString &tabname_) {
   setWindowTitle(tabname_);
   table = new Table(this);
   table->setObjectName(tabname_);
   setWidget(table);
-  setWindowIcon(QIcon(QPixmap(1,1)));
+  setWindowIcon(QIcon(QPixmap(1, 1)));
   resize(300, 260);
 }
 
-void MDIChild::newTable (QString& tabname_, matrix* m)
-{
+void MDIChild::newTable(QString &tabname_, matrix *m) {
   setWindowTitle(tabname_);
   table = new Table(m, this);
   table->setObjectName(tabname_);
   setWidget(table);
-  setWindowIcon(QIcon(QPixmap(1,1)));
+  setWindowIcon(QIcon(QPixmap(1, 1)));
   resize(300, 260);
 }
 
-void MDIChild::newTable(QString& tabname_, matrix* m, LABELS *objlabels_, LABELS *varlabels_)
-{
+void MDIChild::newTable(QString &tabname_, matrix *m, LABELS *objlabels_,
+                        LABELS *varlabels_) {
   setWindowTitle(tabname_);
   table = new Table(m, objlabels_, varlabels_, this);
   table->setObjectName(tabname_);
   setWidget(table);
-  setWindowIcon(QIcon(QPixmap(1,1)));
+  setWindowIcon(QIcon(QPixmap(1, 1)));
   resize(300, 260);
 }
 
-void MDIChild::newTable(QString& tabname, QList< QStringList > tab, LABELS* objlabels_, LABELS* varlabels_)
-{
+void MDIChild::newTable(QString &tabname, QList<QStringList> tab,
+                        LABELS *objlabels_, LABELS *varlabels_) {
   setWindowTitle(tabname);
   table = new Table(tab, objlabels_, varlabels_, this);
   table->setObjectName(tabname);
   setWidget(table);
-  setWindowIcon(QIcon(QPixmap(1,1)));
+  setWindowIcon(QIcon(QPixmap(1, 1)));
   resize(300, 260);
 }
 
-void MDIChild::newTable(QString& tabname, QStringList names, QList<QPixmap> images, QList<QColor> colors)
-{
+void MDIChild::newTable(QString &tabname, QStringList names,
+                        QList<QPixmap> images, QList<QColor> colors) {
   setWindowTitle(tabname);
   table = new Table(names, images, colors, this);
   table->setObjectName(tabname);
   setWidget(table);
-  setWindowIcon(QIcon(QPixmap(1,1)));
+  setWindowIcon(QIcon(QPixmap(1, 1)));
   resize(300, 260);
 }
 
-MDIChild::MDIChild()
-{
+MDIChild::MDIChild() {
   table = 0;
   modinfo = 0;
   listview = 0;
   setAttribute(Qt::WA_DeleteOnClose);
-  setWindowIcon(QIcon(QPixmap(1,1)));
+  setWindowIcon(QIcon(QPixmap(1, 1)));
   id = -1;
 }
 

@@ -4,22 +4,21 @@
 #include <QDialog>
 #include <QStandardItemModel>
 
-#include "ui_ExtractDataDialog.h"
+#include "GenericProgressDialog.h"
 #include "qsmdata.h"
 #include "qstudiometricstypes.h"
-#include "GenericProgressDialog.h"
+#include "ui_ExtractDataDialog.h"
 
-class ExtractDataDialog : public QDialog
-{
+class ExtractDataDialog : public QDialog {
   Q_OBJECT
-  
-public:  
+
+public:
   explicit ExtractDataDialog(PROJECTS *projects);
   ~ExtractDataDialog();
-  
-  int getProjectID(){ return pid; }
-  int getDataType(){ return type; }
-  MATRIX *getMatrix(){ return mx; }
+
+  int getProjectID() { return pid; }
+  int getDataType() { return type; }
+  MATRIX *getMatrix() { return mx; }
 
 private slots:
   void ObjectsSelectAll();
@@ -36,10 +35,10 @@ private slots:
   void genListView();
   void setProjectID(QModelIndex current);
   void genObjVarView(QModelIndex current);
-  
+
 private:
   Ui::ExtractDataDialog ui;
-  
+
   PROJECTS *projects_;
   QList<int> pids;
   QStringList hash;
@@ -47,9 +46,9 @@ private:
   int pid;
   QStandardItemModel *tab1, *tab2, *tab3, *tab4;
   int type;
-  
+
   MATRIX *mx;
-  
+
   GenericProgressDialog pdialog;
   bool stoprun;
   void StartSelectionRun();

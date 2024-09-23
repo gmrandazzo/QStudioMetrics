@@ -1,12 +1,8 @@
 #include "addLabelDialog.h"
 
-QString addLabelDialog::getLabel()
-{
-  return ui.lineEdit->text();
-}
+QString addLabelDialog::getLabel() { return ui.lineEdit->text(); }
 
-addLabelDialog::addLabelDialog(QString windowname): QDialog()
-{
+addLabelDialog::addLabelDialog(QString windowname) : QDialog() {
   ui.setupUi(this);
   setWindowTitle(windowname);
   connect(ui.okButton, SIGNAL(clicked(bool)), SLOT(accept()));

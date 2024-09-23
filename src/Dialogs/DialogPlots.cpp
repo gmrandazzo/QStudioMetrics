@@ -1,75 +1,63 @@
 #include "DialogPlots.h"
+#include "qstudiometricstypes.h"
+#include <QMessageBox>
 #include <QModelIndex>
 #include <QStandardItem>
 #include <QStandardItemModel>
-#include <QMessageBox>
-#include "qstudiometricstypes.h"
 
-int DialogPlots::getNLV(){ return ui.numpc->value(); }
+int DialogPlots::getNLV() { return ui.numpc->value(); }
 
-int DialogPlots::getPredictionID(){
-  if(pid > -1 && mid > -1 && predid > -1){
+int DialogPlots::getPredictionID() {
+  if (pid > -1 && mid > -1 && predid > -1) {
     return pjtree[pid].mtree[mid].ptree[predid].id;
-  }
-  else{
+  } else {
     return -1;
   }
 }
 
-
-int DialogPlots::getModelID()
-{
-  if(pid > -1){
+int DialogPlots::getModelID() {
+  if (pid > -1) {
     return pjtree[pid].mtree[mid].id;
-  }
-  else{
+  } else {
     return -1;
   }
 }
 
-int DialogPlots::getProjectID()
-{
-  if(pid > -1){
+int DialogPlots::getProjectID() {
+  if (pid > -1) {
     return pjtree[pid].id;
-  }
-  else{
+  } else {
     return -1;
   }
 }
 
-void DialogPlots::EnableDisableButtons()
-{
-  if(dtype == TwoColumns){
-    if(pid > -1 && mid > -1){
+void DialogPlots::EnableDisableButtons() {
+  if (dtype == TwoColumns) {
+    if (pid > -1 && mid > -1) {
       ui.plotButton->setEnabled(true);
-    }
-    else{
+    } else {
       ui.plotButton->setEnabled(false);
     }
-  }
-  else{
-    if(pid > -1 && mid > -1 && predid > -1){
+  } else {
+    if (pid > -1 && mid > -1 && predid > -1) {
       ui.plotButton->setEnabled(true);
-    }
-    else{
+    } else {
       ui.plotButton->setEnabled(false);
     }
   }
 }
 
-void DialogPlots::setPrediction(QModelIndex current, QModelIndex previous)
-{
+void DialogPlots::setPrediction(QModelIndex current, QModelIndex previous) {
   predid = current.row();
   EnableDisableButtons();
 }
 
-void DialogPlots::setModel(QModelIndex current, QModelIndex previous)
-{
+void DialogPlots::setModel(QModelIndex current, QModelIndex previous) {
   mid = current.row();
-  if(dtype == ThreeColumns){
+  if (dtype == ThreeColumns) {
     tab3->clear();
-    for(int i = 0; i < pjtree[pid].mtree[mid].ptree.size(); i++){
-      QList<QStandardItem*> row;
+    for (int i = 0; i < pjtree[pid].mtree[mid].ptree.size(); i++) {
+      QList<QStandardItem *> row;
       row.append(new QStandardItem(pjtree[pid].mtree[mid].ptree[i].name));
       tab3->appendRow(row);
     }
@@ -77,50 +65,42 @@ void DialogPlots::setModel(QModelIndex current, QModelIndex previous)
   EnableDisableButtons();
 }
 
-void DialogPlots::setProject(QModelIndex current, QModelIndex previous)
-{
+void DialogPlots::setProject(QModelIndex current, QModelIndex previous) {
   pid = current.row();
   tab2->clear();
-  for(int i = 0; i < pjtree[pid].mtree.size(); i++){
-    QList<QStandardItem*> row;
+  for (int i = 0; i < pjtree[pid].mtree.size(); i++) {
+    QList<QStandardItem *> row;
     row.append(new QStandardItem(pjtree[pid].mtree[i].name));
     tab2->appendRow(row);
   }
   EnableDisableButtons();
 }
 
-void DialogPlots::actionPlot()
-{
-  if(dtype == TwoColumns){
-    if(pid > -1 && mid > -1){
+void DialogPlots::actionPlot() {
+  if (dtype == TwoColumns) {
+    if (pid > -1 && mid > -1) {
       return accept();
-    }
-    else{
+    } else {
       return reject();
     }
-  }
-  else{
-    if(pid > -1 && mid > -1 && predid > -1){
+  } else {
+    if (pid > -1 && mid > -1 && predid > -1) {
       return accept();
-    }
-    else{
+    } else {
       return reject();
     }
   }
 }
 
-void DialogPlots::hideOptions(bool opt)
-{
-  if(opt == true){
+void DialogPlots::hideOptions(bool opt) {
+  if (opt == true) {
     ui.OptionGroupBox->hide();
-  }
-  else{
+  } else {
     ui.OptionGroupBox->show();
   }
 }
 
-DialogPlots::DialogPlots(ProjectTree pjtree_, int dtype_)
-{
+DialogPlots::DialogPlots(ProjectTree pjtree_, int dtype_) {
   int i;
   ui.setupUi(this);
   ui.listView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -135,16 +115,15 @@ DialogPlots::DialogPlots(ProjectTree pjtree_, int dtype_)
   tab2 = new QStandardItemModel();
   ui.listView_2->setModel(tab2);
 
-  if(dtype == ThreeColumns){
+  if (dtype == ThreeColumns) {
     tab3 = new QStandardItemModel();
     ui.listView_3->setModel(tab3);
-  }
-  else{
+  } else {
     ui.predictionGroupBox->hide();
   }
 
-  for(i = 0; i < pjtree.size(); i++){
-    QList<QStandardItem*> row;
+  for (i = 0; i < pjtree.size(); i++) {
+    QList<QStandardItem *> row;
     row.append(new QStandardItem(pjtree[i].name));
     tab1->appendRow(row);
   }
@@ -155,20 +134,19 @@ DialogPlots::DialogPlots(ProjectTree pjtree_, int dtype_)
           SIGNAL(currentChanged(QModelIndex, QModelIndex)),
           SLOT(setProject(QModelIndex, QModelIndex)));
   connect(ui.listView_2->selectionModel(),
-          SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+          SIGNAL(currentChanged(QModelIndex, QModelIndex)),
           SLOT(setModel(QModelIndex, QModelIndex)));
-  if(dtype == ThreeColumns){
+  if (dtype == ThreeColumns) {
     connect(ui.listView_3->selectionModel(),
-            SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+            SIGNAL(currentChanged(QModelIndex, QModelIndex)),
             SLOT(setPrediction(QModelIndex, QModelIndex)));
   }
   EnableDisableButtons();
 }
 
-DialogPlots::~DialogPlots()
-{
+DialogPlots::~DialogPlots() {
   delete tab1;
   delete tab2;
-  if(dtype == ThreeColumns)
+  if (dtype == ThreeColumns)
     delete tab3;
 }

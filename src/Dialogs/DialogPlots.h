@@ -1,21 +1,17 @@
 #ifndef DIALOGPLOTS_H
 #define DIALOGPLOTS_H
 
+#include "qsmdata.h"
+#include "ui_DialogPlots.h"
 #include <QDialog>
 #include <QModelIndex>
 #include <QStandardItemModel>
-#include "qsmdata.h"
-#include "ui_DialogPlots.h"
 
-class DialogPlots : public QDialog
-{
+class DialogPlots : public QDialog {
   Q_OBJECT
 
 public:
-  enum{
-    TwoColumns = 0,
-    ThreeColumns
-  };
+  enum { TwoColumns = 0, ThreeColumns };
 
   DialogPlots(ProjectTree pjtree_, int dtype_);
   ~DialogPlots();

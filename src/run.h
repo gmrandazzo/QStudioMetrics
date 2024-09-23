@@ -1,13 +1,12 @@
 #ifndef RUN_H
 #define RUN_H
 
-#include <QFuture>
 #include "qsmdata.h"
+#include <QFuture>
 
 #include "scientific.h"
 
-class RUN
-{
+class RUN {
 public:
   RUN();
   void AbortRun();
@@ -101,8 +100,8 @@ private:
   bool yscrambling;
   int n_yscrambling;
 
-  double threshold; //used for Spearman's Selection
-  //Used for MDC, MaxMinDis, Random Selection
+  double threshold; // used for Spearman's Selection
+  // Used for MDC, MaxMinDis, Random Selection
   int metric;
   int nobjects;
   int maxnobjects;

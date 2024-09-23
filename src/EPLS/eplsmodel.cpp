@@ -1,7 +1,7 @@
-#include <scientific.h>
 #include "eplsmodel.h"
 #include "DATAIO.h"
 #include "qsmdata.h"
+#include <scientific.h>
 
 #include <QString>
 #include <QTextStream>
@@ -10,9 +10,7 @@
 #include <QDebug>
 #endif
 
-
-EPLSPREDICTION::EPLSPREDICTION()
-{
+EPLSPREDICTION::EPLSPREDICTION() {
   initTensor(&pxscores);
   initMatrix(&py);
   initMatrix(&r2);
@@ -25,11 +23,10 @@ EPLSPREDICTION::EPLSPREDICTION()
   id = did = -1;
 }
 
-EPLSPREDICTION::~EPLSPREDICTION()
-{
-  #ifdef DEBUG
+EPLSPREDICTION::~EPLSPREDICTION() {
+#ifdef DEBUG
   qDebug() << "Delete EPLSPrediction: " << name;
-  #endif
+#endif
 
   DelTensor(&pxscores);
   DelMatrix(&py);
@@ -42,8 +39,7 @@ EPLSPREDICTION::~EPLSPREDICTION()
   DelMatrix(&precision_recall_ap);
 }
 
-EPLSModel::EPLSModel()
-{
+EPLSModel::EPLSModel() {
   NewEPLSModel(&m);
   initMatrix(&r2);
   initMatrix(&sdec);
@@ -67,11 +63,10 @@ EPLSModel::EPLSModel()
   validation = 0;
 }
 
-EPLSModel::~EPLSModel()
-{
-  #ifdef DEBUG
-  qDebug() << "Delete PLS Model: "<< name;
-  #endif
+EPLSModel::~EPLSModel() {
+#ifdef DEBUG
+  qDebug() << "Delete PLS Model: " << name;
+#endif
   DelMatrix(&r2);
   DelMatrix(&sdec);
   DelMatrix(&q2);

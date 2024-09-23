@@ -32,5 +32,3 @@ Binary distributions
 --------------------
 
 Binary distributions available at https://github.com/gmrandazzo/QStudioMetrics/releases
-
-

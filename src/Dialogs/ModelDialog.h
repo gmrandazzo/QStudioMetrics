@@ -2,34 +2,33 @@
 #define MODELDIALOG_H
 
 #include <QDialog>
-#include <QPushButton>
-#include <QString>
 #include <QDialogButtonBox>
+#include <QPushButton>
 #include <QStandardItemModel>
+#include <QString>
 
-#include "ui_ModelDialog.h"
 #include "qsmdata.h"
 #include "qstudiometricstypes.h"
+#include "ui_ModelDialog.h"
 
-class ModelDialog : public QDialog
-{
+class ModelDialog : public QDialog {
   Q_OBJECT
 
 public:
   ModelDialog(PROJECTS *projects, int type_);
   ~ModelDialog();
 
-  bool compute(){ return compute_; }
-  int getselectedProject(){ return selectedproject_; }
-  QString& getModelName(){ return modelname_; }
-  int getselectedData(){ return selecteddata_; }
-  int getselectedYData(){ return ydata; }
-  QStringList getObjectSelected(){ return objsel; }
-  QStringList getXVarSelected(){ return xvarsel; }
-  QStringList getYVarSelected(){ return yvarsel; }
-  int getXScalingType(){ return xscaling; }
-  int getYScalingType(){ return yscaling; }
-  int getNumberOfComponent(){ return n_pc; }
+  bool compute() { return compute_; }
+  int getselectedProject() { return selectedproject_; }
+  QString &getModelName() { return modelname_; }
+  int getselectedData() { return selecteddata_; }
+  int getselectedYData() { return ydata; }
+  QStringList getObjectSelected() { return objsel; }
+  QStringList getXVarSelected() { return xvarsel; }
+  QStringList getYVarSelected() { return yvarsel; }
+  int getXScalingType() { return xscaling; }
+  int getYScalingType() { return yscaling; }
+  int getNumberOfComponent() { return n_pc; }
 
 private slots:
   void next();
@@ -54,6 +53,7 @@ private slots:
   void YVarInvertSelection();
   void YVarUnselectAll();
   void YVarSelectBy();
+
 private:
   Ui::ModelDialog ui;
   int state;
@@ -65,7 +65,7 @@ private:
   QString modelname_;
   int selectedproject_;
   int selecteddata_, ydata; // ydata for UPLS
-  int type; // 0 PLS
+  int type;                 // 0 PLS
   bool compute_;
   int xscaling, yscaling;
   uint n_pc; // Number of Principal Component

@@ -9,33 +9,29 @@
 #include <QDebug>
 #endif
 
-CPCAPREDICTION::CPCAPREDICTION()
-{
+CPCAPREDICTION::CPCAPREDICTION() {
   initMatrix(&p_super_scores);
   initTensor(&p_block_scores);
   id = did = -1;
 }
 
-CPCAPREDICTION::~CPCAPREDICTION()
-{
-  #ifdef DEBUG
+CPCAPREDICTION::~CPCAPREDICTION() {
+#ifdef DEBUG
   qDebug() << "Delete CPCAPREDICTION: " << name;
-  #endif
+#endif
   DelMatrix(&p_super_scores);
   DelTensor(&p_block_scores);
 }
 
-CPCAModel::~CPCAModel()
-{
-  #ifdef DEBUG
+CPCAModel::~CPCAModel() {
+#ifdef DEBUG
   qDebug() << "Delete CPCA Model: " << name;
-  #endif
+#endif
   delCPCAPredictions();
   DelCPCAModel(&m);
 }
 
-CPCAModel::CPCAModel()
-{
+CPCAModel::CPCAModel() {
   NewCPCAModel(&m);
   did = xscaling = npc = modelid = -1;
 }

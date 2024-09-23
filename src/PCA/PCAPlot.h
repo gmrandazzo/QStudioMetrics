@@ -4,19 +4,18 @@
 #include "../Plotlib/SimpleLine2DPlot.h"
 #include "qsmdata.h"
 
+#include "qstudiometricstypes.h"
 #include <QList>
 #include <QString>
 #include <QStringList>
-#include "qstudiometricstypes.h"
 
-class PCAPlot
-{
+class PCAPlot {
 public:
-  explicit PCAPlot(PROJECTS* projects_);
-  void setPID(int pid_){ pid = pid_; }
-  void setMID(int mid_){ mid = mid_; }
-  void setPREDID(int predid_){ predid = predid_; }
-  void setGroups(LABELS g_){ g = g_; }
+  explicit PCAPlot(PROJECTS *projects_);
+  void setPID(int pid_) { pid = pid_; }
+  void setMID(int mid_) { mid = mid_; }
+  void setPREDID(int predid_) { predid = predid_; }
+  void setGroups(LABELS g_) { g = g_; }
   /*ScatterPlot *ScorePlot2D();*/
   void ScorePlot2D(ScatterPlot **plot2D);
   void ScorePlotPrediction2D(ScatterPlot **plot2D);

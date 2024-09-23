@@ -1,24 +1,21 @@
 #include "ValidationClusterPlot.h"
 #include "run.h"
 
-#include <QLabel>
 #include <QFileDialog>
+#include <QLabel>
 
-
-#include <iostream>
 #include <cstdio>
 #include <ctime>
+#include <iostream>
 
-int ValidationClusterPlot::getNClusters()
-{
-  return ui.nclustersBox->value();
-}
+int ValidationClusterPlot::getNClusters() { return ui.nclustersBox->value(); }
 
-void ValidationClusterPlot::SavePlotImage()
-{
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Save Plot to Image"), "", tr("JPEG (*.jpg);;PNG (*.png);;All Files (*)"));
+void ValidationClusterPlot::SavePlotImage() {
+  QString fileName = QFileDialog::getSaveFileName(
+      this, tr("Save Plot to Image"), "",
+      tr("JPEG (*.jpg);;PNG (*.png);;All Files (*)"));
 
-  if(!fileName.isEmpty()){
+  if (!fileName.isEmpty()) {
     /*vtkWindowToImageFilter *filter = vtkWindowToImageFilter::New();
     filter->SetInput(ui.qvtkWidget->GetRenderWindow());
     if(fileName.split(".").last().compare("png", Qt::CaseInsensitive) == 0){
@@ -39,8 +36,8 @@ void ValidationClusterPlot::SavePlotImage()
   }
 }
 
-ValidationClusterPlot::ValidationClusterPlot(dvector* toplot, QString yaxestitle)
-{
+ValidationClusterPlot::ValidationClusterPlot(dvector *toplot,
+                                             QString yaxestitle) {
   ui.setupUi(this);
   chart = new Chart();
   plotLayout = new QVBoxLayout();
@@ -49,9 +46,9 @@ ValidationClusterPlot::ValidationClusterPlot(dvector* toplot, QString yaxestitle
   chart->setXaxisName("Number of clusters");
   chart->setYaxisName(yaxestitle);
 
-  QVector< QPointF > curve;
-  for(uint i = 0; i < toplot->size; i++){
-    curve << QPointF(i+1, toplot->data[i]);
+  QVector<QPointF> curve;
+  for (uint i = 0; i < toplot->size; i++) {
+    curve << QPointF(i + 1, toplot->data[i]);
   }
   chart->addCurve(curve, "Cluster", Qt::blue);
   chart->Refresh();
@@ -62,8 +59,7 @@ ValidationClusterPlot::ValidationClusterPlot(dvector* toplot, QString yaxestitle
   adjustSize();
 }
 
-ValidationClusterPlot::~ValidationClusterPlot()
-{
+ValidationClusterPlot::~ValidationClusterPlot() {
   delete chart;
   delete plotLayout;
 }

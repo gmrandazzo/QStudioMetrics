@@ -1,32 +1,33 @@
 #ifndef SELECTIONSTYLECOLOR_H
 #define SELECTIONSTYLECOLOR_H
 
-#include <scientific.h>
-#include <QDialog>
 #include <QColor>
+#include <QDialog>
+#include <scientific.h>
 
-#include "ui_SelectionStyleColor.h"
 #include "qsmdata.h"
+#include "ui_SelectionStyleColor.h"
 
-
-class SelectionStyleColor: public QDialog
-{
+class SelectionStyleColor : public QDialog {
   Q_OBJECT
-  
+
 public:
   SelectionStyleColor();
   SelectionStyleColor(QStringList &xvarname_, QStringList &yvarname_);
-  SelectionStyleColor(QStringList &xvarname_, QStringList &yvarname_, int &xlevels_, int &ylevels_); // used for array multiway where could be more than one layer
-  
+  SelectionStyleColor(QStringList &xvarname_, QStringList &yvarname_,
+                      int &xlevels_,
+                      int &ylevels_); // used for array multiway where could be
+                                      // more than one layer
+
   int ChangeColorType();
-  
-  QColor& getSolidSymbolColor(){ return color1; }
-  int getVariableTypeSymbolColor(){ return varcolor; }
-  QColor& getMinSymbolColor(){ return color2; }
-  QColor& getMaxSymbolColor(){ return color3; }
-  int getVariableSymbolColor(){ return cvar; }
-  int getVariableLevelSymbolColor(){ return clevel; }
-  
+
+  QColor &getSolidSymbolColor() { return color1; }
+  int getVariableTypeSymbolColor() { return varcolor; }
+  QColor &getMinSymbolColor() { return color2; }
+  QColor &getMaxSymbolColor() { return color3; }
+  int getVariableSymbolColor() { return cvar; }
+  int getVariableLevelSymbolColor() { return clevel; }
+
 public slots:
   void Cancel();
   void OK();
@@ -47,4 +48,3 @@ private:
 };
 
 #endif
-

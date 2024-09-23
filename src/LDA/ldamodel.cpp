@@ -6,12 +6,11 @@
 #include <QDebug>
 #endif
 
-#include <QTextStream>
 #include <QFile>
 #include <QString>
+#include <QTextStream>
 
-LDAPREDICTION::LDAPREDICTION()
-{
+LDAPREDICTION::LDAPREDICTION() {
   initMatrix(&pclass);
   initMatrix(&pfeatures);
   initMatrix(&probpred);
@@ -19,27 +18,26 @@ LDAPREDICTION::LDAPREDICTION()
   id = did = -1;
 }
 
-LDAPREDICTION::~LDAPREDICTION(){
-  #ifdef DEBUG
+LDAPREDICTION::~LDAPREDICTION() {
+#ifdef DEBUG
   qDebug() << "Delete LDAPREDICTION: " << name;
-  #endif
+#endif
   DelMatrix(&pclass);
   DelMatrix(&pfeatures);
   DelMatrix(&probpred);
   DelMatrix(&mnpdf);
 }
 
-LDAModel::LDAModel(){
+LDAModel::LDAModel() {
   NewLDAModel(&m);
   did = modelid = -1;
   validation = 0;
 }
 
-LDAModel::~LDAModel()
-{
-  #ifdef DEBUG
+LDAModel::~LDAModel() {
+#ifdef DEBUG
   qDebug() << "Delete LDA Model: " << name;
-  #endif
+#endif
   delLDAPredictions();
   DelLDAModel(&m);
 }

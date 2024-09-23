@@ -1,20 +1,20 @@
 #ifndef PLOTSETTINGSDIALOG_H
 #define PLOTSETTINGSDIALOG_H
 
+#include "qsmdata.h"
 #include <QDialog>
 #include <QStandardItemModel>
-#include <QStringList>
 #include <QString>
-#include "qsmdata.h"
+#include <QStringList>
 
 #include "ui_PlotSettingsDialog.h"
 
-class PlotSettingsDialog: public QDialog
-{
+class PlotSettingsDialog : public QDialog {
   Q_OBJECT
 
 public:
-  PlotSettingsDialog(double xmin, double xmax, int xtick, double ymin, double ymax, int ytick);
+  PlotSettingsDialog(double xmin, double xmax, int xtick, double ymin,
+                     double ymax, int ytick);
   int getPlotTitleSize();
   int getAxisValueSize();
   int getXlabelSize();

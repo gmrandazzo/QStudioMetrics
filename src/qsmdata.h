@@ -1,35 +1,35 @@
 #ifndef QSMDATA_H
 #define QSMDATA_H
 
+#include <QCryptographicHash>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QDir>
 #include <QList>
 #include <QPixmap>
+#include <QSqlQuery>
 #include <QString>
 #include <QStringList>
-#include <QSqlQuery>
-#include <cmath>
-#include <QCryptographicHash>
 #include <QTreeWidget>
+#include <cmath>
 
 #ifdef DEBUG
 #include <QDebug>
 #endif
 
-#include "qstudiometricstypes.h"
-#include "qstudiometricsdataoperations.h"
-#include "DATAIO.h"
-#include "PCA/pcamodel.h"
 #include "CPCA/cpcamodel.h"
-#include "PLS/plsmodel.h"
+#include "DATAIO.h"
 #include "EPLS/eplsmodel.h"
-#include "MLR/mlrmodel.h"
 #include "LDA/ldamodel.h"
+#include "MLR/mlrmodel.h"
+#include "PCA/pcamodel.h"
+#include "PLS/plsmodel.h"
+#include "qstudiometricsdataoperations.h"
+#include "qstudiometricstypes.h"
 
 #include <scientific.h>
 
-struct FILEDATA{
+struct FILEDATA {
   QString filename; // filepath
   QString separator;
   QString skiplineby;
@@ -39,36 +39,34 @@ struct FILEDATA{
   uint datatype; // 1 is matrix, 2 is tensor
 };
 
-struct QPairComparerAscending
-{
-  template<typename T1, typename T2>
-  bool operator()(const QPair<T1,T2> & a, const QPair<T1,T2> & b) const{
+struct QPairComparerAscending {
+  template <typename T1, typename T2>
+  bool operator()(const QPair<T1, T2> &a, const QPair<T1, T2> &b) const {
     return a.first < b.first;
   }
 };
 
-struct QPairComparerDescending
-{
-  template<typename T1, typename T2>
-  bool operator()(const QPair<T1,T2> & a, const QPair<T1,T2> & b) const{
+struct QPairComparerDescending {
+  template <typename T1, typename T2>
+  bool operator()(const QPair<T1, T2> &a, const QPair<T1, T2> &b) const {
     return a.first > b.first;
   }
 };
 
-class DVECTOR
-{
+class DVECTOR {
 public:
-  explicit DVECTOR(){ initDVector(&v); }
-  explicit DVECTOR(uint n){ NewDVector(&v, n); }
-  ~DVECTOR(){
-    #ifdef DEBUG
+  explicit DVECTOR() { initDVector(&v); }
+  explicit DVECTOR(uint n) { NewDVector(&v, n); }
+  ~DVECTOR() {
+#ifdef DEBUG
     qDebug() << "Delete DVector";
-    #endif
-    DelDVector(&v); }
+#endif
+    DelDVector(&v);
+  }
 
-  void SortByName(){
-    QList<QPair<QString, uint> > array_;
-    for (uint i = 0; i < v->size; i++){
+  void SortByName() {
+    QList<QPair<QString, uint>> array_;
+    for (uint i = 0; i < v->size; i++) {
       array_.append(qMakePair(objname[i], i));
     }
     // Ordering ascending
@@ -78,18 +76,24 @@ public:
     initDVector(&tmp);
     objname.clear();
     DVectorCopy(v, tmp);
-    for(int i = 0; i < array_.size(); i++){
+    for (int i = 0; i < array_.size(); i++) {
       setDVectorValue(v, i, getDVectorValue(tmp, array_[i].second));
       objname.append(array_[i].first);
     }
     DelDVector(&tmp);
   }
 
-  dvector* &DVector(){ return v; }
-  void setName(QString name_){ name = name_; }
-  QString getName(){ return name.toUtf8(); }
-  QStringList& getObjName(){ return objname; }
-  QString& getHash(){ if(hash.size() == 0){ hash = GenHashFromStrlst((QStringList() << name << "vector_type")+objname); } return hash; }
+  dvector *&DVector() { return v; }
+  void setName(QString name_) { name = name_; }
+  QString getName() { return name.toUtf8(); }
+  QStringList &getObjName() { return objname; }
+  QString &getHash() {
+    if (hash.size() == 0) {
+      hash =
+          GenHashFromStrlst((QStringList() << name << "vector_type") + objname);
+    }
+    return hash;
+  }
 
 private:
   dvector *v;
@@ -98,22 +102,21 @@ private:
   QString hash;
 };
 
-class MATRIX
-{
+class MATRIX {
 public:
-  MATRIX(){ initMatrix(&m); }
-  ~MATRIX(){
-    #ifdef DEBUG
+  MATRIX() { initMatrix(&m); }
+  ~MATRIX() {
+#ifdef DEBUG
     qDebug() << "Delete Matrix";
-    #endif
+#endif
     varname.clear();
     objname.clear();
     DelMatrix(&m);
   }
 
-  void SortByName(){
-    QList<QPair<QString, uint> > array_;
-    for(uint i = 0; i < m->row; i++){
+  void SortByName() {
+    QList<QPair<QString, uint>> array_;
+    for (uint i = 0; i < m->row; i++) {
       array_.append(qMakePair(objname[i], i));
     }
     // Ordering ascending
@@ -123,8 +126,8 @@ public:
     initMatrix(&tmp);
     objname.clear();
     MatrixCopy(m, &tmp);
-    for(int i = 0; i < array_.size(); i++){
-      for(uint j = 0; j < tmp->col; j++){
+    for (int i = 0; i < array_.size(); i++) {
+      for (uint j = 0; j < tmp->col; j++) {
         setMatrixValue(m, i, j, getMatrixValue(tmp, array_[i].second, j));
       }
       objname.append(array_[i].first);
@@ -132,13 +135,19 @@ public:
     DelMatrix(&tmp);
   }
 
-  void MatrixResize(size_t nrow, size_t ncol){ ResizeMatrix(m, nrow, ncol); }
-  matrix* &Matrix(){ return m; } //Access to the matrix
-  void setName(QString name_){ name = name_; }
-  QString getName(){ return name.toUtf8(); }
-  QStringList& getObjName(){ return objname; }
-  QStringList& getVarName(){ return varname; }
-  QString& getHash(){ if(hash.size() == 0){ hash = GenHashFromStrlst((QStringList() << name << "matrix_type")+objname+varname); } return hash; }
+  void MatrixResize(size_t nrow, size_t ncol) { ResizeMatrix(m, nrow, ncol); }
+  matrix *&Matrix() { return m; } // Access to the matrix
+  void setName(QString name_) { name = name_; }
+  QString getName() { return name.toUtf8(); }
+  QStringList &getObjName() { return objname; }
+  QStringList &getVarName() { return varname; }
+  QString &getHash() {
+    if (hash.size() == 0) {
+      hash = GenHashFromStrlst((QStringList() << name << "matrix_type") +
+                               objname + varname);
+    }
+    return hash;
+  }
 
 private:
   QStringList objname, varname;
@@ -147,23 +156,22 @@ private:
   QString hash;
 };
 
-class ARRAY
-{
+class ARRAY {
 public:
-  ARRAY(){ initTensor(&a); }
-  ~ARRAY(){
-    #ifdef DEBUG
-    qDebug()<< "Delete Array";
-    #endif
+  ARRAY() { initTensor(&a); }
+  ~ARRAY() {
+#ifdef DEBUG
+    qDebug() << "Delete Array";
+#endif
     varname.clear();
     objname.clear();
     DelTensor(&a);
   }
 
-  void SortByName(){
+  void SortByName() {
     tensor *atmp;
-    QList<QPair<QString, uint> > array_;
-    for(uint i = 0; i < a->m[0]->row; i++){
+    QList<QPair<QString, uint>> array_;
+    for (uint i = 0; i < a->m[0]->row; i++) {
       array_.append(qMakePair(objname[i], i));
     }
     // Ordering ascending
@@ -172,10 +180,11 @@ public:
     initTensor(&atmp);
     TensorCopy(a, &atmp);
     objname.clear();
-    for(int i = 0; i < array_.size(); i++){
-      for(uint k = 0; k < atmp->order; k++){
-        for(uint j = 0; j < atmp->m[k]->col; j++){
-          setTensorValue(a, k, i, j, getTensorValue(atmp, k, array_[i].second, j));
+    for (int i = 0; i < array_.size(); i++) {
+      for (uint k = 0; k < atmp->order; k++) {
+        for (uint j = 0; j < atmp->m[k]->col; j++) {
+          setTensorValue(a, k, i, j,
+                         getTensorValue(atmp, k, array_[i].second, j));
         }
       }
       objname.append(array_[i].first);
@@ -183,12 +192,18 @@ public:
     DelTensor(&atmp);
   }
 
-  tensor* &Array(){ return a; }
-  void setName(QString name_){ name = name_; }
-  QString getName(){ return name.toUtf8(); }
-  QStringList& getObjName(){ return objname; }
-  QStringList& getVarName(){ return varname; }
-  QString& getHash(){ if(hash.size() == 0){ hash = GenHashFromStrlst((QStringList() << name << "array_type")+objname+varname); } return hash; }
+  tensor *&Array() { return a; }
+  void setName(QString name_) { name = name_; }
+  QString getName() { return name.toUtf8(); }
+  QStringList &getObjName() { return objname; }
+  QStringList &getVarName() { return varname; }
+  QString &getHash() {
+    if (hash.size() == 0) {
+      hash = GenHashFromStrlst((QStringList() << name << "array_type") +
+                               objname + varname);
+    }
+    return hash;
+  }
 
 private:
   QStringList objname, varname;
@@ -197,19 +212,19 @@ private:
   QString hash;
 };
 
-class DATA
-{
+class DATA {
 public:
   DATA();
   ~DATA();
-  void setProjectPath(QString projectpath_){ projectpath = projectpath_; }
-  void setProjectName(QString projectname_){ projectname = projectname_; }
-  QString &getProjectName(){ return projectname; }
-  QString &getProjectPath(){ return projectpath; }
+  void setProjectPath(QString projectpath_) { projectpath = projectpath_; }
+  void setProjectName(QString projectname_) { projectname = projectname_; }
+  QString &getProjectName() { return projectname; }
+  QString &getProjectPath() { return projectpath; }
   void ImportFileMatrix(const FILEDATA &f);
   void ImportFileArray(const FILEDATA &f);
   bool isSQLDatabase(QString sqlfile);
-  void OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_, int *mid_, QStringList *log);
+  void OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
+                   int *mid_, QStringList *log);
   QString SaveSQLData(QString dbName);
   bool AutoSave(); // To work first SaveData.
   void addMatrix();
@@ -261,8 +276,8 @@ public:
   MATRIX *getMatrix(QString hash);
   ARRAY *getArray(int id);
   ARRAY *getArray(QString hash);
-  QList<MATRIX*> &getMATRIXList(){ return matrix_; }
-  QList<ARRAY*> &getARRAYList(){ return array_; }
+  QList<MATRIX *> &getMATRIXList() { return matrix_; }
+  QList<ARRAY *> &getARRAYList() { return array_; }
 
   // return the last model
   PCAModel *getLastPCAModel();
@@ -290,10 +305,12 @@ public:
   MLRModel *getMLRModel(int mid);
   LDAModel *getLDAModel(int mid);
 
-  LABELS &getObjectLabels(){ return objlabels; } // Get/Set new label that collect objects
-  LABELS &getVariableLabels(){ return varlabels; }
-  TABLABELS &getVariableTabLabels(){ return vartablabels; }
-  QList<IMAGE> &getImages(){ return images; }
+  LABELS &getObjectLabels() {
+    return objlabels;
+  } // Get/Set new label that collect objects
+  LABELS &getVariableLabels() { return varlabels; }
+  TABLABELS &getVariableTabLabels() { return vartablabels; }
+  QList<IMAGE> &getImages() { return images; }
 
   int MatrixCount();
   int ArrayCount();
@@ -307,29 +324,31 @@ public:
   static void WriteList(QStringList &lst, QString fname);
   static void GenNameLst(uint n, QString name, QStringList &namelst);
   static void ImportRows(QString fname, QStringList &rowlst);
-  static void ImportColumns(QString fname, QString separator, QStringList &collst);
-  static bool CopyFile(const QString& sourceFile, const QString& destinationDir);
+  static void ImportColumns(QString fname, QString separator,
+                            QStringList &collst);
+  static bool CopyFile(const QString &sourceFile,
+                       const QString &destinationDir);
+
 private:
   void saveMatrixToSQL(QSqlQuery *query, MATRIX *m);
   void saveArrayToSQL(QSqlQuery *query, ARRAY *a);
 
   QString projectpath;
   QString projectname;
-  QList<MATRIX*> matrix_;
-  QList<ARRAY*> array_;
-  QList<PCAModel*> pcamodel;
-  QList<CPCAModel*> cpcamodel;
-  QList<PLSModel*> plsmodel;
-  QList<EPLSModel*> eplsmodel;
-  QList<MLRModel*> mlrmodel;
-  QList<LDAModel*> ldamodel;
+  QList<MATRIX *> matrix_;
+  QList<ARRAY *> array_;
+  QList<PCAModel *> pcamodel;
+  QList<CPCAModel *> cpcamodel;
+  QList<PLSModel *> plsmodel;
+  QList<EPLSModel *> eplsmodel;
+  QList<MLRModel *> mlrmodel;
+  QList<LDAModel *> ldamodel;
   LABELS objlabels, varlabels;
   TABLABELS vartablabels;
   QList<IMAGE> images;
   int uniqueid;
 };
 
-
-typedef QMap<int, DATA*> PROJECTS; // ID and PROJECT
+typedef QMap<int, DATA *> PROJECTS; // ID and PROJECT
 
 #endif
