@@ -1,0 +1,80 @@
+name: Build, Analyze, and SonarQube Integration
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    - cron: "0 7 1 * *"
+
+jobs:
+  build_and_analyze:
+    name: Build, Analyze, and SonarQube Integration
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for better relevancy of analysis
+
+      # Step 1: Install required dependencies (CMake and others)
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install \
+            cmake \
+            unzip \
+            build-essential \
+            qt6-base-dev \
+            libqt6core5compat6-dev \
+            libqt6charts6-dev \
+            libglx-dev \
+            libgl1-mesa-dev \
+            libglvnd-dev \
+            git \
+            curl
+      
+      # Step 2: Configure CMake first
+      - name: Configure CMake
+        run: |
+          cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DCMAKE_BUILD_TYPE=Debug .
+      
+      # Step 3: Set up SonarQube Build Wrapper
+      - name: Download and install build wrapper
+        run: |
+          mkdir -p $HOME/.sonar
+          curl -sSLo $HOME/.sonar/build-wrapper-linux-x86.zip ${{ secrets.SONAR_HOST_URL }}/static/cpp/build-wrapper-linux-x86.zip
+          unzip -o $HOME/.sonar/build-wrapper-linux-x86.zip -d $HOME/.sonar/
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      # Step 4: Build with Build Wrapper
+      - name: Build with Build Wrapper
+        run: |
+          $HOME/.sonar/build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      # Step 5: Install SonarScanner
+      - name: Download and install the SonarScanner
+        env:
+          SONAR_SCANNER_VERSION: 5.0.1.3006
+        run: |
+          curl -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
+          unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
+          echo "$HOME/.sonar/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> $GITHUB_PATH
+  
+      # Step 8: Run SonarQube analysis
+      - name: SonarQube analysis
+        run: |
+          sonar-scanner --define sonar.cfamily.build-wrapper-output=bw-output
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
