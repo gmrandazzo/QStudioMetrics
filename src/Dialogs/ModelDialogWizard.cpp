@@ -384,20 +384,19 @@ void ModelDialogWizard::EnableDisableButtons() {
     this->button(QWizard::NextButton)->setEnabled(true);
     this->button(QWizard::FinishButton)->setEnabled(false);
     if (ui.listView_3->selectionModel()->selectedRows(0).size() > 0) {
-      // PCA_ CPCA_ PLS_ EPLS_ MLR_ PLS_DA_ EPLS_DA_ LDA_ MLR_
-      if (type == PCA_ || type == PLS_ || type == PLS_DA_ || type == EPLS_ ||
-          type == EPLS_DA_ || type == MLR_ || type == LDA_) {
+      // PCA_ CPCA_ PLS_ MLR_ PLS_DA_ LDA_ MLR_
+      if (type == PCA_ || type == PLS_ || type == PLS_DA_ || type == MLR_ || type == LDA_) {
         if (ui.listView_4->selectionModel()->selectedRows(0).size() > 0) {
           if (type == PCA_) {
             this->button(QWizard::FinishButton)->setEnabled(true);
           } else {
-            if (type == PLS_ || type == EPLS_ || type == MLR_) {
+            if (type == PLS_ || type == MLR_) {
               if (ui.listView_5->selectionModel()->selectedRows(0).size() > 0) {
                 this->button(QWizard::FinishButton)->setEnabled(true);
               } else {
                 this->button(QWizard::FinishButton)->setEnabled(false);
               }
-            } else if (type == LDA_ || type == PLS_DA_ || type == EPLS_DA_) {
+            } else if (type == LDA_ || type == PLS_DA_) {
               if (ui.listView_7->model()->rowCount() > 0) {
                 this->button(QWizard::FinishButton)->setEnabled(true);
               } else {
@@ -721,7 +720,7 @@ void ModelDialogWizard::OK() {
     // Plus we have a selection from class list from an external list.
     // We need to be sure that the objects in the final class list are part
     // of the object selected in the first panel!
-    if (type == LDA_ || type == PLS_DA_ || type == EPLS_DA_) {
+    if (type == LDA_ || type == PLS_DA_) {
       for (int i = 0; i < ui.listView_3->model()->rowCount(); i++) {
         if (ui.listView_3->selectionModel()->isSelected(
                 ui.listView_3->model()->index(i, 0)) == true) {
@@ -848,20 +847,7 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_,
     ui.XBlockGroupBox->hide();
     ui.ELearningMethodGroupBox->hide();
     ui.yScaling->hide();
-  } else if (type == EPLS_) {
-    ui.groupBox->setTitle("N. of Latent Variables");
-    setWindowTitle("Compute Ensemble PLS Regression");
-    ui.YclassGroupBox->hide();
-    ui.YvariableGroupBox->show();
-    ui.XBlockGroupBox->hide();
-  } else if (type == EPLS_DA_) {
-    ui.groupBox->setTitle("N. of Latent Variables");
-    setWindowTitle("Compute Ensemble PLS Discriminant Analysis");
-    ui.YclassGroupBox->show();
-    ui.YvariableGroupBox->hide();
-    ui.yScaling->hide();
-    ui.XBlockGroupBox->hide();
-  } else if (type == MLR_) {
+  }else if (type == MLR_) {
     setWindowTitle("Compute MLR");
     ui.groupBox->hide();
     ui.YclassGroupBox->hide();

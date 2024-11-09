@@ -127,7 +127,7 @@
      <x>0</x>
      <y>0</y>
      <width>916</width>
-     <height>24</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -169,11 +169,6 @@
     <addaction name="actionPLS_Discriminant_Analysis"/>
     <addaction name="actionPLS_Validator"/>
     <addaction name="actionPLS_Prediction"/>
-    <addaction name="separator"/>
-    <addaction name="actionEPLS_Regression"/>
-    <addaction name="actionEPLS_Discriminant_Analysis"/>
-    <addaction name="actionEPLS_Validator"/>
-    <addaction name="actionEPLS_Prediction"/>
     <addaction name="separator"/>
     <addaction name="actionMLR"/>
     <addaction name="actionMLR_Validator"/>

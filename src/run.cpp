@@ -203,118 +203,6 @@ void RUN::DoMLRValidation() {
 
 void RUN::DoMLR() { MLR(x, y, mlrmodel->Model(), &scientifisignal); }
 
-void RUN::DoEPLSPrediction() {
-
-  EPLSYPRedictorAllLV(x, eplsmod->Model(), crule,
-                      &eplsmod->getLastEPLSPrediction()->pxscores,
-                      &eplsmod->getLastEPLSPrediction()->py);
-
-  if (y != 0 && y->col > 0) { // calculate the R2 for the prediction
-    if (algtype == EPLS_)
-      EPLSRegressionStatistics(y, eplsmod->getLastEPLSPrediction()->py,
-                               eplsmod->getLastEPLSPrediction()->r2,
-                               eplsmod->getLastEPLSPrediction()->sdec,
-                               eplsmod->getLastEPLSPrediction()->bias);
-    else
-      EPLSDiscriminantAnalysisStatistics(
-          y, eplsmod->getLastEPLSPrediction()->py,
-          eplsmod->getLastEPLSPrediction()->roc,
-          eplsmod->getLastEPLSPrediction()->roc_auc,
-          eplsmod->getLastEPLSPrediction()->precision_recall,
-          eplsmod->getLastEPLSPrediction()->precision_recall_ap);
-  }
-}
-
-void RUN::DoEPLSValidation() {
-  DelMatrix(&eplsmod->q2);
-  DelMatrix(&eplsmod->sdep);
-  DelMatrix(&eplsmod->bias);
-  DelMatrix(&eplsmod->y_recalculated);
-  DelMatrix(&eplsmod->y_recalculated_residuals);
-  DelMatrix(&eplsmod->y_predicted);
-  DelMatrix(&eplsmod->y_predicted_residuals);
-  DelTensor(&eplsmod->roc_predicted);
-  DelMatrix(&eplsmod->roc_auc_predicted);
-  DelTensor(&eplsmod->precision_recall_predicted);
-  DelMatrix(&eplsmod->precision_recall_ap_predicted);
-
-  initMatrix(&eplsmod->q2);
-  initMatrix(&eplsmod->sdep);
-  initMatrix(&eplsmod->bias);
-  initMatrix(&eplsmod->y_recalculated);
-  initMatrix(&eplsmod->y_recalculated_residuals);
-  initMatrix(&eplsmod->y_predicted);
-  initMatrix(&eplsmod->y_predicted_residuals);
-  initTensor(&eplsmod->roc_predicted);
-  initMatrix(&eplsmod->roc_auc_predicted);
-  initTensor(&eplsmod->precision_recall_predicted);
-  initMatrix(&eplsmod->precision_recall_ap_predicted);
-
-  EPLSYPRedictorAllLV(x, eplsmod->Model(), crule, NULL,
-                      &eplsmod->y_recalculated);
-
-  if (algtype == EPLS_) {
-    EPLSRegressionStatistics(y, eplsmod->y_recalculated, eplsmod->r2,
-                             eplsmod->sdec, NULL);
-  } else {
-    EPLSDiscriminantAnalysisStatistics(
-        y, eplsmod->y_recalculated, eplsmod->roc_recalculated,
-        eplsmod->roc_auc_recalculated, eplsmod->precision_recall_recalculated,
-        eplsmod->precision_recall_ap_recalculated);
-  }
-
-  MODELINPUT minpt;
-  minpt.mx = x;
-  minpt.my = y;
-  minpt.nlv = eplsmod->getNPC();
-  minpt.xautoscaling = eplsmod->getXScaling();
-  minpt.yautoscaling = eplsmod->getYScaling();
-
-  if (vt == LOO_) { // Leave One Out
-    LeaveOneOut(&minpt, _EPLS_, eplsmod->y_predicted,
-                eplsmod->y_predicted_residuals, QThread::idealThreadCount(),
-                &scientifisignal, 2, eparm, crule);
-  } else if (vt == KFOLDCV_) {
-    KFoldCV(&minpt, uiv, _EPLS_, eplsmod->y_predicted,
-            eplsmod->y_predicted_residuals, QThread::idealThreadCount(),
-            &scientifisignal, 2, eparm, crule);
-  } else {
-    BootstrapRandomGroupsCV(&minpt, ngroup, niter, _EPLS_, eplsmod->y_predicted,
-                            eplsmod->y_predicted_residuals,
-                            QThread::idealThreadCount(), &scientifisignal, 2,
-                            eparm, crule);
-  }
-
-  if (algtype == EPLS_) {
-    EPLSRegressionStatistics(y, eplsmod->y_predicted, eplsmod->q2,
-                             eplsmod->sdep, eplsmod->bias);
-  } else
-    EPLSDiscriminantAnalysisStatistics(
-        y, eplsmod->y_predicted, eplsmod->roc_predicted,
-        eplsmod->roc_auc_predicted, eplsmod->precision_recall_predicted,
-        eplsmod->precision_recall_ap_predicted);
-
-  /*if(yscrambling == true){
-    DelMatrix(&plsmod->getYScrambling());
-    initMatrix(&plsmod->getYScrambling());
-    ValidationArg varg;
-    if(vt == LOO_){
-      varg.vtype = LOO;
-    }
-    else{
-      varg.vtype = BootstrapRGCV;
-      varg.rgcv_group = ngroup;
-      varg.rgcv_iterations = niter;
-    }
-    YScrambling(&minpt, _PLS_, varg, block, &plsmod->Model()->yscrambling,
-  QThread::idealThreadCount(), &scientifisignal);
-  }*/
-}
-
-void RUN::DoEPLS() {
-  EPLS(x, y, pc, xscaling, yscaling, eplsmod->Model(), eparm, &scientifisignal);
-}
-
 void RUN::DoPLSPrediction() {
 
   // we go from 1 because for 0 component no value can be calculated.
@@ -356,17 +244,7 @@ void RUN::DoPLSValidation() {
 
   /*PLSYPredictorAllLV(x, plsmod->Model(), NULL,
   &plsmod->Model()->recalculated_y);
-
-  if(algtype == EPLS_){
-    PLSRegressionStatistics(y, plsmod->Model()->recalculated_y,
-  &plsmod->Model()->r2y_recalculated, &plsmod->Model()->sdec, NULL);
-  }
-  else{
-    PLSDiscriminantAnalysisStatistics(y, plsmod->Model()->recalculated_y,
-  &eplsmod->roc_recalculated, &eplsmod->roc_auc_recalculated,
-  &eplsmod->precision_recall_recalculated,
-  &eplsmod->precision_recall_ap_recalculated);
-  }*/
+  */
 
   MODELINPUT minpt;
   minpt.mx = x;
@@ -492,22 +370,6 @@ QFuture<void> RUN::RunMLR() {
   return QtConcurrent::run([this] { RUN::DoMLR(); });
 }
 
-QFuture<void> RUN::RunEPLSPrediction(CombinationRule crule_) {
-  crule = crule_;
-  return QtConcurrent::run([this] { RUN::DoEPLSPrediction(); });
-}
-
-QFuture<void> RUN::RunEPLSValidation(int algtype_, CombinationRule crule_) {
-  algtype = algtype_;
-  crule = crule_;
-  return QtConcurrent::run([this] { RUN::DoEPLSValidation(); });
-}
-
-QFuture<void> RUN::RunEPLS(int algtype_) {
-  algtype = algtype_;
-  return QtConcurrent::run([this] { RUN::DoEPLS(); });
-}
-
 QFuture<void> RUN::RunPLSPrediction() {
   return QtConcurrent::run([this] { RUN::DoPLSPrediction(); });
 }
@@ -590,10 +452,8 @@ void RUN::setNumberOfIterations(int niter_) { niter = niter_; }
 
 void RUN::setNumberOfGroups(int ngroup_) { ngroup = ngroup_; }
 
-void RUN::setValidationType(int vt_) { vt = vt_; }
-void RUN::setElearningParm(ELearningParameters eparm_) { eparm = eparm_; }
-
 void RUN::setNumberPC(int pc_) { pc = pc_; }
+void RUN::setValidationType(int vt_) { vt = vt_; }
 
 void RUN::setYScalingType(int yscaling_) { yscaling = yscaling_; }
 void RUN::setXScalingType(int xscaling_) { xscaling = xscaling_; }
@@ -601,8 +461,6 @@ void RUN::setXScalingType(int xscaling_) { xscaling = xscaling_; }
 void RUN::setLDAModel(LDAModel *ldamodel_) { ldamodel = ldamodel_; }
 
 void RUN::setMLRModel(MLRModel *mlrmodel_) { mlrmodel = mlrmodel_; }
-
-void RUN::setEPLSModel(EPLSModel *eplsmod_) { eplsmod = eplsmod_; }
 
 void RUN::setPLSModel(PLSModel *plsmod_) { plsmod = plsmod_; }
 
@@ -634,9 +492,8 @@ RUN::RUN() {
   scientifisignal = SIGSCIENTIFICRUN;
   xscaling = 0;
   yscaling = 0;
-  pc = -1;
-  vt = -1;
-  ngroup = -1;
+  pc = 5;
+  ngroup = 5;
   niter = -1;
   n_yscrambling = -1;
   metric = -1;
@@ -661,7 +518,6 @@ RUN::RUN() {
   pcamod = NULL;
   cpcamod = NULL;
   plsmod = NULL;
-  eplsmod = NULL;
   mlrmodel = NULL;
   ldamodel = NULL;
 }

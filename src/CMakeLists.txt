@@ -3,7 +3,6 @@ set(QSTUDIOMETRICS_SRC
     PCA/pcamodel.cpp
     CPCA/cpcamodel.cpp
     PLS/plsmodel.cpp
-    EPLS/eplsmodel.cpp
     MLR/mlrmodel.cpp
     LDA/ldamodel.cpp
     VariableSelectionModel.cpp
@@ -15,7 +14,6 @@ set(QSTUDIOMETRICS_SRC
     PCA/PCAPlot.cpp
     CPCA/CPCAPlot.cpp
     PLS/PLSPlot.cpp
-    EPLS/EPLSPlot.cpp
     MLR/MLRPlot.cpp
     LDA/LDAPlot.cpp
     Dialogs/ImportLabelListDialog.cpp
@@ -68,14 +66,12 @@ set(QSTUDIOMETRICS_H
     PCA/pcamodel.h
     CPCA/cpcamodel.h
     PLS/plsmodel.h
-    EPLS/eplsmodel.h
     VariableSelectionModel.h
     DATAIO.h
     Dialogs/DialogPlots.h
     Dialogs/ClassPlotDialog.h
     PCA/PCAPlot.h
     PLS/PLSPlot.h
-    EPLS/EPLSPlot.h
     MLR/MLRPlot.h
     LDA/LDAPlot.h
     Dialogs/ImportLabelListDialog.h

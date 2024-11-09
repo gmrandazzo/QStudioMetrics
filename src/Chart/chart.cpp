@@ -863,31 +863,31 @@ void Chart::drawGrid(QPainter *painter) {
   // font.setStyleStrategy(QFont::PreferAntialias);
   painter->setFont(font);
 
-  for (qreal ix = min; ix < max; ix += stepx) {
-    qreal dx = ix - settings.minX;
-    qreal x = rect.left() + (dx * (rect.width() - 1) / settings.spanX());
-    // printf("ix: %f x: %f  rect.left() %f rect.right() %f\n", ix, x,
-    // rect.left(), rect.right());
-    if (x > rect.left() && x < rect.right()) {
-      painter->setPen(gridpen);
-      painter->drawLine(x, rect.top(), x, rect.bottom());
-      painter->setPen(axespen);
-      painter->drawLine(x, rect.bottom(), x, rect.bottom() + 5);
-      if (FLOAT_EQ(ix, 0.f, 1e-5)) {
-        painter->drawText(x - 50, rect.bottom() + 10, 100, 15,
-                          Qt::AlignHCenter | Qt::AlignTop, QString::number(0));
-      } else {
-        painter->drawText(x - 50, rect.bottom() + 10, 100, 15,
-                          Qt::AlignHCenter | Qt::AlignTop,
-                          QString::number(ix, 'f', getDecimals(stepx)));
-        /*
-        painter->drawText(x - 2, rect.bottom()+20, QString::number(ix, 'g',
-        getDecimals(stepx)));
-        */
+  int xsteps = static_cast<int>((max - min) / stepx) + 1;
+  for (int i = 0; i < xsteps; ++i) {
+      double ix = min + i * stepx;
+      double dx = ix - settings.minX;
+      double x = rect.left() + (dx * (rect.width() - 1) / settings.spanX());
+      // printf("ix: %f x: %f  rect.left() %f rect.right() %f\n", ix, x,
+      // rect.left(), rect.right());
+      if (x > rect.left() && x < rect.right()) {
+          painter->setPen(gridpen);
+          painter->drawLine(x, rect.top(), x, rect.bottom());
+          painter->setPen(axespen);
+          painter->drawLine(x, rect.bottom(), x, rect.bottom() + 5);
+          if (std::abs(ix) < 1e-5) {
+              painter->drawText(x - 50, rect.bottom() + 10, 100, 15,
+                                Qt::AlignHCenter | Qt::AlignTop, QString::number(0));
+          } else {
+              painter->drawText(x - 50, rect.bottom() + 10, 100, 15,
+                                Qt::AlignHCenter | Qt::AlignTop,
+                                QString::number(ix, 'f', getDecimals(stepx)));
+              /*
+              painter->drawText(x - 2, rect.bottom()+20, QString::number(ix, 'g',
+              getDecimals(stepx)));
+              */
+          }
       }
-    } else {
-      continue;
-    }
   }
 
   // stepy = settings.spanY() / settings.numYTicks;
@@ -908,26 +908,26 @@ void Chart::drawGrid(QPainter *painter) {
     stepy = ceil(stepy);
   }
 
-  for (qreal iy = min; iy < max; iy += stepy) {
-    qreal dy = iy - settings.minY;
-    qreal y = rect.bottom() - (dy * (rect.height() - 1) / settings.spanY());
-    if (y > rect.top() && y < rect.bottom()) {
-      painter->setPen(gridpen);
-      painter->drawLine(rect.left(), y, rect.right(), y);
-      painter->setPen(axespen);
-      painter->drawLine(rect.left() - 5, y, rect.left(), y);
-      if (FLOAT_EQ(iy, 0.f, 1e-5)) {
-        painter->drawText(rect.left() - Margin - 5, y - 10, Margin - 5, 20,
-                          Qt::AlignRight | Qt::AlignVCenter,
-                          QString::number(0));
-      } else {
-        painter->drawText(rect.left() - Margin - 5, y - 10, Margin - 5, 20,
-                          Qt::AlignRight | Qt::AlignVCenter,
-                          QString::number(iy, 'f', getDecimals(stepy)));
+  int ysteps = static_cast<int>((max - min) / stepy) + 1;
+  for (int i = 0; i < ysteps; ++i) {
+      double iy = min + i * stepy;
+      double dy = iy - settings.minY;
+      double y = rect.bottom() - (dy * (rect.height() - 1) / settings.spanY());
+      if (y > rect.top() && y < rect.bottom()) {
+          painter->setPen(gridpen);
+          painter->drawLine(rect.left(), y, rect.right(), y);
+          painter->setPen(axespen);
+          painter->drawLine(rect.left() - 5, y, rect.left(), y);
+          if (std::abs(iy) < 1e-5) {
+              painter->drawText(rect.left() - Margin - 5, y - 10, Margin - 5, 20,
+                                Qt::AlignRight | Qt::AlignVCenter,
+                                QString::number(0));
+          } else {
+              painter->drawText(rect.left() - Margin - 5, y - 10, Margin - 5, 20,
+                                Qt::AlignRight | Qt::AlignVCenter,
+                                QString::number(iy, 'f', getDecimals(stepy)));
+          }
       }
-    } else {
-      continue;
-    }
   }
 
   // Draw origin axis in the margin limits

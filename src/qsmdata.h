@@ -19,7 +19,6 @@
 
 #include "CPCA/cpcamodel.h"
 #include "DATAIO.h"
-#include "EPLS/eplsmodel.h"
 #include "LDA/ldamodel.h"
 #include "MLR/mlrmodel.h"
 #include "PCA/pcamodel.h"
@@ -251,11 +250,6 @@ public:
   void delPLSModelAt(int id);
   void delPLSModels();
 
-  void addEPLSModel();
-  void delEPLSModel(int mid);
-  void delEPLSModelAt(int id);
-  void delEPLSModels();
-
   void addMLRModel();
   void delMLRModel(int mid);
   void delMLRModelAt(int id);
@@ -283,7 +277,6 @@ public:
   PCAModel *getLastPCAModel();
   CPCAModel *getLastCPCAModel();
   PLSModel *getLastPLSModel();
-  EPLSModel *getLastEPLSModel();
   MLRModel *getLastMLRModel();
   LDAModel *getLastLDAModel();
 
@@ -291,7 +284,6 @@ public:
   PCAModel *getPCAModelAt(int id);
   CPCAModel *getCPCAModelAt(int id);
   PLSModel *getPLSModelAt(int id);
-  EPLSModel *getEPLSModelAt(int id);
   MLRModel *getMLRModelAt(int id);
   LDAModel *getLDAModelAt(int id);
 
@@ -300,8 +292,6 @@ public:
   CPCAModel *getCPCAModel(int mid);
   PLSModel *getPLSModel(int mid);
   PLSModel *getPLSModel(QString hash);
-  EPLSModel *getEPLSModel(int mid);
-  EPLSModel *getEPLSModel(QString hash);
   MLRModel *getMLRModel(int mid);
   LDAModel *getLDAModel(int mid);
 
@@ -317,7 +307,6 @@ public:
   int PCACount();
   int CPCACount();
   int PLSCount();
-  int EPLSCount();
   int MLRCount();
   int LDACount();
 
@@ -340,7 +329,6 @@ private:
   QList<PCAModel *> pcamodel;
   QList<CPCAModel *> cpcamodel;
   QList<PLSModel *> plsmodel;
-  QList<EPLSModel *> eplsmodel;
   QList<MLRModel *> mlrmodel;
   QList<LDAModel *> ldamodel;
   LABELS objlabels, varlabels;

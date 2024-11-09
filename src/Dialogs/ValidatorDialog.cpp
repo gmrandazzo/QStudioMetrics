@@ -120,19 +120,7 @@ void ValidatorDialog::setProject(QModelIndex current) {
           tab2->appendRow(row);
         }
       }
-      if (type == EPLSValidation) {
-        for (int i = 0; i < projects_->value(selectedproject_)->EPLSCount();
-             i++) {
-          QList<QStandardItem *> row;
-          row.append(new QStandardItem(projects_->value(selectedproject_)
-                                           ->getEPLSModelAt(i)
-                                           ->getName()));
-          mids.append(projects_->value(selectedproject_)
-                          ->getEPLSModelAt(i)
-                          ->getModelID());
-          tab2->appendRow(row);
-        }
-      } else if (type == MLRValidation) {
+      else if (type == MLRValidation) {
         for (int i = 0; i < projects_->value(selectedproject_)->MLRCount();
              i++) {
           QList<QStandardItem *> row;
@@ -186,9 +174,6 @@ ValidatorDialog::ValidatorDialog(PROJECTS *projects, int type_) {
   if (type == PLSValidation) {
     setWindowTitle("Compute PLS Validation");
     ui.groupBox->hide();
-  } else if (type == EPLSValidation) {
-    setWindowTitle("Compute EPLS Validation");
-    ui.groupBox->show();
   } else if (type == MLRValidation) {
     setWindowTitle("Compute MLR Validation");
     ui.groupBox->hide();

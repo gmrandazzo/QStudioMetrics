@@ -2171,34 +2171,6 @@ void DATA::delPLSModels() {
   plsmodel.clear();
 }
 
-void DATA::addEPLSModel() { eplsmodel.append(new EPLSModel()); }
-
-void DATA::delEPLSModel(int mid) {
-  for (int i = 0; i < eplsmodel.size(); i++) {
-    if (mid == eplsmodel[i]->getModelID()) {
-      delete eplsmodel[i];
-      eplsmodel.removeAt(i);
-      break;
-    } else {
-      continue;
-    }
-  }
-}
-
-void DATA::delEPLSModelAt(int id) {
-  if (id < eplsmodel.size()) {
-    delete eplsmodel[id];
-    eplsmodel.removeAt(id);
-  }
-}
-
-void DATA::delEPLSModels() {
-  for (int i = 0; i < eplsmodel.size(); i++) {
-    delete eplsmodel[i];
-  }
-  eplsmodel.clear();
-}
-
 void DATA::addMLRModel() { mlrmodel.append(new MLRModel()); }
 
 void DATA::delMLRModel(int mid) {
@@ -2319,8 +2291,6 @@ CPCAModel *DATA::getLastCPCAModel() { return cpcamodel.last(); }
 
 PLSModel *DATA::getLastPLSModel() { return plsmodel.last(); }
 
-EPLSModel *DATA::getLastEPLSModel() { return eplsmodel.last(); }
-
 LDAModel *DATA::getLastLDAModel() { return ldamodel.last(); }
 
 MLRModel *DATA::getLastMLRModel() { return mlrmodel.last(); }
@@ -2338,11 +2308,6 @@ CPCAModel *DATA::getCPCAModelAt(int id) {
 PLSModel *DATA::getPLSModelAt(int id) {
   Q_ASSERT(id < plsmodel.size());
   return plsmodel[id];
-}
-
-EPLSModel *DATA::getEPLSModelAt(int id) {
-  Q_ASSERT(id < eplsmodel.size());
-  return eplsmodel[id];
 }
 
 LDAModel *DATA::getLDAModelAt(int id) {
@@ -2427,18 +2392,6 @@ MLRModel *DATA::getMLRModel(int mid) {
   return 0;
 }
 
-EPLSModel *DATA::getEPLSModel(int mid) {
-  for (int i = 0; i < eplsmodel.size(); i++) {
-    if (mid == eplsmodel[i]->getModelID()) {
-      return eplsmodel[i];
-      break;
-    } else {
-      continue;
-    }
-  }
-  return 0;
-}
-
 int DATA::MatrixCount() { return matrix_.size(); }
 
 int DATA::ArrayCount() { return array_.size(); }
@@ -2448,8 +2401,6 @@ int DATA::PCACount() { return pcamodel.size(); }
 int DATA::CPCACount() { return cpcamodel.size(); }
 
 int DATA::PLSCount() { return plsmodel.size(); }
-
-int DATA::EPLSCount() { return eplsmodel.size(); }
 
 int DATA::LDACount() { return ldamodel.size(); }
 
@@ -2465,6 +2416,5 @@ DATA::~DATA() {
   delArray();
   delPCAModels();
   delPLSModels();
-  delEPLSModels();
   delMLRModels();
 }
