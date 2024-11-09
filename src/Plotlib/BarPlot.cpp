@@ -44,6 +44,8 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle,
                  QWidget *parent)
     : QWidget(parent) {
   ui.setupUi(this);
+  ui.bar_list_name->hide();
+  ui.bar_list_id->hide();
   setWindowTitle(windowtitle);
   chart = new ChartQt(this);
   chart->setXaxisName("");
@@ -72,6 +74,8 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle,
     : QWidget(parent) {
   qDebug() << "Call this";
   ui.setupUi(this);
+  ui.bar_list_name->hide();
+  ui.bar_list_id->hide();
   setWindowTitle(windowtitle);
   chart = new ChartQt(this);
   chart->setXaxisName(xaxestitle);
@@ -101,6 +105,8 @@ BarPlot::BarPlot(QList<dvector *> vlst_, QString windowtitle,
     : QWidget(parent) {
   ui.setupUi(this);
 
+  ui.bar_list_name->hide();
+  ui.bar_list_id->hide();
   setWindowTitle(windowtitle);
   chart = new ChartQt(this);
   chart->setXaxisName(xaxestitle);
@@ -156,4 +162,57 @@ BarPlot::BarPlot(QList<dvector *> vlst_, QString windowtitle,
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
 }
 
-BarPlot::~BarPlot() { delete chart; }
+
+void BarPlot::BarPlotUpdate()
+{
+  if (chart) {
+    QWidget *chartWidget = chart;
+    QLayout *layout = ui.widget->layout();
+    if (layout) {
+        layout->removeWidget(chartWidget);
+    }
+    delete chart;
+    chart = nullptr;
+  }
+
+  int obj_indx = ui.bar_list_id->value();
+  setWindowTitle(windowtitles[obj_indx]);
+  chart = new ChartQt(this);
+  chart->setXaxisName(xaxestitle);
+  chart->setYaxisName(yaxestitle);
+  chart->setPlotTitle(windowtitles[obj_indx]);
+  QStringList bnames;
+  QVector<qreal> y;
+  double min, max;
+  DVectorMinMax(bars[0], &min, &max);
+  genBars(bars[0], 10.f, min, max, &y, &bnames);
+  chart->addBars(bnames, y, bnames, Qt::black);
+  QVBoxLayout *plotLayout = new QVBoxLayout();
+  plotLayout->addWidget(chart);
+  ui.widget->setLayout(plotLayout);
+  // Finally render the scene
+  chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
+  chart->Plot();
+}
+
+BarPlot::BarPlot(QList<dvector *> vlst_, QStringList windowtitles_,
+                 QString xaxestitle_, QString yaxestitle_, QStringList labelname,
+                 QWidget *parent)
+    : QWidget(parent) {
+  ui.setupUi(this);
+  bars = vlst_;
+  windowtitles = windowtitles_;
+  xaxestitle = xaxestitle_;
+  yaxestitle = yaxestitle_;
+  BarPlotUpdate();
+  connect(ui.bar_list_id, SIGNAL(valueChanged(int)), SLOT(BarPlotUpdate()));
+  connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
+}
+
+BarPlot::~BarPlot()
+{
+  if (chart) {
+    delete chart;
+    chart = nullptr;
+  }
+}

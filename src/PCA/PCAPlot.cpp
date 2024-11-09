@@ -74,6 +74,76 @@ void PCAPlot::LoadingsPlot2D(ScatterPlot **plot2D) {
   (*plot2D)->setModelType(PCA_);
 }
 
+void PCAPlot::TContributionPlot(BarPlot **bar_plots) {
+  QString projectname = projects->value(pid)->getProjectName();
+  QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
+  QStringList objnames = projects->value(pid)->getPCAModel(mid)->getObjName();
+  QStringList varnames = projects->value(pid)->getPCAModel(mid)->getVarName();
+
+  int did = projects->value(pid)->getPCAModel(mid)->getDID();
+  if (nlv > projects->value(pid)->getPCAModel(mid)->getNPC()) {
+    nlv = projects->value(pid)->getPLSModel(mid)->getNPC();
+  }  
+
+  /*
+   * Reconstruct the original matrix using nlv latent variables
+   */
+  matrix *reconstructed_mx;
+  initMatrix(&reconstructed_mx);
+  PCAIndVarPredictor(
+    projects->value(pid)->getPCAModel(mid)->Model()->scores,
+    projects->value(pid)->getPCAModel(mid)->Model()->loadings,
+    projects->value(pid)->getPCAModel(mid)->Model()->colaverage,
+    projects->value(pid)->getPCAModel(mid)->Model()->colscaling,
+    nlv,
+    reconstructed_mx
+  );
+
+  matrix *orig_x = projects->value(pid)->getMatrix(did)->Matrix();
+
+  /*
+  * Calculate SPE (Squared Prediction Error) and SPE contributions in one pass
+  */
+  std::vector<double> spe;
+  QList<dvector *> spe_contributions;
+  for (size_t i = 0; i < orig_x->row; i++) {
+      double sum_squared_diff = 0.0;
+      spe_contributions.append(new dvector);
+      NewDVector(&spe_contributions.last(), orig_x->col);
+      for (size_t j = 0; j < orig_x->col; j++) {
+          double diff = orig_x->data[i][j] - reconstructed_mx->data[i][j];
+          double squared_diff = diff * diff;
+          sum_squared_diff += squared_diff;
+          spe_contributions.last()->data[j] = squared_diff;
+      }
+      spe.push_back(sum_squared_diff);
+  }
+
+  /*
+  * For each sample now plot the bar plot
+  */
+
+  QStringList windowtitles;
+  for (size_t i = 0; i < orig_x->row; i++){
+    windowtitles.append(QString("%1 - Sample %2 -  Total SPE - %3").arg(projectname).arg(objnames[i]).arg(QString::number(spe[i], 'f', 4)));
+  }
+
+  (*bar_plots) = new BarPlot(
+        spe_contributions,
+        windowtitles,
+        "Features",
+        "Contribution to SPE",
+        varnames);
+
+  for (dvector* contribution : spe_contributions) {
+    DelDVector(&contribution); 
+    delete contribution;
+  }
+  spe_contributions.clear();
+  spe.clear();
+  DelMatrix(&reconstructed_mx);
+}
+
 void PCAPlot::ExpVarPlot(SimpleLine2DPlot **plot2D) {
   QList<SimpleLine2DPlot *> plots;
   QString projectname = projects->value(pid)->getProjectName();

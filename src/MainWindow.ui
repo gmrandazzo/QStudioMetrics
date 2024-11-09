@@ -279,6 +279,7 @@
      </property>
      <addaction name="actionPCA2DScore_Plot"/>
      <addaction name="actionPCA2DLoadings_Plot"/>
+     <addaction name="actionPCA2DT_Contribution_Plot"/>
      <addaction name="actionPCA2DExpVarPlot"/>
      <addaction name="separator"/>
      <addaction name="actionPCA2DScore_Plot_Prediction"/>
@@ -1561,6 +1562,11 @@
   <action name="actionCPCA2DBlockScores_Plot_Prediction">
    <property name="text">
     <string>t/t/ Block Scores with Prediction</string>
+   </property>
+  </action>
+  <action name="actionPCA2DT_Contribution_Plot">
+   <property name="text">
+    <string>T² Contribution Plot</string>
    </property>
   </action>
  </widget>

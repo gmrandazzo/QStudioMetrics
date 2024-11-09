@@ -160,12 +160,14 @@ void RUN::DoMLRValidation() {
   initMatrix(&mlrmodel->Model()->predicted_y);
   initMatrix(&mlrmodel->Model()->r2q2scrambling);
 
-  MODELINPUT minpt;
-  minpt.mx = x;
-  minpt.my = y;
-  minpt.nlv = 0;
-  minpt.xautoscaling = 0;
-  minpt.yautoscaling = 0;
+
+  MODELINPUT minpt = {
+    .mx = x,
+    .my = y,
+    .nlv = 0,
+    .xautoscaling = 0,
+    .yautoscaling = 0
+  };
 
   if (vt == LOO_) { // Leave One Out
     LeaveOneOut(&minpt, _MLR_, mlrmodel->Model()->predicted_y,
@@ -187,14 +189,11 @@ void RUN::DoMLRValidation() {
                           mlrmodel->Model()->bias);
 
   if (yscrambling == true) {
+
     ValidationArg varg;
-    if (vt == LOO_) {
-      varg.vtype = LOO;
-    } else {
-      varg.vtype = BootstrapRGCV;
-      varg.rgcv_group = ngroup;
-      varg.rgcv_iterations = niter;
-    }
+    varg.vtype = (vt == LOO_) ? LOO : BootstrapRGCV;
+    varg.rgcv_group = (vt == LOO_) ? 0 : ngroup;
+    varg.rgcv_iterations = (vt == LOO_) ? 0 : niter;
     YScrambling(&minpt, _MLR_, varg, n_yscrambling,
                 mlrmodel->Model()->r2q2scrambling, QThread::idealThreadCount(),
                 &scientifisignal);
@@ -246,12 +245,13 @@ void RUN::DoPLSValidation() {
   &plsmod->Model()->recalculated_y);
   */
 
-  MODELINPUT minpt;
-  minpt.mx = x;
-  minpt.my = y;
-  minpt.nlv = plsmod->getNPC();
-  minpt.xautoscaling = plsmod->getXScaling();
-  minpt.yautoscaling = plsmod->getYScaling();
+  MODELINPUT minpt = {
+    .mx = x,
+    .my = y,
+    .nlv = static_cast<size_t>(plsmod->getNPC()),
+    .xautoscaling = static_cast<size_t>(plsmod->getXScaling()),
+    .yautoscaling = static_cast<size_t>(plsmod->getYScaling())
+  };
 
   if (vt == LOO_) { // Leave One Out
     LeaveOneOut(&minpt, _PLS_, plsmod->Model()->predicted_y,
@@ -267,33 +267,29 @@ void RUN::DoPLSValidation() {
                             plsmod->Model()->pred_residuals,
                             QThread::idealThreadCount(), &scientifisignal, 0);
   }
-
+  
   if (algtype == PLS_) {
     PLSRegressionStatistics(y, plsmod->Model()->predicted_y,
-                            plsmod->Model()->q2y, plsmod->Model()->sdep,
-                            plsmod->Model()->bias);
+                              plsmod->Model()->q2y, plsmod->Model()->sdep,
+                              plsmod->Model()->bias);
   } else {
     PLSDiscriminantAnalysisStatistics(
-        y, plsmod->Model()->predicted_y, plsmod->Model()->roc_validation,
-        plsmod->Model()->roc_auc_validation,
-        plsmod->Model()->precision_recall_validation,
-        plsmod->Model()->precision_recall_ap_validation);
+      y, plsmod->Model()->predicted_y, plsmod->Model()->roc_validation,
+      plsmod->Model()->roc_auc_validation,
+      plsmod->Model()->precision_recall_validation,
+      plsmod->Model()->precision_recall_ap_validation);
   }
 
   if (yscrambling == true) {
     DelMatrix(&plsmod->Model()->yscrambling);
     initMatrix(&plsmod->Model()->yscrambling);
+
     ValidationArg varg;
-    if (vt == LOO_) {
-      varg.vtype = LOO;
-    } else {
-      varg.vtype = BootstrapRGCV;
-      varg.rgcv_group = ngroup;
-      varg.rgcv_iterations = niter;
-    }
-    YScrambling(&minpt, _PLS_, varg, n_yscrambling,
-                plsmod->Model()->yscrambling, QThread::idealThreadCount(),
-                &scientifisignal);
+    varg.vtype = (vt == LOO_) ? LOO : BootstrapRGCV;
+    varg.rgcv_group = (vt == LOO_) ? 0 : ngroup;
+    varg.rgcv_iterations = (vt == LOO_) ? 0 : niter;
+    YScrambling(&minpt, _PLS_, varg, n_yscrambling, plsmod->Model()->yscrambling,
+                    QThread::idealThreadCount(), &scientifisignal);
   }
 }
 

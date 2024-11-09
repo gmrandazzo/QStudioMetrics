@@ -2,6 +2,7 @@
 #define PCAPLOT_H
 #include "../Plotlib/ScatterPlot.h"
 #include "../Plotlib/SimpleLine2DPlot.h"
+#include "../Plotlib/BarPlot.h"
 #include "qsmdata.h"
 
 #include "qstudiometricstypes.h"
@@ -15,6 +16,7 @@ public:
   void setPID(int pid_) { pid = pid_; }
   void setMID(int mid_) { mid = mid_; }
   void setPREDID(int predid_) { predid = predid_; }
+  void setNLatentVariables(int nlv_) { nlv = nlv_; }
   void setGroups(LABELS g_) { g = g_; }
   /*ScatterPlot *ScorePlot2D();*/
   void ScorePlot2D(ScatterPlot **plot2D);
@@ -22,13 +24,14 @@ public:
   void ExpVarPlot(SimpleLine2DPlot **plot2D);
   void LoadingsMVANormDistrib(ScatterPlot **plot2D);
   void LoadingsPlot2D(ScatterPlot **plot2D);
+  void TContributionPlot(BarPlot **);
   void ScorePlot3D(ScatterPlot **plot3D);
   void ScorePlotPrediction3D(ScatterPlot **plot3D);
   void LoadingsPlot3D(ScatterPlot **plot3D);
 
 private:
   PROJECTS *projects;
-  int pid, mid, predid;
+  int pid, mid, predid, nlv;
   LABELS g;
 };
 #endif
