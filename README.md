@@ -1,6 +1,6 @@
 # QStudioMetrics
 
-![Page views](https://visitor-badge.glitch.me/badge?page_id=gmrandazzo.QStudioMetrics)
+![Page views](https://visitor-badge.glitch.me/badge?page_id=gmrandazzo.QStudioMetrics&left_color=green&right_color=red)
 ![GitHub all releases](https://img.shields.io/github/downloads/gmrandazzo/QStudioMetrics/total)
 [![CodeQL](https://github.com/gmrandazzo/QStudioMetrics/actions/workflows/codeql.yml/badge.svg)](https://github.com/gmrandazzo/QStudioMetrics/actions/workflows/codeql.yml)
 
