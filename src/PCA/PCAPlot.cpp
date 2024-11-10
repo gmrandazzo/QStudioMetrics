@@ -11,7 +11,7 @@ void PCAPlot::ScorePlot2D(ScatterPlot **plot2D) {
   objnamelst.append(projects->value(pid)->getPCAModel(mid)->getObjName());
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
-  std::unique_ptr<ScatterPlot> temp_plot = std::make_unique<ScatterPlot>(
+  auto temp_plot = std::make_unique<ScatterPlot>(
       mxlst, objnamelst, &projects->value(pid)->getMATRIXList(),
       xhash, yhash, &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC",
@@ -44,7 +44,7 @@ void PCAPlot::ScorePlotPrediction2D(ScatterPlot **plot2D) {
                    ->getPCAModel(mid)
                    ->getPCAPrediction(predid)
                    ->getDataHash());
-  std::unique_ptr<ScatterPlot> temp_plot = std::make_unique<ScatterPlot>(
+  auto temp_plot = std::make_unique<ScatterPlot>(
       mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC",
@@ -68,7 +68,7 @@ void PCAPlot::LoadingsPlot2D(ScatterPlot **plot2D) {
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
 
-  std::unique_ptr<ScatterPlot> temp_plot = std::make_unique<ScatterPlot>(
+  auto temp_plot = std::make_unique<ScatterPlot>(
       mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC",
@@ -130,7 +130,7 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
     windowtitles.append(QString("%1 - Sample %2 -  Total SPE = %3").arg(projectname).arg(objnames[i]).arg(QString::number(spe[i], 'f', 4)));
   }
 
-  std::unique_ptr<BarPlot> temp_plot = std::make_unique<BarPlot>(
+  auto temp_plot = std::make_unique<BarPlot>(
         spe_contributions,
         windowtitles,
         "Features",
@@ -147,7 +147,6 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
 }
 
 void PCAPlot::ExpVarPlot(SimpleLine2DPlot **plot2D) {
-  QList<SimpleLine2DPlot *> plots;
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
   uint npc = projects->value(pid)->getPCAModel(mid)->getNPC();
@@ -182,7 +181,7 @@ void PCAPlot::ExpVarPlot(SimpleLine2DPlot **plot2D) {
   qDebug() << "Final Matrix";
   PrintMatrix(m);
 #endif
-  std::unique_ptr<SimpleLine2DPlot> temp_plot = std::make_unique<SimpleLine2DPlot>(
+  auto temp_plot = std::make_unique<SimpleLine2DPlot>(
     m,
     curvenames,
     QString(" %1 - %2 - Explained Variance Plot").arg(projectname).arg(modelname),
@@ -307,7 +306,7 @@ void PCAPlot::LoadingsMVANormDistrib(ScatterPlot **plot2D) {
     QStringList xhash, yhash;
     xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
 
-    (*plot2D) = new ScatterPlot(
+    auto temp_plot = std::make_unique<ScatterPlot>(
         mx, my, objnamelst, &projects->value(pid)->getMATRIXList(), xhash,
         yhash, &projects->value(pid)->getVariableTabLabels(),
         &projects->value(pid)->getObjectLabels(),
@@ -315,8 +314,9 @@ void PCAPlot::LoadingsMVANormDistrib(ScatterPlot **plot2D) {
         projectname + modelname +
             " - PCA Loadings Multivariate Normal Distribution",
         ScatterPlot::LOADINGS);
-    (*plot2D)->setPID(pid);
+    temp_plot->setPID(pid);
     DelTensor(&classvar);
+    *plot2D = temp_plot.release();
   }
 }
 
@@ -329,13 +329,15 @@ void PCAPlot::ScorePlot3D(ScatterPlot **plot3D) {
   objname.append(projects->value(pid)->getPCAModel(mid)->getObjName());
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
-  (*plot3D) = new ScatterPlot(
+  auto temp_plot = std::make_unique<ScatterPlot>(
       mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC", "PC",
       QString("%1 - %2 - PCA Score Plot").arg(projectname).arg(modelname),
       ScatterPlot::SCORES);
-  (*plot3D)->setPID(pid);
+  temp_plot->setPID(pid);
+  *plot3D = temp_plot.release();
+
 }
 
 void PCAPlot::LoadingsPlot3D(ScatterPlot **plot3D) {
@@ -348,13 +350,14 @@ void PCAPlot::LoadingsPlot3D(ScatterPlot **plot3D) {
   objname.append(varname);
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
-  (*plot3D) = new ScatterPlot(
+  auto temp_plot = std::make_unique<ScatterPlot>(
       mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC", "PC",
       QString("%1 - %2 - PCA Loadings Plot").arg(projectname).arg(modelname),
       ScatterPlot::LOADINGS);
-  (*plot3D)->setPID(pid);
+  temp_plot->setPID(pid);
+  *plot3D = temp_plot.release();
 }
 
 void PCAPlot::ScorePlotPrediction3D(ScatterPlot **plot3D) {
@@ -378,7 +381,7 @@ void PCAPlot::ScorePlotPrediction3D(ScatterPlot **plot3D) {
                    ->getPCAModel(mid)
                    ->getPCAPrediction(predid)
                    ->getDataHash());
-  (*plot3D) = new ScatterPlot(
+  auto temp_plot = std::make_unique<ScatterPlot>(
       mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC", "PC",
@@ -386,7 +389,8 @@ void PCAPlot::ScorePlotPrediction3D(ScatterPlot **plot3D) {
           .arg(projectname)
           .arg(modelname),
       ScatterPlot::SCORES);
-  (*plot3D)->setPID(pid);
+   temp_plot->setPID(pid);
+  *plot3D = temp_plot.release();
 }
 
 PCAPlot::PCAPlot(PROJECTS *projects_) {

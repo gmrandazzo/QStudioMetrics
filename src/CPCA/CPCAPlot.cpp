@@ -11,7 +11,7 @@ void CPCAPlot::SuperScorePlot2D(ScatterPlot **plot2D) const {
   objnamelst.append(projects->value(pid)->getCPCAModel(mid)->getObjName());
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getCPCAModel(mid)->getDataHash());
-  std::unique_ptr<ScatterPlot> temp_plot = std::make_unique<ScatterPlot>(
+  auto temp_plot = std::make_unique<ScatterPlot>(
       mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC",
@@ -124,7 +124,8 @@ QList<ScatterPlot *> CPCAPlot::BlockScorePlotPrediction2D() {
                           ->getCPCAPrediction(predid)
                           ->getObjName());
 
-    QStringList xhash, yhash;
+    QStringList xhash;
+    QStringList yhash;
     xhash.append(projects->value(pid)->getCPCAModel(mid)->getDataHash());
     plots.append(new ScatterPlot(
         mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
@@ -157,7 +158,8 @@ QList<ScatterPlot *> CPCAPlot::BlockLoadingsPlot2D() {
         projects->value(pid)->getCPCAModel(mid)->Model()->block_loadings->m[i]);
     QList<QStringList> objnamelst;
     objnamelst.append(varname[i].objects);
-    QStringList xhash, yhash;
+    QStringList xhash;
+    QStringList yhash;
     xhash.append(projects->value(pid)->getCPCAModel(mid)->getDataHash());
 
     plots.append(new ScatterPlot(
