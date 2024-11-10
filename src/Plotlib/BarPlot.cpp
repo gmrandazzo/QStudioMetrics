@@ -5,6 +5,7 @@
 #include <QString>
 
 #include <unistd.h>
+#include <memory>
 
 #include "Chart/chartqt.h"
 
@@ -47,7 +48,8 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle,
   ui.bar_list_name->hide();
   ui.bar_list_id->hide();
   setWindowTitle(windowtitle);
-  chart = new ChartQt(this);
+  std::unique_ptr<ChartQt> chart_ = std::make_unique<ChartQt>(this);
+  chart = chart_.release();
   chart->setXaxisName("");
   chart->setYaxisName("");
   chart->setPlotTitle(windowtitle);
@@ -60,9 +62,9 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle,
 
   chart->addBars(varnames, y, varnames, Qt::black);
 
-  QVBoxLayout *plotLayout = new QVBoxLayout();
+  auto plotLayout = std::make_unique<QVBoxLayout>();
   plotLayout->addWidget(chart);
-  ui.widget->setLayout(plotLayout);
+  ui.widget->setLayout(plotLayout.release());
   // Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
   chart->Plot();
@@ -77,7 +79,8 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle,
   ui.bar_list_name->hide();
   ui.bar_list_id->hide();
   setWindowTitle(windowtitle);
-  chart = new ChartQt(this);
+  std::unique_ptr<ChartQt> chart_ = std::make_unique<ChartQt>(this);
+  chart = chart_.release();
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
   chart->setPlotTitle(windowtitle);
@@ -90,9 +93,9 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle,
 
   chart->addBars(bnames, y, bnames, Qt::black);
 
-  QVBoxLayout *plotLayout = new QVBoxLayout();
+  auto plotLayout = std::make_unique<QVBoxLayout>();
   plotLayout->addWidget(chart);
-  ui.widget->setLayout(plotLayout);
+  ui.widget->setLayout(plotLayout.release());
   // Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
   chart->Plot();
@@ -108,13 +111,14 @@ BarPlot::BarPlot(QList<dvector *> vlst_, QString windowtitle,
   ui.bar_list_name->hide();
   ui.bar_list_id->hide();
   setWindowTitle(windowtitle);
-  chart = new ChartQt(this);
+  std::unique_ptr<ChartQt> chart_ = std::make_unique<ChartQt>(this);
+  chart = chart_.release();
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
   chart->setPlotTitle(windowtitle);
-  QVBoxLayout *plotLayout = new QVBoxLayout();
+  auto plotLayout = std::make_unique<QVBoxLayout>();
   plotLayout->addWidget(chart);
-  ui.widget->setLayout(plotLayout);
+  ui.widget->setLayout(plotLayout.release());
 
   int QtColours[] = {
       9,  7,  8,  2,  14, 13, 15, 10, 16,
@@ -165,7 +169,12 @@ BarPlot::BarPlot(QList<dvector *> vlst_, QString windowtitle,
 
 void BarPlot::BarPlotUpdate()
 {
-  int obj_indx = ui.bar_list_id->value();
+  int obj_indx = ui.bar_list_id->value()-1;
+  if (obj_indx < 0 || obj_indx >= windowtitles.size() || obj_indx >= bars.size()) {
+      qWarning() << "Invalid index:" << obj_indx;
+      return;
+  }
+
   setWindowTitle(windowtitles[obj_indx]);
   chart->setPlotTitle(windowtitles[obj_indx]);
   QVector<qreal> y;
@@ -195,7 +204,9 @@ BarPlot::BarPlot(QList<dvector *> bar_lists_, QStringList windowtitles_,
   labelnames = labelnames_;
 
   setWindowTitle(windowtitles[0]);
-  chart = new ChartQt(this);
+  std::unique_ptr<ChartQt> chart_ = std::make_unique<ChartQt>(this);
+  chart = chart_.release();
+
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
   chart->setPlotTitle(windowtitles[0]);
@@ -205,9 +216,9 @@ BarPlot::BarPlot(QList<dvector *> bar_lists_, QStringList windowtitles_,
       y.append(bars[0]->data[i]);
   }
   chart->addBars(labelnames, y, labelnames, Qt::black);
-  QVBoxLayout *plotLayout = new QVBoxLayout();
+  auto plotLayout = std::make_unique<QVBoxLayout>();
   plotLayout->addWidget(chart);
-  ui.widget->setLayout(plotLayout);
+  ui.widget->setLayout(plotLayout.release());
   // Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
   chart->Plot();

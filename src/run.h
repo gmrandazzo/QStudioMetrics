@@ -8,7 +8,38 @@
 
 class RUN {
 public:
-  RUN();
+  RUN()
+        : scientifisignal(SIGSCIENTIFICRUN), // Initialize scientifisignal
+          xscaling(0),                       // Initialize xscaling
+          yscaling(0),                       // Initialize yscaling
+          pc(5),                             // Initialize pc
+          ngroup(5),                         // Initialize ngroup
+          niter(-1),                         // Initialize niter
+          n_yscrambling(-1),                 // Initialize n_yscrambling
+          metric(-1),                        // Initialize metric
+          nobjects(-1),                      // Initialize nobjects
+          maxnobjects(-1),                   // Initialize maxnobjects
+          nclusters(-1),                     // Initialize nclusters
+          clusteralgoritm(-1),               // Initialize clusteralgoritm
+          linktype(-1),                      // Initialize linktype
+          objselectiontype(-1),              // Initialize objselectiontype
+          nmaxobjects(-1),                   // Initialize nmaxobjects
+          nmaxclusters(-1),                  // Initialize nmaxclusters
+          threshold(0.f),                    // Initialize threshold
+          yscrambling(false),                // Initialize yscrambling
+          m(nullptr),                        // Initialize m to nullptr
+          uiv(nullptr),                      // Initialize uiv to nullptr
+          x(nullptr),                        // Initialize x to nullptr
+          y(nullptr),                        // Initialize y to nullptr
+          ax(nullptr),                       // Initialize ax to nullptr
+          ay(nullptr),                       // Initialize ay to nullptr
+          dv(nullptr),                       // Initialize dv to nullptr
+          pcamod(nullptr),                   // Initialize pcamod to nullptr
+          cpcamod(nullptr),                  // Initialize cpcamod to nullptr
+          plsmod(nullptr),                   // Initialize plsmod to nullptr
+          mlrmodel(nullptr),                 // Initialize mlrmodel to nullptr
+          ldamodel(nullptr)                  // Initialize ldamodel to nullptr 
+    {};
   void AbortRun();
   void Test();
   void setXMatrix(matrix *x_);
@@ -69,41 +100,41 @@ public:
   QFuture<void> RunClusterValidation();
 
 private:
-  matrix *m, *x, *y;
-  tensor *ax, *ay;
-  uivector *uiv;
-  dvector *dv;
-
-  PCAModel *pcamod;
-  CPCAModel *cpcamod;
-  PLSModel *plsmod;
-  MLRModel *mlrmodel;
-  LDAModel *ldamodel;
-
-  ssignal scientifisignal;
-
-  int algtype; // PLS_, PLS_DA_,
+  int scientifisignal;
   int xscaling;
   int yscaling;
   int pc;
-  int vt;
   int ngroup;
   int niter;
-  bool yscrambling;
   int n_yscrambling;
-
-  double threshold; // used for Spearman's Selection
-  // Used for MDC, MaxMinDis, Random Selection
   int metric;
   int nobjects;
   int maxnobjects;
-
   int nclusters;
   int clusteralgoritm;
   int linktype;
   int objselectiontype;
   int nmaxobjects;
   int nmaxclusters;
+  float threshold;  // Assuming threshold is a float based on initialization.
+  bool yscrambling;
+
+  matrix* m;         
+  uivector* uiv;       
+  matrix* x;         
+  matrix* y;         
+  tensor* ax;        
+  tensor* ay;        
+  dvector* dv;        
+  PCAModel* pcamod;    
+  CPCAModel* cpcamod;   
+  PLSModel* plsmod;     
+  MLRModel* mlrmodel;  
+  LDAModel* ldamodel;
+
+  int algtype; // PLS_, PLS_DA_,
+  int vt;
+  int linkype;
   strvector *dendogram;
 
   void DoPCA();
