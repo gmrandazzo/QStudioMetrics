@@ -16,9 +16,9 @@ public:
   void setMID(int mid_) { mid = mid_; }
   void setPREDID(int predid_) { predid = predid_; }
   void setGroups(LABELS g_) { g = g_; }
-  void SuperScorePlot2D(ScatterPlot **plot2D);
-  void SuperWeightsPlot2D(ScatterPlot **plot2D);
-  void SuperScorePlotPrediction2D(ScatterPlot **plot2D);
+  void SuperScorePlot2D(ScatterPlot **plot2D) const;
+  void SuperWeightsPlot2D(ScatterPlot **plot2D) const;
+  void SuperScorePlotPrediction2D(ScatterPlot **plot2D) const;
   QList<ScatterPlot *> BlockScorePlotPrediction2D();
   QList<ScatterPlot *> BlockScoresPlot2D();
   QList<ScatterPlot *> BlockLoadingsPlot2D();

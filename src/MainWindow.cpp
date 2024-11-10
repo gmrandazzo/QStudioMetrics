@@ -5130,9 +5130,9 @@ void MainWindow::PCATsqContributionPlot() {
       pcaplot.setPID(dp.getProjectID());
       pcaplot.setMID(dp.getModelID());
       pcaplot.setNLatentVariables(dp.getNLV());
-      BarPlot *bar_plots = 0;
+      BarPlot *bar_plots = nullptr;
       pcaplot.TsqContributionPlot(&bar_plots);
-      if (bar_plots != 0) {
+      if (bar_plots != nullptr) {
         MDIChild *graphchild = createMdiChild();
         graphchild->setWidget(bar_plots);
         graphchild->setWindowID(

@@ -26,13 +26,13 @@ public:
           QWidget *parent = 0);
 
   BarPlot(dvector *v_, QStringList varnames, QString windowtitle,
-          QString xaxestitle, QString yaxestitle, QWidget *parent = 0);
+          QString xaxestitle, QString yaxestitle, QWidget *parent = nullptr);
 
   BarPlot(QList<dvector *> v_, QString windowtitle, QString xaxestitle,
-          QString yaxestitle, QStringList labelname, QWidget *parent = 0);
+          QString yaxestitle, QStringList labelname, QWidget *parent = nullptr);
 
   BarPlot(QList<dvector *> bar_lists_, QStringList windowtitles, QString xaxestitle,
-          QString yaxestitle, QStringList labelnames, QWidget *parent = 0);
+          QString yaxestitle, QStringList labelnames, QWidget *parent = nullptr);
 
   ~BarPlot();
 
@@ -43,8 +43,10 @@ private slots:
 private:
   Ui::BarPlot ui;
   // QPlotlyWindow *chart;
-  QStringList windowtitles, labelnames;
-  QString xaxestitle, yaxestitle;
+  QStringList windowtitles;
+  QStringList labelnames;
+  QString xaxestitle;
+  QString yaxestitle;
   ChartQt *chart = nullptr;
   QList<dvector *> bars;
   void genBars(dvector *v, int split, double min, double max,

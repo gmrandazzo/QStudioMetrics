@@ -2309,6 +2309,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
 }
 
 ScatterPlot::~ScatterPlot() {
+  std::cout << "Delete ScatterPlot" << std::endl;
   delete chart;
   if (cwidget != 0)
     delete cwidget;

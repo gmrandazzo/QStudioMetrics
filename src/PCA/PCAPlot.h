@@ -31,7 +31,10 @@ public:
 
 private:
   PROJECTS *projects;
-  int pid, mid, predid, nlv;
+  int pid;
+  int mid;
+  int predid;
+  int nlv;
   LABELS g;
 };
 #endif

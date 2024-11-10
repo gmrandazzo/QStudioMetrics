@@ -1,4 +1,5 @@
 #include "PCAPlot.h"
+#include <memory>
 
 void PCAPlot::ScorePlot2D(ScatterPlot **plot2D) {
   QString projectname = projects->value(pid)->getProjectName();
@@ -10,14 +11,16 @@ void PCAPlot::ScorePlot2D(ScatterPlot **plot2D) {
   objnamelst.append(projects->value(pid)->getPCAModel(mid)->getObjName());
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
-  (*plot2D) =
-      new ScatterPlot(mxlst, objnamelst, &projects->value(pid)->getMATRIXList(),
-                      xhash, yhash, &projects->value(pid)->getObjectLabels(),
-                      &projects->value(pid)->getVariableLabels(), "PC", "PC",
-                      QString(projectname + modelname + " - PCA Score Plot"),
-                      ScatterPlot::SCORES);
-  (*plot2D)->setHotellingConfidenceEllipse(true);
-  (*plot2D)->setPID(pid);
+  std::unique_ptr<ScatterPlot> temp_plot = std::make_unique<ScatterPlot>(
+      mxlst, objnamelst, &projects->value(pid)->getMATRIXList(),
+      xhash, yhash, &projects->value(pid)->getObjectLabels(),
+      &projects->value(pid)->getVariableLabels(), "PC", "PC",
+      QString(projectname + modelname + " - PCA Score Plot"),
+      ScatterPlot::SCORES);
+  
+  temp_plot->setHotellingConfidenceEllipse(true);
+  temp_plot->setPID(pid);
+  *plot2D = temp_plot.release();
 }
 
 void PCAPlot::ScorePlotPrediction2D(ScatterPlot **plot2D) {
@@ -41,14 +44,15 @@ void PCAPlot::ScorePlotPrediction2D(ScatterPlot **plot2D) {
                    ->getPCAModel(mid)
                    ->getPCAPrediction(predid)
                    ->getDataHash());
-  (*plot2D) = new ScatterPlot(
+  std::unique_ptr<ScatterPlot> temp_plot = std::make_unique<ScatterPlot>(
       mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC",
       QString(projectname + modelname + " - PCA Score Plot Prediction"),
       ScatterPlot::SCORES);
-  (*plot2D)->setHotellingConfidenceEllipse(true);
-  (*plot2D)->setPID(pid);
+  temp_plot->setHotellingConfidenceEllipse(true);
+  temp_plot->setPID(pid);
+  *plot2D = temp_plot.release();
 }
 
 void PCAPlot::LoadingsPlot2D(ScatterPlot **plot2D) {
@@ -64,14 +68,16 @@ void PCAPlot::LoadingsPlot2D(ScatterPlot **plot2D) {
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getPCAModel(mid)->getDataHash());
 
-  (*plot2D) = new ScatterPlot(
+  std::unique_ptr<ScatterPlot> temp_plot = std::make_unique<ScatterPlot>(
       mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC",
       projectname + modelname + " - PCA Loadings Plot", ScatterPlot::LOADINGS);
-  (*plot2D)->setPID(pid);
-  (*plot2D)->setMID(mid);
-  (*plot2D)->setModelType(PCA_);
+  temp_plot->setHotellingConfidenceEllipse(true);
+  temp_plot->setPID(pid);
+  temp_plot->setMID(mid);
+  temp_plot->setModelType(PCA_);
+  *plot2D = temp_plot.release();
 }
 
 void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
@@ -99,7 +105,7 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
     reconstructed_mx
   );
 
-  matrix *orig_x = projects->value(pid)->getMatrix(did)->Matrix();
+  const matrix *orig_x = projects->value(pid)->getMatrix(did)->Matrix();
 
   /*
   * Calculate SPE (Squared Prediction Error) and SPE contributions in one pass
@@ -124,7 +130,7 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
     windowtitles.append(QString("%1 - Sample %2 -  Total SPE = %3").arg(projectname).arg(objnames[i]).arg(QString::number(spe[i], 'f', 4)));
   }
 
-  (*bar_plots) = new BarPlot(
+  std::unique_ptr<BarPlot> temp_plot = std::make_unique<BarPlot>(
         spe_contributions,
         windowtitles,
         "Features",
@@ -137,6 +143,7 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
   spe_contributions.clear();
   spe.clear();
   DelMatrix(&reconstructed_mx);
+  *bar_plots = temp_plot.release();
 }
 
 void PCAPlot::ExpVarPlot(SimpleLine2DPlot **plot2D) {
@@ -175,12 +182,13 @@ void PCAPlot::ExpVarPlot(SimpleLine2DPlot **plot2D) {
   qDebug() << "Final Matrix";
   PrintMatrix(m);
 #endif
-  (*plot2D) = new SimpleLine2DPlot(m, curvenames,
-                                   QString(" %1 - %2 - Explained Variance Plot")
-                                       .arg(projectname)
-                                       .arg(modelname),
-                                   "PC", "Exp. Var.");
+  std::unique_ptr<SimpleLine2DPlot> temp_plot = std::make_unique<SimpleLine2DPlot>(
+    m,
+    curvenames,
+    QString(" %1 - %2 - Explained Variance Plot").arg(projectname).arg(modelname),
+    "PC", "Exp. Var.");
   DelMatrix(&m);
+  *plot2D = temp_plot.release();
 }
 
 void PCAPlot::LoadingsMVANormDistrib(ScatterPlot **plot2D) {

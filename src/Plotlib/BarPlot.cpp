@@ -171,7 +171,7 @@ void BarPlot::BarPlotUpdate()
   QVector<qreal> y;
   y.reserve(bars[obj_indx]->size);
   for (size_t i = 0; i < bars[obj_indx]->size; ++i) {
-      y.append(static_cast<qreal>(bars[obj_indx]->data[i]));
+      y.append(bars[obj_indx]->data[i]);
   }
   chart->updateBarsData(0, y, Qt::black);
   chart->update();
@@ -183,10 +183,10 @@ BarPlot::BarPlot(QList<dvector *> bar_lists_, QStringList windowtitles_,
     : QWidget(parent) {
   ui.setupUi(this);
 
-  for (int i = 0; i < bar_lists_.size(); i++) {
+  for (const auto &barList : bar_lists_) {
       bars.append(new dvector);
       initDVector(&bars.last());
-      DVectorCopy(bar_lists_[i], bars.last());
+      DVectorCopy(barList, bars.last());
   }
 
   windowtitles = windowtitles_;
@@ -202,7 +202,7 @@ BarPlot::BarPlot(QList<dvector *> bar_lists_, QStringList windowtitles_,
   QVector<qreal> y;
   y.reserve(bars[0]->size);
   for (size_t i = 0; i < bars[0]->size; ++i) {
-      y.append(static_cast<qreal>(bars[0]->data[i]));
+      y.append(bars[0]->data[i]);
   }
   chart->addBars(labelnames, y, labelnames, Qt::black);
   QVBoxLayout *plotLayout = new QVBoxLayout();

@@ -1,6 +1,7 @@
 #include "CPCAPlot.h"
+#include <memory>
 
-void CPCAPlot::SuperScorePlot2D(ScatterPlot **plot2D) {
+void CPCAPlot::SuperScorePlot2D(ScatterPlot **plot2D) const {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
 
@@ -10,17 +11,18 @@ void CPCAPlot::SuperScorePlot2D(ScatterPlot **plot2D) {
   objnamelst.append(projects->value(pid)->getCPCAModel(mid)->getObjName());
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getCPCAModel(mid)->getDataHash());
-  (*plot2D) = new ScatterPlot(
+  std::unique_ptr<ScatterPlot> temp_plot = std::make_unique<ScatterPlot>(
       mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC",
       QString(projectname + modelname + " - CPCA Super Score Plot"),
       ScatterPlot::SCORES);
-  (*plot2D)->setHotellingConfidenceEllipse(true);
-  (*plot2D)->setPID(pid);
+  temp_plot->setHotellingConfidenceEllipse(true);
+  temp_plot->setPID(pid);
+  *plot2D = temp_plot.release();
 }
 
-void CPCAPlot::SuperWeightsPlot2D(ScatterPlot **plot2D) {
+void CPCAPlot::SuperWeightsPlot2D(ScatterPlot **plot2D) const {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
   LABELS varnames = projects->value(pid)->getCPCAModel(mid)->getVarName();
@@ -40,7 +42,7 @@ void CPCAPlot::SuperWeightsPlot2D(ScatterPlot **plot2D) {
   (*plot2D)->setPID(pid);
 }
 
-void CPCAPlot::SuperScorePlotPrediction2D(ScatterPlot **plot2D) {
+void CPCAPlot::SuperScorePlotPrediction2D(ScatterPlot **plot2D) const {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getCPCAModel(mid)->getName();
   QList<matrix *> mxlst;
@@ -55,7 +57,8 @@ void CPCAPlot::SuperScorePlotPrediction2D(ScatterPlot **plot2D) {
                         ->getCPCAModel(mid)
                         ->getCPCAPrediction(predid)
                         ->getObjName());
-  QStringList xhash, yhash;
+  QStringList xhash;
+  QStringList yhash;
   xhash.append(projects->value(pid)->getCPCAModel(mid)->getDataHash());
   xhash.append(projects->value(pid)
                    ->getCPCAModel(mid)

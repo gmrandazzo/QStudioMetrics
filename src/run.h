@@ -83,7 +83,6 @@ private:
   ssignal scientifisignal;
 
   int algtype; // PLS_, PLS_DA_,
-  CombinationRule crule;
   int xscaling;
   int yscaling;
   int pc;
