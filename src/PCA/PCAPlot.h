@@ -24,7 +24,7 @@ public:
   void ExpVarPlot(SimpleLine2DPlot **plot2D);
   void LoadingsMVANormDistrib(ScatterPlot **plot2D);
   void LoadingsPlot2D(ScatterPlot **plot2D);
-  void TContributionPlot(BarPlot **);
+  void TsqContributionPlot(BarPlot **);
   void ScorePlot3D(ScatterPlot **plot3D);
   void ScorePlotPrediction3D(ScatterPlot **plot3D);
   void LoadingsPlot3D(ScatterPlot **plot3D);

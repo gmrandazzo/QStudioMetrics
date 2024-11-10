@@ -60,6 +60,7 @@ public:
 
   // Bar plot
   void addBars(QStringList x, QVector<qreal> y, QStringList text, QColor color);
+  void updateBarsData(int indx, QVector<qreal> y, QColor color);
 
   int PointSize() const;
   DataPoint *getPoint(int id);

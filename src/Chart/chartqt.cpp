@@ -374,9 +374,12 @@ void ChartQt::updateScatters() {
 }
 
 void ChartQt::drawBars() {
-  // #ifdef DEBUG
+  //#ifdef DEBUG
   printf("ChartQt::drawBars\n");
-  // #endif
+  //#endif
+
+  chart()->removeAllSeries();
+  barsList.clear();
 
   QStringList categories;
   QBarSeries *series = new QBarSeries();
@@ -410,26 +413,16 @@ void ChartQt::drawBars() {
 }
 
 void ChartQt::updateBars() {
-  // #ifdef DEBUG
+  //#ifdef DEBUG
   printf("ChartQt::updateBars\n");
-  // #endif
-  printf("%lld %lld\n", b.size(), barsList.size());
+  //#endif
   for (int i = 0; i < b.size(); i++) {
-    QBarSet *set = barsList[i];
-    if (b[i]->isVisible() == true) {
-      for (int j = 0; j < b[i]->x().size(); j++) {
-        set->insert(j, b[i]->y()[j]);
-        //                set->color(b[i]->color());
-      }
-      // barsList.append(set);
-      // void addBars(QStringList x, QVector<qreal> y, QStringList text, QColor
-      // color);
-    } else {
-      // HIDE
-      continue;
-      // barsList[i]->hide();
+    for (int j = 0; j < b[i]->x().size(); j++) {
+      barsList[i]->replace(j, b[i]->y()[j]);
     }
+     // barsList[i]->color(b[i]->color());
   }
+  chart()->update();
 }
 
 void ChartQt::refreshPlot() {
@@ -667,6 +660,19 @@ void ChartQt::addBars(QStringList x, QVector<qreal> y, QStringList text,
   b.append(new DataBar(x, y, text));
   b.last()->setColor(color);
 }
+
+void ChartQt::updateBarsData(int indx, QVector<qreal> y, QColor color) {
+#ifdef DEBUG
+  printf("ChartQt::updateBars\n");
+#endif
+  if(indx < b.size()){
+    b[indx]->setY(y);
+    b[indx]->setColor(color);
+    updateBars();
+    refreshPlot();
+  }
+}
+
 
 int ChartQt::PointSize() const { return p.size(); }
 

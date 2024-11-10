@@ -279,27 +279,10 @@
      </property>
      <addaction name="actionPCA2DScore_Plot"/>
      <addaction name="actionPCA2DLoadings_Plot"/>
-     <addaction name="actionPCA2DT_Contribution_Plot"/>
+     <addaction name="actionPCA2DTsq_Contribution_Plot"/>
      <addaction name="actionPCA2DExpVarPlot"/>
      <addaction name="separator"/>
      <addaction name="actionPCA2DScore_Plot_Prediction"/>
-    </widget>
-    <widget class="QMenu" name="menuEPLS_plots">
-     <property name="title">
-      <string>EPLS plots</string>
-     </property>
-     <property name="icon">
-      <iconset resource="icons/icons.qrc">
-       <normaloff>:/regression.png</normaloff>:/regression.png</iconset>
-     </property>
-     <addaction name="actionEPLSRecalculated_vs_Experimental"/>
-     <addaction name="actionEPLSPredicted_vs_Experimental"/>
-     <addaction name="separator"/>
-     <addaction name="actionEPLSR2_and_Q2"/>
-     <addaction name="actionEPLSROC_curves"/>
-     <addaction name="actionEPLSROC_AUC_recalculated_predicted"/>
-     <addaction name="actionEPLSPrecision_recall_curves"/>
-     <addaction name="actionEPLSPrecision_Recall_AUC_recalculated_predicted"/>
     </widget>
     <widget class="QMenu" name="menuPlot_CPCA_Model">
      <property name="title">
@@ -322,7 +305,6 @@
     <addaction name="menuPlot_PCA_Model"/>
     <addaction name="menuPlot_CPCA_Model"/>
     <addaction name="menuPlot_PLS_Model"/>
-    <addaction name="menuEPLS_plots"/>
     <addaction name="menuPlot_MLR"/>
     <addaction name="menuPlot_LDA"/>
    </widget>
@@ -1564,7 +1546,7 @@
     <string>t/t/ Block Scores with Prediction</string>
    </property>
   </action>
-  <action name="actionPCA2DT_Contribution_Plot">
+  <action name="actionPCA2DTsq_Contribution_Plot">
    <property name="text">
     <string>T² Contribution Plot</string>
    </property>

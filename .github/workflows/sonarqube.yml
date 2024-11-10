@@ -40,12 +40,12 @@ jobs:
             libglvnd-dev \
             git \
             curl
-      
+
       # Step 2: Configure CMake first
       - name: Configure CMake
         run: |
           cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DCMAKE_BUILD_TYPE=Debug .
-      
+
       # Step 3: Set up SonarQube Build Wrapper
       - name: Download and install build wrapper
         run: |
@@ -70,7 +70,7 @@ jobs:
           curl -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
           unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
           echo "$HOME/.sonar/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> $GITHUB_PATH
-  
+
       # Step 8: Run SonarQube analysis
       - name: SonarQube analysis
         run: |

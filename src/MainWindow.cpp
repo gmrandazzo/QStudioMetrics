@@ -5120,6 +5120,37 @@ void MainWindow::PCA2DExpVarPlot() {
   }
 }
 
+void MainWindow::PCATsqContributionPlot() {
+  if (ProjectsHavePCA() == true) {
+    ProjectTree pjtree;
+    GetPCAProjects(&pjtree);
+    DialogPlots dp(pjtree, DialogPlots::TwoColumns);
+    if (dp.exec() == QDialog::Accepted) {
+      PCAPlot pcaplot(projects);
+      pcaplot.setPID(dp.getProjectID());
+      pcaplot.setMID(dp.getModelID());
+      pcaplot.setNLatentVariables(dp.getNLV());
+      BarPlot *bar_plots = 0;
+      pcaplot.TsqContributionPlot(&bar_plots);
+      if (bar_plots != 0) {
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(bar_plots);
+        graphchild->setWindowID(
+            getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(510, 530);
+        graphchild->show();
+      } else {
+        QMessageBox::warning(this, tr("Warning!"),
+                             tr("Problem with Barplot and T squared contribution plot!\n"),
+                             QMessageBox::Close);
+      }
+    }
+  } else {
+    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+                         QMessageBox::Close);
+  }
+}
+
 void MainWindow::PCA2DScorePlotPrediction() {
   if (ProjectsHavePCA() == true) {
     ProjectTree pjtree;
@@ -8293,6 +8324,8 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0) {
           SLOT(PCA2DScorePlot()));
   connect(ui.actionPCA2DLoadings_Plot, SIGNAL(triggered(bool)),
           SLOT(PCA2DLoadingsPlot()));
+  connect(ui.actionPCA2DTsq_Contribution_Plot, SIGNAL(triggered(bool)),
+        SLOT(PCATsqContributionPlot()));
   connect(ui.actionPCA2DExpVarPlot, SIGNAL(triggered(bool)),
           SLOT(PCA2DExpVarPlot()));
   // connect(ui.actionPCA2DLoadingsMVAND_Plot, SIGNAL(triggered(bool)),

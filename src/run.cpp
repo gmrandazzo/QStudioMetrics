@@ -267,7 +267,7 @@ void RUN::DoPLSValidation() {
                             plsmod->Model()->pred_residuals,
                             QThread::idealThreadCount(), &scientifisignal, 0);
   }
-  
+
   if (algtype == PLS_) {
     PLSRegressionStatistics(y, plsmod->Model()->predicted_y,
                               plsmod->Model()->q2y, plsmod->Model()->sdep,

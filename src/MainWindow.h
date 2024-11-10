@@ -71,6 +71,7 @@ private slots:
 
   void PCA2DScorePlot();
   void PCA2DLoadingsPlot();
+  void PCATsqContributionPlot();
   void PCA2DExpVarPlot();
   void PCA2DLoadingsMVANDPlot();
   void PCA2DScorePlotPrediction();

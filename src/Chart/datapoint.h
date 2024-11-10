@@ -12,7 +12,9 @@
 #endif
 
 #define QEPSILON 1e-3 /* Define your own tolerance*/
+#ifndef FLOAT_EQ
 #define FLOAT_EQ(x, v, EPSILON) (((v - EPSILON) < x) && (x < (v + EPSILON)))
+#endif
 
 enum MarkerType { CIRCLE, SQUARE, TRIANGLE };
 

@@ -1,6 +1,7 @@
 #include "databar.h"
 #include <QStringList>
 #include <QVector>
+#include <QDebug>
 
 DataBar::DataBar()
     : m_x(QStringList()), m_y(QVector<qreal>()), m_text(QStringList()),
