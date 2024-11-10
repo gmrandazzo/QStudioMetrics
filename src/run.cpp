@@ -483,37 +483,3 @@ void RUN::AbortRun() {
   scientifisignal = SIGSCIENTIFICSTOP;
   //   QThreadPool::globalInstance()->waitForDone();
 }
-
-RUN::RUN() {
-  scientifisignal = SIGSCIENTIFICRUN;
-  xscaling = 0;
-  yscaling = 0;
-  pc = 5;
-  ngroup = 5;
-  niter = -1;
-  n_yscrambling = -1;
-  metric = -1;
-  nobjects = -1;
-  maxnobjects = -1;
-  nclusters = -1;
-  clusteralgoritm = -1;
-  linktype = -1;
-  objselectiontype = -1;
-  nmaxobjects = -1;
-  nmaxclusters = -1;
-  threshold = 0.f;
-  yscrambling = false;
-  m = NULL;
-  uiv = NULL;
-  x = NULL;
-  y = NULL;
-  ax = NULL;
-  ay = NULL;
-  dv = NULL;
-  uiv = NULL;
-  pcamod = NULL;
-  cpcamod = NULL;
-  plsmod = NULL;
-  mlrmodel = NULL;
-  ldamodel = NULL;
-}
