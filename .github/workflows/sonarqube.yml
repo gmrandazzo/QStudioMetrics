@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for better relevancy of analysis
 
@@ -43,6 +43,9 @@ jobs:
             libgl1-mesa-dev \
             libglvnd-dev \
             git \
+            sqlite3 \
+            libsqlite3-dev \
+            liblapack-dev \
             curl
 
       # Step 2: Configure CMake first

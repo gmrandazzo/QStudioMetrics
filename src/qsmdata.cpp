@@ -1344,8 +1344,9 @@ QString DATA::SaveSQLData(QString savepath) {
     // Write MODELS into Models dir  RIMUOVI PCA - da ogni nome
     query.exec(QString("CREATE TABLE IF NOT EXISTS pcaTable (name TEXT, "
                        "numcomp INT, scalingtype INT, hashinputmx TEXT, "
-                       "objname TEXT, varname TEXT, scores TEXT, loadings  "
-                       "TEXT, varexp TEXT, colscaling TEXT, colaverage TEXT)"));
+                       "objname TEXT, varname TEXT, scores TEXT, loadings "
+                       "TEXT, DMODX TEXT, varexp TEXT, colscaling TEXT, "
+                       "colaverage TEXT)"));
     query.exec(
         QString("CREATE TABLE IF NOT EXISTS pcapredTable (name TEXT, pcahash "
                 "TEXT, hashinputmx TEXT, objname TEXT, scores TEXT)"));
@@ -1362,6 +1363,8 @@ QString DATA::SaveSQLData(QString savepath) {
             SerializeMatrix(getPCAModelAt(i)->Model()->scores);
         QString serialized_loadings =
             SerializeMatrix(getPCAModelAt(i)->Model()->loadings);
+        QString serialized_dmodx =
+            SerializeMatrix(getPCAModelAt(i)->Model()->dmodx);
         QString serialized_colaverage =
             SerializeDVector(getPCAModelAt(i)->Model()->colaverage);
         QString serialized_colscaling =
@@ -1370,10 +1373,10 @@ QString DATA::SaveSQLData(QString savepath) {
             SerializeDVector(getPCAModelAt(i)->Model()->varexp);
         query.prepare(
             "INSERT INTO pcaTable (name, numcomp, scalingtype, hashinputmx, "
-            "objname, varname, scores, loadings, varexp, colscaling, "
+            "objname, varname, scores, loadings, dmodx, varexp, colscaling, "
             "colaverage) VALUES (:name, :numcomp, :scalingtype, :hashinputmx, "
-            ":objname, :varname, :scores, :loadings, :varexp, :colscaling, "
-            ":colaverage)");
+            ":objname, :varname, :scores, :loadings, :dmodx, :varexp, "
+            ":colscaling, :colaverage)");
         query.bindValue(":name", modname);
         query.bindValue(":numcomp", getPCAModelAt(i)->getNPC());
         query.bindValue(":scalingtype", getPCAModelAt(i)->getXScaling());
@@ -1382,6 +1385,7 @@ QString DATA::SaveSQLData(QString savepath) {
         query.bindValue(":varname", varname_serialized);
         query.bindValue(":scores", serialized_scores);
         query.bindValue(":loadings", serialized_loadings);
+        query.bindValue(":dmodx", serialized_dmodx);
         query.bindValue(":colscaling", serialized_colaverage);
         query.bindValue(":colaverage", serialized_colscaling);
         query.bindValue(":varexp", serialized_varexp);

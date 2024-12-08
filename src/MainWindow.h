@@ -71,6 +71,7 @@ private slots:
 
   void PCA2DScorePlot();
   void PCA2DLoadingsPlot();
+  void PCADModXPlot();
   void PCATsqContributionPlot();
   void PCA2DExpVarPlot();
   void PCA2DLoadingsMVANDPlot();
@@ -212,6 +213,8 @@ private:
   PROJECTS *projects;
   QString lastpath;
 
+  int default_window_size_w;
+  int default_window_size_h;
   int tabcount_;
   int pid_;    // Prediction ID that is unique for each project and increment
                // always

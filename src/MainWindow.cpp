@@ -1398,7 +1398,7 @@ void MainWindow::PlotVariableVSVariableBis(vvplotSignal vvs) {
       MDIChild *graphchild = createMdiChild();
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(vvs.pid);
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
     } else {
       return;
@@ -4965,7 +4965,7 @@ void MainWindow::PlotVariableVSVariable() {
     MDIChild *graphchild = createMdiChild();
     graphchild->setWidget(plot2D);
     graphchild->setWindowID(vvplot.getProjectID());
-    graphchild->resize(510, 530);
+    graphchild->resize(default_window_size_w, default_window_size_h);
     graphchild->show();
   }
 }
@@ -4985,7 +4985,7 @@ void MainWindow::PlotVariableDistribution() {
     MDIChild *graphchild = createMdiChild();
     graphchild->setWidget(vplot.VariableDistribution());
     graphchild->setWindowID(vdist.getProjectID());
-    graphchild->resize(510, 530);
+    graphchild->resize(default_window_size_w, default_window_size_h);
     graphchild->show();
   }
 }
@@ -5029,7 +5029,7 @@ void MainWindow::PCA2DScorePlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5055,7 +5055,7 @@ void MainWindow::PCA2DLoadingsMVANDPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(classplotdialog.selectedProject(),
                                               classplotdialog.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5082,12 +5082,37 @@ void MainWindow::PCA2DLoadingsPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
       connect(plot2D, SIGNAL(ScatterPlotVVPlotSignal(vvplotSignal)),
               SLOT(PlotVariableVSVariableBis(vvplotSignal)));
+    }
+  } else {
+    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+                         QMessageBox::Close);
+  }
+}
+
+void MainWindow::PCADModXPlot() {
+  if (ProjectsHavePCA() == true) {
+    ProjectTree pjtree;
+    GetPCAProjects(&pjtree);
+    DialogPlots dp(pjtree, DialogPlots::TwoColumns);
+    if (dp.exec() == QDialog::Accepted) {
+      PCAPlot pcaplot(projects);
+      pcaplot.setPID(dp.getProjectID());
+      pcaplot.setMID(dp.getModelID());
+      pcaplot.setNLatentVariables(dp.getNLV());
+      MDIChild *graphchild = createMdiChild();
+      BarPlot *bar_plots = nullptr;
+      pcaplot.DModXPlot(&bar_plots);
+      graphchild->setWidget(bar_plots);
+      graphchild->setWindowID(
+          getModelTableID(dp.getProjectID(), dp.getModelID()));
+      graphchild->resize(default_window_size_w, default_window_size_h);
+      graphchild->show();
     }
   } else {
     QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
@@ -5111,7 +5136,7 @@ void MainWindow::PCA2DExpVarPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
     }
   } else {
@@ -5137,7 +5162,7 @@ void MainWindow::PCATsqContributionPlot() {
         graphchild->setWidget(bar_plots);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       } else {
         QMessageBox::warning(this, tr("Warning!"),
@@ -5168,7 +5193,7 @@ void MainWindow::PCA2DScorePlotPrediction() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5196,7 +5221,7 @@ void MainWindow::CPCA2DSuperScorePlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5224,7 +5249,7 @@ void MainWindow::CPCA2DSuperWeightsPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5252,7 +5277,7 @@ void MainWindow::CPCA2DBlockScoresPlot() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plots[i], SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -5281,7 +5306,7 @@ void MainWindow::CPCA2DBlockLoadingsPlot() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plots[i], SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -5309,7 +5334,7 @@ void MainWindow::CPCA2DExpVarPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
     }
   } else {
@@ -5335,7 +5360,7 @@ void MainWindow::CPCA2DSuperScoresPlotPrediction() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5364,7 +5389,7 @@ void MainWindow::CPCA2DBlockScoresPlotPrediction() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plots[i], SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -5392,7 +5417,7 @@ void MainWindow::PLS2DPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5419,7 +5444,7 @@ void MainWindow::PLS2DTTScorePlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5446,7 +5471,7 @@ void MainWindow::PLS2DPPLoadingsPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5475,7 +5500,7 @@ void MainWindow::PLS2DWWWeightsPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5504,7 +5529,7 @@ void MainWindow::PLS2DUUScorePlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5531,7 +5556,7 @@ void MainWindow::PLS2DQQLoadingsPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5560,7 +5585,7 @@ void MainWindow::PLS2DPQLoadingsPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5590,7 +5615,7 @@ void MainWindow::PLS2DTTScorePlotPrediction() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5617,7 +5642,7 @@ void MainWindow::PLSPlotBetaCoefficients() {
       graphchild->setWidget(betas_barplot);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
     }
   } else {
@@ -5641,7 +5666,7 @@ void MainWindow::PLSPlotBetaCoeffDWPlot() {
       graphchild->setWidget(dw_betas_plot);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
     }
   } else {
@@ -5668,7 +5693,7 @@ void MainWindow::PLSRecalcVSExpPlotPrediction() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -5702,7 +5727,7 @@ void MainWindow::PLSPredictedVSExpAndPredictionPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -5739,7 +5764,7 @@ void MainWindow::PLSRecalcVSExpPlot() {
           graphchild->setWidget(plot2D);
           graphchild->setWindowID(
               getModelTableID(dp.getProjectID(), dp.getModelID()));
-          graphchild->resize(510, 530);
+          graphchild->resize(default_window_size_w, default_window_size_h);
           graphchild->show();
           connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                   SLOT(UpdateImageWindow(ImageSignal)));
@@ -5789,7 +5814,7 @@ void MainWindow::PLSRecalcResidualsVSExpPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -5826,7 +5851,7 @@ void MainWindow::PLSPredVSExpPlot() {
           graphchild->setWidget(plot2D);
           graphchild->setWindowID(
               getModelTableID(dp.getProjectID(), dp.getModelID()));
-          graphchild->resize(510, 530);
+          graphchild->resize(default_window_size_w, default_window_size_h);
           graphchild->show();
           connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                   SLOT(UpdateImageWindow(ImageSignal)));
@@ -5875,7 +5900,7 @@ void MainWindow::PLSPredResidualsVSExpPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -5907,7 +5932,7 @@ void MainWindow::PLSPlotR2Q2() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -5934,7 +5959,7 @@ void MainWindow::PLSPlotRMSE() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -5961,7 +5986,7 @@ void MainWindow::PLSPlotROCAucs() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -5988,7 +6013,7 @@ void MainWindow::PLSPlotROCCurves() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -6016,7 +6041,7 @@ void MainWindow::PLSPlotPRAucs() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -6044,7 +6069,7 @@ void MainWindow::PLSPlotPRCurves() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -6072,7 +6097,7 @@ void MainWindow::PLSPlotR2R2Predicted() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -6100,7 +6125,7 @@ void MainWindow::PLSPlotRMSEPredicted() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -6127,7 +6152,7 @@ void MainWindow::PLSPlotYScrambling() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -6156,7 +6181,7 @@ void MainWindow::MLRRecalcVSExpPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -6189,7 +6214,7 @@ void MainWindow::MLRRecalcResidualsVSExpPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -6221,7 +6246,7 @@ void MainWindow::MLRBetaCoefficients() {
         graphchild->setWidget(barplots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -6248,7 +6273,7 @@ void MainWindow::MLRPredVSExpPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -6281,7 +6306,7 @@ void MainWindow::MLRPredResidualsVSExpPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -6315,7 +6340,7 @@ void MainWindow::MLRRecalcVSExpAndPredictionPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -6349,7 +6374,7 @@ void MainWindow::MLRPredictedVSExpAndPredictionPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
@@ -6381,7 +6406,7 @@ void MainWindow::MLRPlotYScrambling() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -6409,7 +6434,7 @@ void MainWindow::LDAFeaturePlot2D() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -6437,7 +6462,7 @@ void MainWindow::LDAProbabilityDistribution() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -6465,7 +6490,7 @@ void MainWindow::LDAROCPlot() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -6493,7 +6518,7 @@ void MainWindow::LDAPRPlot() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
@@ -6521,7 +6546,7 @@ void MainWindow::LDAFeaturePlotAndPrediction2D() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -6549,7 +6574,7 @@ void MainWindow::LDAProbabilityDistributionWithPredictions() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -8267,6 +8292,9 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0) {
   haveldapred = false;
   haveldavalid = false;
 
+  default_window_size_w = 510;
+  default_window_size_h = 530;
+
   ui.treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(ui.treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)),
           this, SLOT(ShowContextMenu(const QPoint &)));
@@ -8324,6 +8352,8 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0) {
           SLOT(PCA2DScorePlot()));
   connect(ui.actionPCA2DLoadings_Plot, SIGNAL(triggered(bool)),
           SLOT(PCA2DLoadingsPlot()));
+  connect(ui.actionPCA2DDModX_Plot, SIGNAL(triggered(bool)),
+        SLOT(PCADModXPlot()));
   connect(ui.actionPCA2DTsq_Contribution_Plot, SIGNAL(triggered(bool)),
         SLOT(PCATsqContributionPlot()));
   connect(ui.actionPCA2DExpVarPlot, SIGNAL(triggered(bool)),

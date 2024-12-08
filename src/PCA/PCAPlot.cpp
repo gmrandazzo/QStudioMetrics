@@ -80,6 +80,27 @@ void PCAPlot::LoadingsPlot2D(ScatterPlot **plot2D) {
   *plot2D = temp_plot.release();
 }
 
+void PCAPlot::DModXPlot(BarPlot **bar_plot) {
+  QString projectname = projects->value(pid)->getProjectName();
+  QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
+  QStringList objnames = projects->value(pid)->getPCAModel(mid)->getObjName();
+  if (nlv > projects->value(pid)->getPCAModel(mid)->getNPC()) {
+    nlv = projects->value(pid)->getPCAModel(mid)->getNPC();
+  }
+
+  dvector *dmodx;
+  dmodx = getMatrixColumn(projects->value(pid)->getPCAModel(mid)->Model()->dmodx, nlv-1);
+  qDebug() << " Get column " << nlv;
+  PrintDVector(dmodx);
+
+  (*bar_plot) =
+      new BarPlot(dmodx, objnames,
+                  QString("DModX Model - %1 PC %2")
+                      .arg(modelname)
+                      .arg(QString::number(nlv)));
+  DelDVector(&dmodx);
+}
+
 void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
@@ -106,6 +127,8 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
   );
 
   const matrix *orig_x = projects->value(pid)->getMatrix(did)->Matrix();
+  const dvector *colaverage = projects->value(pid)->getPCAModel(mid)->Model()->colaverage;
+  const dvector *colscaling = projects->value(pid)->getPCAModel(mid)->Model()->colscaling;
 
   /*
   * Calculate SPE (Squared Prediction Error) and SPE contributions in one pass
@@ -117,7 +140,8 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
       spe_contributions.append(new dvector);
       NewDVector(&spe_contributions.last(), orig_x->col);
       for (size_t j = 0; j < orig_x->col; j++) {
-          double diff = orig_x->data[i][j] - reconstructed_mx->data[i][j];
+          // normalize to avoid dwarf everthing.
+          double diff = ((orig_x->data[i][j]-colaverage->data[j])/colscaling->data[j]) - ((reconstructed_mx->data[i][j]-colaverage->data[j])/colscaling->data[j]);
           double squared_diff = diff * diff;
           sum_squared_diff += squared_diff;
           spe_contributions.last()->data[j] = squared_diff;

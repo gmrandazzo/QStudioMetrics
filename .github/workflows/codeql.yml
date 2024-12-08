@@ -49,6 +49,7 @@ jobs:
             sudo apt-get -y full-upgrade
             sudo apt-get -y install \
               cmake \
+              unzip \
               build-essential \
               qt6-base-dev \
               libqt6core5compat6-dev \
@@ -56,7 +57,11 @@ jobs:
               libglx-dev \
               libgl1-mesa-dev \
               libglvnd-dev \
-              git
+              git \
+              sqlite3 \
+              libsqlite3-dev \
+              liblapack-dev \
+              curl
 
       # Create a build directory
       - name: Create build directory
