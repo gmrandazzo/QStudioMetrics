@@ -90,9 +90,6 @@ void PCAPlot::DModXPlot(BarPlot **bar_plot) {
 
   dvector *dmodx;
   dmodx = getMatrixColumn(projects->value(pid)->getPCAModel(mid)->Model()->dmodx, nlv-1);
-  qDebug() << " Get column " << nlv;
-  PrintDVector(dmodx);
-
   (*bar_plot) =
       new BarPlot(dmodx, objnames,
                   QString("DModX Model - %1 PC %2")

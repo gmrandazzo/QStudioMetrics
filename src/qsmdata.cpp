@@ -363,6 +363,18 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     query.exec("SELECT * from pcaTable");
     while (query.next()) {
       // get the query values
+      // 0: name TEXT
+      // 1: numcomp INT
+      // 2: scalingtype INT
+      // 3: hashinputmx TEXT
+      // 4: objname TEXT
+      // 5: varname TEXT
+      // 6: scores TEXT
+      // 7: loadings TEXT
+      // 8: DMODX TEXT
+      // 9: varexp TEXT
+      // 10: colscaling TEXT
+      // 11: colaverage TEXT
       QString name = query.value(0).toString();
       int npc = query.value(1).toInt();
       int xscaling = query.value(2).toInt();
@@ -371,9 +383,10 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       QString s_varname = query.value(5).toString();
       QString s_scores = query.value(6).toString();
       QString s_loadings = query.value(7).toString();
-      QString s_varexp = query.value(8).toString();
-      QString s_colscaling = query.value(9).toString();
-      QString s_colaverage = query.value(10).toString();
+      QString s_dmodx = query.value(8).toString();
+      QString s_varexp = query.value(9).toString();
+      QString s_colscaling = query.value(10).toString();
+      QString s_colaverage = query.value(11).toString();
 
       // add the data matrix
       addPCAModel();
@@ -386,6 +399,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       getLastPCAModel()->getVarName() = DeserializeQStringList(s_varname);
       DeserializeMatrix(s_scores, getLastPCAModel()->Model()->scores);
       DeserializeMatrix(s_loadings, getLastPCAModel()->Model()->loadings);
+      DeserializeMatrix(s_dmodx, getLastPCAModel()->Model()->dmodx);
       DeserializeDVector(s_colscaling, getLastPCAModel()->Model()->colscaling);
       DeserializeDVector(s_colaverage, getLastPCAModel()->Model()->colaverage);
       DeserializeDVector(s_varexp, getLastPCAModel()->Model()->varexp);
