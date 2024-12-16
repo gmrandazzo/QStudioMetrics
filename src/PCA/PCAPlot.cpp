@@ -139,16 +139,34 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
       for (size_t j = 0; j < orig_x->col; j++) {
           // normalize to avoid dwarf everthing.
           double diff = ((orig_x->data[i][j]-colaverage->data[j])/colscaling->data[j]) - ((reconstructed_mx->data[i][j]-colaverage->data[j])/colscaling->data[j]);
-          double squared_diff = diff * diff;
-          sum_squared_diff += squared_diff;
-          spe_contributions.last()->data[j] = squared_diff;
+          if (std::isfinite(diff)) {
+              double squared_diff = diff * diff;
+              sum_squared_diff += squared_diff;
+              spe_contributions.last()->data[j] = std::isfinite(squared_diff) ? squared_diff : 0.0;
+          }
       }
       spe.push_back(sum_squared_diff);
   }
 
+  /* READY FOR MIGRATION TO NEW libscientific release 
+  dvector *spe;
+  initDVector(&spe);
+  matrix *contributions;
+  initMatrix(&contributions);
+  PCATsqContributions(
+    orig_x,
+    projects->value(pid)->getPCAModel(mid)->Model(),
+    nlv,
+    spe,
+    contributions);
+
+  // conversion to be accepted by barplot
+  QList<dvector *> spe_contributions;
+  */
   QStringList windowtitles;
   for (size_t i = 0; i < orig_x->row; i++){
     windowtitles.append(QString("%1 - Sample %2 -  Total SPE = %3").arg(projectname).arg(objnames[i]).arg(QString::number(spe[i], 'f', 4)));
+    // spe_contributions.append(getMatrixRow(contributions, i)); READY FOR MIGRATION TO NEW libscientific release
   }
 
   auto temp_plot = std::make_unique<BarPlot>(
