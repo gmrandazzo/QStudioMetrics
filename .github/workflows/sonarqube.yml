@@ -46,6 +46,7 @@ jobs:
             sqlite3 \
             libsqlite3-dev \
             liblapack-dev \
+            libblas-dev \
             curl
 
       # Step 2: Configure CMake first
