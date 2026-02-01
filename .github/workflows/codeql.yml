@@ -43,26 +43,19 @@ jobs:
           # queries: security-extended,security-and-quality
 
       - name: Install Dependencies
-
         run: |
-            sudo apt-get update
-            sudo apt-get -y full-upgrade
-            sudo apt-get -y install \
-              cmake \
-              unzip \
-              build-essential \
-              qt6-base-dev \
-              libqt6core5compat6-dev \
-              libqt6charts6-dev \
-              libglx-dev \
-              libgl1-mesa-dev \
-              libglvnd-dev \
-              git \
-              sqlite3 \
-              libsqlite3-dev \
-              liblapack-dev \
-              libblas-dev \
-              curl
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            qt6-base-dev \
+            libqt6charts6-dev \
+            libqt6core5compat6-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            git \
+            liblapack-dev \
+            libblas-dev
 
       # Create a build directory
       - name: Create build directory

@@ -47,13 +47,16 @@ endforeach()
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules/")
 find_package(libscientific)
 
-if(NOT ${LIBSCIENTIFIC_FOUND})
+set(LIBSCIENTIFIC_DEPENDENCY "")
+if(NOT LIBSCIENTIFIC_FOUND)
   message(STATUS "Cloning libscientific")
     include(ExternalProject)
     set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
+    file(MAKE_DIRECTORY ${EXTERNAL_INSTALL_LOCATION}/include)
     ExternalProject_Add(libscientific_git
     GIT_REPOSITORY https://github.com/gmrandazzo/libscientific
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_LOCATION})
+    set(LIBSCIENTIFIC_DEPENDENCY libscientific_git)
     include_directories(${EXTERNAL_INSTALL_LOCATION}/include)
     link_directories(${EXTERNAL_INSTALL_LOCATION}/lib)
     if(WIN32)
