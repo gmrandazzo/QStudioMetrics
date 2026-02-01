@@ -6,6 +6,7 @@
 #include <QPixmap>
 #include <QVector>
 #include <QWidget>
+#include <algorithm>
 
 #include "datacurve.h"
 #include "datapoint.h"
@@ -96,6 +97,17 @@ private:
   void PointDraw(QPainter *painter, QRect rect, PlotSettings settings,
                  DataPoint *p);
   void drawScatters(QPainter *painter);
+  
+  // Spatial Indexing for Hover
+  void buildIndex();
+  struct IndexNode {
+      double x;
+      int index;
+      // Define operator< for std::sort and std::lower_bound
+      bool operator<(const IndexNode& other) const { return x < other.x; }
+      bool operator<(double val) const { return x < val; }
+  };
+  friend bool operator<(double val, const IndexNode& node) { return val < node.x; }
 
   /*Divide, conqueror method for selection/unselection */
   void DoUnselection(int low, int high);
@@ -107,12 +119,21 @@ private:
 
   QVector<DataPoint *> p;      // used for scatter plot
   QVector<DataCurve> curveMap; // used for line plot
+  
+  // Optimization: Sorted Index by X coordinate
+  QVector<IndexNode> m_searchIndex;
+  bool m_indexDirty;
 
   QVector<int> pforward; // used to store point selected and bringed to front.
   QVector<PlotSettings> zoomStack;
   int curZoom;
   bool rubberBandIsShown, labeldetail;
   QRect rubberBandRect;
+  
+  // Lasso Selection
+  bool m_isLassoActive;
+  QPolygon m_lassoPolygon;
+  
   QPixmap pixmap;
   QString m_xaxisname, m_yaxisname, m_plottitle;
   bool antialiasing;

@@ -12,7 +12,7 @@ the data, and the hypotheses. It will enable you to explore and query the data a
 
 ![ScreenShot](https://github.com/gmrandazzo/QStudioMetrics/blob/master/vars/qsmgui.png)
 
-QStudioMetrics is written in C++ using the Qt5 framework and run under Linux, Windows and OSX.
+QStudioMetrics is written in C++ using the Qt6 framework and run under Linux, Windows and OSX.
 
 QStudioMetrics compute:
 
@@ -31,27 +31,48 @@ Mantainer: Giuseppe Marco Randazzo, gmrandazzo@gmail.com <br/>**
 
 ## License
 
-QStudioMetrics is distributed under LGPLv3 license.
-For more details please read the file "LICENSE" or go to "http://www.gnu.org/licenses/lgpl-3.0.html"
+QStudioMetrics is distributed under GNU AFFERO GENERAL PUBLIC LICENSE VERSION 3.
+For more details please read the file "LICENSE".
 
 ## Install
 
 ## Dependencies
 
-- c++ compiler
-- cmake >= 3.22
-- Qt6
-- libscientific >= 1.4.x
+- C++ compiler (supporting C++20)
+- CMake >= 3.22
+- Qt6 (Core, Core5Compat, Gui, Widgets, Sql, PrintSupport, Concurrent, Charts)
+- libscientific (automatically downloaded if not found)
 
 ## Compile from source
 
-OSX using homebrew
+### macOS (Homebrew)
 
+```bash
+brew install cmake qt qt5compat
+mkdir build
+cd build
+cmake .. -DCMAKE_PREFIX_PATH=$(brew --prefix qt)
+make -j
 ```
-brew install libscientific
-brew install qt
-brew install cmake g++
-cmake ~/Nextcloud/Software/QStudioMetrics/ -Wno-dev -DCMAKE_PREFIX_PATH=$(brew --prefix qt) -DLIBSCIENTIFIC_ROOT_DIR=$(brew --prefix libscientific)
+
+### Linux (Debian/Ubuntu)
+
+```bash
+sudo apt update
+sudo apt install build-essential cmake qt6-base-dev libqt6charts6-dev libqt6core5compat6-dev
+mkdir build
+cd build
+cmake ..
+make -j
+```
+
+### Linux (Fedora)
+
+```bash
+sudo dnf install gcc-c++ cmake qt6-qtbase-devel qt6-qtcharts-devel qt6-qt5compat-devel
+mkdir build
+cd build
+cmake ..
 make -j
 ```
 

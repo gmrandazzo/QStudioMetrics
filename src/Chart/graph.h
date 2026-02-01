@@ -8,30 +8,6 @@
 
 enum PLOTTYPE { _2D, _3D };
 
-/* Polymorphism to choose between two plot engines: plotly or qt.
- *  How to use?
- *
-
-Graphs* function(int i){ // function returning a base class pointer.
-  switch(i) {
-    case 1:
-      return new Chart();
-    case 2:
-      return new QPlotlyWindow();
-    default:
-      return new Chart();
-  }
-}
-
-int main(void)
-{
-  Graphs *s =  function(1);
-  s-> ... call same virtual methods...
-  delete s;
-  return 0;
-}
-
- */
 class Graphs {
 public:
   Graphs() {}

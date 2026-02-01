@@ -1,6 +1,6 @@
-project(QStudioMetrics)
 cmake_minimum_required(VERSION 3.22)
-set(VERSION "2.3.0")
+project(QStudioMetrics)
+set(VERSION "2.4.0")
 set(AUTHOR "Giuseppe Marco Randazzo")
 set(CMAKE_AUTOMOC OFF)
 set(CMAKE_AUTOUIC ON)
