@@ -1,20 +1,27 @@
-# Minimal makefile for Sphinx documentation
-#
+# Makefile for QStudioMetrics Documentation using Pandoc
 
-# You can set these variables from the command line, and also
-# from the environment for the first two.
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = source
-BUILDDIR      = build
+SOURCEDIR = source
+BUILDDIR = build
+FILENAME = MANUAL
 
-# Put it first so that "make" without argument is like "make help".
+.PHONY: all html pdf clean help
+
+all: html pdf
+
 help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@echo "Targets:"
+	@echo "  html  : Generate HTML documentation"
+	@echo "  pdf   : Generate PDF documentation (requires LaTeX)"
+	@echo "  all   : Generate both HTML and PDF"
+	@echo "  clean : Remove the build directory"
 
-.PHONY: help Makefile
+html:
+	mkdir -p $(BUILDDIR)
+	pandoc $(SOURCEDIR)/$(FILENAME).md -o $(BUILDDIR)/index.html --self-contained --metadata title="QStudioMetrics Manual"
 
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+pdf:
+	mkdir -p $(BUILDDIR)
+	pandoc $(SOURCEDIR)/$(FILENAME).md -o $(BUILDDIR)/$(FILENAME).pdf --metadata title="QStudioMetrics Manual"
+
+clean:
+	rm -rf $(BUILDDIR)

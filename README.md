@@ -41,6 +41,8 @@ For more details please read the file "LICENSE".
 - CMake >= 3.22
 - Qt6 (Core, Core5Compat, Gui, Widgets, Sql, PrintSupport, Concurrent, Charts)
 - libscientific (automatically downloaded if not found)
+- **Pandoc** (for documentation)
+- **LaTeX/pdftex** (for PDF documentation)
 
 ## Compile from source
 
@@ -73,6 +75,38 @@ mkdir build
 cd build
 cmake ..
 make -j
+```
+
+## Build Documentation
+
+To build the documentation locally in HTML or PDF format, you need `pandoc` and a LaTeX engine.
+
+### Install Documentation Tools
+
+#### macOS (Homebrew)
+```bash
+brew install pandoc
+# For PDF support:
+brew install --cask mactex-no-gui # or basictex
+```
+
+#### Linux (Debian/Ubuntu)
+```bash
+sudo apt install pandoc texlive-latex-base texlive-fonts-recommended texlive-extra-utils texlive-latex-extra
+```
+
+#### Linux (Fedora)
+```bash
+sudo dnf install pandoc texlive-scheme-basic
+```
+
+### Build Commands
+
+```bash
+cd docs
+make html   # Generates build/index.html
+make pdf    # Generates build/MANUAL.pdf
+make all    # Generates both
 ```
 
 ## Install binary release
