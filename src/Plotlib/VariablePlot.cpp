@@ -216,7 +216,7 @@ BarPlot *VariablePlot::VariableDistribution() {
         projects->value(pid)->getMatrix(xhash[0])->getVarName()[varid1 + 1];
 
     BarPlot *bplot =
-        new BarPlot(v, QString("Distributuion Plot for %1").arg(vname1), vname1,
+        new BarPlot(v, QString("Distribution Plot for %1").arg(vname1), vname1,
                     "Number of Objects", selobjlabels);
 
     for (int i = 0; i < v.size(); i++) {
@@ -258,7 +258,7 @@ BarPlot *VariablePlot::VariableDistribution() {
         projects->value(pid)->getArray(xhash[0])->getVarName()[varid1 + 1];
 
     BarPlot *bplot =
-        new BarPlot(v, QString("Distributuion Plot for %1").arg(vname1), vname1,
+        new BarPlot(v, QString("Distribution Plot for %1").arg(vname1), vname1,
                     "Number of Objects", selobjlabels);
 
     for (int i = 0; i < v.size(); i++) {
