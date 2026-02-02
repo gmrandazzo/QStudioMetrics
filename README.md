@@ -2,92 +2,85 @@
 
 ![GitHub all releases](https://img.shields.io/github/downloads/gmrandazzo/QStudioMetrics/total)
 [![CodeQL](https://github.com/gmrandazzo/QStudioMetrics/actions/workflows/codeql.yml/badge.svg)](https://github.com/gmrandazzo/QStudioMetrics/actions/workflows/codeql.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://opensource.org/licenses/AGPL-3.0)
 
-**QStudioMetrics is a software to develop data mining and multivariate analysis studies.**
-
-Discoveries often arise from exploratory data analysis and come from a hypothesis-free manner
-alongside hypothesis-driven approaches. QStudioMetrics is a toolbox that allows a conversation between you,
-the data, and the hypotheses. It will enable you to explore and query the data and integrate your personal experience for new discoveries.
+**QStudioMetrics** is a high-performance C++ toolbox for exploratory data analysis, chemometrics, and multivariate statistics. It provides a bridge between complex algorithms and intuitive discovery, allowing researchers to interact with their data without writing a single line of code.
 
 ![ScreenShot](https://github.com/gmrandazzo/QStudioMetrics/blob/master/vars/qsmgui.png)
 
-QStudioMetrics is written in C++ using the Qt6 framework and run under Linux, Windows and OSX.
+---
 
-QStudioMetrics compute:
+## 🚀 Key Features
 
-- Principal Component Analysis (PCA)
-- Consensus Principal Component Analysis (CPCA)
-- Partial Least Squares (PLS)
-- Multiple Linear Regression (MLR)
-- Linear Discriminant Analysis (LDA)
-- Clustering analysis: Hierarchical and K-Means
-- Model validation: leave-one-out, bootstrap k-fold cross validation, y-scrambling
+- **Interactive Exploratory Analysis**: Real-time plotting and manipulation of PCA and CPCA models.
+- **Advanced Regression**: Comprehensive support for PLS and MLR with automated validation.
+- **Robust Classification**: Linear Discriminant Analysis (LDA) with high-accuracy results.
+- **Validation Suite**: Built-in K-Fold cross-validation, Leave-One-Out, and Y-Scrambling to ensure statistical significance.
+- **High Performance**: Native C++20 engine powered by `libscientific` for handling large datasets efficiently.
+- **Cross-Platform**: Seamlessly runs on Linux, Windows, and macOS (Intel/Silicon).
 
-All the algorithms are part of libscientific (See https://github.com/gmrandazzo/libscientific)
+---
 
-**Author: Giuseppe Marco Randazzo <br/>
-Mantainer: Giuseppe Marco Randazzo, gmrandazzo@gmail.com <br/>**
+## 🍇 Quick Start: The Wine Challenge
 
-## License
+Discover how to separate wine cultivars in 30 seconds:
 
-QStudioMetrics is distributed under GNU AFFERO GENERAL PUBLIC LICENSE VERSION 3.
-For more details please read the file "LICENSE".
+1.  **Import**: Launch QStudioMetrics and go to `File > Import Data`. Select `examples/wine.csv`.
+2.  **Model**: Navigate to `Models > PCA`. Select all chemical variables (Alcohol, Malic acid, etc.) and click `Compute`.
+3.  **Discover**: Open the `Scores Plot`. You will see three distinct clusters representing different wine cultivars based on their chemical profile!
 
-## Install
+---
 
-## Dependencies
+## 🛠 Installation & Build
 
-- C++ compiler (supporting C++20)
-- CMake >= 3.22
-- Qt6 (Core, Core5Compat, Gui, Widgets, Sql, PrintSupport, Concurrent, Charts)
-- libscientific (automatically downloaded if not found)
-- **Pandoc** (for documentation)
-- **LaTeX/pdftex** (for PDF documentation)
+### Dependencies
 
-## Compile from source
+- **C++ Compiler**: Supporting C++20 (GCC 10+, Clang 10+, MSVC 2019+)
+- **CMake**: >= 3.22
+- **Qt6**: Core, Core5Compat, Gui, Widgets, Sql, PrintSupport, Concurrent, Charts
+- **libscientific**: (Automatically downloaded during build if not found)
+- **Pandoc & LaTeX**: (Optional) Required only for building the PDF/HTML documentation
 
-### macOS (Homebrew)
+### Compile from source
 
+#### macOS (Homebrew)
 ```bash
 brew install cmake qt qt5compat
-mkdir build
-cd build
+mkdir build && cd build
 cmake .. -DCMAKE_PREFIX_PATH=$(brew --prefix qt)
 make -j
 ```
 
-### Linux (Debian/Ubuntu)
-
+#### Linux (Debian/Ubuntu)
 ```bash
 sudo apt update
 sudo apt install build-essential cmake qt6-base-dev libqt6charts6-dev libqt6core5compat6-dev
-mkdir build
-cd build
+mkdir build && cd build
 cmake ..
 make -j
 ```
 
-### Linux (Fedora)
-
+#### Linux (Fedora)
 ```bash
 sudo dnf install gcc-c++ cmake qt6-qtbase-devel qt6-qtcharts-devel qt6-qt5compat-devel
-mkdir build
-cd build
+mkdir build && cd build
 cmake ..
 make -j
 ```
 
-## Build Documentation
+---
 
-To build the documentation locally in HTML or PDF format, you need `pandoc` and a LaTeX engine.
+## 📚 Documentation
+
+Detailed documentation, including statistical interpretations and plot guides, is available in the `docs` folder.
 
 ### Install Documentation Tools
 
-#### macOS (Homebrew)
+#### macOS
 ```bash
 brew install pandoc
 # For PDF support:
-brew install --cask mactex-no-gui # or basictex
+brew install --cask mactex-no-gui
 ```
 
 #### Linux (Debian/Ubuntu)
@@ -101,7 +94,6 @@ sudo dnf install pandoc texlive-scheme-basic
 ```
 
 ### Build Commands
-
 ```bash
 cd docs
 make html   # Generates build/index.html
@@ -109,20 +101,22 @@ make pdf    # Generates build/MANUAL.pdf
 make all    # Generates both
 ```
 
-## Install binary release
+---
 
-Binary releases for Windows and OSX at <https://github.com/gmrandazzo/QStudioMetrics/releases>.
+## 🎓 How to Cite
 
-## Documentation
+If you use QStudioMetrics in your research, please cite it to support the project:
 
-https://qstudiometrics.readthedocs.io/en/latest/
+> Randazzo, G. M. QStudioMetrics: A C++ Toolbox for Multivariate Analysis. GitHub Repository. https://github.com/gmrandazzo/QStudioMetrics
 
-## Supported platforms
+---
 
-- Linux
-- Windows
-- Mac intel/silicon
+## 📜 License
 
-## Known bugs
+QStudioMetrics is distributed under the **GNU Affero General Public License Version 3**.
+See the [LICENSE](LICENSE) file for the full text.
 
-- Hierarchical clustering: the problem belongs to the original libscientific library
+---
+
+**Author**: Giuseppe Marco Randazzo  
+**Contact**: [gmrandazzo@gmail.com](mailto:gmrandazzo@gmail.com)
