@@ -378,7 +378,14 @@ void ChartQt::drawBars() {
   printf("ChartQt::drawBars\n");
   //#endif
 
-  chart()->removeAllSeries();
+  const auto allSeries = chart()->series();
+  for (auto s : allSeries) {
+    if (dynamic_cast<QBarSeries *>(s)) {
+      chart()->removeSeries(s);
+      delete s;
+    }
+  }
+
   barsList.clear();
 
   QStringList categories;

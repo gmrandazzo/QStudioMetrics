@@ -281,6 +281,7 @@
      <addaction name="actionPCA2DLoadings_Plot"/>
      <addaction name="actionPCA2DDModX_Plot"/>
      <addaction name="actionPCA2DTsq_Contribution_Plot"/>
+     <addaction name="actionPCA2DRelative_Tsq_Contribution_Plot"/>
      <addaction name="actionPCA2DExpVarPlot"/>
      <addaction name="separator"/>
      <addaction name="actionPCA2DScore_Plot_Prediction"/>
@@ -1555,6 +1556,11 @@
   <action name="actionPCA2DDModX_Plot">
    <property name="text">
     <string>DModX</string>
+   </property>
+  </action>
+  <action name="actionPCA2DRelative_Tsq_Contribution_Plot">
+   <property name="text">
+    <string>Relative T² Contribution Plot</string>
    </property>
   </action>
  </widget>
