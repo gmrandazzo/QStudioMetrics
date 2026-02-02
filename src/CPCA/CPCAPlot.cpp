@@ -19,6 +19,7 @@ void CPCAPlot::SuperScorePlot2D(ScatterPlot **plot2D) const {
       ScatterPlot::SCORES);
   temp_plot->setHotellingConfidenceEllipse(true);
   temp_plot->setPID(pid);
+  temp_plot->setImages(projects->value(pid)->getImages());
   *plot2D = temp_plot.release();
 }
 
@@ -72,6 +73,7 @@ void CPCAPlot::SuperScorePlotPrediction2D(ScatterPlot **plot2D) const {
       ScatterPlot::SCORES);
   (*plot2D)->setHotellingConfidenceEllipse(true);
   (*plot2D)->setPID(pid);
+  (*plot2D)->setImages(projects->value(pid)->getImages());
 }
 
 QList<ScatterPlot *> CPCAPlot::BlockScorePlotPrediction2D() {
@@ -137,6 +139,7 @@ QList<ScatterPlot *> CPCAPlot::BlockScorePlotPrediction2D() {
     plots.last()->setPID(pid);
     plots.last()->setMID(mid);
     plots.last()->setModelType(CPCA_);
+    plots.last()->setImages(projects->value(pid)->getImages());
     DelMatrix(&m);
     DelMatrix(&p);
   }
@@ -214,6 +217,7 @@ QList<ScatterPlot *> CPCAPlot::BlockScoresPlot2D() {
     plots.last()->setPID(pid);
     plots.last()->setMID(mid);
     plots.last()->setModelType(CPCA_);
+    plots.last()->setImages(projects->value(pid)->getImages());
     DelMatrix(&m);
   }
   return plots;

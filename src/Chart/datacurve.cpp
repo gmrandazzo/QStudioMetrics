@@ -4,11 +4,11 @@
 
 DataCurve::DataCurve()
     : m_name("No name"), m_color(Qt::black), m_radius(2), m_width(1),
-      m_visible(true), lt(L) {}
+      m_visible(true), m_isSmooth(false), lt(L) {}
 
 DataCurve::DataCurve(QVector<QPointF> curve, QString name, QColor color)
     : m_name(name), m_color(color), m_radius(2), m_width(1), m_visible(true),
-      lt(L) {
+      m_isSmooth(false), lt(L) {
   m_curve = curve;
 }
 
@@ -26,6 +26,8 @@ void DataCurve::setVisible(bool visible) { m_visible = visible; }
 
 void DataCurve::setStyle(LTYPE lt_) { lt = lt_; }
 
+void DataCurve::setSmooth(bool smooth) { m_isSmooth = smooth; }
+
 QVector<QPointF> DataCurve::getPoints() const { return m_curve; }
 
 QString DataCurve::name() const { return m_name; }
@@ -39,3 +41,5 @@ int DataCurve::radius() const { return m_radius; }
 int DataCurve::width() const { return m_width; }
 
 bool DataCurve::isVisible() const { return m_visible; }
+
+bool DataCurve::isSmooth() const { return m_isSmooth; }

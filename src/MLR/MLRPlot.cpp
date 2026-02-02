@@ -138,6 +138,7 @@ void MLRPlot::RecalcVSExperimentalAndPrediction(ScatterPlot **plot2D) {
           projectname + modelname + " - MLR Recalc VS Experimental Plot",
           ScatterPlot::SCORES);
       DelMatrix(&recalc_y);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setPID(pid);
       DelMatrix(&y);
@@ -284,6 +285,7 @@ void MLRPlot::PredictedVSExperimentalAndPrediction(ScatterPlot **plot2D) {
           QString(projectname + modelname +
                   " - MLR Recalc VS Experimental Plot"),
           ScatterPlot::SCORES);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       (*plot2D)->setAxisNameExtensions(varname);
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setPID(pid);
@@ -375,6 +377,7 @@ void MLRPlot::RecalcVSExperimental(ScatterPlot **plot2D) {
       QString("Recalculated"),
       projectname + modelname + " - MLR Recalculated VS Experimental Plot",
       ScatterPlot::SCORES);
+  (*plot2D)->setImages(projects->value(pid)->getImages());
   (*plot2D)->BuildDiagonal();
   (*plot2D)->setPID(pid);
   (*plot2D)->setAxisNameExtensions(varname);
@@ -447,6 +450,7 @@ void MLRPlot::RecalcResidualsVSExperimental(ScatterPlot **plot2D) {
         projectname + modelname +
             " - MLR Experimental VS Recalculated Residuals Y Plot",
         ScatterPlot::SCORES);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
     DelMatrix(&recalc_res);
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);
@@ -516,6 +520,7 @@ void MLRPlot::PredictedVSExperimental(ScatterPlot **plot2D) {
         QString("Predicted"),
         projectname + modelname + " - MLR Predicted VS Experimental Plot",
         ScatterPlot::SCORES);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
     (*plot2D)->BuildDiagonal();
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);
@@ -588,6 +593,7 @@ void MLRPlot::PredictedResidualsVSExperimental(ScatterPlot **plot2D) {
                         projectname + modelname +
                             " - MLR Experimental VS Predicted Residuals Y Plot",
                         ScatterPlot::SCORES);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
     DelMatrix(&pred_res);
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);

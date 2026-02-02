@@ -280,9 +280,9 @@ void ModelDialog::next() {
       adjustSize();
     } else {
       QMessageBox::warning(
-          this, tr("Warning!"),
-          tr("No Project or data selected or PCA model name specified!\nPlease "
-             "select project and data and check the PCA model name.\n"),
+          this, tr("Warning"),
+          tr("No project or data selected, or PCA model name specified! Please "
+             "select project and data and check the PCA model name."),
           QMessageBox::Close);
       return;
     }
@@ -344,25 +344,25 @@ void ModelDialog::next() {
       adjustSize();
     } else {
       if (type == PLS_) {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("No Project or data selected or PLS model name "
-                                "specified!\nPlease select project and data "
-                                "and check the PLS model name.\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("No project or data selected, or PLS model name "
+                                "specified! Please select project and data "
+                                "and check the PLS model name."),
                              QMessageBox::Close);
         return;
       }
       if (type == LDA_) {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("No Project or data selected or LDA model name "
-                                "specified!\nPlease select project and data "
-                                "and check the LDA model name.\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("No project or data selected, or LDA model name "
+                                "specified! Please select project and data "
+                                "and check the LDA model name."),
                              QMessageBox::Close);
         return;
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("No Project or data selected or MLR model name "
-                                "specified!\nPlease select project and data "
-                                "and check the MLR model name.\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("No project or data selected, or MLR model name "
+                                "specified! Please select project and data "
+                                "and check the MLR model name."),
                              QMessageBox::Close);
         return;
       }
@@ -487,9 +487,9 @@ void ModelDialog::previous() {
 void ModelDialog::OK() {
   if (selectedproject_ == -1 || selecteddata_ == -1 ||
       ui.modelname->text().isEmpty()) {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No project, data selected or no model name "
-                            "setted!\nPlease check your settings.\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No project or data selected, or model name not "
+                            "set! Please check your settings."),
                          QMessageBox::Close);
     return;
   } else {

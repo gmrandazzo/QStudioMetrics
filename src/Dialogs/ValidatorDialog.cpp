@@ -150,8 +150,8 @@ void ValidatorDialog::setProject(QModelIndex current) {
 void ValidatorDialog::OK() {
   if (selectedproject_ == -1 || modelid == -1) {
     QMessageBox::warning(
-        this, tr("Warning!"),
-        tr("Please select a project and a model to validate.\n"),
+        this, tr("Warning"),
+        tr("Please select a project and a model to validate."),
         QMessageBox::Close);
   } else {
     if (ui.averageCrule->isChecked()) {

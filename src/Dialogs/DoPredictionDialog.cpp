@@ -64,9 +64,9 @@ void DoPredictionDialog::CheckDataForPrediction() {
       ui.nextButton->setEnabled(true);
     } else {
       QMessageBox::warning(
-          this, tr("Warnig"),
-          tr("The selected data have different number of descriptors with the "
-             "selected model. \n\nNo prediction can be calculated."),
+          this, tr("Warning"),
+          tr("The selected data has a different number of descriptors than the "
+             "selected model. No prediction can be calculated."),
           QMessageBox::Ok);
       ui.nextButton->setEnabled(false);
     }
@@ -380,9 +380,9 @@ void DoPredictionDialog::next() {
     adjustSize();
   } else {
     QMessageBox::warning(
-        this, tr("Warning!"),
-        tr("No Project, data, model selected or model name specified!\nPlease "
-           "select project and data and check the model name.\n"),
+        this, tr("Warning"),
+        tr("No project, data, or model selected, or model name specified! Please "
+           "select project and data and check the model name."),
         QMessageBox::Close);
     return;
   }

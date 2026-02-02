@@ -12,8 +12,8 @@
 #endif
 
 #define QEPSILON 1e-3 /* Define your own tolerance*/
-#ifndef FLOAT_EQ
-#define FLOAT_EQ(x, v, EPSILON) (((v - EPSILON) < x) && (x < (v + EPSILON)))
+#ifndef CHART_FLOAT_EQ
+#define CHART_FLOAT_EQ(x, v, EPSILON) (((v - EPSILON) < x) && (x < (v + EPSILON)))
 #endif
 
 enum MarkerType { CIRCLE, SQUARE, TRIANGLE };
@@ -52,9 +52,9 @@ public:
   MarkerType marker() const;
 
   bool compare(DataPoint &p) {
-    if (FLOAT_EQ(this->x(), p.x(), QEPSILON) &&
-        FLOAT_EQ(this->y(), p.y(), QEPSILON) &&
-        FLOAT_EQ(this->z(), p.z(), QEPSILON)) {
+    if (CHART_FLOAT_EQ(this->x(), p.x(), QEPSILON) &&
+        CHART_FLOAT_EQ(this->y(), p.y(), QEPSILON) &&
+        CHART_FLOAT_EQ(this->z(), p.z(), QEPSILON)) {
       if (this->getName().compare(p.getName()) == 0) {
         return true;
       } else {

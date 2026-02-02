@@ -11,6 +11,14 @@
 
 void BarPlot::slotExit() { qApp->exit(); }
 
+void BarPlot::setImages(QList<IMAGE> &images) {
+  QMap<QString, QPixmap> imgmap;
+  for (int i = 0; i < images.size(); ++i) {
+    imgmap.insert(images[i].name, images[i].image);
+  }
+  chart->setImages(imgmap);
+}
+
 void BarPlot::genBars(dvector *v, int split, double min, double max,
                       QVector<qreal> *bval, QStringList *bnames) {
   int i, j;

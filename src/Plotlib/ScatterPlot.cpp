@@ -340,7 +340,7 @@ void ScatterPlot::BuildHotellingEllipse() {
     curve.append(
         QPointF(r_ellipse->data[0][0] + cc->data[0],
                 r_ellipse->data[0][1] + cc->data[1])); // Close the curve
-    chart->addCurve(curve, "Hotelling ellipse 95% confidence", Qt::black);
+    chart->addCurve(curve, "Hotelling ellipse 95% confidence", Qt::black, true);
   }
 
   DelDVector(&cc);
@@ -1619,7 +1619,7 @@ void ScatterPlot::UpdatePointPosition() {
       for (uint i = 0; i < curves[k]->row; i++) {
         line.append(QPointF(curves[k]->data[i][x], curves[k]->data[i][y]));
       }
-      chart->addCurve(line, curvenames[k], curvecolors[k]);
+      chart->addCurve(line, curvenames[k], curvecolors[k], curvesmooth[k]);
     }
   }
 
@@ -1656,11 +1656,12 @@ void ScatterPlot::SetAutoNameAxes(bool autonameaxes_) {
 }
 
 void ScatterPlot::addCurve(QList<matrix *> curves_, QStringList curvenames_,
-                           QList<QColor> curvecolors_) {
+                           QList<QColor> curvecolors_, bool smooth) {
   for (int i = 0; i < curves_.size(); i++) {
     curves.append(new matrix);
     initMatrix(&curves.last());
     MatrixCopy(curves_.at(i), &curves.last());
+    curvesmooth.append(smooth);
   }
   curvenames.append(curvenames_);
   curvecolors.append(curvecolors_);
@@ -1674,6 +1675,7 @@ void ScatterPlot::removeAllCurves() {
   curves.clear();
   curvenames.clear();
   curvecolors.clear();
+  curvesmooth.clear();
 }
 
 void ScatterPlot::BuildDiagonal() {
@@ -2313,4 +2315,12 @@ ScatterPlot::~ScatterPlot() {
   delete chart;
   if (cwidget != 0)
     delete cwidget;
+}
+
+void ScatterPlot::setImages(QList<IMAGE> &images) {
+  QMap<QString, QPixmap> imgmap;
+  for(int i=0; i<images.size(); ++i) {
+      imgmap.insert(images[i].name, images[i].image);
+  }
+  chart->setImages(imgmap);
 }

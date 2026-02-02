@@ -200,7 +200,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
     foreach (vname, varnotfound)
       msg += QString("%1\n").arg(vname);
 
-    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()),
+    QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     return false;
   } else {
@@ -278,7 +278,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
     foreach (xvname, xvarnotfound)
       msg += QString("%1\n").arg(xvname);
 
-    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()),
+    QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     retval = false;
   }
@@ -289,7 +289,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
     foreach (yvname, yvarnotfound)
       msg += QString("%1\n").arg(yvname);
 
-    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()),
+    QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     retval = false;
   }
@@ -372,7 +372,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
     foreach (xvname, xvarnotfound)
       msg += QString("%1\n").arg(xvname);
 
-    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()),
+    QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     return false;
   } else {
@@ -442,7 +442,7 @@ bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames,
     foreach (vname, varnotfound)
       msg += QString("%1\n").arg(vname);
 
-    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()),
+    QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     return false;
   } else {
@@ -4655,8 +4655,8 @@ int MainWindow::ProjectOpen(QString fproject) {
                                        ui.treeWidget, &tabcount_, &mid_, &log);
   } else {
     // OLD Version
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("QSM old file version unsupported!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("QSM old file version unsupported."),
                          QMessageBox::Close);
   }
 
@@ -4713,8 +4713,8 @@ void MainWindow::SaveAs() {
       QString fproject = projects->value(savedialog.getProjectID())
                              ->SaveSQLData(savedialog.getPathToSave());
       if (fproject.isEmpty()) {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Unable to save the project!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Unable to save the project."),
                              QMessageBox::Close);
       } else {
         RECENTMODELS m;
@@ -5035,7 +5035,7 @@ void MainWindow::PCA2DScorePlot() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5061,7 +5061,7 @@ void MainWindow::PCA2DLoadingsMVANDPlot() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5090,7 +5090,7 @@ void MainWindow::PCA2DLoadingsPlot() {
               SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5115,7 +5115,7 @@ void MainWindow::PCADModXPlot() {
       graphchild->show();
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5140,7 +5140,7 @@ void MainWindow::PCA2DExpVarPlot() {
       graphchild->show();
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5165,13 +5165,13 @@ void MainWindow::PCATsqContributionPlot() {
         graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Problem with Barplot and T squared contribution plot!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Problem with Barplot and T squared contribution plot."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5199,7 +5199,7 @@ void MainWindow::PCA2DScorePlotPrediction() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5227,7 +5227,7 @@ void MainWindow::CPCA2DSuperScorePlot() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No CPCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5255,7 +5255,7 @@ void MainWindow::CPCA2DSuperWeightsPlot() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No CPCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5284,7 +5284,7 @@ void MainWindow::CPCA2DBlockScoresPlot() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No CPCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5313,7 +5313,7 @@ void MainWindow::CPCA2DBlockLoadingsPlot() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No CPCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5338,7 +5338,7 @@ void MainWindow::CPCA2DExpVarPlot() {
       graphchild->show();
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5366,7 +5366,7 @@ void MainWindow::CPCA2DSuperScoresPlotPrediction() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No CPCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5396,7 +5396,7 @@ void MainWindow::CPCA2DBlockScoresPlotPrediction() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No CPCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5423,7 +5423,7 @@ void MainWindow::PLS2DPlot() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5450,7 +5450,7 @@ void MainWindow::PLS2DTTScorePlot() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5479,7 +5479,7 @@ void MainWindow::PLS2DPPLoadingsPlot() {
               SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5508,7 +5508,7 @@ void MainWindow::PLS2DWWWeightsPlot() {
               SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5535,7 +5535,7 @@ void MainWindow::PLS2DUUScorePlot() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5564,7 +5564,7 @@ void MainWindow::PLS2DQQLoadingsPlot() {
               SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5593,7 +5593,7 @@ void MainWindow::PLS2DPQLoadingsPlot() {
               SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5621,7 +5621,7 @@ void MainWindow::PLS2DTTScorePlotPrediction() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5646,7 +5646,7 @@ void MainWindow::PLSPlotBetaCoefficients() {
       graphchild->show();
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5670,7 +5670,7 @@ void MainWindow::PLSPlotBetaCoeffDWPlot() {
       graphchild->show();
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5698,13 +5698,13 @@ void MainWindow::PLSRecalcVSExpPlotPrediction() {
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5732,13 +5732,13 @@ void MainWindow::PLSPredictedVSExpAndPredictionPlot() {
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5769,8 +5769,8 @@ void MainWindow::PLSRecalcVSExpPlot() {
           connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                   SLOT(UpdateImageWindow(ImageSignal)));
         } else {
-          QMessageBox::warning(this, tr("Warning!"),
-                               tr("Original Data Model not found!\n"),
+          QMessageBox::warning(this, tr("Warning"),
+                               tr("Original data model not found."),
                                QMessageBox::Close);
         }
       } else {
@@ -5792,7 +5792,7 @@ void MainWindow::PLSRecalcVSExpPlot() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5819,13 +5819,13 @@ void MainWindow::PLSRecalcResidualsVSExpPlot() {
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5856,8 +5856,8 @@ void MainWindow::PLSPredVSExpPlot() {
           connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                   SLOT(UpdateImageWindow(ImageSignal)));
         } else {
-          QMessageBox::warning(this, tr("Warning!"),
-                               tr("Original Data Model not found!\n"),
+          QMessageBox::warning(this, tr("Warning"),
+                               tr("Original data model not found."),
                                QMessageBox::Close);
         }
       } else {
@@ -5878,7 +5878,7 @@ void MainWindow::PLSPredVSExpPlot() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5905,13 +5905,13 @@ void MainWindow::PLSPredResidualsVSExpPlot() {
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5937,8 +5937,8 @@ void MainWindow::PLSPlotR2Q2() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -5964,8 +5964,8 @@ void MainWindow::PLSPlotRMSE() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -5991,8 +5991,8 @@ void MainWindow::PLSPlotROCAucs() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -6018,8 +6018,8 @@ void MainWindow::PLSPlotROCCurves() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -6046,8 +6046,8 @@ void MainWindow::PLSPlotPRAucs() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -6074,8 +6074,8 @@ void MainWindow::PLSPlotPRCurves() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -6102,8 +6102,8 @@ void MainWindow::PLSPlotR2R2Predicted() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -6130,8 +6130,8 @@ void MainWindow::PLSPlotRMSEPredicted() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -6158,8 +6158,8 @@ void MainWindow::PLSPlotYScrambling() {
     }
   } else {
     QMessageBox::warning(
-        this, tr("Warning!"),
-        tr("No PLS Models and Y Scrambling Validation Model Found!\n"),
+        this, tr("Warning"),
+        tr("No PLS models or Y-scrambling validation model found."),
         QMessageBox::Close);
   }
 }
@@ -6186,13 +6186,13 @@ void MainWindow::MLRRecalcVSExpPlot() {
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -6219,13 +6219,13 @@ void MainWindow::MLRRecalcResidualsVSExpPlot() {
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No MLR Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No MLR models found."),
                          QMessageBox::Close);
   }
 }
@@ -6251,7 +6251,7 @@ void MainWindow::MLRBetaCoefficients() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No MLR Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No MLR models found."),
                          QMessageBox::Close);
   }
 }
@@ -6278,13 +6278,13 @@ void MainWindow::MLRPredVSExpPlot() {
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No MLR Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No MLR models found."),
                          QMessageBox::Close);
   }
 }
@@ -6311,13 +6311,13 @@ void MainWindow::MLRPredResidualsVSExpPlot() {
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No MLR Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No MLR models found."),
                          QMessageBox::Close);
   }
 }
@@ -6345,13 +6345,13 @@ void MainWindow::MLRRecalcVSExpAndPredictionPlot() {
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No MLR Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No MLR models found."),
                          QMessageBox::Close);
   }
 }
@@ -6379,13 +6379,13 @@ void MainWindow::MLRPredictedVSExpAndPredictionPlot() {
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No MLR Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No MLR models found."),
                          QMessageBox::Close);
   }
 }
@@ -6412,8 +6412,8 @@ void MainWindow::MLRPlotYScrambling() {
     }
   } else {
     QMessageBox::warning(
-        this, tr("Warning!"),
-        tr("No MLR Models and Y Scrambling Validation Model Found!\n"),
+        this, tr("Warning"),
+        tr("No MLR models or Y-scrambling validation model found."),
         QMessageBox::Close);
   }
 }
@@ -6440,7 +6440,7 @@ void MainWindow::LDAFeaturePlot2D() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No LDA models found."),
                          QMessageBox::Close);
   }
 }
@@ -6468,7 +6468,7 @@ void MainWindow::LDAProbabilityDistribution() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No LDA models found."),
                          QMessageBox::Close);
   }
 }
@@ -6495,8 +6495,8 @@ void MainWindow::LDAROCPlot() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No LDA Models Validated Found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No validated LDA models found."),
                          QMessageBox::Close);
   }
 }
@@ -6523,8 +6523,8 @@ void MainWindow::LDAPRPlot() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No LDA Models Validated Found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No validated LDA models found."),
                          QMessageBox::Close);
   }
 }
@@ -6552,7 +6552,7 @@ void MainWindow::LDAFeaturePlotAndPrediction2D() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No LDA models found."),
                          QMessageBox::Close);
   }
 }
@@ -6580,7 +6580,7 @@ void MainWindow::LDAProbabilityDistributionWithPredictions() {
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No LDA models found."),
                          QMessageBox::Close);
   }
 }

@@ -39,7 +39,7 @@ public:
                         int radius) = 0;
   virtual void addPoint(qreal x, qreal y, qreal z, QString name, QColor color,
                         int radius) = 0;
-  virtual void addCurve(QVector<QPointF> curve, QString name, QColor color) = 0;
+  virtual void addCurve(QVector<QPointF> curve, QString name, QColor color, bool smooth = false) = 0;
   virtual int PointSize() const = 0;
   virtual DataPoint *getPoint(int id) = 0;
   virtual void RemovePointAt(int id) = 0;
@@ -51,6 +51,7 @@ public:
   // virtual QSize minimumSizeHint() = 0;
   // virtual QSize sizeHint() = 0;
   virtual void SaveAsImage(QString imgname) = 0;
+  virtual void setImages(const QMap<QString, QPixmap> &images) {}
 };
 
 #endif

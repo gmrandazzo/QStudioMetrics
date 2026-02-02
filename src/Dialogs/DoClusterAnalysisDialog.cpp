@@ -128,7 +128,7 @@ void DoClusterAnalysisDialog::GenLayerList() {
 
 void DoClusterAnalysisDialog::OK() {
   if (ui.saveClusterLabelBox->isChecked() && ui.lineEdit->text().isEmpty()) {
-    QMessageBox::warning(this, tr("Warning!"), tr("Please set Model Name.\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("Please set model name."),
                          QMessageBox::Close);
   } else {
     return accept();

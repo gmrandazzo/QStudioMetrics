@@ -50,7 +50,7 @@ ValidationClusterPlot::ValidationClusterPlot(dvector *toplot,
   for (uint i = 0; i < toplot->size; i++) {
     curve << QPointF(i + 1, toplot->data[i]);
   }
-  chart->addCurve(curve, "Cluster", Qt::blue);
+  chart->addCurve(curve, "Cluster", Qt::blue, true);
   chart->Refresh();
 
   connect(ui.okButton, SIGNAL(clicked()), SLOT(accept()));

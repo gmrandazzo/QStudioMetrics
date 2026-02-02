@@ -37,6 +37,7 @@ void LDAPlot::FeaturePlot2D(ScatterPlot **plot2D) {
         QString(projectname + modelname + " - LDA Feature Plot "),
         ScatterPlot::SCORES);
     (*plot2D)->setPID(pid);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
   }
 }
 
@@ -75,6 +76,7 @@ void LDAPlot::FeaturePlot3D(ScatterPlot **plot3D) {
         QString("%1 - %2 - LDA Feature Plot").arg(projectname).arg(modelname),
         "LD", "LD", "LD", ScatterPlot::SCORES);
     (*plot3D)->setPID(pid);
+    (*plot3D)->setImages(projects->value(pid)->getImages());
   }
 }
 
@@ -214,8 +216,9 @@ void LDAPlot::ProbabilityDistribution(ScatterPlot **plot2D) {
             " - LDA Multivariate Normal Distribution of Probabilities",
         ScatterPlot::SCORES);
 
-    (*plot2D)->addCurve(mnpdf, mnpdfname, colors);
+    (*plot2D)->addCurve(mnpdf, mnpdfname, colors, true);
     (*plot2D)->setPID(pid);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
 
     for (uint k = 0; k < lda->features->order; k++) {
       DelMatrix(&mnpdf[k]);
@@ -358,6 +361,7 @@ void LDAPlot::FeaturePlotAndPrediction2D(ScatterPlot **plot2D) {
         QString(projectname + modelname + " - LDA Feature Plot "),
         ScatterPlot::SCORES);
     (*plot2D)->setPID(pid);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
   }
 }
 
@@ -410,6 +414,7 @@ void LDAPlot::FeaturePlotAndPrediction3D(ScatterPlot **plot3D) {
         QString("%1 - %2 - LDA Feature Plot").arg(projectname).arg(modelname),
         "LD", "LD", "LD", ScatterPlot::SCORES);
     (*plot3D)->setPID(pid);
+    (*plot3D)->setImages(projects->value(pid)->getImages());
   }
 }
 
@@ -569,8 +574,9 @@ void LDAPlot::ProbabilityDistributionWithPredictions(ScatterPlot **plot2D) {
             " - LDA Multivariate Normal Distribution of Probabilities",
         ScatterPlot::SCORES);
 
-    (*plot2D)->addCurve(mnpdf, mnpdfname, colors);
+    (*plot2D)->addCurve(mnpdf, mnpdfname, colors, true);
     (*plot2D)->setPID(pid);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
     (*plot2D)->PlotUpdate();
     for (uint k = 0; k < lda->features->order; k++) {
       DelMatrix(&mnpdf[k]);

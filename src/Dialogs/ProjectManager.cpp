@@ -54,7 +54,7 @@ void ProjectManager::Finish() {
   } else {
     if (ui.lineEdit->text().isEmpty()) {
       QMessageBox::warning(this, tr("Warning"),
-                           tr("Please, specify the project name.\n"),
+                           tr("Please specify the project name."),
                            QMessageBox::Ok);
     } else {
       for (int i = 0; i < imagenamelst.size(); i++) {
@@ -271,7 +271,7 @@ void ProjectManager::AddImagesAsRGB() {
       }
     } else {
       QMessageBox::warning(this, tr("Warning"),
-                           tr("No such directory or could be empty.\n"),
+                           tr("No such directory or it is empty."),
                            QMessageBox::Ok);
     }
   }
@@ -322,7 +322,7 @@ void ProjectManager::AddImageList() {
       }
     } else {
       QMessageBox::warning(this, tr("Warning"),
-                           tr("No such directory or could be empty.\n"),
+                           tr("No such directory or it is empty."),
                            QMessageBox::Ok);
     }
   }

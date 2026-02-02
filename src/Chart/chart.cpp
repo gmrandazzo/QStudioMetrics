@@ -10,11 +10,12 @@
 #include <QCache>
 #include <QToolTip>
 #include <algorithm>
+#include <QBuffer>
+#include <QByteArray>
 
 #include "chart.h"
 
 #define EPSILON 1e-3 /*Define your own tolerance*/
-#define FLOAT_EQ(x, v, EPSILON) (((v - EPSILON) < x) && (x < (v + EPSILON)))
 
 using namespace std;
 
@@ -22,8 +23,8 @@ using namespace std;
 static QCache<QString, QPixmap> markerCache;
 
 // Helper to generate cache key
-static QString getMarkerKey(int type, int radius, const QColor& color) {
-    return QString("%1_%2_%3").arg(type).arg(radius).arg(color.name(QColor::HexArgb));
+static QString getMarkerKey(int type, int radius, const QColor& color, bool selected) {
+    return QString("%1_%2_%3_%4").arg(type).arg(radius).arg(color.name(QColor::HexArgb)).arg(selected);
 }
 
 inline double round(double n, unsigned d) {
@@ -315,8 +316,10 @@ void Chart::addPoint(qreal x, qreal y, QString name, QColor color, int radius) {
   m_indexDirty = true;
 }
 
-void Chart::addCurve(QVector<QPointF> curve, QString name, QColor color) {
-  curveMap.append(DataCurve(curve, name, color));
+void Chart::addCurve(QVector<QPointF> curve, QString name, QColor color, bool smooth) {
+  DataCurve dc(curve, name, color);
+  dc.setSmooth(smooth);
+  curveMap.append(dc);
 }
 
 int Chart::PointSize() const {
@@ -525,9 +528,22 @@ void Chart::mouseMoveEvent(QMouseEvent *event) {
       }
       
       if (nearest) {
-          QToolTip::showText(event->globalPosition().toPoint(), 
-                             QString("%1\nx: %2\ny: %3").arg(nearest->name()).arg(nearest->x()).arg(nearest->y()), 
-                             this);
+          QString text = QString("<b>%1</b><br>x: %2<br>y: %3").arg(nearest->name()).arg(nearest->x()).arg(nearest->y());
+
+          if (m_images.contains(nearest->name())) {
+              QByteArray bArray;
+              QBuffer buffer(&bArray);
+              buffer.open(QIODevice::WriteOnly);
+              QPixmap pm = m_images[nearest->name()];
+              if (pm.width() > 200) {
+                 pm = pm.scaledToWidth(200, Qt::SmoothTransformation);
+              }
+              pm.save(&buffer, "PNG");
+              QString imgBase64 = QString::fromLatin1(bArray.toBase64().data());
+              text = QString("<img src='data:image/png;base64,%1'><br>").arg(imgBase64) + text;
+          }
+
+          QToolTip::showText(event->globalPosition().toPoint(), text, this);
       } else {
           QToolTip::hideText(); // Or let it timeout
       }
@@ -717,8 +733,12 @@ void Chart::drawGrid(QPainter *painter) {
 
   PlotSettings settings = zoomStack[curZoom];
 
-  QPen gridpen = QPen(QColor(200, 200, 255, 125));
-  QPen axespen = QPen(QColor(Qt::black));
+  QPen gridpen = QPen(QColor(220, 220, 220));
+  gridpen.setStyle(Qt::DotLine);
+  QPen axespen = QPen(QColor(120, 120, 120), 1);
+
+  // Subtle background for the plot area
+  painter->fillRect(rect, QColor(252, 252, 252));
 
   qreal min, max, stepx, stepy;
 
@@ -729,11 +749,11 @@ void Chart::drawGrid(QPainter *painter) {
     stepx = ceil(stepx);
   }
 
-  QFont font("Helvetica", 10);
+  QFont font("Inter", 10);
   font.setPointSizeF(font.pointSizeF() * axisValueSize);
-  font.setStyleStrategy(QFont::PreferAntialias);
-  font.setStyleHint(QFont::SansSerif, QFont::PreferOutline);
+  font.setStyleHint(QFont::SansSerif);
   painter->setFont(font);
+  painter->setPen(axespen);
 
   int xsteps = static_cast<int>((max - min) / stepx) + 1;
   for (int i = 0; i < xsteps; ++i) {
@@ -789,6 +809,7 @@ void Chart::drawGrid(QPainter *painter) {
 
   font.setPointSize(10);
   font.setPointSizeF(font.pointSizeF() * xLabelSize);
+  font.setBold(true);
   painter->setFont(font);
   QFontMetrics fm(font);
   qreal xmarkTextWidth = (qreal)fm.horizontalAdvance(m_xaxisname);
@@ -798,12 +819,16 @@ void Chart::drawGrid(QPainter *painter) {
 
   font.setPointSize(10);
   font.setPointSizeF(font.pointSizeF() * titleSize);
+  font.setBold(true);
+  painter->setFont(font);
   xmarkTextWidth = (qreal)fm.horizontalAdvance(m_plottitle);
   x_text = Margin + (rect.right() - rect.left()) / 2. - xmarkTextWidth / 2.;
   painter->drawText(x_text, rect.top() - Margin / 2., m_plottitle);
 
   font.setPointSize(10);
   font.setPointSizeF(font.pointSizeF() * yLabelSize);
+  font.setBold(true);
+  painter->setFont(font);
   painter->save();
   qreal ymarkTextWidth = (qreal)fm.horizontalAdvance(m_yaxisname);
   qreal y_text = Margin + (rect.bottom() - rect.top()) / 2. + ymarkTextWidth / 2.;
@@ -812,7 +837,10 @@ void Chart::drawGrid(QPainter *painter) {
   painter->drawText(0, 0, m_yaxisname);
   painter->restore();
 
-  painter->drawRect(rect.adjusted(0, 0, -1, -1));
+  // Draw axis lines
+  painter->setPen(axespen);
+  painter->drawLine(rect.bottomLeft(), rect.bottomRight());
+  painter->drawLine(rect.topLeft(), rect.bottomLeft());
 }
 
 void Chart::drawCurves(QPainter *painter) {
@@ -835,27 +863,39 @@ void Chart::drawCurves(QPainter *painter) {
     const DataCurve& data = curveMap[i];
     if (data.isVisible() && !data.getPoints().isEmpty()) {
         const QVector<QPointF>& points = data.getPoints();
-        QPolygonF polyline;
-        polyline.reserve(std::min(static_cast<int>(points.size()), rect.width() * 2)); // Estimation
-
-        QPointF lastPoint(-99999, -99999);
+        QPainterPath path;
         
-        for (const QPointF& pt : points) {
-          double x = offsetX + pt.x() * scaleX;
-          double y = offsetY - pt.y() * scaleY; // y is inverted in screen coords
-          
-          // Optimization: Skip point if it's too close to the previous one (Manhattan distance < 1px)
-          if (std::abs(x - lastPoint.x()) < 1.0 && std::abs(y - lastPoint.y()) < 1.0) {
-              continue;
-          }
-          
-          polyline.append(QPointF(x, y));
-          lastPoint = QPointF(x, y);
+        // Move to the first point
+        QPointF p0 = points[0];
+        path.moveTo(offsetX + p0.x() * scaleX, offsetY - p0.y() * scaleY);
+
+        if (data.isSmooth()) {
+            for (int j = 0; j < points.size() - 1; ++j) {
+                QPointF p1 = points[j];
+                QPointF p2 = points[j+1];
+
+                // Screen coordinates
+                double x1 = offsetX + p1.x() * scaleX;
+                double y1 = offsetY - p1.y() * scaleY;
+                double x2 = offsetX + p2.x() * scaleX;
+                double y2 = offsetY - p2.y() * scaleY;
+
+                // Control points for cubic Bezier
+                QPointF c1((x1 + x2) / 2, y1);
+                QPointF c2((x1 + x2) / 2, y2);
+                
+                path.cubicTo(c1, c2, QPointF(x2, y2));
+            }
+        } else {
+            for (int j = 1; j < points.size(); ++j) {
+                QPointF p = points[j];
+                path.lineTo(offsetX + p.x() * scaleX, offsetY - p.y() * scaleY);
+            }
         }
         
         painter->setPen(QPen(data.color(), data.width(), Qt::SolidLine,
                              Qt::RoundCap, Qt::RoundJoin));
-        painter->drawPolyline(polyline);
+        painter->drawPath(path);
     }
   }
 }
@@ -871,7 +911,7 @@ void Chart::PointDraw(QPainter *painter, QRect rect, PlotSettings settings,
     double x = rect.left() + (dx * (rect.width() - 1) / settings.spanX());
     double y = rect.bottom() - (dy * (rect.height() - 1) / settings.spanY());
     
-    QString key = getMarkerKey(p->marker(), p->radius(), p->color());
+    QString key = getMarkerKey(p->marker(), p->radius(), p->color(), p->isSelected());
     QPixmap* pm = markerCache.object(key);
     
     if (pm) {
@@ -880,7 +920,7 @@ void Chart::PointDraw(QPainter *painter, QRect rect, PlotSettings settings,
         // Fallback or generate? Better generate in drawScatters
         qreal radius = p->radius();
         QRectF point = QRectF(x - radius / 2., y - radius / 2., radius, radius);
-        painter->setPen(p->color());
+        painter->setPen(p->isSelected() ? QPen(Qt::red, 2) : QPen(p->color().darker(150), 0.5));
         painter->setBrush(p->color());
         if (p->marker() == CIRCLE) painter->drawEllipse(point);
         else if (p->marker() == SQUARE) painter->drawRect(point);
@@ -920,36 +960,41 @@ void Chart::drawScatters(QPainter *painter) {
   }
 
   // Helper to get cached marker
-  auto drawMarker = [&](double x, double y, DataPoint* dp) {
-       QString key = getMarkerKey(dp->marker(), dp->radius(), dp->color());
+  auto drawMarker = [&](double x, double y, DataPoint* dp, bool selected) {
+       QString key = getMarkerKey(dp->marker(), dp->radius(), dp->color(), selected);
        QPixmap* pm = markerCache.object(key);
        if (!pm) {
            // Create and cache
            int r = dp->radius();
            if (r < 1) r = 1;
-           // Make pixmap slightly larger for AA
-           int size = r + 2; 
+           // Make pixmap slightly larger for AA and thicker selection pen
+           int margin = selected ? 3 : 2;
+           int size = r + margin * 2; 
            QPixmap* newPm = new QPixmap(size, size);
            newPm->fill(Qt::transparent);
            QPainter pPm(newPm);
            pPm.setRenderHint(QPainter::Antialiasing, true);
-           pPm.setPen(Qt::NoPen);
+           if (selected) {
+               pPm.setPen(QPen(Qt::red, 2));
+           } else {
+               pPm.setPen(QPen(dp->color().darker(150), 0.5));
+           }
            pPm.setBrush(dp->color());
            
-           QRectF shapeRect(1, 1, r, r); // Centered
+           QRectF shapeRect(margin, margin, r, r); // Centered
            if (dp->marker() == CIRCLE) {
                pPm.drawEllipse(shapeRect);
            } else if (dp->marker() == SQUARE) {
                pPm.drawRect(shapeRect);
            } else {
                QPolygonF tri;
-               tri << QPointF(size/2.0, 1) << QPointF(size-1, size-1) << QPointF(1, size-1);
+               tri << QPointF(size/2.0, margin) << QPointF(size-margin, size-margin) << QPointF(margin, size-margin);
                pPm.drawPolygon(tri);
            }
            markerCache.insert(key, newPm);
            pm = newPm;
        }
-       painter->drawPixmap(x - pm->width()/2.0 + 1, y - pm->height()/2.0 + 1, *pm);
+       painter->drawPixmap(x - pm->width()/2.0, y - pm->height()/2.0, *pm);
   };
 
   // Draw unselected (decimated)
@@ -971,7 +1016,7 @@ void Chart::drawScatters(QPainter *painter) {
             grid[gy * gridW + gx] = 1;
         }
     }
-    drawMarker(x, y, dp);
+    drawMarker(x, y, dp, false);
   }
 
   // Draw selected (ALWAYS draw, no decimation, on top)
@@ -981,12 +1026,7 @@ void Chart::drawScatters(QPainter *painter) {
        double x = offsetX + dp->x() * scaleX;
        double y = offsetY - dp->y() * scaleY;
        
-       // Selection Highlight
-       painter->setPen(QPen(Qt::red, 2));
-       painter->setBrush(Qt::NoBrush);
-       painter->drawEllipse(QPointF(x, y), dp->radius()+2, dp->radius()+2);
-
-       drawMarker(x, y, dp);
+       drawMarker(x, y, dp, true);
     }
   }
 }
@@ -1015,6 +1055,9 @@ void PlotSettings::adjust() {
   adjustAxis(minY, maxY, numYTicks);
 }
 
+void Chart::setImages(const QMap<QString, QPixmap> &images) {
+  m_images = images;
+}
 void PlotSettings::adjustAxis(double &min, double &max, int &numTicks) {
   const int MinTicks = 4;
   double grossStep = (max - min) / MinTicks;

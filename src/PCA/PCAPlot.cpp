@@ -20,6 +20,7 @@ void PCAPlot::ScorePlot2D(ScatterPlot **plot2D) {
   
   temp_plot->setHotellingConfidenceEllipse(true);
   temp_plot->setPID(pid);
+  temp_plot->setImages(projects->value(pid)->getImages());
   *plot2D = temp_plot.release();
 }
 
@@ -52,6 +53,7 @@ void PCAPlot::ScorePlotPrediction2D(ScatterPlot **plot2D) {
       ScatterPlot::SCORES);
   temp_plot->setHotellingConfidenceEllipse(true);
   temp_plot->setPID(pid);
+  temp_plot->setImages(projects->value(pid)->getImages());
   *plot2D = temp_plot.release();
 }
 
@@ -95,6 +97,7 @@ void PCAPlot::DModXPlot(BarPlot **bar_plot) {
                   QString("DModX Model - %1 PC %2")
                       .arg(modelname)
                       .arg(QString::number(nlv)));
+  (*bar_plot)->setImages(projects->value(pid)->getImages());
   DelDVector(&dmodx);
 }
 
@@ -176,6 +179,8 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
         "Contribution to SPE",
         varnames);
 
+  temp_plot->setImages(projects->value(pid)->getImages());
+
   for (dvector* contribution : spe_contributions) {
     DelDVector(&contribution);
   }
@@ -225,6 +230,7 @@ void PCAPlot::ExpVarPlot(SimpleLine2DPlot **plot2D) {
     curvenames,
     QString(" %1 - %2 - Explained Variance Plot").arg(projectname).arg(modelname),
     "PC", "Exp. Var.");
+  temp_plot->setImages(projects->value(pid)->getImages());
   DelMatrix(&m);
   *plot2D = temp_plot.release();
 }
@@ -375,6 +381,7 @@ void PCAPlot::ScorePlot3D(ScatterPlot **plot3D) {
       QString("%1 - %2 - PCA Score Plot").arg(projectname).arg(modelname),
       ScatterPlot::SCORES);
   temp_plot->setPID(pid);
+  temp_plot->setImages(projects->value(pid)->getImages());
   *plot3D = temp_plot.release();
 
 }
@@ -429,6 +436,7 @@ void PCAPlot::ScorePlotPrediction3D(ScatterPlot **plot3D) {
           .arg(modelname),
       ScatterPlot::SCORES);
    temp_plot->setPID(pid);
+   temp_plot->setImages(projects->value(pid)->getImages());
   *plot3D = temp_plot.release();
 }
 

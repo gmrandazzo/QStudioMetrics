@@ -26,6 +26,7 @@ public:
   void setWidth(int width);
   void setVisible(bool visible);
   void setStyle(LTYPE lt_);
+  void setSmooth(bool smooth);
 
   QVector<QPointF> getPoints() const;
   QString name() const;
@@ -34,6 +35,7 @@ public:
   int radius() const;
   int width() const;
   bool isVisible() const;
+  bool isSmooth() const;
 
 private:
   QVector<QPointF> m_curve;
@@ -42,6 +44,7 @@ private:
   int m_radius;
   int m_width;
   bool m_visible;
+  bool m_isSmooth;
   LTYPE lt;
 };
 

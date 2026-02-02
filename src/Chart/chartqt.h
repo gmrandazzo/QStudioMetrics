@@ -55,7 +55,7 @@ public:
   void addPoint(qreal x, qreal y, QString name, QColor color, int radius);
   virtual void addPoint(qreal x, qreal y, qreal z, QString name, QColor color,
                         int radius) {};
-  void addCurve(QVector<QPointF> curve, QString name, QColor color);
+  void addCurve(QVector<QPointF> curve, QString name, QColor color, bool smooth = false);
   void setCurveStyle(int indx, LTYPE cs);
 
   // Bar plot
@@ -76,12 +76,15 @@ public:
   //     void clearCurve(int id);
   void SaveAsImage(QString imgname);
 
+  void setImages(const QMap<QString, QPixmap> &images) override;
+
 public slots:
   void showLabels();
   void zoomIn();
   void zoomOut();
   void slotPointHoverd(const QPointF &point, bool state);
   void slotPointClicked(const QPointF &point);
+  void slotBarHovered(bool status, int index, QBarSet *barset);
 
 protected:
   bool viewportEvent(QEvent *event);
@@ -134,6 +137,8 @@ private:
   QList<QLabel *> plotLabels;
   QLabel *m_valueLabel;
   QRectF zoom_region;
+
+  QMap<QString, QPixmap> m_images;
 };
 
 #endif // CHARTQT_H

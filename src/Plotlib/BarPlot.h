@@ -36,6 +36,8 @@ public:
 
   ~BarPlot();
 
+  void setImages(QList<IMAGE> &images);
+
 private slots:
   void slotExit();
   void BarPlotUpdate();

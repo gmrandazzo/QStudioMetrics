@@ -257,8 +257,8 @@ void ClassPlotDialog::setProject(QModelIndex current) {
 
 void ClassPlotDialog::actionPlot() {
   if (selectedproject_ == -1 || modelid == -1) {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("Please select project and model to plot.\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("Please select project and model to plot."),
                          QMessageBox::Close);
     return;
   } else {

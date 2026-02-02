@@ -207,13 +207,13 @@ void VariablePlotDialog::getObjectNames() {
 
 bool VariablePlotDialog::checkOK() {
   if (projects->size() == 0) {
-    QMessageBox::warning(this, tr("Warning!"), tr("No Project found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No project found."),
                          QMessageBox::Close);
     return false;
   }
 
   if (projects->keys().contains(pid) == false) {
-    QMessageBox::warning(this, tr("Warning!"), tr("No Project found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No project found."),
                          QMessageBox::Close);
     return false;
   }
@@ -224,24 +224,24 @@ bool VariablePlotDialog::checkOK() {
   }
 
   if (nobj == 0) {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("The selected object lists are empty!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("The selected object lists are empty."),
                          QMessageBox::Close);
     return false;
   }
 
   if (hash.size() == 0) {
-    QMessageBox::warning(this, tr("Warning!"), tr("No matrix Selected!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No matrix selected."),
                          QMessageBox::Close);
     return false;
   }
 
   if (windowtype == VariableDistribution && varid1 == -1) {
-    QMessageBox::warning(this, tr("Warning!"), tr("No variable selected!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No variable selected."),
                          QMessageBox::Close);
     return false;
   } else if (windowtype == VariableVSVariable && varid1 == -1 && varid2 == -1) {
-    QMessageBox::warning(this, tr("Warning!"), tr("No variable selected!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No variable selected."),
                          QMessageBox::Close);
     return false;
   }
@@ -282,7 +282,7 @@ void VariablePlotDialog::OK() {
           nhashok++;
         } else {
           QMessageBox::warning(
-              this, tr("Warning!"),
+              this, tr("Warning"),
               tr("Please the following matrix %1 present different variable "
                  "types. Please select data with the same variables.\n"),
               QMessageBox::Close);
@@ -306,7 +306,7 @@ void VariablePlotDialog::OK() {
           nhashok++;
         } else {
           QMessageBox::warning(
-              this, tr("Warning!"),
+              this, tr("Warning"),
               tr("Please the following matrix %1 present different variable "
                  "types. Please select data with the same variables.\n"),
               QMessageBox::Close);
@@ -325,7 +325,7 @@ void VariablePlotDialog::OK() {
       return;
     }
   } else {
-    //     QMessageBox::warning(this, tr("Warning!"), tr("Please select a
+    //     QMessageBox::warning(this, tr("Warning"), tr("Please select a
     //     project.\n"), QMessageBox::Close);
     return;
   }

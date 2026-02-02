@@ -88,7 +88,7 @@ void _2DScattePlotExample(Chart *chart) {
 }
 
 void _2DScattePlotExampleBIS(Chart *chart) {
-  int n_points = 50000;
+  int n_points = 1000000;
   QRandomGenerator rndgen(n_points);
   for (int i = 0; i < n_points; i++) {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))

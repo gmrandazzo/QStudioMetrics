@@ -328,9 +328,9 @@ void ClassModelDialog::previous() {
 void ClassModelDialog::OK() {
   if (selectedproject_ == -1 || selecteddata_ == -1 ||
       ui.modelname->text().isEmpty()) {
-    QMessageBox::warning(this, tr("Warning!"),
+    QMessageBox::warning(this, tr("Warning"),
                          tr("No project, data selected or no model name "
-                            "setted!\nPlease check your settings.\n"),
+                            "set!\nPlease check your settings.\n"),
                          QMessageBox::Close);
     return;
   } else {

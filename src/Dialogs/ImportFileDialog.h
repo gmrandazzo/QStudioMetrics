@@ -14,7 +14,7 @@
 struct FSIZE {
   size_t row;
   size_t col;
-  size_t linelenght;
+  size_t linelength;
 };
 
 class ImportFileDialog : public QDialog {

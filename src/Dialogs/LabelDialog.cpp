@@ -63,7 +63,7 @@ void LabelDialog::AddLabel() {
       else
         lidlst.last().type = TABLABELST;
     } else {
-      QMessageBox::warning(this, tr("Warning!"), tr("Duplicated Label Name!\n"),
+      QMessageBox::warning(this, tr("Warning"), tr("Duplicate label name."),
                            QMessageBox::Close);
     }
   }
@@ -114,7 +114,7 @@ void LabelDialog::ImportLabelList() {
       else
         lidlst.last().type = TABLABELST;
     } else {
-      QMessageBox::warning(this, tr("Warning!"), tr("Duplicated Label Name!\n"),
+      QMessageBox::warning(this, tr("Warning"), tr("Duplicate label name."),
                            QMessageBox::Close);
     }
   }

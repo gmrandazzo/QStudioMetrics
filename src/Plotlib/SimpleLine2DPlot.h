@@ -9,21 +9,23 @@
 #include <scientific.h>
 
 #include "Chart/chart.h"
+#include "qstudiometricstypes.h"
 
 class SimpleLine2DPlot : public QWidget {
   Q_OBJECT
 
 public:
   SimpleLine2DPlot(QList<matrix *> mlst, QStringList curvenames,
-                   QString windowtitle, QString xaxestitle, QString yaxestitle);
+                   QString windowtitle, QString xaxestitle, QString yaxestitle, bool smooth = false);
   SimpleLine2DPlot(matrix *m, QStringList curvenames, QString windowtitle,
-                   QString xaxestitle, QString yaxestitle);
+                   QString xaxestitle, QString yaxestitle, bool smooth = false);
   // Simple Line Plot with one x (first column of m) and more y objects
   SimpleLine2DPlot(matrix *m, QString curvename, QString windowtitle,
-                   QString xaxestitle, QString yaxestitle);
+                   QString xaxestitle, QString yaxestitle, bool smooth = false);
   void setPlotTitle(QString);
   void setXminXmaxXTick(double xmin, double xmax, int xtick);
   void setYminYmaxYTick(double ymin, double ymax, int ytick);
+  void setImages(QList<IMAGE> &images);
 
 private slots:
   void slotExit();

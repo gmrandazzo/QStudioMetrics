@@ -18,6 +18,8 @@
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
 #include <QtWidgets/QGraphicsTextItem>
+#include <QBuffer>
+#include <QByteArray>
 
 bool ChartQt::viewportEvent(QEvent *event) {
   if (event->type() == QEvent::TouchBegin) {
@@ -213,7 +215,11 @@ void ChartQt::drawCurves() {
     const DataCurve data = curveMap[i];
     if (data.getPoints().size() > 0) {
       QXYSeries *series = 0;
-      series = new QLineSeries;
+      if (data.isSmooth()) {
+          series = new QSplineSeries;
+      } else {
+          series = new QLineSeries;
+      }
       QLineSeries *line = static_cast<QLineSeries *>(series);
 
       // QLineSeries *lseries = new QLineSeries();
@@ -257,21 +263,77 @@ void ChartQt::updateCurves() {
 
 void ChartQt::slotPointHoverd(const QPointF &point, bool state) {
   if (state) {
-    m_valueLabel->setText(QString::asprintf("%s - (%.2f; %.2f)", "pippone",
-                                            point.x(), point.y()));
+    DataPoint *nearest = nullptr;
+    for (int i = 0; i < p.size(); ++i) {
+      if (std::abs(p[i]->x() - point.x()) < 1e-7 &&
+          std::abs(p[i]->y() - point.y()) < 1e-7) {
+        nearest = p[i];
+        break;
+      }
+    }
+
+    QString name = nearest ? nearest->name() : "Unknown";
+    QString text =
+        QString("<b>%1</b><br>(%.2f; %.2f)").arg(name).arg(point.x()).arg(point.y());
+
+    if (nearest && m_images.contains(name)) {
+      QByteArray bArray;
+      QBuffer buffer(&bArray);
+      buffer.open(QIODevice::WriteOnly);
+      QPixmap pm = m_images[name];
+      if (pm.width() > 200) {
+        pm = pm.scaledToWidth(200, Qt::SmoothTransformation);
+      }
+      pm.save(&buffer, "PNG");
+      QString imgBase64 = QString::fromLatin1(bArray.toBase64().data());
+      text =
+          QString("<img src='data:image/png;base64,%1'><br>").arg(imgBase64) +
+          text;
+    }
+
+    m_valueLabel->setText(text);
     QPoint curPos = mapFromGlobal(QCursor::pos());
     m_valueLabel->move(curPos.x() - m_valueLabel->width() / 2,
                        curPos.y() - m_valueLabel->height() * 1.5);
     m_valueLabel->show();
-
-    /*QScatterSeries *series1 = (QScatterSeries *)chart()->series().at(1);
-    series1->clear();
-    series1->append(point);
-    series1->setVisible(true);*/
   } else {
     m_valueLabel->hide();
-    /*QScatterSeries *series1 = (QScatterSeries *)chart()->series().at(1);
-    series1->setVisible(false);*/
+  }
+}
+
+void ChartQt::slotBarHovered(bool status, int index, QBarSet *barset) {
+  if (status) {
+    QBarCategoryAxis *axisX =
+        qobject_cast<QBarCategoryAxis *>(chart()->axes(Qt::Horizontal).at(0));
+    if (!axisX || index >= axisX->categories().size())
+      return;
+
+    QString name = axisX->categories().at(index);
+    QString text =
+        QString("<b>%1</b><br>Value: %2").arg(name).arg(barset->at(index));
+
+    if (m_images.contains(name)) {
+      QByteArray bArray;
+      QBuffer buffer(&bArray);
+      buffer.open(QIODevice::WriteOnly);
+      QPixmap pm = m_images[name];
+      if (pm.width() > 200) {
+        pm = pm.scaledToWidth(200, Qt::SmoothTransformation);
+      }
+      pm.save(&buffer, "PNG");
+      QString imgBase64 = QString::fromLatin1(bArray.toBase64().data());
+      text =
+          QString("<img src='data:image/png;base64,%1'><br>").arg(imgBase64) +
+          text;
+    }
+
+    m_valueLabel->setText(text);
+    QPoint curPos = mapFromGlobal(QCursor::pos());
+    m_valueLabel->move(curPos.x() - m_valueLabel->width() / 2,
+                       curPos.y() - m_valueLabel->height() * 1.5);
+    m_valueLabel->show();
+  } else {
+    m_valueLabel->hide();
   }
 }
 
@@ -337,8 +399,14 @@ void ChartQt::drawScatters() {
     }
 
     QColor c = p[i]->getColor();
-    c.setAlpha(127);
-    series->setColor(c);
+    if (!p[i]->isSelected()) c.setAlpha(127);
+    scatter->setColor(c);
+
+    if (p[i]->isSelected()) {
+        scatter->setPen(QPen(Qt::red, 2.0));
+    } else {
+        scatter->setPen(QPen(c.darker(150), 0.5));
+    }
 
     scatter->setMarkerSize(p[i]->radius());
     scatter->append(p[i]->x(), p[i]->y());
@@ -366,8 +434,15 @@ void ChartQt::updateScatters() {
     }
 
     QColor c = p[i]->getColor();
-    c.setAlpha(127);
+    if (!p[i]->isSelected()) c.setAlpha(127);
     scatter->setColor(c);
+    
+    if (p[i]->isSelected()) {
+        scatter->setPen(QPen(Qt::red, 2.0));
+    } else {
+        scatter->setPen(QPen(c.darker(150), 0.5));
+    }
+
     scatter->setMarkerSize(p[i]->radius());
     scatter->replace(0, p[i]->x(), p[i]->y());
   }
@@ -405,6 +480,7 @@ void ChartQt::drawBars() {
     // color);
   }
   chart()->addSeries(series);
+  connect(series, &QBarSeries::hovered, this, &ChartQt::slotBarHovered);
 
   if (plot_ready == false) {
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
@@ -476,6 +552,9 @@ void ChartQt::Plot() {
     }
 
     chart()->setTitle(m_plottitle);
+    QFont titleFont = chart()->titleFont();
+    titleFont.setBold(true);
+    chart()->setTitleFont(titleFont);
 
     chart()->createDefaultAxes();
     chart()->setDropShadowEnabled(false);
@@ -646,11 +725,13 @@ void ChartQt::addPoint(qreal x, qreal y, QString name, QColor color,
   p.last()->setRadius(radius);
 }
 
-void ChartQt::addCurve(QVector<QPointF> curve, QString name, QColor color) {
+void ChartQt::addCurve(QVector<QPointF> curve, QString name, QColor color, bool smooth) {
 #ifdef DEBUG
   printf("ChartQt::addCurve\n");
 #endif
-  curveMap.append(DataCurve(curve, name, color));
+  DataCurve dc(curve, name, color);
+  dc.setSmooth(smooth);
+  curveMap.append(dc);
 }
 
 void ChartQt::setCurveStyle(int indx, LTYPE cs) {
@@ -758,31 +839,11 @@ ChartQt::ChartQt(QWidget *parent)
 }
 
 ChartQt::~ChartQt() {
-  // #ifdef DEBUG
-  printf("ChartQt::~ChartQt\n");
-  // #endif
-  int i;
-  for (i = 0; i < p.size(); i++)
+  for (int i = 0; i < p.size(); i++)
     delete p[i];
   p.clear();
+}
 
-  for (i = 0; i < seriesList.size(); i++)
-    delete seriesList[i];
-  seriesList.clear();
-
-  for (i = 0; i < curvesList.size(); i++)
-    delete curvesList[i];
-  curvesList.clear();
-
-  for (i = 0; i < barsList.size(); i++)
-    delete barsList[i];
-  barsList.clear();
-
-  for (i = 0; i < plotLabels.size(); i++)
-    delete plotLabels[i];
-  plotLabels.clear();
-
-  /*delete zoomInButton;
-  delete zoomOutButton;*/
-  delete m_valueLabel;
+void ChartQt::setImages(const QMap<QString, QPixmap> &images) {
+  m_images = images;
 }

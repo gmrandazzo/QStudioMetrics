@@ -87,9 +87,11 @@ public:
   void setAxisNameExtensions(QStringList nameaxisext_);
   void setHotellingConfidenceEllipse(bool ehotel_);
 
+  void setImages(QList<IMAGE> &images);
+
   void BuildDiagonal();
   void addCurve(QList<matrix *> m, QStringList curvenames_,
-                QList<QColor> curvecolors_);
+                QList<QColor> curvecolors_, bool smooth = false);
   void removeAllCurves();
 
   void setPID(int pid_) { pid = pid_; }
@@ -148,6 +150,7 @@ private:
   QList<matrix *> curves;
   QStringList curvenames;
   QList<QColor> curvecolors;
+  QVector<bool> curvesmooth;
   QString xaxisname, yaxisname, zaxisname;
   QStringList nameaxisext;
   QStringList markersymbls;

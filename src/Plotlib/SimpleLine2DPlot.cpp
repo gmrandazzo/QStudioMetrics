@@ -36,9 +36,17 @@ void SimpleLine2DPlot::setPlotTitle(QString title) {
   chart->setPlotTitle(title);
 }
 
+void SimpleLine2DPlot::setImages(QList<IMAGE> &images) {
+  QMap<QString, QPixmap> imgmap;
+  for (int i = 0; i < images.size(); ++i) {
+    imgmap.insert(images[i].name, images[i].image);
+  }
+  chart->setImages(imgmap);
+}
+
 SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename,
                                    QString windowtitle, QString xaxestitle,
-                                   QString yaxestitle) {
+                                   QString yaxestitle, bool smooth) {
   ui.setupUi(this);
   setWindowTitle(windowtitle);
 
@@ -69,7 +77,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename,
 
 SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames,
                                    QString windowtitle, QString xaxestitle,
-                                   QString yaxestitle) {
+                                   QString yaxestitle, bool smooth) {
   ui.setupUi(this);
   setWindowTitle(windowtitle);
 
@@ -99,7 +107,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames,
                       5);
       curve.append(QPointF(x, y));
     }
-    chart->addCurve(curve, QString("%1").arg(curvenames[j - 1]), colors[j - 1]);
+    chart->addCurve(curve, QString("%1").arg(curvenames[j - 1]), colors[j - 1], smooth);
     // chart->setCurveStyle(j-1, LM);
   }
 
@@ -113,7 +121,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames,
 
 SimpleLine2DPlot::SimpleLine2DPlot(QList<matrix *> mlst, QStringList curvenames,
                                    QString windowtitle, QString xaxestitle,
-                                   QString yaxestitle) {
+                                   QString yaxestitle, bool smooth) {
   ui.setupUi(this);
   setWindowTitle(windowtitle);
 
@@ -141,7 +149,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(QList<matrix *> mlst, QStringList curvenames,
       qreal y = mlst[i]->data[j][1];
       curve.append(QPointF(x, y));
     }
-    chart->addCurve(curve, QString("%1").arg(curvenames[i]), colors[i]);
+    chart->addCurve(curve, QString("%1").arg(curvenames[i]), colors[i], smooth);
     // chart->setCurveStyle(i, LM);
   }
 

@@ -204,7 +204,7 @@ void AddFileDialog::Preview() {
       objname = ListRead(getFileObjName());
 
       if (file_nrow != objname.size()) {
-        QMessageBox::warning(this, tr("Import Warning!!"),
+        QMessageBox::warning(this, tr("Import Warning"),
                              tr("Object name size and data row differ.\n "
                                 "Please check your data."),
                              QMessageBox::Ok);
@@ -230,7 +230,7 @@ void AddFileDialog::Preview() {
 
             if (file_ncol != varname.size()) {
               QMessageBox::warning(
-                  this, tr("Import Warning!!"),
+                  this, tr("Import Warning"),
                   tr("Variable name size and data column differ.\n Please "
                      "check your data or variable file."),
                   QMessageBox::Ok);

@@ -58,7 +58,7 @@ public:
   void addPoint(qreal x, qreal y, QString name, QColor color, int radius);
   virtual void addPoint(qreal x, qreal y, qreal z, QString name, QColor color,
                         int radius) {};
-  void addCurve(QVector<QPointF> curve, QString name, QColor color);
+  void addCurve(QVector<QPointF> curve, QString name, QColor color, bool smooth = false);
 
   int PointSize() const;
   DataPoint *getPoint(int id);
@@ -76,6 +76,9 @@ public:
   QSize sizeHint() const;
 
   void SaveAsImage(QString imgname);
+
+  void setImages(const QMap<QString, QPixmap> &images) override;
+
 public slots:
   void zoomIn();
   void zoomOut();
@@ -142,6 +145,8 @@ private:
   int axisValueSize;
   int xLabelSize;
   int yLabelSize;
+
+  QMap<QString, QPixmap> m_images;
 };
 
 class PlotSettings {

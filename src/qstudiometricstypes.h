@@ -9,7 +9,7 @@
 
 static QString firstcol_name = "Object Names";
 
-#define DEFAULT_EMTPY_VALUE missing_value()
+#define DEFAULT_EMPTY_VALUE missing_value()
 
 enum {
   MATRIXDATA = 0,

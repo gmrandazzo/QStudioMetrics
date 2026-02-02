@@ -23,6 +23,7 @@ void PLSPlot::TU_Plot(ScatterPlot **plot2D) {
       &projects->value(pid)->getVariableLabels(), "t", "u",
       projectname + modelname + " - PLS Plot", ScatterPlot::SCORES);
   (*plot2D)->setPID(pid);
+  (*plot2D)->setImages(projects->value(pid)->getImages());
   (*plot2D)->resize(500, 300);
 }
 
@@ -43,6 +44,7 @@ void PLSPlot::T_ScorePlot2D(ScatterPlot **plot2D) {
       QString(projectname + modelname + " - PLS T/T Score Plot"),
       ScatterPlot::SCORES);
   (*plot2D)->setPID(pid);
+  (*plot2D)->setImages(projects->value(pid)->getImages());
 }
 
 void PLSPlot::P_LoadingsPlot2D(ScatterPlot **plot2D) {
@@ -172,6 +174,7 @@ void PLSPlot::U_ScorePlot2D(ScatterPlot **plot2D) {
       QString(projectname + modelname + " - PLS U/U Score Plot"),
       ScatterPlot::SCORES);
   (*plot2D)->setPID(pid);
+  (*plot2D)->setImages(projects->value(pid)->getImages());
 }
 
 void PLSPlot::Q_LoadingsPlot2D(ScatterPlot **plot2D) {
@@ -251,6 +254,7 @@ void PLSPlot::T_ScorePlotPrediction2D(ScatterPlot **plot2D) {
       QString(projectname + modelname + " - PLS T/T Score Plot Prediction"),
       ScatterPlot::SCORES);
   (*plot2D)->setPID(pid);
+  (*plot2D)->setImages(projects->value(pid)->getImages());
 }
 
 void PLSPlot::RecalcVSExperimentalAndPrediction(ScatterPlot **plot2D) {
@@ -432,6 +436,7 @@ void PLSPlot::RecalcVSExperimentalAndPrediction(ScatterPlot **plot2D) {
               QString("  (LV: %1)").arg(QString::number(nlv)),
           ScatterPlot::SCORES);
       DelMatrix(&recalc_y);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setAxisNameExtensions(varname);
       (*plot2D)->setPID(pid);
@@ -702,6 +707,7 @@ void PLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot **plot2D) {
           projectname + modelname + " - PLS Recalc VS Experimental Plot" +
               QString("  (LV: %1)").arg(QString::number(nlv)),
           ScatterPlot::SCORES);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setAxisNameExtensions(varname);
       (*plot2D)->setPID(pid);
@@ -802,6 +808,7 @@ void PLSPlot::RecalcVSExperimental(ScatterPlot **plot2D) {
         projectname + modelname + " - PLS Recalculated VS Experimental Plot" +
             QString("  (LV: %1)").arg(QString::number(nlv)),
         ScatterPlot::SCORES);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
     (*plot2D)->BuildDiagonal();
     (*plot2D)->setAxisNameExtensions(varname);
     (*plot2D)->setPID(pid);
@@ -992,6 +999,7 @@ void PLSPlot::RecalcResidualsVSExperimental(ScatterPlot **plot2D) {
               " - PLS Experimental VS Recalculated Residuals Y Plot" +
               QString("  (LV: %1)").arg(QString::number(nlv)),
           ScatterPlot::SCORES);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       DelMatrix(&recalc_res);
       (*plot2D)->setPID(pid);
       (*plot2D)->setAxisNameExtensions(varname);
@@ -1178,6 +1186,7 @@ void PLSPlot::PredictedVSExperimental(ScatterPlot **plot2D) {
           projectname + modelname + "- PLS Predicted VS Experimental Plot" +
               QString("  (LV: %1)").arg(QString::number(nlv)),
           ScatterPlot::SCORES);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       (*plot2D)->setAxisNameExtensions(varname);
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setPID(pid);
@@ -1282,6 +1291,7 @@ void PLSPlot::PredictedResidualsVSExperimental(ScatterPlot **plot2D) {
               " - PLS Experimental VS Predicted Residuals Y Plot" +
               QString("  (LV: %1)").arg(QString::number(nlv)),
           ScatterPlot::SCORES);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       DelMatrix(&pred_res);
       (*plot2D)->setPID(pid);
       (*plot2D)->setAxisNameExtensions(varname);
@@ -1980,6 +1990,7 @@ void PLSPlot::T_ScorePlot3D(ScatterPlot **plot3D) {
       QString("%1 - %2 - PLS T Score Plot").arg(projectname).arg(modelname),
       ScatterPlot::SCORES);
   (*plot3D)->setPID(pid);
+  (*plot3D)->setImages(projects->value(pid)->getImages());
 }
 
 void PLSPlot::P_LoadingsPlot3D(ScatterPlot **plot3D) {
@@ -2110,6 +2121,7 @@ void PLSPlot::U_ScorePlot3D(ScatterPlot **plot3D) {
       QString("%1 - %2 - PLS U Score Plot").arg(projectname).arg(modelname),
       ScatterPlot::SCORES);
   (*plot3D)->setPID(pid);
+  (*plot3D)->setImages(projects->value(pid)->getImages());
 }
 
 void PLSPlot::Q_LoadingsPlot3D(ScatterPlot **plot3D) {
@@ -2167,6 +2179,7 @@ void PLSPlot::T_ScorePlotPrediction3D(ScatterPlot **plot3D) {
                           .arg(modelname),
                       ScatterPlot::SCORES);
   (*plot3D)->setPID(pid);
+  (*plot3D)->setImages(projects->value(pid)->getImages());
 }
 
 PLSPlot::PLSPlot(PROJECTS *projects_) {
