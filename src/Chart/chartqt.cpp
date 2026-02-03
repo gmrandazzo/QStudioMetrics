@@ -20,6 +20,7 @@
 #include <QtWidgets/QGraphicsTextItem>
 #include <QBuffer>
 #include <QByteArray>
+#include <QSettings>
 
 bool ChartQt::viewportEvent(QEvent *event) {
   if (event->type() == QEvent::TouchBegin) {
@@ -846,4 +847,20 @@ ChartQt::~ChartQt() {
 
 void ChartQt::setImages(const QMap<QString, QPixmap> &images) {
   m_images = images;
+}
+
+void ChartQt::LoadSettings() {
+  QSettings settings("QStudioMetrics", "PlotSettings");
+  if (settings.contains("titleSize")) {
+    setPlotTitleSize(settings.value("titleSize").toInt());
+  }
+  if (settings.contains("axisValueSize")) {
+    setAxisValueSize(settings.value("axisValueSize").toInt());
+  }
+  if (settings.contains("xLabelSize")) {
+    setXLabelSize(settings.value("xLabelSize").toInt());
+  }
+  if (settings.contains("yLabelSize")) {
+    setYLabelSize(settings.value("yLabelSize").toInt());
+  }
 }

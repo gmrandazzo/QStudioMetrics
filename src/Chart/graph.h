@@ -20,12 +20,16 @@ public:
   virtual void setZaxisName(QString yaxisname) = 0;
   virtual void setPlotTitle(QString plottitle) = 0;
   virtual void setPlotTitleSize(int size) = 0;
+  virtual int getPlotTitleSize() = 0;
   virtual void setAxisValueSize(int size) = 0;
+  virtual int getAxisValueSize() = 0;
   // virtual void setLabelDetail(bool) = 0;
   virtual void setXLabelSize(int size) = 0;
+  virtual int getXLabelSize() = 0;
   virtual void setXminXmaxXTick(double xmin, double xmax, int xtick) = 0;
   virtual void getXminXmaxXTick(double *xmin, double *xmax, int *xtick) = 0;
   virtual void setYLabelSize(int size) = 0;
+  virtual int getYLabelSize() = 0;
   virtual void setYminYmaxYTick(double ymin, double ymax, int ytick) = 0;
   virtual void getYminYmaxYTick(double *ymin, double *ymax, int *ytick) = 0;
   virtual void Center() = 0;
@@ -52,6 +56,7 @@ public:
   // virtual QSize sizeHint() = 0;
   virtual void SaveAsImage(QString imgname) = 0;
   virtual void setImages(const QMap<QString, QPixmap> &images) {}
+  virtual void LoadSettings() = 0;
 };
 
 #endif

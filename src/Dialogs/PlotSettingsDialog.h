@@ -14,7 +14,8 @@ class PlotSettingsDialog : public QDialog {
 
 public:
   PlotSettingsDialog(double xmin, double xmax, int xtick, double ymin,
-                     double ymax, int ytick);
+                     double ymax, int ytick, int titlesize, int axisvaluesize,
+                     int xlabelsize, int ylabelsize);
   int getPlotTitleSize();
   int getAxisValueSize();
   int getXlabelSize();

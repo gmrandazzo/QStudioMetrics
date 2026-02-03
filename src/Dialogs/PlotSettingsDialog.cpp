@@ -25,7 +25,9 @@ void PlotSettingsDialog::Cancel() { return reject(); }
 void PlotSettingsDialog::OK() { return accept(); }
 
 PlotSettingsDialog::PlotSettingsDialog(double xmin, double xmax, int xtick,
-                                       double ymin, double ymax, int ytick)
+                                       double ymin, double ymax, int ytick,
+                                       int titlesize, int axisvaluesize,
+                                       int xlabelsize, int ylabelsize)
     : QDialog(0) {
   ui.setupUi(this);
   ui.xMin->setValue(xmin);
@@ -34,6 +36,12 @@ PlotSettingsDialog::PlotSettingsDialog(double xmin, double xmax, int xtick,
   ui.yMin->setValue(ymin);
   ui.yMax->setValue(ymax);
   ui.yTick->setValue(ytick);
+
+  ui.titleSize->setValue(titlesize);
+  ui.axisValueSize->setValue(axisvaluesize);
+  ui.xLabelSize->setValue(xlabelsize);
+  ui.yLabelSize->setValue(ylabelsize);
+
   connect(ui.cancelButton, SIGNAL(clicked(bool)), SLOT(Cancel()));
   connect(ui.okButton, SIGNAL(clicked(bool)), SLOT(OK()));
 }

@@ -22,31 +22,35 @@ class Chart : public QWidget, public Graphs {
 public:
   Chart(QWidget *parent = 0);
   ~Chart();
-  QWidget *weview();
-  void Plot();
+  QWidget *weview() override;
+  void Plot() override;
   void setAntialiasing(bool antialiasing_);
-  void setXaxisName(QString xaxisname);
-  void setYaxisName(QString yaxisname);
-  void setZaxisName(QString yaxisname) {}; // not working!
+  void setXaxisName(QString xaxisname) override;
+  void setYaxisName(QString yaxisname) override;
+  void setZaxisName(QString yaxisname) override {}; // not working!
 
-  void setPlotTitle(QString plottitle);
-  void setPlotTitleSize(int size);
+  void setPlotTitle(QString plottitle) override;
+  void setPlotTitleSize(int size) override;
+  int getPlotTitleSize() override { return titleSize; }
   void setLabelDetail(bool);
-  void setAxisValueSize(int size);
+  void setAxisValueSize(int size) override;
+  int getAxisValueSize() override { return axisValueSize; }
 
-  void setXLabelSize(int size);
-  void setXminXmaxXTick(double xmin, double xmax, int xtick);
-  void getXminXmaxXTick(double *xmin, double *xmax, int *xtick);
+  void setXLabelSize(int size) override;
+  int getXLabelSize() override { return xLabelSize; }
+  void setXminXmaxXTick(double xmin, double xmax, int xtick) override;
+  void getXminXmaxXTick(double *xmin, double *xmax, int *xtick) override;
 
-  void setYLabelSize(int size);
-  void setYminYmaxYTick(double ymin, double ymax, int ytick);
-  void getYminYmaxYTick(double *ymin, double *ymax, int *ytick);
+  void setYLabelSize(int size) override;
+  int getYLabelSize() override { return yLabelSize; }
+  void setYminYmaxYTick(double ymin, double ymax, int ytick) override;
+  void getYminYmaxYTick(double *ymin, double *ymax, int *ytick) override;
 
-  void Center();
-  void Refresh();
+  void Center() override;
+  void Refresh() override;
 
-  void SelectAll();
-  void ClearSelection();
+  void SelectAll() override;
+  void ClearSelection() override;
   /* Unselect from by index (from index to index) */
   void Unselect(int from, int to);
   /* Select from by index (from index to index) */
@@ -54,43 +58,44 @@ public:
 
   void setPlotSettings(const PlotSettings &settings);
   //     void setCurveData(int id, const QVector<QPointF> &data);
-  void addPoint(qreal x, qreal y, QString name);
-  void addPoint(qreal x, qreal y, QString name, QColor color, int radius);
-  virtual void addPoint(qreal x, qreal y, qreal z, QString name, QColor color,
-                        int radius) {};
-  void addCurve(QVector<QPointF> curve, QString name, QColor color, bool smooth = false);
+  void addPoint(qreal x, qreal y, QString name) override;
+  void addPoint(qreal x, qreal y, QString name, QColor color, int radius) override;
+  void addPoint(qreal x, qreal y, qreal z, QString name, QColor color,
+                        int radius) override {};
+  void addCurve(QVector<QPointF> curve, QString name, QColor color, bool smooth = false) override;
 
-  int PointSize() const;
-  DataPoint *getPoint(int id);
-  void RemovePointAt(int id);
-  void RemovePoint(DataPoint *dp);
-  void RemoveAllPoints();
+  int PointSize() const override;
+  DataPoint *getPoint(int id) override;
+  void RemovePointAt(int id) override;
+  void RemovePoint(DataPoint *dp) override;
+  void RemoveAllPoints() override;
 
   //     QVector<DataPoint*> getPoints();
-  QVector<DataCurve> getCurves();
-  void RemoveCurveAt(int cid);
-  void RemoveAllCurves();
+  QVector<DataCurve> getCurves() override;
+  void RemoveCurveAt(int cid) override;
+  void RemoveAllCurves() override;
 
   //     void clearCurve(int id);
-  QSize minimumSizeHint() const;
-  QSize sizeHint() const;
+  QSize minimumSizeHint() const override;
+  QSize sizeHint() const override;
 
-  void SaveAsImage(QString imgname);
+  void SaveAsImage(QString imgname) override;
 
   void setImages(const QMap<QString, QPixmap> &images) override;
+  void LoadSettings() override;
 
 public slots:
   void zoomIn();
   void zoomOut();
 
 protected:
-  void paintEvent(QPaintEvent *event);
-  void resizeEvent(QResizeEvent *event);
-  void mousePressEvent(QMouseEvent *event);
-  void mouseMoveEvent(QMouseEvent *event);
-  void mouseReleaseEvent(QMouseEvent *event);
-  void keyPressEvent(QKeyEvent *event);
-  void wheelEvent(QWheelEvent *event);
+  void paintEvent(QPaintEvent *event) override;
+  void resizeEvent(QResizeEvent *event) override;
+  void mousePressEvent(QMouseEvent *event) override;
+  void mouseMoveEvent(QMouseEvent *event) override;
+  void mouseReleaseEvent(QMouseEvent *event) override;
+  void keyPressEvent(QKeyEvent *event) override;
+  void wheelEvent(QWheelEvent *event) override;
 
 private:
   void updateRubberBandRegion();

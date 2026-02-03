@@ -186,6 +186,8 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
 
   // Copy the data
   for (int i = 0; i < aligned_objid.size(); i++) {
+    if (stoprun)
+      return false;
     int ii = aligned_objid[i];
     for (int j = 0; j < aligned_varid.size(); j++) {
       int jx = aligned_varid[j];
@@ -257,6 +259,8 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
 
   // Copy the data
   for (int i = 0; i < aligned_objid.size(); i++) {
+    if (stoprun)
+      return false;
     int ii = aligned_objid[i];
     for (int j = 0; j < aligned_xvarid.size(); j++) {
       int jx = aligned_xvarid[j];
@@ -341,6 +345,8 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
 
   // Copy the data
   for (int i = 0; i < aligned_objid.size(); i++) {
+    if (stoprun)
+      return false;
     int ii = aligned_objid[i];
     for (int j = 0; j < aligned_xvarid.size(); j++) {
       int jx = aligned_xvarid[j];
@@ -426,6 +432,8 @@ bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames,
 
   // Copy the data
   for (int i = 0; i < aligned_objid.size(); i++) {
+    if (stoprun)
+      return false;
     int ii = aligned_objid[i];
     for (int k = 0; k < aligned_varid.size(); k++) {
       for (int j = 0; j < aligned_varid[k].size(); j++) {
@@ -1344,8 +1352,12 @@ void MainWindow::StartRun() {
 void MainWindow::WaitRun() { ui.abortButton->setEnabled(false); }
 
 void MainWindow::StopRun() {
-  ui.progressframe->hide();
   stoprun = true;
+  ui.abortButton->setEnabled(false);
+}
+
+void MainWindow::FinalizeRun() {
+  ui.progressframe->hide();
   ui.progressBar->setMinimum(0);
   ui.progressBar->setMaximum(100);
   ui.progressBar->setValue(20);
@@ -6615,6 +6627,14 @@ void MainWindow::DoCPCAPrediction() {
         bool tok = PrepareTensor(projects->value(pid)->getMatrix(did), objsel,
                                  varsel, x);
 
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelTensor(&x);
+          return;
+        }
+
         if (x->order == (size_t)varsel.size() && tok == true) {
           QString str =
               "--------------------\n Computing CPCA Prediction for: ";
@@ -6655,28 +6675,40 @@ void MainWindow::DoCPCAPrediction() {
           QFuture<void> future = obj.RunCPCAPrediction();
 
           while (!future.isFinished()) {
-            QApplication::processEvents();
+            if (stoprun == true) {
+              obj.AbortRun();
+              QApplication::processEvents();
+            } else {
+              QApplication::processEvents();
+            }
           }
 
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, projects->value(pid)
-                                  ->getCPCAModel(mid)
-                                  ->getLastCPCAPrediction()
-                                  ->getName());
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, QString::number(mid));
-          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
-          subitem->setText(5, "");
-          subitem->setText(6, QString::number(projects->value(pid)
-                                                  ->getCPCAModel(mid)
-                                                  ->getLastCPCAPrediction()
-                                                  ->getPredID()));
-          subitem->setText(7, QString("CPCA Prediction"));
+          if (stoprun == false) {
+            QTreeWidgetItem *subitem = new QTreeWidgetItem;
+            subitem->setText(0, projects->value(pid)
+                                    ->getCPCAModel(mid)
+                                    ->getLastCPCAPrediction()
+                                    ->getName());
+            subitem->setText(1, QString::number(tabcount_));
+            subitem->setText(2, QString::number(pid));
+            subitem->setText(3, QString::number(mid));
+            subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+            subitem->setText(5, "");
+            subitem->setText(6, QString::number(projects->value(pid)
+                                                    ->getCPCAModel(mid)
+                                                    ->getLastCPCAPrediction()
+                                                    ->getPredID()));
+            subitem->setText(7, QString("CPCA Prediction"));
 
-          tabcount_++;
-          getModelItem(pid, mid)->addChild(subitem);
-
+            tabcount_++;
+            getModelItem(pid, mid)->addChild(subitem);
+          } else {
+            int removeid =
+                projects->value(pid)->getCPCAModel(mid)->CPCAPredictionCount() -
+                1;
+            projects->value(pid)->getCPCAModel(mid)->delCPCAPredictionAt(
+                removeid);
+          }
         } else {
           QMessageBox::critical(
               this, tr("CPCA Prediction Error"),
@@ -6689,7 +6721,7 @@ void MainWindow::DoCPCAPrediction() {
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelTensor(&x);
         projects->value(pid)->AutoSave();
       }
@@ -6737,6 +6769,16 @@ void MainWindow::DoCPCA() {
 
         PrepareTensor(projects->value(pid)->getMatrix(did), objsel, varsel, x);
 
+        if (stoprun) {
+          int removeid = projects->value(pid)->CPCACount() - 1;
+          projects->value(pid)->delCPCAModelAt(removeid);
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelTensor(&x);
+          return;
+        }
+
         RUN obj;
         obj.setXTensor(x);
         obj.setCPCAModel(projects->value(pid)->getLastCPCAModel());
@@ -6783,7 +6825,7 @@ void MainWindow::DoCPCA() {
 
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelTensor(&x);
         projects->value(pid)->AutoSave();
       }
@@ -6821,6 +6863,14 @@ void MainWindow::DoPCAPrediction() {
         NewMatrix(&x, objsel.size(), varsel.size());
         bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel,
                                   varsel, x);
+
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          return;
+        }
 
         if (x->col == (size_t)varsel.size() && mxok == true) {
           QString str = "--------------------\n Computing PCA Prediction for: ";
@@ -6861,28 +6911,39 @@ void MainWindow::DoPCAPrediction() {
           QFuture<void> future = obj.RunPCAPrediction();
 
           while (!future.isFinished()) {
-            QApplication::processEvents();
+            if (stoprun == true) {
+              obj.AbortRun();
+              QApplication::processEvents();
+            } else {
+              QApplication::processEvents();
+            }
           }
 
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, projects->value(pid)
-                                  ->getPCAModel(mid)
-                                  ->getLastPCAPrediction()
-                                  ->getName());
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, QString::number(mid));
-          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
-          subitem->setText(5, "");
-          subitem->setText(6, QString::number(projects->value(pid)
-                                                  ->getPCAModel(mid)
-                                                  ->getLastPCAPrediction()
-                                                  ->getPredID()));
-          subitem->setText(7, QString("PCA Prediction"));
+          if (stoprun == false) {
+            QTreeWidgetItem *subitem = new QTreeWidgetItem;
+            subitem->setText(0, projects->value(pid)
+                                    ->getPCAModel(mid)
+                                    ->getLastPCAPrediction()
+                                    ->getName());
+            subitem->setText(1, QString::number(tabcount_));
+            subitem->setText(2, QString::number(pid));
+            subitem->setText(3, QString::number(mid));
+            subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+            subitem->setText(5, "");
+            subitem->setText(6, QString::number(projects->value(pid)
+                                                    ->getPCAModel(mid)
+                                                    ->getLastPCAPrediction()
+                                                    ->getPredID()));
+            subitem->setText(7, QString("PCA Prediction"));
 
-          tabcount_++;
-          getModelItem(pid, mid)->addChild(subitem);
-
+            tabcount_++;
+            getModelItem(pid, mid)->addChild(subitem);
+          } else {
+            int removeid =
+                projects->value(pid)->getPCAModel(mid)->PCAPredictionCount() -
+                1;
+            projects->value(pid)->getPCAModel(mid)->delPCAPredictionAt(removeid);
+          }
         } else {
           QMessageBox::critical(
               this, tr("PCA Prediction Error"),
@@ -6895,7 +6956,7 @@ void MainWindow::DoPCAPrediction() {
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         projects->value(pid)->AutoSave();
       }
@@ -6952,6 +7013,16 @@ void MainWindow::DoPCA() {
                         x);
         }
 
+        if (stoprun) {
+          int removeid = projects->value(pid)->PCACount() - 1;
+          projects->value(pid)->delPCAModelAt(removeid);
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          return;
+        }
+
         RUN obj;
         obj.setXMatrix(x);
         obj.setPCAModel(projects->value(pid)->getLastPCAModel());
@@ -6998,7 +7069,7 @@ void MainWindow::DoPCA() {
 
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         projects->value(pid)->AutoSave();
       }
@@ -7038,6 +7109,15 @@ void MainWindow::DoPLSPrediction() {
 
         bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel,
                                   xvarsel, ysel, x, y);
+
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
 
         if (x->col == (size_t)xvarsel.size() && mxok == true) {
           QString str = "--------------------\n Computing PLS Prediction for: ";
@@ -7079,53 +7159,65 @@ void MainWindow::DoPLSPrediction() {
           obj.setPLSModel(projects->value(pid)->getPLSModel(mid));
 
           QFuture<void> future = obj.RunPLSPrediction();
-          while (!future.isFinished())
-            QApplication::processEvents();
-
-          //         ModelPrediction Name - Tab Count - pid - Model ID - xdata
-          //         id - ydata id - Data Position - Data Type (PCA Prediction,
-          //         PLS Prediction, ...) (8)
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, projects->value(pid)
-                                  ->getPLSModel(mid)
-                                  ->getLastPLSPrediction()
-                                  ->getName());
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, QString::number(mid));
-          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
-
-          if (ysel.size() > 0) {
-            subitem->setText(5,
-                             projects->value(pid)->getMatrix(did)->getHash());
-          } else {
-            subitem->setText(5, "None");
+          while (!future.isFinished()) {
+            if (stoprun == true) {
+              obj.AbortRun();
+              QApplication::processEvents();
+            } else {
+              QApplication::processEvents();
+            }
           }
 
-          subitem->setText(6, QString::number(projects->value(pid)
-                                                  ->getPLSModel(mid)
-                                                  ->getLastPLSPrediction()
-                                                  ->getPredID()));
-          subitem->setText(7, QString("PLS Prediction"));
+          if (stoprun == false) {
+            //         ModelPrediction Name - Tab Count - pid - Model ID - xdata
+            //         id - ydata id - Data Position - Data Type (PCA Prediction,
+            //         PLS Prediction, ...) (8)
+            QTreeWidgetItem *subitem = new QTreeWidgetItem;
+            subitem->setText(0, projects->value(pid)
+                                    ->getPLSModel(mid)
+                                    ->getLastPLSPrediction()
+                                    ->getName());
+            subitem->setText(1, QString::number(tabcount_));
+            subitem->setText(2, QString::number(pid));
+            subitem->setText(3, QString::number(mid));
+            subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+
+            if (ysel.size() > 0) {
+              subitem->setText(5,
+                               projects->value(pid)->getMatrix(did)->getHash());
+            } else {
+              subitem->setText(5, "None");
+            }
+
+            subitem->setText(6, QString::number(projects->value(pid)
+                                                    ->getPLSModel(mid)
+                                                    ->getLastPLSPrediction()
+                                                    ->getPredID()));
+            subitem->setText(7, QString("PLS Prediction"));
 
 #ifdef DEBUG
-          qDebug() << "X Predicted Scores";
-          PrintMatrix(projects->value(pid)
-                          ->getPLSModel(mid)
-                          ->getLastPLSPrediction()
-                          ->getXPredScores());
-          qDebug() << "Y Dipendent Value Predicted";
-          PrintMatrix(projects->value(pid)
-                          ->getPLSModel(mid)
-                          ->getLastPLSPrediction()
-                          ->getYDipVar());
-          qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2)
-                   << subitem->text(3) << subitem->text(4) << subitem->text(5);
+            qDebug() << "X Predicted Scores";
+            PrintMatrix(projects->value(pid)
+                            ->getPLSModel(mid)
+                            ->getLastPLSPrediction()
+                            ->getXPredScores());
+            qDebug() << "Y Dipendent Value Predicted";
+            PrintMatrix(projects->value(pid)
+                            ->getPLSModel(mid)
+                            ->getLastPLSPrediction()
+                            ->getYDipVar());
+            qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2)
+                     << subitem->text(3) << subitem->text(4) << subitem->text(5);
 #endif
 
-          tabcount_++;
-
-          getModelItem(pid, mid)->addChild(subitem);
+            tabcount_++;
+            getModelItem(pid, mid)->addChild(subitem);
+          } else {
+            int removeid =
+                projects->value(pid)->getPLSModel(mid)->PLSPredictionCount() -
+                1;
+            projects->value(pid)->getPLSModel(mid)->delPLSPredictionAt(removeid);
+          }
         } else {
           QMessageBox::critical(
               this, tr("PLS Prediction Error"),
@@ -7138,7 +7230,7 @@ void MainWindow::DoPLSPrediction() {
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
         projects->value(pid)->AutoSave();
@@ -7199,6 +7291,15 @@ void MainWindow::DoPLSValidation() {
                         classes, x, y);
         }
 
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         uivector *kfc;
         initUIVector(&kfc);
         PrepareKFoldClasses(objsel, kfoldclasses, kfc);
@@ -7235,7 +7336,7 @@ void MainWindow::DoPLSValidation() {
 
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
         DelUIVector(&kfc);
@@ -7303,6 +7404,17 @@ void MainWindow::DoPLS(int algtype) {
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel,
                       yvarsel, x, y);
 
+        if (stoprun) {
+          int removeid = projects->value(pid)->PLSCount() - 1;
+          projects->value(pid)->delPLSModelAt(removeid);
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         RUN obj;
         obj.setXMatrix(x);
         obj.setYMatrix(y);
@@ -7351,7 +7463,7 @@ void MainWindow::DoPLS(int algtype) {
         DelMatrix(&y);
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
       } else if (did != -1 && pid != -1 && objsel.size() > 0 &&
                  xvarsel.size() > 0 && classes.size() > 0) {
         StartRun();
@@ -7386,6 +7498,17 @@ void MainWindow::DoPLS(int algtype) {
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel,
                       classes, x, y);
 
+        if (stoprun) {
+          int removeid = projects->value(pid)->PLSCount() - 1;
+          projects->value(pid)->delPLSModelAt(removeid);
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         RUN obj;
         obj.setXMatrix(x);
         obj.setYMatrix(y);
@@ -7434,7 +7557,7 @@ void MainWindow::DoPLS(int algtype) {
         DelMatrix(&y);
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
       }
     }
   }
@@ -7459,6 +7582,14 @@ void MainWindow::DoLDAPrediction() {
 
       bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel,
                                 varsel, x);
+
+      if (stoprun) {
+        TopMenuEnableDisable();
+        CalculationMenuEnable();
+        FinalizeRun();
+        DelMatrix(&x);
+        return;
+      }
 
       if (x->col == (size_t)varsel.size() && mxok == true) {
         QString str = "--------------------\n Computing LDA Prediction for: ";
@@ -7500,76 +7631,38 @@ void MainWindow::DoLDAPrediction() {
         QFuture<void> future = obj.RunLDAPrediction();
 
         while (!future.isFinished()) {
-          QApplication::processEvents();
+          if (stoprun == true) {
+            obj.AbortRun();
+            QApplication::processEvents();
+          } else {
+            QApplication::processEvents();
+          }
         }
 
-        QList<QStringList> classes;
-        int maxclass = projects->value(pid)
-                           ->getLDAModel(mid)
-                           ->getLastLDAPrediction()
-                           ->getPredClasses()
-                           ->data[0][0];
-        for (size_t i = 1; i < projects->value(pid)
-                                   ->getLDAModel(mid)
-                                   ->getLastLDAPrediction()
-                                   ->getPredClasses()
-                                   ->row;
-             i++) {
-          if (projects->value(pid)
-                  ->getLDAModel(mid)
-                  ->getLastLDAPrediction()
-                  ->getPredClasses()
-                  ->data[i][0] > (size_t)maxclass)
-            maxclass = projects->value(pid)
-                           ->getLDAModel(mid)
-                           ->getLastLDAPrediction()
-                           ->getPredClasses()
-                           ->data[i][0];
-          else
-            continue;
+        if (stoprun == false) {
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, projects->value(pid)
+                                  ->getLDAModel(mid)
+                                  ->getLastLDAPrediction()
+                                  ->getName());
+          subitem->setText(1, QString::number(tabcount_));
+          subitem->setText(2, QString::number(pid));
+          subitem->setText(3, QString::number(mid));
+          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+          subitem->setText(5, "");
+          subitem->setText(6, QString::number(projects->value(pid)
+                                                  ->getLDAModel(mid)
+                                                  ->getLastLDAPrediction()
+                                                  ->getPredID()));
+          subitem->setText(7, QString("LDA Prediction"));
+
+          tabcount_++;
+          getModelItem(pid, mid)->addChild(subitem);
+        } else {
+          int removeid =
+              projects->value(pid)->getLDAModel(mid)->LDAPredictionCount() - 1;
+          projects->value(pid)->getLDAModel(mid)->delLDAPredictionAt(removeid);
         }
-
-        maxclass++;
-        for (int i = 0; i < maxclass; i++)
-          classes.append(QStringList());
-
-        for (size_t i = 1; i < projects->value(pid)
-                                   ->getLDAModel(mid)
-                                   ->getLastLDAPrediction()
-                                   ->getPredClasses()
-                                   ->row;
-             i++) {
-          int cid = projects->value(pid)
-                        ->getLDAModel(mid)
-                        ->getLastLDAPrediction()
-                        ->getPredClasses()
-                        ->data[i][0];
-          classes[cid].append(objsel[i]);
-        }
-
-        projects->value(pid)
-            ->getLDAModel(mid)
-            ->getLastLDAPrediction()
-            ->setClasses(classes);
-
-        QTreeWidgetItem *subitem = new QTreeWidgetItem;
-        subitem->setText(0, projects->value(pid)
-                                ->getLDAModel(mid)
-                                ->getLastLDAPrediction()
-                                ->getName());
-        subitem->setText(1, QString::number(tabcount_));
-        subitem->setText(2, QString::number(pid));
-        subitem->setText(3, QString::number(mid));
-        subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
-        subitem->setText(5, "");
-        subitem->setText(6, QString::number(projects->value(pid)
-                                                ->getLDAModel(mid)
-                                                ->getLastLDAPrediction()
-                                                ->getPredID()));
-        subitem->setText(7, QString("LDA Prediction"));
-
-        tabcount_++;
-        getModelItem(pid, mid)->addChild(subitem);
       } else {
         QMessageBox::critical(
             this, tr("LDA Prediction Error"),
@@ -7582,7 +7675,7 @@ void MainWindow::DoLDAPrediction() {
       }
       TopMenuEnableDisable();
       CalculationMenuEnable();
-      StopRun();
+      FinalizeRun();
       DelMatrix(&x);
       projects->value(pid)->AutoSave();
     }
@@ -7635,6 +7728,15 @@ void MainWindow::DoLDAValidation() {
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, x);
 
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         // Rudimental y class preparation
         for (int i = 0;
              i < projects->value(pid)->getMatrix(did)->getObjName().size();
@@ -7685,7 +7787,7 @@ void MainWindow::DoLDAValidation() {
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
         projects->value(pid)->AutoSave();
@@ -7743,6 +7845,15 @@ void MainWindow::DoLDA() {
         NewMatrix(&y, objsel.size(), 1);
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, x);
+
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
 
         // Rudimental y class preparation
         for (int i = 0;
@@ -7812,7 +7923,7 @@ void MainWindow::DoLDA() {
         DelMatrix(&y);
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         projects->value(pid)->AutoSave();
       }
     }
@@ -7852,6 +7963,15 @@ void MainWindow::DoMLRPrediction() {
         bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel,
                                   xvarsel, yvarsel, x, y);
 
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         if (x->col == (size_t)xvarsel.size() && mxok == true) {
           QString str = "--------------------\n Computing MLR Prediction for: ";
           str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
@@ -7886,45 +8006,107 @@ void MainWindow::DoMLRPrediction() {
               ->getLastMLRPrediction()
               ->setYVarName(ysel);
 
-          RUN obj;
-          obj.setXMatrix(x);
-          obj.setYMatrix(y);
-          obj.setMLRModel(projects->value(pid)->getMLRModel(mid));
+                    RUN obj;
 
-          QFuture<void> future = obj.RunMLRPrediction();
-          while (!future.isFinished())
-            QApplication::processEvents();
+                    obj.setXMatrix(x);
 
-          //         ModelPrediction Name - Tab Count - pid - Model ID - xdata
-          //         id - ydata id - Data Position - Data Type (PCA Prediction,
-          //         PLS Prediction, ...) (8)
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, projects->value(pid)
-                                  ->getMLRModel(mid)
-                                  ->getLastMLRPrediction()
-                                  ->getName());
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, QString::number(mid));
-          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+                    obj.setYMatrix(y);
 
-          if (ysel.size() > 0) {
-            subitem->setText(5,
-                             projects->value(pid)->getMatrix(did)->getHash());
-          } else {
-            subitem->setText(5, "None");
-          }
+                    obj.setMLRModel(projects->value(pid)->getMLRModel(mid));
 
-          subitem->setText(6, QString::number(projects->value(pid)
-                                                  ->getMLRModel(mid)
-                                                  ->getLastMLRPrediction()
-                                                  ->getPredID()));
-          subitem->setText(7, QString("MLR Prediction"));
+          
 
-          tabcount_++;
+                    QFuture<void> future = obj.RunMLRPrediction();
 
-          getModelItem(pid, mid)->addChild(subitem);
-        } else {
+                    while (!future.isFinished()) {
+
+                      if (stoprun == true) {
+
+                        obj.AbortRun();
+
+                        QApplication::processEvents();
+
+                      } else {
+
+                        QApplication::processEvents();
+
+                      }
+
+                    }
+
+          
+
+                    if (stoprun == false) {
+
+                      //         ModelPrediction Name - Tab Count - pid - Model ID - xdata
+
+                      //         id - ydata id - Data Position - Data Type (PCA Prediction,
+
+                      //         PLS Prediction, ...) (8)
+
+                      QTreeWidgetItem *subitem = new QTreeWidgetItem;
+
+                      subitem->setText(0, projects->value(pid)
+
+                                              ->getMLRModel(mid)
+
+                                              ->getLastMLRPrediction()
+
+                                              ->getName());
+
+                      subitem->setText(1, QString::number(tabcount_));
+
+                      subitem->setText(2, QString::number(pid));
+
+                      subitem->setText(3, QString::number(mid));
+
+                      subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+
+          
+
+                      if (ysel.size() > 0) {
+
+                        subitem->setText(5,
+
+                                         projects->value(pid)->getMatrix(did)->getHash());
+
+                      } else {
+
+                        subitem->setText(5, "None");
+
+                      }
+
+          
+
+                      subitem->setText(6, QString::number(projects->value(pid)
+
+                                                              ->getMLRModel(mid)
+
+                                                              ->getLastMLRPrediction()
+
+                                                              ->getPredID()));
+
+                      subitem->setText(7, QString("MLR Prediction"));
+
+          
+
+                      tabcount_++;
+
+                      getModelItem(pid, mid)->addChild(subitem);
+
+                    } else {
+
+                      int removeid =
+
+                          projects->value(pid)->getMLRModel(mid)->MLRPredictionCount() -
+
+                          1;
+
+                      projects->value(pid)->getMLRModel(mid)->delMLRPredictionAt(removeid);
+
+                    }
+
+                  } else {
           QMessageBox::critical(
               this, tr("MLR Prediction Error"),
               tr("Unable to compute MLR Prediction.\n"
@@ -7936,7 +8118,7 @@ void MainWindow::DoMLRPrediction() {
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
         projects->value(pid)->AutoSave();
@@ -7991,6 +8173,15 @@ void MainWindow::DoMLRValidation() {
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel,
                       yvarsel, x, y);
 
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         uivector *kfc;
         initUIVector(&kfc);
         PrepareKFoldClasses(objsel, kfoldclasses, kfc);
@@ -8030,7 +8221,7 @@ void MainWindow::DoMLRValidation() {
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
         DelUIVector(&kfc);
@@ -8085,6 +8276,17 @@ void MainWindow::DoMLR() {
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel,
                       yvarsel, x, y);
 
+        if (stoprun) {
+          int removeid = projects->value(pid)->MLRCount() - 1;
+          projects->value(pid)->delMLRModelAt(removeid);
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         RUN obj;
         obj.setXMatrix(x);
         obj.setYMatrix(y);
@@ -8130,7 +8332,7 @@ void MainWindow::DoMLR() {
         DelMatrix(&y);
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         projects->value(pid)->AutoSave();
       }
     }

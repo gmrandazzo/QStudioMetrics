@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QMenu>
 #include <QMessageBox>
+#include <QSettings>
 #include <QStringListModel>
 
 #include <unistd.h>
@@ -64,6 +65,11 @@ int ScatterPlot::GetIDinmxlst(QString mxhash) {
   } else {
     return -1;
   }
+}
+
+int ScatterPlot::GetIDinarlst(QString arhash) {
+  Q_UNUSED(arhash);
+  return -1;
 }
 
 int ScatterPlot::makeSize(double val, double min, double max, int sizemin,
@@ -998,7 +1004,10 @@ void ScatterPlot::OpenPlotSettingsDialog() {
   chart->getXminXmaxXTick(&xmin, &xmax, &xtick);
   chart->getYminYmaxYTick(&ymin, &ymax, &ytick);
 
-  PlotSettingsDialog psettings(xmin, xmax, xtick, ymin, ymax, ytick);
+  PlotSettingsDialog psettings(xmin, xmax, xtick, ymin, ymax, ytick,
+                               chart->getPlotTitleSize(),
+                               chart->getAxisValueSize(),
+                               chart->getXLabelSize(), chart->getYLabelSize());
   if (psettings.exec() == QDialog::Accepted) {
     int titlesize = psettings.getPlotTitleSize();
     int axisvaluesize = psettings.getAxisValueSize();
@@ -1012,6 +1021,13 @@ void ScatterPlot::OpenPlotSettingsDialog() {
     double ymin = psettings.getYmin();
     double ymax = psettings.getYmax();
     int ytick = psettings.getYTick();
+
+    QSettings settings("QStudioMetrics", "PlotSettings");
+    settings.setValue("titleSize", titlesize);
+    settings.setValue("axisValueSize", axisvaluesize);
+    settings.setValue("xLabelSize", xlabelsize);
+    settings.setValue("yLabelSize", ylabelsize);
+
     QString qdb =
         QString(" ScatterPlot::OpenPlotSettingsDialog title size %1 axis val "
                 "size %2 xlbl size %3  ylbl size %4 xtick %5 ytick %6")
@@ -1749,6 +1765,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
   ui.axis1->setMaximum(maxcol);
   ui.axis2->setMaximum(maxcol);
 
+  chart->LoadSettings();
+
   // Finally render the scene
   chart->Center();
   chart->Plot();
@@ -1828,6 +1846,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
   ui.axis1->setMaximum(maxcol);
   ui.axis2->setMaximum(maxcol);
 
+  chart->LoadSettings();
+
   // Finally render the scene
   chart->Center();
   chart->Plot();
@@ -1906,6 +1926,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
   ui.axis2->setMaximum(maxcol);
   ui.axis3->setMaximum(maxcol);
 
+  chart->LoadSettings();
+
   // Finally render the scene
   chart->Center();
   // chart->Refresh();
@@ -1978,6 +2000,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
   ui.axis1->setMaximum(maxcol);
   ui.axis2->setMaximum(maxcol);
 
+  chart->LoadSettings();
+
   // Finally render the scene
   chart->Center();
   chart->Plot();
@@ -2047,6 +2071,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
       acoeff.append(b_->data[i]);
 
     BuildLine(acoeff.first());
+
+    chart->LoadSettings();
 
     // Finally render the scene
     chart->Center();
@@ -2131,6 +2157,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
 
     BuildLine(acoeff.first());
 
+    chart->LoadSettings();
+
     // Finally render the scene
     chart->Center();
     chart->Plot();
@@ -2213,6 +2241,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
     maxcol /= 2;
     ui.axis3->setMaximum(maxcol);
 
+    chart->LoadSettings();
+
     // Finally render the scene
     chart->Center();
     chart->Plot();
@@ -2291,6 +2321,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
     maxcol /= 2;
 
     ui.axis3->setMaximum(maxcol);
+
+    chart->LoadSettings();
 
     // Finally render the scene
     chart->Center();

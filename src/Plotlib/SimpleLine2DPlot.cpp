@@ -70,6 +70,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename,
 
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
+  chart->LoadSettings();
   chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
@@ -113,6 +114,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames,
 
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
+  chart->LoadSettings();
   chart->Plot();
 
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
@@ -155,6 +157,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(QList<matrix *> mlst, QStringList curvenames,
 
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
+  chart->LoadSettings();
   chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));

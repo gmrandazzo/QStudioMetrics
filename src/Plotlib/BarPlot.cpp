@@ -75,6 +75,7 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle,
   ui.widget->setLayout(plotLayout.release());
   // Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
+  chart->LoadSettings();
   chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
 }
@@ -106,6 +107,7 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle,
   ui.widget->setLayout(plotLayout.release());
   // Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
+  chart->LoadSettings();
   chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
 }
@@ -169,6 +171,7 @@ BarPlot::BarPlot(QList<dvector *> vlst_, QString windowtitle,
   }
   // Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
+  chart->LoadSettings();
   chart->Plot();
 
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
@@ -229,6 +232,7 @@ BarPlot::BarPlot(QList<dvector *> bar_lists_, QStringList windowtitles_,
   ui.widget->setLayout(plotLayout.release());
   // Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
+  chart->LoadSettings();
   chart->Plot();
   connect(ui.bar_list_id, SIGNAL(valueChanged(int)), SLOT(BarPlotUpdate()));
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));

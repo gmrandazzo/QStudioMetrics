@@ -198,6 +198,7 @@ private slots:
   void StartRun();
   void WaitRun();
   void StopRun();
+  void FinalizeRun();
   void UpdateImageWindow(ImageSignal is);
   void PlotVariableVSVariableBis(vvplotSignal vvs);
 
