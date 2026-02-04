@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Core data structure or utility for data.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "qsmdata.h"
 #include <QBuffer>
 #include <QByteArray>
@@ -1230,13 +1251,30 @@ QString DATA::SaveSQLData(QString savepath) {
   pbdialog.show();
   QString dbName = savepath + "/" + getProjectName() + ".qsm";
   projectpath = dbName;
-  // QString dbName( "myDatabase.db3" );
-  QFile::remove(dbName);
-  QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-  db.setDatabaseName(dbName);
-  db.open();
-  if (db.isOpen()) {
-    QSqlQuery query = QSqlQuery(db);
+
+  if (QFile::exists(dbName)) {
+    if (!QFile::remove(dbName)) {
+#ifdef DEBUG
+      qDebug() << "Failed to remove existing database file:" << dbName;
+#endif
+    }
+  }
+
+  {
+    // Use a unique connection name to avoid conflicts
+    QString connectionName = QString("SaveConnection_%1").arg(getProjectName());
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+    db.setDatabaseName(dbName);
+    
+    if (!db.open()) {
+#ifdef DEBUG
+      qDebug() << "Failed to open database:" << db.lastError().text();
+#endif
+      return QString();
+    }
+
+    QSqlQuery query(db);
+    db.transaction(); // Use transaction for much faster insertions
     /*
      * The table is subdivided into five column
      * modeltype: which describe the type of data that is stored
@@ -1277,19 +1315,11 @@ QString DATA::SaveSQLData(QString savepath) {
 
     query.exec(QString("CREATE TABLE IF NOT EXISTS objlabelTable (name TEXT, "
                        "lstvalues TEXT)"));
-    if (getObjectLabels().size() > 0) {
-      // txt1 = serialized_label
-      for (int i = 0; i < getObjectLabels().size(); i++) {
-        QString labelname = getObjectLabels()[i].name;
-        QString serialized_label =
-            SerializeQStringList(getObjectLabels()[i].objects);
-
-        query.prepare("INSERT INTO objlabelTable (name, lstvalues) VALUES "
-                      "(:name, :lstvalues)");
-        query.bindValue(":name", labelname);
-        query.bindValue(":lstvalues", serialized_label);
-        query.exec();
-      }
+    for (int i = 0; i < getObjectLabels().size(); i++) {
+      query.prepare("INSERT INTO objlabelTable (name, lstvalues) VALUES (:name, :lstvalues)");
+      query.bindValue(":name", getObjectLabels()[i].name);
+      query.bindValue(":lstvalues", SerializeQStringList(getObjectLabels()[i].objects));
+      query.exec();
     }
 
     /* Step 3 object labels saved */
@@ -1297,19 +1327,11 @@ QString DATA::SaveSQLData(QString savepath) {
 
     query.exec(QString("CREATE TABLE IF NOT EXISTS varlabelTable (name TEXT, "
                        "lstvalues TEXT)"));
-    if (getVariableLabels().size() > 0) {
-      // DATAIO::MakeDir(labelspath.toStdString());
-      for (int i = 0; i < getVariableLabels().size(); i++) {
-        QString labelname = getVariableLabels()[i].name;
-        QString serialized_label =
-            SerializeQStringList(getVariableLabels()[i].objects);
-
-        query.prepare("INSERT INTO varlabelTable (name, lstvalues) VALUES "
-                      "(:name, :lstvalues)");
-        query.bindValue(":name", labelname);
-        query.bindValue(":lstvalues", serialized_label);
-        query.exec();
-      }
+    for (int i = 0; i < getVariableLabels().size(); i++) {
+      query.prepare("INSERT INTO varlabelTable (name, lstvalues) VALUES (:name, :lstvalues)");
+      query.bindValue(":name", getVariableLabels()[i].name);
+      query.bindValue(":lstvalues", SerializeQStringList(getVariableLabels()[i].objects));
+      query.exec();
     }
 
     query.exec(QString("CREATE TABLE IF NOT EXISTS vartablabelTable (name "
@@ -1364,680 +1386,286 @@ QString DATA::SaveSQLData(QString savepath) {
     query.exec(
         QString("CREATE TABLE IF NOT EXISTS pcapredTable (name TEXT, pcahash "
                 "TEXT, hashinputmx TEXT, objname TEXT, scores TEXT)"));
-    if (PCACount() > 0) {
-      for (int i = 0; i < PCACount(); i++) {
-        QString modname =
-            getPCAModelAt(i)
-                ->getName() /*.remove("PCA - ", Qt::CaseSensitive).trimmed()*/;
-        QString objname_serialized =
-            SerializeQStringList(getPCAModelAt(i)->getObjName());
-        QString varname_serialized =
-            SerializeQStringList(getPCAModelAt(i)->getVarName());
-        QString serialized_scores =
-            SerializeMatrix(getPCAModelAt(i)->Model()->scores);
-        QString serialized_loadings =
-            SerializeMatrix(getPCAModelAt(i)->Model()->loadings);
-        QString serialized_dmodx =
-            SerializeMatrix(getPCAModelAt(i)->Model()->dmodx);
-        QString serialized_colaverage =
-            SerializeDVector(getPCAModelAt(i)->Model()->colaverage);
-        QString serialized_colscaling =
-            SerializeDVector(getPCAModelAt(i)->Model()->colscaling);
-        QString serialized_varexp =
-            SerializeDVector(getPCAModelAt(i)->Model()->varexp);
-        query.prepare(
-            "INSERT INTO pcaTable (name, numcomp, scalingtype, hashinputmx, "
-            "objname, varname, scores, loadings, dmodx, varexp, colscaling, "
-            "colaverage) VALUES (:name, :numcomp, :scalingtype, :hashinputmx, "
-            ":objname, :varname, :scores, :loadings, :dmodx, :varexp, "
-            ":colscaling, :colaverage)");
-        query.bindValue(":name", modname);
-        query.bindValue(":numcomp", getPCAModelAt(i)->getNPC());
-        query.bindValue(":scalingtype", getPCAModelAt(i)->getXScaling());
-        query.bindValue(":hashinputmx", getPCAModelAt(i)->getDataHash());
-        query.bindValue(":objname", objname_serialized);
-        query.bindValue(":varname", varname_serialized);
-        query.bindValue(":scores", serialized_scores);
-        query.bindValue(":loadings", serialized_loadings);
-        query.bindValue(":dmodx", serialized_dmodx);
-        query.bindValue(":colscaling", serialized_colaverage);
-        query.bindValue(":colaverage", serialized_colscaling);
-        query.bindValue(":varexp", serialized_varexp);
-        query.exec();
+    for (int i = 0; i < PCACount(); i++) {
+      PCAModel* mod = getPCAModelAt(i);
+      query.prepare(
+          "INSERT INTO pcaTable (name, numcomp, scalingtype, hashinputmx, "
+          "objname, varname, scores, loadings, dmodx, varexp, colscaling, "
+          "colaverage) VALUES (:name, :numcomp, :scalingtype, :hashinputmx, "
+          ":objname, :varname, :scores, :loadings, :dmodx, :varexp, "
+          ":colscaling, :colaverage)");
+      query.bindValue(":name", mod->getName());
+      query.bindValue(":numcomp", mod->getNPC());
+      query.bindValue(":scalingtype", mod->getXScaling());
+      query.bindValue(":hashinputmx", mod->getDataHash());
+      query.bindValue(":objname", SerializeQStringList(mod->getObjName()));
+      query.bindValue(":varname", SerializeQStringList(mod->getVarName()));
+      query.bindValue(":scores", SerializeMatrix(mod->Model()->scores));
+      query.bindValue(":loadings", SerializeMatrix(mod->Model()->loadings));
+      query.bindValue(":dmodx", SerializeMatrix(mod->Model()->dmodx));
+      query.bindValue(":colscaling", SerializeDVector(mod->Model()->colscaling));
+      query.bindValue(":colaverage", SerializeDVector(mod->Model()->colaverage));
+      query.bindValue(":varexp", SerializeDVector(mod->Model()->varexp));
+      query.exec();
 
-        if (getPCAModelAt(i)->PCAPredictionCount() > 0) {
-          for (int j = 0; j < getPCAModelAt(i)->PCAPredictionCount(); j++) {
-            QString pred_objname_serialized = SerializeQStringList(
-                getPCAModelAt(i)->getPCAPrediction(j)->getObjName());
-            QString pred_serialized_mx = SerializeMatrix(
-                getPCAModelAt(i)->getPCAPrediction(j)->getPredScores());
-            query.prepare("INSERT INTO pcapredTable (name, pcahash, "
-                          "hashinputmx, objname, scores) VALUES (:name, "
-                          ":pcahash, :hashinputmx, :objname, :scores)");
-            query.bindValue(":name",
-                            getPCAModelAt(i)->getPCAPrediction(j)->getName() /*.remove("PCA Prediction - ", Qt::CaseSensitive).trimmed()*/);
-            query.bindValue(":pcahash", getPCAModelAt(i)->getHash());
-            query.bindValue(
-                ":hashinputmx",
-                getPCAModelAt(i)->getPCAPrediction(j)->getDataHash());
-            query.bindValue(":objname", pred_objname_serialized);
-            query.bindValue(":scores", pred_serialized_mx);
-            query.exec();
-          }
-        }
+      for (int j = 0; j < mod->PCAPredictionCount(); j++) {
+        PCAPREDICTION* pred = mod->getPCAPrediction(j);
+        query.prepare("INSERT INTO pcapredTable (name, pcahash, "
+                      "hashinputmx, objname, scores) VALUES (:name, "
+                      ":pcahash, :hashinputmx, :objname, :scores)");
+        query.bindValue(":name", pred->getName());
+        query.bindValue(":pcahash", mod->getHash());
+        query.bindValue(":hashinputmx", pred->getDataHash());
+        query.bindValue(":objname", SerializeQStringList(pred->getObjName()));
+        query.bindValue(":scores", SerializeMatrix(pred->getPredScores()));
+        query.exec();
       }
     }
 
-    query.exec(QString(
-        "CREATE TABLE IF NOT EXISTS plsTable (name TEXT, nlvs INT, "
-        "xscalingtype INT, yscalingtype INT, hashinputmx TEXT, objname TEXT, "
-        "xvarname TEXT, yvarname TEXT, classes TEXT, tscores TEXT, ploadings  "
-        "TEXT, weights TEXT, xvarexp TEXT, xcolscaling TEXT, xcolaverage TEXT, "
-        "uscores TEXT, qloadings TEXT, ycolscaling TEXT, ycolaverage TEXT, b "
-        "TEXT, r2y_model TEXT, sdec TEXT, recalc_y TEXT, recalc_residuals "
-        "TEXT, validationtype INT, q2y TEXT, sdep TEXT, bias TEXT, predicted_y "
-        "TEXT, predicted_residuals TEXT, roc_recalculated TEXT, roc_validation "
-        "TEXT, roc_auc_recalculated TEXT, roc_auc_validation TEXT, "
-        "precision_recall_recalculated TEXT, precision_recall_validation TEXT, "
-        "precision_recall_ap_recalculated TEXT, precision_recall_ap_validation "
-        "TEXT, yscrambling TEXT, yscrambling TEXT)"));
+    query.exec("CREATE TABLE IF NOT EXISTS plsTable (name TEXT, nlvs INT, "
+               "xscalingtype INT, yscalingtype INT, hashinputmx TEXT, "
+               "objname TEXT, xvarname TEXT, yvarname TEXT, classes TEXT, "
+               "tscores TEXT, ploadings TEXT, weights TEXT, xvarexp TEXT, "
+               "xcolscaling TEXT, xcolaverage TEXT, uscores TEXT, qloadings TEXT, "
+               "ycolscaling TEXT, ycolaverage TEXT, b TEXT, r2y_model TEXT, "
+               "sdec TEXT, recalc_y TEXT, recalc_residuals TEXT, validationtype INT, "
+               "q2y TEXT, sdep TEXT, bias TEXT, predicted_y TEXT, "
+               "predicted_residuals TEXT, roc_recalculated TEXT, roc_validation TEXT, "
+               "roc_auc_recalculated TEXT, roc_auc_validation TEXT, "
+               "precision_recall_recalculated TEXT, precision_recall_validation TEXT, "
+               "precision_recall_ap_recalculated TEXT, precision_recall_ap_validation TEXT, "
+               "yscrambling TEXT)");
 
-    QString plsTable_query_str;
-    plsTable_query_str.append("CREATE TABLE IF NOT EXISTS plsTable (");
-    plsTable_query_str.append("name TEXT, ");
-    plsTable_query_str.append("nlvs INT, ");
-    plsTable_query_str.append("xscalingtype INT, ");
-    plsTable_query_str.append("yscalingtype INT, ");
-    plsTable_query_str.append("hashinputmx TEXT, ");
-    plsTable_query_str.append("objname TEXT, ");
-    plsTable_query_str.append("xvarname TEXT, ");
-    plsTable_query_str.append("yvarname TEXT, ");
-    plsTable_query_str.append("classes TEXT, ");
-    plsTable_query_str.append("tscores TEXT, ");
-    plsTable_query_str.append("ploadings  TEXT, ");
-    plsTable_query_str.append("weights TEXT, ");
-    plsTable_query_str.append("xvarexp TEXT, ");
-    plsTable_query_str.append("xcolscaling TEXT, ");
-    plsTable_query_str.append("xcolaverage TEXT, ");
-    plsTable_query_str.append("uscores TEXT, ");
-    plsTable_query_str.append("qloadings TEXT, ");
-    plsTable_query_str.append("ycolscaling TEXT, ");
-    plsTable_query_str.append("ycolaverage TEXT, ");
-    plsTable_query_str.append("b TEXT, ");
-    plsTable_query_str.append("r2y_model TEXT, ");
-    plsTable_query_str.append("sdec TEXT, ");
-    plsTable_query_str.append("recalc_y TEXT, ");
-    plsTable_query_str.append("recalc_residuals TEXT, ");
-    plsTable_query_str.append("validationtype INT, ");
-    plsTable_query_str.append("q2y TEXT, ");
-    plsTable_query_str.append("sdep TEXT, ");
-    plsTable_query_str.append("bias TEXT, ");
-    plsTable_query_str.append("predicted_y TEXT, ");
-    plsTable_query_str.append("predicted_residuals TEXT, ");
-    plsTable_query_str.append("roc_recalculated TEXT, ");
-    plsTable_query_str.append("roc_validation TEXT, ");
-    plsTable_query_str.append("roc_auc_recalculated TEXT, ");
-    plsTable_query_str.append("roc_auc_validation TEXT, ");
-    plsTable_query_str.append("precision_recall_recalculated TEXT, ");
-    plsTable_query_str.append("precision_recall_validation TEXT, ");
-    plsTable_query_str.append("precision_recall_ap_recalculated TEXT, ");
-    plsTable_query_str.append("precision_recall_ap_validation TEXT, ");
-    plsTable_query_str.append("yscrambling TEXT");
-    plsTable_query_str.append(")");
-    query.exec(plsTable_query_str);
+    query.exec("CREATE TABLE IF NOT EXISTS plspredTable (name TEXT, plshash TEXT, "
+               "hashinputmx TEXT, objname TEXT, yvarname TEXT, tscores TEXT, "
+               "predicted_y TEXT, r2y TEXT, sdec TEXT)");
 
-    query.exec(
-        QString("CREATE TABLE IF NOT EXISTS plspredTable (name TEXT, plshash "
-                "TEXT, hashinputmx TEXT, objname TEXT, yvarname TEXT, tscores "
-                "TEXT, predicted_y TEXT, r2y TEXT, sdec TXT)"));
-    if (PLSCount() > 0) {
-      for (int i = 0; i < PLSCount(); i++) {
-        QString modname =
-            getPLSModelAt(i)
-                ->getName() /*.remove("PCA - ", Qt::CaseSensitive).trimmed()*/;
-        QString objname_serialized =
-            SerializeQStringList(getPLSModelAt(i)->getObjName());
-        QString xvarname_serialized =
-            SerializeQStringList(getPLSModelAt(i)->getXVarName());
-        QString yvarname_serialized =
-            SerializeQStringList(getPLSModelAt(i)->getYVarName());
-        QString classes_serialized =
-            SerializeLABELS(getPLSModelAt(i)->getClasses());
+    for (int i = 0; i < PLSCount(); i++) {
+      PLSModel* mod = getPLSModelAt(i);
+      query.prepare("INSERT INTO plsTable (name, nlvs, xscalingtype, yscalingtype, hashinputmx, "
+                    "objname, xvarname, yvarname, classes, tscores, ploadings, weights, "
+                    "xvarexp, xcolscaling, xcolaverage, uscores, qloadings, ycolscaling, "
+                    "ycolaverage, b, r2y_model, sdec, recalc_y, recalc_residuals, "
+                    "validationtype, q2y, sdep, bias, predicted_y, predicted_residuals, "
+                    "roc_recalculated, roc_validation, roc_auc_recalculated, roc_auc_validation, "
+                    "precision_recall_recalculated, precision_recall_validation, "
+                    "precision_recall_ap_recalculated, precision_recall_ap_validation, "
+                    "yscrambling) VALUES (:name, :nlvs, :xscalingtype, :yscalingtype, "
+                    ":hashinputmx, :objname, :xvarname, :yvarname, :classes, :tscores, "
+                    ":ploadings, :weights, :xvarexp, :xcolscaling, :xcolaverage, :uscores, "
+                    ":qloadings, :ycolscaling, :ycolaverage, :b, :r2y_model, :sdec, "
+                    ":recalc_y, :recalc_residuals, :validationtype, :q2y, :sdep, :bias, "
+                    ":predicted_y, :predicted_residuals, :roc_recalculated, :roc_validation, "
+                    ":roc_auc_recalculated, :roc_auc_validation, :precision_recall_recalculated, "
+                    ":precision_recall_validation, :precision_recall_ap_recalculated, "
+                    ":precision_recall_ap_validation, :yscrambling)");
+      
+      query.bindValue(":name", mod->getName());
+      query.bindValue(":nlvs", mod->getNPC());
+      query.bindValue(":xscalingtype", mod->getXScaling());
+      query.bindValue(":yscalingtype", mod->getYScaling());
+      query.bindValue(":hashinputmx", mod->getDataHash());
+      query.bindValue(":objname", SerializeQStringList(mod->getObjName()));
+      query.bindValue(":xvarname", SerializeQStringList(mod->getXVarName()));
+      query.bindValue(":yvarname", SerializeQStringList(mod->getYVarName()));
+      query.bindValue(":classes", SerializeLABELS(mod->getClasses()));
+      query.bindValue(":tscores", SerializeMatrix(mod->Model()->xscores));
+      query.bindValue(":ploadings", SerializeMatrix(mod->Model()->xloadings));
+      query.bindValue(":weights", SerializeMatrix(mod->Model()->xweights));
+      query.bindValue(":xvarexp", SerializeDVector(mod->Model()->xvarexp));
+      query.bindValue(":xcolscaling", SerializeDVector(mod->Model()->xcolscaling));
+      query.bindValue(":xcolaverage", SerializeDVector(mod->Model()->xcolaverage));
+      query.bindValue(":uscores", SerializeMatrix(mod->Model()->yscores));
+      query.bindValue(":qloadings", SerializeMatrix(mod->Model()->yloadings));
+      query.bindValue(":ycolscaling", SerializeDVector(mod->Model()->ycolscaling));
+      query.bindValue(":ycolaverage", SerializeDVector(mod->Model()->ycolaverage));
+      query.bindValue(":b", SerializeDVector(mod->Model()->b));
+      query.bindValue(":r2y_model", SerializeMatrix(mod->Model()->r2y_recalculated));
+      query.bindValue(":sdec", SerializeMatrix(mod->Model()->sdec));
+      query.bindValue(":recalc_y", SerializeMatrix(mod->Model()->recalculated_y));
+      query.bindValue(":recalc_residuals", SerializeMatrix(mod->Model()->recalc_residuals));
+      query.bindValue(":validationtype", mod->getValidation());
+      query.bindValue(":q2y", SerializeMatrix(mod->Model()->q2y));
+      query.bindValue(":sdep", SerializeMatrix(mod->Model()->sdep));
+      query.bindValue(":bias", SerializeMatrix(mod->Model()->bias));
+      query.bindValue(":predicted_y", SerializeMatrix(mod->Model()->predicted_y));
+      query.bindValue(":predicted_residuals", SerializeMatrix(mod->Model()->pred_residuals));
+      query.bindValue(":roc_recalculated", SerializeTensor(mod->Model()->roc_recalculated));
+      query.bindValue(":roc_validation", SerializeTensor(mod->Model()->roc_validation));
+      query.bindValue(":roc_auc_recalculated", SerializeMatrix(mod->Model()->roc_auc_recalculated));
+      query.bindValue(":roc_auc_validation", SerializeMatrix(mod->Model()->roc_auc_validation));
+      query.bindValue(":precision_recall_recalculated", SerializeTensor(mod->Model()->precision_recall_recalculated));
+      query.bindValue(":precision_recall_validation", SerializeTensor(mod->Model()->precision_recall_validation));
+      query.bindValue(":precision_recall_ap_recalculated", SerializeMatrix(mod->Model()->precision_recall_ap_recalculated));
+      query.bindValue(":precision_recall_ap_validation", SerializeMatrix(mod->Model()->precision_recall_ap_validation));
+      query.bindValue(":yscrambling", SerializeMatrix(mod->Model()->yscrambling));
+      query.exec();
 
-        QString serialized_tscores =
-            SerializeMatrix(getPLSModelAt(i)->Model()->xscores);
-        QString serialized_ploadings =
-            SerializeMatrix(getPLSModelAt(i)->Model()->xloadings);
-        QString serialized_weights =
-            SerializeMatrix(getPLSModelAt(i)->Model()->xweights);
-        QString serialized_xvarexp =
-            SerializeDVector(getPLSModelAt(i)->Model()->xvarexp);
-        QString serialized_xcolaverage =
-            SerializeDVector(getPLSModelAt(i)->Model()->xcolaverage);
-        QString serialized_xcolscaling =
-            SerializeDVector(getPLSModelAt(i)->Model()->xcolscaling);
-
-        QString serialized_uscores =
-            SerializeMatrix(getPLSModelAt(i)->Model()->yscores);
-        QString serialized_qloadings =
-            SerializeMatrix(getPLSModelAt(i)->Model()->yloadings);
-        QString serialized_ycolaverage =
-            SerializeDVector(getPLSModelAt(i)->Model()->ycolaverage);
-        QString serialized_ycolscaling =
-            SerializeDVector(getPLSModelAt(i)->Model()->ycolscaling);
-        QString serialized_b = SerializeDVector(getPLSModelAt(i)->Model()->b);
-        QString serialized_r2y_model =
-            SerializeMatrix(getPLSModelAt(i)->Model()->r2y_recalculated);
-        QString serialized_sdec =
-            SerializeMatrix(getPLSModelAt(i)->Model()->sdec);
-        QString serialized_recalc_y =
-            SerializeMatrix(getPLSModelAt(i)->Model()->recalculated_y);
-        QString serialized_recalc_residuals =
-            SerializeMatrix(getPLSModelAt(i)->Model()->recalc_residuals);
-
-        QString serialized_q2y =
-            SerializeMatrix(getPLSModelAt(i)->Model()->q2y);
-        QString serialized_sdep =
-            SerializeMatrix(getPLSModelAt(i)->Model()->sdep);
-        QString serialized_bias =
-            SerializeMatrix(getPLSModelAt(i)->Model()->bias);
-        QString serialized_predicted_y =
-            SerializeMatrix(getPLSModelAt(i)->Model()->predicted_y);
-        QString serialized_pred_residuals =
-            SerializeMatrix(getPLSModelAt(i)->Model()->pred_residuals);
-
-        /* Discriminant Analyisis variables */
-        QString serialized_roc_recalculated =
-            SerializeTensor(getPLSModelAt(i)->Model()->roc_recalculated);
-        QString serialized_roc_validation =
-            SerializeTensor(getPLSModelAt(i)->Model()->roc_validation);
-        QString serialized_roc_auc_recalculated =
-            SerializeMatrix(getPLSModelAt(i)->Model()->roc_auc_recalculated);
-        QString serialized_roc_auc_validation =
-            SerializeMatrix(getPLSModelAt(i)->Model()->roc_auc_validation);
-        QString serialized_precision_recall_recalculated = SerializeTensor(
-            getPLSModelAt(i)->Model()->precision_recall_recalculated);
-        QString serialized_precision_recall_validation = SerializeTensor(
-            getPLSModelAt(i)->Model()->precision_recall_validation);
-        QString serialized_precision_recall_ap_recalculated = SerializeMatrix(
-            getPLSModelAt(i)->Model()->precision_recall_ap_recalculated);
-        QString serialized_precision_recall_ap_validation = SerializeMatrix(
-            getPLSModelAt(i)->Model()->precision_recall_ap_validation);
-
-        QString serialized_yscrambling =
-            SerializeMatrix(getPLSModelAt(i)->Model()->yscrambling);
-
-        QString plsTable_pepare_query_str;
-        plsTable_pepare_query_str.append("INSERT INTO plsTable (");
-        plsTable_pepare_query_str.append("name, ");
-        plsTable_pepare_query_str.append("nlvs, ");
-        plsTable_pepare_query_str.append("xscalingtype, ");
-        plsTable_pepare_query_str.append("yscalingtype, ");
-        plsTable_pepare_query_str.append("hashinputmx, ");
-        plsTable_pepare_query_str.append("objname, ");
-        plsTable_pepare_query_str.append("xvarname, ");
-        plsTable_pepare_query_str.append("yvarname, ");
-        plsTable_pepare_query_str.append("classes, ");
-        plsTable_pepare_query_str.append("tscores, ");
-        plsTable_pepare_query_str.append("ploadings, ");
-        plsTable_pepare_query_str.append("weights, ");
-        plsTable_pepare_query_str.append("xvarexp, ");
-        plsTable_pepare_query_str.append("xcolscaling, ");
-        plsTable_pepare_query_str.append("xcolaverage, ");
-        plsTable_pepare_query_str.append("uscores, ");
-        plsTable_pepare_query_str.append("qloadings, ");
-        plsTable_pepare_query_str.append("ycolscaling, ");
-        plsTable_pepare_query_str.append("ycolaverage, ");
-        plsTable_pepare_query_str.append("b, ");
-        plsTable_pepare_query_str.append("r2y_model, ");
-        plsTable_pepare_query_str.append("sdec, ");
-        plsTable_pepare_query_str.append("recalc_y, ");
-        plsTable_pepare_query_str.append("recalc_residuals, ");
-        plsTable_pepare_query_str.append("validationtype, ");
-        plsTable_pepare_query_str.append("q2y, ");
-        plsTable_pepare_query_str.append("sdep, ");
-        plsTable_pepare_query_str.append("bias, ");
-        plsTable_pepare_query_str.append("predicted_y, ");
-        plsTable_pepare_query_str.append("predicted_residuals, ");
-        plsTable_pepare_query_str.append("roc_recalculated, ");
-        plsTable_pepare_query_str.append("roc_validation, ");
-        plsTable_pepare_query_str.append("roc_auc_recalculated, ");
-        plsTable_pepare_query_str.append("roc_auc_validation, ");
-        plsTable_pepare_query_str.append("precision_recall_recalculated, ");
-        plsTable_pepare_query_str.append("precision_recall_validation, ");
-        plsTable_pepare_query_str.append("precision_recall_ap_recalculated, ");
-        plsTable_pepare_query_str.append("precision_recall_ap_validation, ");
-        plsTable_pepare_query_str.append("yscrambling");
-        plsTable_pepare_query_str.append(") VALUES (");
-        plsTable_pepare_query_str.append(":name, ");
-        plsTable_pepare_query_str.append(":nlvs, ");
-        plsTable_pepare_query_str.append(":xscalingtype, ");
-        plsTable_pepare_query_str.append(":yscalingtype, ");
-        plsTable_pepare_query_str.append(":hashinputmx, ");
-        plsTable_pepare_query_str.append(":objname, ");
-        plsTable_pepare_query_str.append(":xvarname, ");
-        plsTable_pepare_query_str.append(":yvarname, ");
-        plsTable_pepare_query_str.append(":classes, ");
-        plsTable_pepare_query_str.append(":tscores, ");
-        plsTable_pepare_query_str.append(":ploadings, ");
-        plsTable_pepare_query_str.append(":weights, ");
-        plsTable_pepare_query_str.append(":xvarexp, ");
-        plsTable_pepare_query_str.append(":xcolscaling, ");
-        plsTable_pepare_query_str.append(":xcolaverage, ");
-        plsTable_pepare_query_str.append(":uscores, ");
-        plsTable_pepare_query_str.append(":qloadings, ");
-        plsTable_pepare_query_str.append(":ycolscaling, ");
-        plsTable_pepare_query_str.append(":ycolaverage, ");
-        plsTable_pepare_query_str.append(":b, ");
-        plsTable_pepare_query_str.append(":r2y_model, ");
-        plsTable_pepare_query_str.append(":sdec, ");
-        plsTable_pepare_query_str.append(":recalc_y, ");
-        plsTable_pepare_query_str.append(":recalc_residuals, ");
-        plsTable_pepare_query_str.append(":validationtype, ");
-        plsTable_pepare_query_str.append(":q2y, ");
-        plsTable_pepare_query_str.append(":sdep, ");
-        plsTable_pepare_query_str.append(":bias, ");
-        plsTable_pepare_query_str.append(":predicted_y, ");
-        plsTable_pepare_query_str.append(":predicted_residuals, ");
-        plsTable_pepare_query_str.append(":roc_recalculated, ");
-        plsTable_pepare_query_str.append(":roc_validation, ");
-        plsTable_pepare_query_str.append(":roc_auc_recalculated, ");
-        plsTable_pepare_query_str.append(":roc_auc_validation, ");
-        plsTable_pepare_query_str.append(":precision_recall_recalculated, ");
-        plsTable_pepare_query_str.append(":precision_recall_validation, ");
-        plsTable_pepare_query_str.append(":precision_recall_ap_recalculated, ");
-        plsTable_pepare_query_str.append(":precision_recall_ap_validation, ");
-        plsTable_pepare_query_str.append(":yscrambling");
-        plsTable_pepare_query_str.append(")");
-        query.prepare(plsTable_pepare_query_str);
-
-        query.bindValue(":name", modname);
-        query.bindValue(":nlvs", getPLSModelAt(i)->getNPC());
-        query.bindValue(":xscalingtype", getPLSModelAt(i)->getXScaling());
-        query.bindValue(":yscalingtype", getPLSModelAt(i)->getYScaling());
-        query.bindValue(":hashinputmx", getPLSModelAt(i)->getDataHash());
-        query.bindValue(":objname", objname_serialized);
-        query.bindValue(":xvarname", xvarname_serialized);
-        query.bindValue(":yvarname", yvarname_serialized);
-        query.bindValue(":classes", classes_serialized);
-        query.bindValue(":tscores", serialized_tscores);
-        query.bindValue(":ploadings", serialized_ploadings);
-        query.bindValue(":weights", serialized_weights);
-        query.bindValue(":xvarexp", serialized_xvarexp);
-        query.bindValue(":xcolscaling", serialized_xcolscaling);
-        query.bindValue(":xcolaverage", serialized_xcolaverage);
-        query.bindValue(":uscores", serialized_uscores);
-        query.bindValue(":qloadings", serialized_qloadings);
-        query.bindValue(":ycolscaling", serialized_ycolscaling);
-        query.bindValue(":ycolaverage", serialized_ycolaverage);
-        query.bindValue(":b", serialized_b);
-        query.bindValue(":r2y_model", serialized_r2y_model);
-        query.bindValue(":sdec", serialized_sdec);
-        query.bindValue(":recalc_y", serialized_recalc_y);
-        query.bindValue(":recalc_residuals", serialized_recalc_residuals);
-        query.bindValue(":validationtype", getPLSModelAt(i)->getValidation());
-        query.bindValue(":q2y", serialized_q2y);
-        query.bindValue(":sdep", serialized_sdep);
-        query.bindValue(":bias", serialized_bias);
-        query.bindValue(":predicted_y", serialized_predicted_y);
-        query.bindValue(":predicted_residuals", serialized_pred_residuals);
-        query.bindValue(":roc_recalculated", serialized_roc_recalculated);
-        query.bindValue(":roc_validation", serialized_roc_validation);
-        query.bindValue(":roc_auc_recalculated",
-                        serialized_roc_auc_recalculated);
-        query.bindValue(":roc_auc_validation", serialized_roc_auc_validation);
-        query.bindValue(":precision_recall_recalculated",
-                        serialized_precision_recall_recalculated);
-        query.bindValue(":precision_recall_validation",
-                        serialized_precision_recall_validation);
-        query.bindValue(":precision_recall_ap_recalculated",
-                        serialized_precision_recall_ap_recalculated);
-        query.bindValue(":precision_recall_ap_validation",
-                        serialized_precision_recall_ap_validation);
-        query.bindValue(":yscrambling", serialized_yscrambling);
+      for (int j = 0; j < mod->PLSPredictionCount(); j++) {
+        PLSPREDICTION* pred = mod->getPLSPrediction(j);
+        query.prepare("INSERT INTO plspredTable (name, plshash, hashinputmx, objname, yvarname, "
+                      "tscores, predicted_y, r2y, sdec) VALUES (:name, :plshash, :hashinputmx, "
+                      ":objname, :yvarname, :tscores, :predicted_y, :r2y, :sdec)");
+        query.bindValue(":name", pred->getName());
+        query.bindValue(":plshash", mod->getHash());
+        query.bindValue(":hashinputmx", pred->getDataHash());
+        query.bindValue(":objname", SerializeQStringList(pred->getObjName()));
+        query.bindValue(":yvarname", SerializeQStringList(pred->getYVarName()));
+        query.bindValue(":tscores", SerializeMatrix(pred->getXPredScores()));
+        query.bindValue(":predicted_y", SerializeMatrix(pred->getYDipVar()));
+        query.bindValue(":r2y", SerializeMatrix(pred->getR2Y()));
+        query.bindValue(":sdec", SerializeMatrix(pred->getSDEC()));
         query.exec();
-
-        if (getPLSModelAt(i)->PLSPredictionCount() > 0) {
-          for (int j = 0; j < getPLSModelAt(i)->PLSPredictionCount(); j++) {
-            QString pred_objname_serialized = SerializeQStringList(
-                getPLSModelAt(i)->getPLSPrediction(j)->getObjName());
-            QString pred_yvarname_serialized = SerializeQStringList(
-                getPLSModelAt(i)->getPLSPrediction(j)->getYVarName());
-            QString pred_serialized_mx = SerializeMatrix(
-                getPLSModelAt(i)->getPLSPrediction(j)->getXPredScores());
-            QString pred_serialized_predicted_y = SerializeMatrix(
-                getPLSModelAt(i)->getPLSPrediction(j)->getYDipVar());
-            QString pred_serialized_r2y = SerializeMatrix(
-                getPLSModelAt(i)->getPLSPrediction(j)->getR2Y());
-            QString pred_serialized_sdec = SerializeMatrix(
-                getPLSModelAt(i)->getPLSPrediction(j)->getSDEC());
-
-            query.prepare(
-                "INSERT INTO plspredTable (name, plshash, hashinputmx, "
-                "objname, yvarname, tscores, predicted_y, r2y, sdec) VALUES "
-                "(:name, :plshash, :hashinputmx, :objname, :yvarname, "
-                ":tscores, :predicted_y, :r2y, :sdec)");
-            query.bindValue(":name",
-                            getPLSModelAt(i)->getPLSPrediction(j)->getName() /*.remove("PLS Prediction - ", Qt::CaseSensitive).trimmed()*/);
-            query.bindValue(":plshash", getPLSModelAt(i)->getHash());
-            query.bindValue(
-                ":hashinputmx",
-                getPLSModelAt(i)->getPLSPrediction(j)->getDataHash());
-            query.bindValue(":objname", pred_objname_serialized);
-            query.bindValue(":yvarname", pred_yvarname_serialized);
-            query.bindValue(":tscores", pred_serialized_mx);
-            query.bindValue(":predicted_y", pred_serialized_predicted_y);
-            query.bindValue(":r2y", pred_serialized_r2y);
-            query.bindValue(":sdec", pred_serialized_sdec);
-            query.exec();
-          }
-        }
       }
     }
 
-    QString mlrTable_query_str;
-    mlrTable_query_str.append("CREATE TABLE IF NOT EXISTS mlrTable (");
-    mlrTable_query_str.append("name TEXT, ");
-    mlrTable_query_str.append("hashinputmx TEXT, ");
-    mlrTable_query_str.append("objname TEXT, ");
-    mlrTable_query_str.append("xvarname TEXT, ");
-    mlrTable_query_str.append("yvarname TEXT, ");
-    mlrTable_query_str.append("b TEXT, ");
-    mlrTable_query_str.append("r2y TEXT, ");
-    mlrTable_query_str.append("sdec TEXT,  ");
-    mlrTable_query_str.append("recalc_y TEXT, ");
-    mlrTable_query_str.append("recalc_residuals TEXT, ");
-    mlrTable_query_str.append("validationtype INT, ");
-    mlrTable_query_str.append("ymean TEXT, ");
-    mlrTable_query_str.append("q2y TEXT, ");
-    mlrTable_query_str.append("sdep TEXT, ");
-    mlrTable_query_str.append("bias TEXT, ");
-    mlrTable_query_str.append("predicted_y TEXT, ");
-    mlrTable_query_str.append("predicted_residuals TEXT, ");
-    mlrTable_query_str.append("yscrambling TEXT");
-    mlrTable_query_str.append(")");
+    query.exec("CREATE TABLE IF NOT EXISTS mlrTable (name TEXT, hashinputmx TEXT, "
+               "objname TEXT, xvarname TEXT, yvarname TEXT, b TEXT, r2y TEXT, "
+               "sdec TEXT, recalc_y TEXT, recalc_residuals TEXT, validationtype INT, "
+               "ymean TEXT, q2y TEXT, sdep TEXT, bias TEXT, predicted_y TEXT, "
+               "predicted_residuals TEXT, yscrambling TEXT)");
 
-    query.exec(mlrTable_query_str);
+    query.exec("CREATE TABLE IF NOT EXISTS mlrpredTable (name TEXT, mlrhash TEXT, "
+               "hashinputmx TEXT, objname TEXT, yvarname TEXT, predicted_y TEXT, "
+               "r2y TEXT, sdec TEXT)");
 
-    query.exec(QString("CREATE TABLE IF NOT EXISTS mlrpredTable (name TEXT, "
-                       "mlrhash TEXT, hashinputmx TEXT, objname TEXT, yvarname "
-                       "TEXT, predicted_y TEXT, r2y TEXT, sdec TXT)"));
-    if (MLRCount() > 0) {
-      for (int i = 0; i < MLRCount(); i++) {
-        QString modname =
-            getMLRModelAt(i)
-                ->getName() /*.remove("MLR - ", Qt::CaseSensitive).trimmed();*/;
-        QString objname_serialized =
-            SerializeQStringList(getMLRModelAt(i)->getObjName());
-        QString xvarname_serialized =
-            SerializeQStringList(getMLRModelAt(i)->getXVarName());
-        QString yvarname_serialized =
-            SerializeQStringList(getMLRModelAt(i)->getYVarName());
-        QString serialized_b = SerializeMatrix(getMLRModelAt(i)->Model()->b);
-        QString serialized_recalc_y =
-            SerializeMatrix(getMLRModelAt(i)->Model()->recalculated_y);
-        QString serialized_recalc_residuals =
-            SerializeMatrix(getMLRModelAt(i)->Model()->recalc_residuals);
-        QString serialized_r2y_model =
-            SerializeDVector(getMLRModelAt(i)->Model()->r2y_model);
-        QString serialized_sdec =
-            SerializeDVector(getMLRModelAt(i)->Model()->sdec);
-        QString serialized_ymean =
-            SerializeDVector(getMLRModelAt(i)->Model()->ymean);
-        QString serialized_q2y =
-            SerializeDVector(getMLRModelAt(i)->Model()->q2y);
-        QString serialized_sdep =
-            SerializeDVector(getMLRModelAt(i)->Model()->sdep);
-        QString serialized_bias =
-            SerializeDVector(getMLRModelAt(i)->Model()->bias);
-        QString serialized_predicted_y =
-            SerializeMatrix(getMLRModelAt(i)->Model()->predicted_y);
-        QString serialized_pred_residuals =
-            SerializeMatrix(getMLRModelAt(i)->Model()->pred_residuals);
-        QString serialized_r2q2scrambling =
-            SerializeMatrix(getMLRModelAt(i)->Model()->r2q2scrambling);
+    for (int i = 0; i < MLRCount(); i++) {
+      MLRModel* mod = getMLRModelAt(i);
+      query.prepare("INSERT INTO mlrTable (name, hashinputmx, objname, xvarname, yvarname, "
+                    "b, r2y, sdec, recalc_y, recalc_residuals, validationtype, ymean, "
+                    "q2y, sdep, bias, predicted_y, predicted_residuals, yscrambling) "
+                    "VALUES (:name, :hashinputmx, :objname, :xvarname, :yvarname, :b, :r2y, "
+                    ":sdec, :recalc_y, :recalc_residuals, :validationtype, :ymean, :q2y, "
+                    ":sdep, :bias, :predicted_y, :predicted_residuals, :yscrambling)");
+      query.bindValue(":name", mod->getName());
+      query.bindValue(":hashinputmx", mod->getDataHash());
+      query.bindValue(":objname", SerializeQStringList(mod->getObjName()));
+      query.bindValue(":xvarname", SerializeQStringList(mod->getXVarName()));
+      query.bindValue(":yvarname", SerializeQStringList(mod->getYVarName()));
+      query.bindValue(":b", SerializeMatrix(mod->Model()->b));
+      query.bindValue(":r2y", SerializeDVector(mod->Model()->r2y_model));
+      query.bindValue(":sdec", SerializeDVector(mod->Model()->sdec));
+      query.bindValue(":recalc_y", SerializeMatrix(mod->Model()->recalculated_y));
+      query.bindValue(":recalc_residuals", SerializeMatrix(mod->Model()->recalc_residuals));
+      query.bindValue(":validationtype", mod->getValidation());
+      query.bindValue(":ymean", SerializeDVector(mod->Model()->ymean));
+      query.bindValue(":q2y", SerializeDVector(mod->Model()->q2y));
+      query.bindValue(":sdep", SerializeDVector(mod->Model()->sdep));
+      query.bindValue(":bias", SerializeDVector(mod->Model()->bias));
+      query.bindValue(":predicted_y", SerializeMatrix(mod->Model()->predicted_y));
+      query.bindValue(":predicted_residuals", SerializeMatrix(mod->Model()->pred_residuals));
+      query.bindValue(":yscrambling", SerializeMatrix(mod->Model()->r2q2scrambling));
+      query.exec();
 
-        query.prepare(
-            "INSERT INTO mlrTable (name, hashinputmx , objname, xvarname, "
-            "yvarname, b, r2y, sdec,  recalc_y, recalc_residuals, "
-            "validationtype, ymean, q2y, sdep, bias, predicted_y, "
-            "predicted_residuals, yscrambling) VALUES (:name, :hashinputmx , "
-            ":objname, :xvarname, :yvarname, :b, :r2y, :sdec, :recalc_y, "
-            ":recalc_residuals, :validationtype, :ymean, :q2y, :sdep, :bias, "
-            ":predicted_y, :predicted_residuals, :yscrambling)");
-        query.bindValue(":name", modname);
-        query.bindValue(":hashinputmx", getMLRModelAt(i)->getDataHash());
-        query.bindValue(":objname", objname_serialized);
-        query.bindValue(":xvarname", xvarname_serialized);
-        query.bindValue(":yvarname", yvarname_serialized);
-        query.bindValue(":b", serialized_b);
-        query.bindValue(":r2y", serialized_r2y_model);
-        query.bindValue(":sdec", serialized_sdec);
-        query.bindValue(":recalc_y", serialized_recalc_y);
-        query.bindValue(":recalc_residuals", serialized_recalc_residuals);
-        query.bindValue(":validationtype", getMLRModelAt(i)->getValidation());
-        query.bindValue(":ymean", serialized_ymean);
-        query.bindValue(":q2y", serialized_q2y);
-        query.bindValue(":sdep", serialized_sdep);
-        query.bindValue(":bias", serialized_bias);
-        query.bindValue(":predicted_y", serialized_predicted_y);
-        query.bindValue(":predicted_residuals", serialized_pred_residuals);
-        query.bindValue(":r2q2scrambling", serialized_r2q2scrambling);
+      for (int j = 0; j < mod->MLRPredictionCount(); j++) {
+        MLRPREDICTION* pred = mod->getMLRPrediction(j);
+        query.prepare("INSERT INTO mlrpredTable (name, mlrhash, hashinputmx, objname, yvarname, "
+                      "predicted_y, r2y, sdec) VALUES (:name, :mlrhash, :hashinputmx, "
+                      ":objname, :yvarname, :predicted_y, :r2y, :sdec)");
+        query.bindValue(":name", pred->getName());
+        query.bindValue(":mlrhash", mod->getHash());
+        query.bindValue(":hashinputmx", pred->getDataHash());
+        query.bindValue(":objname", SerializeQStringList(pred->getObjName()));
+        query.bindValue(":yvarname", SerializeQStringList(pred->getYVarName()));
+        query.bindValue(":predicted_y", SerializeMatrix(pred->getYDipVar()));
+        query.bindValue(":r2y", SerializeDVector(pred->getR2Y()));
+        query.bindValue(":sdec", SerializeDVector(pred->getSDEC()));
         query.exec();
-
-        if (getMLRModelAt(i)->MLRPredictionCount() > 0) {
-          for (int j = 0; j < getMLRModelAt(i)->MLRPredictionCount(); j++) {
-            QString pred_objname_serialized = SerializeQStringList(
-                getMLRModelAt(i)->getMLRPrediction(j)->getObjName());
-            QString pred_yvarname_serialized = SerializeQStringList(
-                getMLRModelAt(i)->getMLRPrediction(j)->getYVarName());
-            QString pred_serialized_predicted_y = SerializeMatrix(
-                getMLRModelAt(i)->getMLRPrediction(j)->getYDipVar());
-            QString pred_serialized_r2y = SerializeDVector(
-                getMLRModelAt(i)->getMLRPrediction(j)->getR2Y());
-            QString pred_serialized_sdec = SerializeDVector(
-                getMLRModelAt(i)->getMLRPrediction(j)->getSDEC());
-
-            query.prepare("INSERT INTO mlrpredTable (name, mlrhash, "
-                          "hashinputmx, objname, yvarname, predicted_y, r2y, "
-                          "sdec) VALUES (:name, :mlrhash, :hashinputmx, "
-                          ":objname, :yvarname, :predicted_y, :r2y, :sdec)");
-            query.bindValue(":name",
-                            getMLRModelAt(i)->getMLRPrediction(j)->getName() /*.remove("PLS Prediction - ", Qt::CaseSensitive).trimmed()*/);
-            query.bindValue(":mlrhash", getMLRModelAt(i)->getHash());
-            query.bindValue(
-                ":hashinputmx",
-                getMLRModelAt(i)->getMLRPrediction(j)->getDataHash());
-            query.bindValue(":objname", pred_objname_serialized);
-            query.bindValue(":yvarname", pred_objname_serialized);
-            query.bindValue(":predicted_y", pred_serialized_predicted_y);
-            query.bindValue(":r2y", pred_serialized_r2y);
-            query.bindValue(":sdec", pred_serialized_sdec);
-            query.exec();
-          }
-        }
       }
     }
 
-    query.exec(QString(
-        "CREATE TABLE IF NOT EXISTS ldaTable (name TEXT, hashinputmx TEXT, "
-        "objname TEXT, varname TEXT, validation INT, roc TEXT, roc_aucs TEXT, "
-        "pr TEXT, pr_aucs TEXT, recalculated_y TEXT, recalculated_residuals "
-        "TEXT, predicted_y TEXT, predicted_residuals TEXT, pprob TEXT, evect "
-        "TEXT, eval TEXT, mu TEXT, mnpdf TEXT, features TEXT, fmean TEXT, "
-        "fsdev TEXT, inv_cov TEXT, nclass INT, class_start INT, classid TEXT, "
-        "classes TEXT, nameclasses TEXT)"));
-    query.exec(QString("CREATE TABLE IF NOT EXISTS ldapredTable (name TEXT, "
-                       "ldahash TEXT, hashinputmx TEXT, objname TEXT, varname "
-                       "TEXT, pred_class TEXT, pred_features TEXT, prob TEXT, "
-                       "classes TEXT, nameclasses TEXT, mnpdf TEXT)"));
-    if (LDACount() > 0) {
-      for (int i = 0; i < LDACount(); i++) {
-        QString modname =
-            getLDAModelAt(i)
-                ->getName() /*.remove("LDA - ", Qt::CaseSensitive).trimmed()*/;
-        QString objname_serialized =
-            SerializeQStringList(getLDAModelAt(i)->getObjName());
-        QString varname_serialized =
-            SerializeQStringList(getLDAModelAt(i)->getVarName());
-        QString serialized_roc =
-            SerializeTensor(getLDAModelAt(i)->Model()->roc);
-        QString serialized_roc_aucs =
-            SerializeDVector(getLDAModelAt(i)->Model()->roc_aucs);
-        QString serialized_pr = SerializeTensor(getLDAModelAt(i)->Model()->pr);
-        QString serialized_pr_aucs =
-            SerializeDVector(getLDAModelAt(i)->Model()->pr_aucs);
-        QString serialized_recaculated_y =
-            SerializeMatrix(getLDAModelAt(i)->Model()->recalculated_y);
-        QString serialized_recalculated_residuals =
-            SerializeMatrix(getLDAModelAt(i)->Model()->recalculated_residuals);
-        QString serialized_predicted_y =
-            SerializeMatrix(getLDAModelAt(i)->Model()->predicted_y);
-        QString serialized_predicted_residuals =
-            SerializeMatrix(getLDAModelAt(i)->Model()->predicted_residuals);
-        QString serialized_priorprobability =
-            SerializeDVector(getLDAModelAt(i)->Model()->pprob);
-        QString serialized_eigenvalues =
-            SerializeDVector(getLDAModelAt(i)->Model()->eval);
-        QString serialized_eigenvectors =
-            SerializeMatrix(getLDAModelAt(i)->Model()->evect);
-        QString serialized_mu = SerializeMatrix(getLDAModelAt(i)->Model()->mu);
-        QString serialized_mnpdf =
-            SerializeTensor(getLDAModelAt(i)->Model()->mnpdf);
-        QString serialized_features =
-            SerializeTensor(getLDAModelAt(i)->Model()->features);
-        QString serialized_fmean =
-            SerializeMatrix(getLDAModelAt(i)->Model()->fmean);
-        QString serialized_fsdev =
-            SerializeMatrix(getLDAModelAt(i)->Model()->fsdev);
-        QString serialized_invcov =
-            SerializeMatrix(getLDAModelAt(i)->Model()->inv_cov);
-        int nclass = getLDAModelAt(i)->Model()->nclass;
-        int class_start = getLDAModelAt(i)->Model()->class_start;
-        QString serialized_classid =
-            SerializeUIVector(getLDAModelAt(i)->Model()->classid);
+    query.exec("CREATE TABLE IF NOT EXISTS ldaTable (name TEXT, hashinputmx TEXT, "
+               "objname TEXT, varname TEXT, validation INT, roc TEXT, roc_aucs TEXT, "
+               "pr TEXT, pr_aucs TEXT, recalculated_y TEXT, recalculated_residuals TEXT, "
+               "predicted_y TEXT, predicted_residuals TEXT, pprob TEXT, evect TEXT, "
+               "eval TEXT, mu TEXT, mnpdf TEXT, features TEXT, fmean TEXT, fsdev TEXT, "
+               "inv_cov TEXT, nclass INT, class_start INT, classid TEXT, classes TEXT, "
+               "nameclasses TEXT)");
+    query.exec("CREATE TABLE IF NOT EXISTS ldapredTable (name TEXT, ldahash TEXT, "
+               "hashinputmx TEXT, objname TEXT, varname TEXT, pred_class TEXT, "
+               "pred_features TEXT, prob TEXT, classes TEXT, nameclasses TEXT, mnpdf TEXT)");
 
-        QList<QStringList> classes = getLDAModelAt(i)->getClasses();
-        QStringList nameclasses = getLDAModelAt(i)->getNameClasses();
+    for (int i = 0; i < LDACount(); i++) {
+      LDAModel* mod = getLDAModelAt(i);
+      query.prepare(
+          "INSERT INTO ldaTable (name, hashinputmx, objname, varname, "
+          "validation, roc, roc_aucs, pr, pr_aucs, recalculated_y, "
+          "recalculated_residuals, predicted_y, predicted_residuals, pprob, "
+          "evect, eval, mu, mnpdf, features, fmean, fsdev, inv_cov, nclass, "
+          "class_start, classid, classes, nameclasses) VALUES (:name, "
+          ":hashinputmx, :objname, :varname, :validation, :roc, :roc_aucs, "
+          ":pr, :pr_aucs, :recalculated_y, :recalculated_residuals, "
+          ":predicted_y, :predicted_residuals, :pprob, :evect, :eval, :mu, "
+          ":mnpdf, :features, :fmean, :fsdev, :inv_cov, :nclass, "
+          ":class_start, :classid, :classes, :nameclasses)");
+      query.bindValue(":name", mod->getName());
+      query.bindValue(":hashinputmx", mod->getDataHash());
+      query.bindValue(":objname", SerializeQStringList(mod->getObjName()));
+      query.bindValue(":varname", SerializeQStringList(mod->getVarName()));
+      query.bindValue(":validation", mod->getValidation());
+      query.bindValue(":roc", SerializeTensor(mod->Model()->roc));
+      query.bindValue(":roc_aucs", SerializeDVector(mod->Model()->roc_aucs));
+      query.bindValue(":pr", SerializeTensor(mod->Model()->pr));
+      query.bindValue(":pr_aucs", SerializeDVector(mod->Model()->pr_aucs));
+      query.bindValue(":recalculated_y", SerializeMatrix(mod->Model()->recalculated_y));
+      query.bindValue(":recalculated_residuals", SerializeMatrix(mod->Model()->recalculated_residuals));
+      query.bindValue(":predicted_y", SerializeMatrix(mod->Model()->predicted_y));
+      query.bindValue(":predicted_residuals", SerializeMatrix(mod->Model()->predicted_residuals));
+      query.bindValue(":pprob", SerializeDVector(mod->Model()->pprob));
+      query.bindValue(":eval", SerializeDVector(mod->Model()->eval));
+      query.bindValue(":evect", SerializeMatrix(mod->Model()->evect));
+      query.bindValue(":mu", SerializeMatrix(mod->Model()->mu));
+      query.bindValue(":mnpdf", SerializeTensor(mod->Model()->mnpdf));
+      query.bindValue(":features", SerializeTensor(mod->Model()->features));
+      query.bindValue(":fmean", SerializeMatrix(mod->Model()->fmean));
+      query.bindValue(":fsdev", SerializeMatrix(mod->Model()->fsdev));
+      query.bindValue(":inv_cov", SerializeMatrix(mod->Model()->inv_cov));
+      query.bindValue(":nclass", mod->Model()->nclass);
+      query.bindValue(":class_start", mod->Model()->class_start);
+      query.bindValue(":classid", SerializeUIVector(mod->Model()->classid));
+      query.bindValue(":nameclasses", SerializeQStringList(mod->getNameClasses()));
+      
+      QString serialized_classes;
+      for (int j = 0; j < mod->getClasses().size() - 1; j++)
+        serialized_classes += SerializeQStringList(mod->getClasses()[j]) + "\\";
+      if (!mod->getClasses().isEmpty())
+        serialized_classes += SerializeQStringList(mod->getClasses().last());
+      query.bindValue(":classes", serialized_classes);
+      query.exec();
 
-        QString serialized_classes;
-        for (int j = 0; j < classes.size() - 1; j++)
-          serialized_classes += SerializeQStringList(classes[j]) + "\\";
-        serialized_classes += SerializeQStringList(classes.last());
-
-        QString serialized_nameclasses = SerializeQStringList(nameclasses);
-
-        query.prepare(
-            "INSERT INTO ldaTable (name, hashinputmx, objname, varname, "
-            "validation, roc, roc_aucs, pr, pr_aucs, recalculated_y, "
-            "recalculated_residuals, predicted_y, predicted_residuals, pprob, "
-            "evect, eval, mu, mnpdf, features, fmean, fsdev, inv_cov, nclass, "
-            "class_start, classid, classes, nameclasses) VALUES (:name, "
-            ":hashinputmx, :objname, :varname, :validation, :roc, :roc_aucs, "
-            ":pr, :pr_aucs, :recalculated_y, :recalculated_residuals, "
-            ":predicted_y, :predicted_residuals, :pprob, :evect, :eval, :mu, "
-            ":mnpdf, :features, :fmean, :fsdev, :inv_cov, :nclass, "
-            ":class_start, :classid, :classes, :nameclasses)");
-        query.bindValue(":name", modname);
-        query.bindValue(":hashinputmx", getLDAModelAt(i)->getDataHash());
-        query.bindValue(":objname", objname_serialized);
-        query.bindValue(":varname", varname_serialized);
-        query.bindValue(":validation", getLDAModelAt(i)->getValidation());
-        query.bindValue(":roc", serialized_roc);
-        query.bindValue(":roc_aucs", serialized_roc_aucs);
-        query.bindValue(":pr", serialized_pr);
-        query.bindValue(":pr_aucs", serialized_pr_aucs);
-        query.bindValue(":recalculated_y", serialized_recaculated_y);
-        query.bindValue(":recalculated_residuals",
-                        serialized_recalculated_residuals);
-        query.bindValue(":predicted_y", serialized_predicted_y);
-        query.bindValue(":predicted_residuals", serialized_predicted_residuals);
-        query.bindValue(":pprob", serialized_priorprobability);
-        query.bindValue(":evect", serialized_eigenvectors);
-        query.bindValue(":eval", serialized_eigenvalues);
-        query.bindValue(":mu", serialized_mu);
-        query.bindValue(":mnpdf", serialized_mnpdf);
-        query.bindValue(":features", serialized_features);
-        query.bindValue(":fmean", serialized_fmean);
-        query.bindValue(":fsdev", serialized_fsdev);
-        query.bindValue(":inv_cov", serialized_invcov);
-        query.bindValue(":nclass", nclass);
-        query.bindValue(":class_start", class_start);
-        query.bindValue(":classid", serialized_classid);
-        query.bindValue(":classes", serialized_classes);
-        query.bindValue(":nameclasses", serialized_nameclasses);
+      for (int j = 0; j < mod->LDAPredictionCount(); j++) {
+        LDAPREDICTION* pred = mod->getLDAPrediction(j);
+        query.prepare("INSERT INTO ldapredTable (name, ldahash, hashinputmx, objname, varname, "
+                      "pred_class, pred_features, prob, classes, nameclasses, mnpdf) "
+                      "VALUES (:name, :ldahash, :hashinputmx, :objname, :varname, :pred_class, "
+                      ":pred_features, :prob, :classes, :nameclasses, :mnpdf)");
+        query.bindValue(":name", pred->getName());
+        query.bindValue(":ldahash", mod->getHash());
+        query.bindValue(":hashinputmx", pred->getDataHash());
+        query.bindValue(":objname", SerializeQStringList(pred->getObjName()));
+        query.bindValue(":varname", SerializeQStringList(pred->getVarName()));
+        query.bindValue(":pred_class", SerializeMatrix(pred->getPredClasses()));
+        query.bindValue(":pred_features", SerializeMatrix(pred->getPredFeatures()));
+        query.bindValue(":prob", SerializeMatrix(pred->getProbPred()));
+        query.bindValue(":nameclasses", SerializeQStringList(pred->getNameClasses()));
+        query.bindValue(":mnpdf", SerializeMatrix(pred->getMVNProbDistrib()));
+        
+        QString pred_serialized_classes;
+        for (int k = 0; k < pred->getClasses().size() - 1; k++)
+          pred_serialized_classes += SerializeQStringList(pred->getClasses()[k]) + "\\";
+        if (!pred->getClasses().isEmpty())
+          pred_serialized_classes += SerializeQStringList(pred->getClasses().last());
+        query.bindValue(":classes", pred_serialized_classes);
         query.exec();
-
-        if (getLDAModelAt(i)->LDAPredictionCount() > 0) {
-          for (int j = 0; j < getLDAModelAt(i)->LDAPredictionCount(); j++) {
-            QString pred_objname_serialized = SerializeQStringList(
-                getLDAModelAt(i)->getLDAPrediction(j)->getObjName());
-            QString pred_varname_serialized = SerializeQStringList(
-                getLDAModelAt(i)->getLDAPrediction(j)->getVarName());
-            QString pred_serialized_predicted_class = SerializeMatrix(
-                getLDAModelAt(i)->getLDAPrediction(j)->getPredClasses());
-            QString pred_serialized_predicted_features = SerializeMatrix(
-                getLDAModelAt(i)->getLDAPrediction(j)->getPredFeatures());
-            QString pred_serialized_probability = SerializeMatrix(
-                getLDAModelAt(i)->getLDAPrediction(j)->getProbPred());
-            QString pred_serialized_mnpdf = SerializeMatrix(
-                getLDAModelAt(i)->getLDAPrediction(j)->getMVNProbDistrib());
-
-            QList<QStringList> classes =
-                getLDAModelAt(i)->getLDAPrediction(j)->getClasses();
-            QStringList nameclasses =
-                getLDAModelAt(i)->getLDAPrediction(j)->getNameClasses();
-            QString pred_serialized_classes;
-            for (int k = 0; k < classes.size() - 1; k++)
-              pred_serialized_classes +=
-                  SerializeQStringList(classes[k]) + "\\";
-            pred_serialized_classes += SerializeQStringList(classes.last());
-
-            QString pred_serialized_nameclasses =
-                SerializeQStringList(nameclasses);
-
-            query.prepare(
-                "INSERT INTO ldapredTable (name, ldahash, hashinputmx, "
-                "objname, varname, pred_class, pred_features, prob, classes, "
-                "nameclasses, mnpdf) VALUES (:name, :ldahash, :hashinputmx, "
-                ":objname, :yvarname, :pred_class, :pred_features, :prob, "
-                ":classes, :nameclasses, :mnpdf)");
-            query.bindValue(":name",
-                            getLDAModelAt(i)->getLDAPrediction(j)->getName());
-            query.bindValue(":ldahash", getLDAModelAt(i)->getHash());
-            query.bindValue(
-                ":hashinputmx",
-                getLDAModelAt(i)->getLDAPrediction(j)->getDataHash());
-            query.bindValue(":objname", pred_objname_serialized);
-            query.bindValue(":varname", pred_varname_serialized);
-            query.bindValue(":pred_class", pred_serialized_predicted_class);
-            query.bindValue(":pred_features",
-                            pred_serialized_predicted_features);
-            query.bindValue(":prob", pred_serialized_probability);
-            query.bindValue(":classes", pred_serialized_classes);
-            query.bindValue(":nameclasses", pred_serialized_nameclasses);
-            query.bindValue(":mnpdf", pred_serialized_mnpdf);
-            query.exec();
-          }
-        }
       }
     }
 
-    /*
-    // Compress
-    DirCompressor dc;
-    dc.setDir(savedir.toUtf8().data());
-    dc.setOutput(savefname.toUtf8().data());
-    dc.compress();
-    DATAIO::RemoveDir(savedir.toUtf8().data());
-    */
+    db.commit();
     db.close();
+    QSqlDatabase::removeDatabase(connectionName);
     pbdialog.setValue(5);
     return dbName;
   } else {
-    // In this case check first if the plugins and the dll are
-    // correctly loaded and dependencies satisfied.
-    // check the dll of every plugin
     return QString();
   }
 }
