@@ -216,6 +216,8 @@ private slots:
   void removePrediction();
   void DowngradePredictionID();
 
+  void exportPLSBetaInference();
+
   void StartRun();
   void WaitRun();
   void StopRun();

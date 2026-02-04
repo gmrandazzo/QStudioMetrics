@@ -1620,8 +1620,8 @@ QString DATA::SaveSQLData(QString savepath) {
       query.bindValue(":fmean", SerializeMatrix(mod->Model()->fmean));
       query.bindValue(":fsdev", SerializeMatrix(mod->Model()->fsdev));
       query.bindValue(":inv_cov", SerializeMatrix(mod->Model()->inv_cov));
-      query.bindValue(":nclass", mod->Model()->nclass);
-      query.bindValue(":class_start", mod->Model()->class_start);
+      query.bindValue(":nclass", (qlonglong)mod->Model()->nclass);
+      query.bindValue(":class_start", (qlonglong)mod->Model()->class_start);
       query.bindValue(":classid", SerializeUIVector(mod->Model()->classid));
       query.bindValue(":nameclasses", SerializeQStringList(mod->getNameClasses()));
       
@@ -1665,9 +1665,8 @@ QString DATA::SaveSQLData(QString savepath) {
     QSqlDatabase::removeDatabase(connectionName);
     pbdialog.setValue(5);
     return dbName;
-  } else {
-    return QString();
   }
+  return QString();
 }
 
 void DATA::addMatrix() { matrix_.append(new MATRIX()); }
