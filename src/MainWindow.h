@@ -157,7 +157,7 @@ private slots:
 
   void removeProject();
   void showData();
-  void showDescrpitiveStatistics();
+  void showDescriptiveStatistics();
   void addData();
   void removeData();
   void DowngradeDataID();

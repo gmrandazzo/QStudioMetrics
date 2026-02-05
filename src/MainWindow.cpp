@@ -163,77 +163,73 @@ void MainWindow::CheckProjects() {
 }
 
 /*Fast implementation of index_of for QStringList*/
-static inline int _index_of_(QStringList lst, QString str) {
-  int indx = 0;
-  QStringMatcher matcher(str);
-  foreach (const QString &lstitem, lst) {
-    if (matcher.indexIn(lstitem) != -1) {
-      return indx;
-    } else {
-      indx++;
-    }
-  }
-  return -1;
-}
+// Removed _index_of_ as it was inefficient and replaced with QHash lookups in caller functions
 
 bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
                                QStringList varsel, matrix *x) {
   ResizeMatrix(x, objnames.size(), varsel.size());
 
-  QMap<QString, int> objmap;
-  for (int i = 0; i < indata->getObjName().size(); i++) {
-    objmap[indata->getObjName()[i]] = i;
+  QHash<QString, int> objmap;
+  const QStringList& dataObjNames = indata->getObjName();
+  objmap.reserve(dataObjNames.size());
+  for (int i = 0; i < dataObjNames.size(); ++i) {
+    objmap.insert(dataObjNames[i], i);
   }
 
-  QMap<QString, int> varmap;
-  for (int i = 1; i < indata->getVarName().size(); i++) {
-    varmap[indata->getVarName()[i]] = i - 1;
+  QHash<QString, int> varmap;
+  const QStringList& dataVarNames = indata->getVarName();
+  varmap.reserve(dataVarNames.size());
+  for (int i = 1; i < dataVarNames.size(); ++i) {
+    varmap.insert(dataVarNames[i], i - 1);
   }
 
-  QList<int> aligned_varid, aligned_objid;
-  for (int i = 0; i < objnames.size(); i++) {
-    auto it = objmap.find(objnames[i]);
+  QList<int> aligned_varid;
+  aligned_varid.reserve(varsel.size());
+  
+  QList<int> aligned_objid;
+  aligned_objid.reserve(objnames.size());
+
+  for (const QString& obj : objnames) {
+    auto it = objmap.find(obj);
     if (it != objmap.end()) {
       aligned_objid.append(it.value());
-    } else {
-      continue;
     }
   }
 
   QStringList varnotfound;
-  for (int i = 0; i < varsel.size(); i++) {
-    auto it = varmap.find(varsel[i]);
+  for (const QString& var : varsel) {
+    auto it = varmap.find(var);
     if (it != varmap.end()) {
       aligned_varid.append(it.value());
     } else {
-      varnotfound << varsel[i];
+      varnotfound << var;
     }
   }
 
   // Copy the data
-  for (int i = 0; i < aligned_objid.size(); i++) {
-    if (stoprun)
-      return false;
+  int progressCounter = 0;
+  for (int i = 0; i < aligned_objid.size(); ++i) {
+    if (stoprun) return false;
+    
     int ii = aligned_objid[i];
-    for (int j = 0; j < aligned_varid.size(); j++) {
+    for (int j = 0; j < aligned_varid.size(); ++j) {
       int jx = aligned_varid[j];
       x->data[i][j] = indata->Matrix()->data[ii][jx];
     }
-    QApplication::processEvents();
+    
+    if (++progressCounter % 100 == 0) QApplication::processEvents();
   }
 
-  if (varnotfound.size() > 0) {
+  if (!varnotfound.isEmpty()) {
     QString msg = "The following features were not found: \n";
-    QString vname;
-    foreach (vname, varnotfound)
+    for (const QString& vname : varnotfound)
       msg += QString("%1\n").arg(vname);
 
     QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     return false;
-  } else {
-    return true;
   }
+  return true;
 }
 
 bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
@@ -242,70 +238,75 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   ResizeMatrix(x, objnames.size(), xvarsel.size());
   ResizeMatrix(y, objnames.size(), yvarsel.size());
 
-  QMap<QString, int> objmap;
-  for (int i = 0; i < indata->getObjName().size(); i++) {
-    objmap[indata->getObjName()[i]] = i;
+  QHash<QString, int> objmap;
+  const QStringList& dataObjNames = indata->getObjName();
+  objmap.reserve(dataObjNames.size());
+  for (int i = 0; i < dataObjNames.size(); ++i) {
+    objmap.insert(dataObjNames[i], i);
   }
 
-  QMap<QString, int> varmap;
-  for (int i = 1; i < indata->getVarName().size(); i++) {
-    varmap[indata->getVarName()[i]] = i - 1;
+  QHash<QString, int> varmap;
+  const QStringList& dataVarNames = indata->getVarName();
+  varmap.reserve(dataVarNames.size());
+  for (int i = 1; i < dataVarNames.size(); ++i) {
+    varmap.insert(dataVarNames[i], i - 1);
   }
 
   QList<int> aligned_xvarid, aligned_yvarid, aligned_objid;
+  aligned_xvarid.reserve(xvarsel.size());
+  aligned_yvarid.reserve(yvarsel.size());
+  aligned_objid.reserve(objnames.size());
 
-  for (int i = 0; i < objnames.size(); i++) {
-    auto it = objmap.find(objnames[i]);
+  for (const QString& obj : objnames) {
+    auto it = objmap.find(obj);
     if (it != objmap.end()) {
       aligned_objid.append(it.value());
-    } else {
-      continue;
     }
   }
 
   QStringList xvarnotfound;
-  for (int i = 0; i < xvarsel.size(); i++) {
-    auto it = varmap.find(xvarsel[i]);
+  for (const QString& var : xvarsel) {
+    auto it = varmap.find(var);
     if (it != varmap.end()) {
       aligned_xvarid.append(it.value());
     } else {
-      xvarnotfound << xvarsel[i];
+      xvarnotfound << var;
     }
   }
 
   QStringList yvarnotfound;
-  for (int i = 0; i < yvarsel.size(); i++) {
-    auto it = varmap.find(yvarsel[i]);
+  for (const QString& var : yvarsel) {
+    auto it = varmap.find(var);
     if (it != varmap.end()) {
       aligned_yvarid.append(it.value());
     } else {
-      yvarnotfound << yvarsel[i];
+      yvarnotfound << var;
     }
   }
 
   // Copy the data
-  for (int i = 0; i < aligned_objid.size(); i++) {
-    if (stoprun)
-      return false;
+  int progressCounter = 0;
+  for (int i = 0; i < aligned_objid.size(); ++i) {
+    if (stoprun) return false;
+    
     int ii = aligned_objid[i];
-    for (int j = 0; j < aligned_xvarid.size(); j++) {
+    for (int j = 0; j < aligned_xvarid.size(); ++j) {
       int jx = aligned_xvarid[j];
-      // printf("%d %d %d %d\n", i, j, ii, jx);
       x->data[i][j] = indata->Matrix()->data[ii][jx];
     }
 
-    for (int j = 0; j < aligned_yvarid.size(); j++) {
+    for (int j = 0; j < aligned_yvarid.size(); ++j) {
       int jy = aligned_yvarid[j];
       y->data[i][j] = indata->Matrix()->data[ii][jy];
     }
-    QApplication::processEvents();
+    
+    if (++progressCounter % 100 == 0) QApplication::processEvents();
   }
 
   bool retval = true;
-  if (xvarnotfound.size() > 0) {
+  if (!xvarnotfound.isEmpty()) {
     QString msg = "The following features were not found: \n";
-    QString xvname;
-    foreach (xvname, xvarnotfound)
+    for (const QString& xvname : xvarnotfound)
       msg += QString("%1\n").arg(xvname);
 
     QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
@@ -313,10 +314,9 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
     retval = false;
   }
 
-  if (yvarnotfound.size() > 0) {
+  if (!yvarnotfound.isEmpty()) {
     QString msg = "The following dependent variables were not found: \n";
-    QString yvname;
-    foreach (yvname, yvarnotfound)
+    for (const QString& yvname : yvarnotfound)
       msg += QString("%1\n").arg(yvname);
 
     QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
@@ -338,78 +338,99 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
     ResizeMatrix(y, objnames.size(), classes.size());
   }
 
-  QMap<QString, int> objmap;
-  for (int i = 0; i < indata->getObjName().size(); i++) {
-    objmap[indata->getObjName()[i]] = i;
+  QHash<QString, int> objmap;
+  const QStringList& dataObjNames = indata->getObjName();
+  objmap.reserve(dataObjNames.size());
+  for (int i = 0; i < dataObjNames.size(); ++i) {
+    objmap.insert(dataObjNames[i], i);
   }
 
-  QMap<QString, int> varmap;
-  for (int i = 1; i < indata->getVarName().size(); i++) {
-    varmap[indata->getVarName()[i]] = i - 1;
+  QHash<QString, int> varmap;
+  const QStringList& dataVarNames = indata->getVarName();
+  varmap.reserve(dataVarNames.size());
+  for (int i = 1; i < dataVarNames.size(); ++i) {
+    varmap.insert(dataVarNames[i], i - 1);
   }
 
   QList<int> aligned_xvarid, aligned_objid;
+  aligned_xvarid.reserve(xvarsel.size());
+  aligned_objid.reserve(objnames.size());
 
-  for (int i = 0; i < objnames.size(); i++) {
-    auto it = objmap.find(objnames[i]);
+  for (const QString& obj : objnames) {
+    auto it = objmap.find(obj);
     if (it != objmap.end()) {
       aligned_objid.append(it.value());
-    } else {
-      continue;
     }
   }
 
   QStringList xvarnotfound;
-  for (int i = 0; i < xvarsel.size(); i++) {
-    auto it = varmap.find(xvarsel[i]);
+  for (const QString& var : xvarsel) {
+    auto it = varmap.find(var);
     if (it != varmap.end()) {
       aligned_xvarid.append(it.value());
     } else {
-      xvarnotfound << xvarsel[i];
+      xvarnotfound << var;
     }
   }
 
+  // Pre-process classes for faster lookup
+  QHash<QString, int> classMap; // Map object name to class index (or presence)
+  // Since an object can belong to only one class in standard classification,
+  // we can map object -> class index. 
+  // However, LABELS structure suggests list of objects per class.
+  // We can invert this mapping: Object -> List of Class Indices (if multilabel) or just Class Index.
+  // Assuming standard classification (one class per object) for simplicity based on matrix resize logic.
+  
+  // Actually, 'classes' is a list of LABEL (name, list of objects).
+  // Optimization: Create a Hash<QString, QVector<int>> mapping ObjectName -> ClassIndices.
+  QHash<QString, QVector<int>> objectClassMap;
+  for (int j = 0; j < classes.size(); ++j) {
+      for (const QString& objName : classes[j].objects) {
+          objectClassMap[objName].append(j);
+      }
+  }
+
   // Copy the data
-  for (int i = 0; i < aligned_objid.size(); i++) {
-    if (stoprun)
-      return false;
+  int progressCounter = 0;
+  for (int i = 0; i < aligned_objid.size(); ++i) {
+    if (stoprun) return false;
+    
     int ii = aligned_objid[i];
-    for (int j = 0; j < aligned_xvarid.size(); j++) {
+    QString currentObjName = indata->getObjName()[ii];
+
+    for (int j = 0; j < aligned_xvarid.size(); ++j) {
       int jx = aligned_xvarid[j];
       x->data[i][j] = indata->Matrix()->data[ii][jx];
     }
 
     if (classes.size() == 2) {
-      // contains maybe slow...
-      if (classes[0].objects.contains(indata->getObjName()[ii]) == true) {
+      // For binary classification, check membership in first class (index 0)
+      if (objectClassMap.value(currentObjName).contains(0)) {
         y->data[i][0] = 1; // TRUE
       } else {
         y->data[i][0] = 0; // FALSE
       }
     } else {
-      for (int j = 0; j < classes.size(); j++) {
-        if (classes[j].objects.contains(indata->getObjName()[ii]) == true) {
-          y->data[i][j] = 1; // TRUE
-        } else {
-          y->data[i][j] = 0; // FALSE
-        }
+      // Multi-class
+      QVector<int> belongTo = objectClassMap.value(currentObjName);
+      for (int j = 0; j < classes.size(); ++j) {
+          y->data[i][j] = belongTo.contains(j) ? 1 : 0;
       }
     }
-    QApplication::processEvents();
+    
+    if (++progressCounter % 100 == 0) QApplication::processEvents();
   }
 
-  if (xvarnotfound.size() > 0) {
+  if (!xvarnotfound.isEmpty()) {
     QString msg = "The following features were not found: \n";
-    QString xvname;
-    foreach (xvname, xvarnotfound)
+    for (const QString& xvname : xvarnotfound)
       msg += QString("%1\n").arg(xvname);
 
     QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     return false;
-  } else {
-    return true;
   }
+  return true;
 }
 
 bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames,
@@ -417,71 +438,78 @@ bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames,
 
   // ResizeMatrix(x, objnames.size(), varsel.size());
 
-  QMap<QString, int> objmap;
-  for (int i = 0; i < indata->getObjName().size(); i++) {
-    objmap[indata->getObjName()[i]] = i;
+  QHash<QString, int> objmap;
+  const QStringList& dataObjNames = indata->getObjName();
+  objmap.reserve(dataObjNames.size());
+  for (int i = 0; i < dataObjNames.size(); ++i) {
+    objmap.insert(dataObjNames[i], i);
   }
 
-  QMap<QString, int> varmap;
-  for (int i = 1; i < indata->getVarName().size(); i++) {
-    varmap[indata->getVarName()[i]] = i - 1;
+  QHash<QString, int> varmap;
+  const QStringList& dataVarNames = indata->getVarName();
+  varmap.reserve(dataVarNames.size());
+  for (int i = 1; i < dataVarNames.size(); ++i) {
+    varmap.insert(dataVarNames[i], i - 1);
   }
 
   QList<int> aligned_objid;
-  for (int i = 0; i < objnames.size(); i++) {
-    auto it = objmap.find(objnames[i]);
+  aligned_objid.reserve(objnames.size());
+  for (const QString& obj : objnames) {
+    auto it = objmap.find(obj);
     if (it != objmap.end()) {
       aligned_objid.append(it.value());
-    } else {
-      continue;
     }
   }
 
   QList<QList<int>> aligned_varid;
+  aligned_varid.reserve(block_varsel.size());
   QStringList varnotfound;
-  for (int k = 0; k < block_varsel.size(); k++) {
-    aligned_varid << QList<int>();
-    for (int i = 0; i < block_varsel[k].objects.size(); i++) {
-      auto it = varmap.find(block_varsel[k].objects[i]);
+  
+  for (int k = 0; k < block_varsel.size(); ++k) {
+    QList<int> current_vars;
+    current_vars.reserve(block_varsel[k].objects.size());
+    for (const QString& var : block_varsel[k].objects) {
+      auto it = varmap.find(var);
       if (it != varmap.end()) {
-        aligned_varid.last().append(it.value());
+        current_vars.append(it.value());
       } else {
-        varnotfound << block_varsel[k].objects[i];
+        varnotfound << var;
       }
     }
+    aligned_varid << current_vars;
   }
 
   // Prepare the tensor structure
-  for (int k = 0; k < aligned_varid.size(); k++) {
+  for (int k = 0; k < aligned_varid.size(); ++k) {
     AddTensorMatrix(x, objnames.size(), aligned_varid[k].size());
   }
 
   // Copy the data
-  for (int i = 0; i < aligned_objid.size(); i++) {
-    if (stoprun)
-      return false;
+  int progressCounter = 0;
+  for (int i = 0; i < aligned_objid.size(); ++i) {
+    if (stoprun) return false;
+    
     int ii = aligned_objid[i];
-    for (int k = 0; k < aligned_varid.size(); k++) {
-      for (int j = 0; j < aligned_varid[k].size(); j++) {
+    for (int k = 0; k < aligned_varid.size(); ++k) {
+      for (int j = 0; j < aligned_varid[k].size(); ++j) {
         int jx = aligned_varid[k][j];
         x->m[k]->data[i][j] = indata->Matrix()->data[ii][jx];
       }
     }
-    QApplication::processEvents();
+    
+    if (++progressCounter % 100 == 0) QApplication::processEvents();
   }
 
-  if (varnotfound.size() > 0) {
+  if (!varnotfound.isEmpty()) {
     QString msg = "The following features were not found: \n";
-    QString vname;
-    foreach (vname, varnotfound)
+    for (const QString& vname : varnotfound)
       msg += QString("%1\n").arg(vname);
 
     QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     return false;
-  } else {
-    return true;
   }
+  return true;
 }
 
 void MainWindow::PrepareKFoldClasses(QStringList objects, LABELS kfclasses,
@@ -3856,155 +3884,128 @@ void MainWindow::ModelInfo() {
  * Model, PLS Model, LDA Model, MLR Model
  */
 void MainWindow::ShowContextMenu(const QPoint &pos) {
-  if (ui.treeWidget->topLevelItemCount() > 0 &&
-      ui.treeWidget->selectedItems().size() > 0 &&
-      ui.treeWidget->currentItem()->isSelected() == true &&
-      ui.treeWidget->currentItem()->columnCount() > 1) {
+  if (ui.treeWidget->topLevelItemCount() == 0 ||
+      ui.treeWidget->selectedItems().isEmpty() ||
+      !ui.treeWidget->currentItem()->isSelected() ||
+      ui.treeWidget->currentItem()->columnCount() <= 1) {
+    return;
+  }
 
-    QPoint globalPos = ui.treeWidget->mapToGlobal(pos);
-    QMenu menu;
+  QPoint globalPos = ui.treeWidget->mapToGlobal(pos);
+  QMenu menu;
 
 #ifdef DEBUG
-    qDebug() << "[SHOWCONTEXTMENU] Selected item number of column: "
-             << ui.treeWidget->currentItem()->columnCount();
+  qDebug() << "[SHOWCONTEXTMENU] Selected item number of column: "
+           << ui.treeWidget->currentItem()->columnCount();
 #endif
 
-    if (CurrentIsData() == true) { // this is a Data
-      menu.addAction("&Show data", this, SLOT(showData()));
-      menu.addAction("&Show descriptive statistics", this,
-                     SLOT(showDescrpitiveStatistics()));
-      menu.addAction("&Remove data", this, SLOT(removeData()));
-      menu.exec(globalPos);
-    } else if (CurrentIsModel() == true) {
-      QString modeltype = getCurrentModelType();
-      int pid = getCurrentModelProjectID();
-      int mid = getCurrentModelID();
-      if (modeltype.compare("PCA Model") == 0) {
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show T Score", this, SLOT(showPCAScore()));
-        menu.addAction("&Show P Loadings", this, SLOT(showPCALoadings()));
-        menu.addAction("&Show Explained Variance", this, SLOT(showPCAExpVar()));
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
+  if (CurrentIsData()) {
+    menu.addAction("&Show data", this, SLOT(showData()));
+    menu.addAction("&Show descriptive statistics", this,
+                   SLOT(showDescriptiveStatistics()));
+    menu.addAction("&Remove data", this, SLOT(removeData()));
+
+  } else if (CurrentIsModel()) {
+    QString modeltype = getCurrentModelType();
+    int pid = getCurrentModelProjectID();
+    int mid = getCurrentModelID();
+    auto* project = projects->value(pid);
+
+    menu.addAction("&Model Info", this, SLOT(ModelInfo()));
+
+    if (modeltype == "PCA Model") {
+      menu.addAction("&Show T Score", this, SLOT(showPCAScore()));
+      menu.addAction("&Show P Loadings", this, SLOT(showPCALoadings()));
+      menu.addAction("&Show Explained Variance", this, SLOT(showPCAExpVar()));
+
+    } else if (modeltype == "CPCA Model") {
+      menu.addAction("&Show Super Score", this, SLOT(showCPCASuperScore()));
+      menu.addAction("&Show Super Weights", this, SLOT(showCPCASuperWeights()));
+      menu.addAction("&Show Block Scores", this, SLOT(showCPCABlockScores()));
+      menu.addAction("&Show Block Loadings", this, SLOT(showCPCABlockLoadings()));
+      menu.addAction("&Show Explained Variance", this, SLOT(showCPCAExpVar()));
+
+    } else if (modeltype == "PLS Model") {
+      menu.addAction("&Show T Score", this, SLOT(showPLSTScores()));
+      menu.addAction("&Show U Score", this, SLOT(showPLSUSCores()));
+      menu.addAction("&Show P Loadings", this, SLOT(showPLSPLoadings()));
+      menu.addAction("&Show Q Loadings", this, SLOT(showPLSQLoadings()));
+      menu.addAction("&Show W Weights", this, SLOT(showPLSWWeights()));
+      menu.addAction("&Show Regression Coefficient", this, SLOT(showPLSRegCoeff()));
+      menu.addAction("&Show Explained Variance", this, SLOT(showPLSExpVar()));
+      menu.addAction("&Show Recalculated Y", this, SLOT(showPLSRecalcY()));
+
+      if (project->getPLSModel(mid)->getValidation() > 0) {
+        menu.addAction("&Show Predicted Y", this, SLOT(showPLSValidatedPrediction()));
+        menu.addAction("&Show Validation", this, SLOT(showPLSValidation()));
       }
-      if (modeltype.compare("CPCA Model") == 0) {
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show Super Score", this, SLOT(showCPCASuperScore()));
-        menu.addAction("&Show Super Weights", this,
-                       SLOT(showCPCASuperWeights()));
-        menu.addAction("&Show Block Scores", this, SLOT(showCPCABlockScores()));
-        menu.addAction("&Show Block Loadings", this,
-                       SLOT(showCPCABlockLoadings()));
-        menu.addAction("&Show Explained Variance", this,
-                       SLOT(showCPCAExpVar()));
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
-      } else if (modeltype.compare("PLS Model") == 0) {
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show T Score", this, SLOT(showPLSTScores()));
-        menu.addAction("&Show U Score", this, SLOT(showPLSUSCores()));
-        menu.addAction("&Show P Loadings", this, SLOT(showPLSPLoadings()));
-        menu.addAction("&Show Q Loadings", this, SLOT(showPLSQLoadings()));
-        menu.addAction("&Show W Weights", this, SLOT(showPLSWWeights()));
-        menu.addAction("&Show Regression Coefficient", this,
-                       SLOT(showPLSRegCoeff()));
-        menu.addAction("&Show Explained Variance", this, SLOT(showPLSExpVar()));
-        menu.addAction("&Show Recalculated Y", this, SLOT(showPLSRecalcY()));
-        if (projects->value(pid)->getPLSModel(mid)->getValidation() > 0) {
-          menu.addAction("&Show Predicted Y", this,
-                         SLOT(showPLSValidatedPrediction()));
-                      menu.addAction("&Show Validation", this, SLOT(showPLSValidation()));
-                    }
-          
-                    menu.addAction("&Export Model for external Inference (Py/C)", this,
-                                   SLOT(exportPLSBetaInference()));
-          
-                    menu.addAction("&Remove Model", this, SLOT(removeModel()));
-                    menu.exec(globalPos);
-          
-      } else if (modeltype.compare("MLR Model") == 0) {
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show Regression Coefficient", this,
-                       SLOT(showMLRCoeff()));
-        menu.addAction("&Show Recalculated Y", this, SLOT(showMLRRecalcY()));
-        if (projects->value(pid)->getMLRModel(mid)->getValidation() > 0) {
-          menu.addAction("&Show Predicted Y", this,
-                         SLOT(showMLRValidatedPrediction()));
-          menu.addAction("&Show Validation", this, SLOT(showMLRValidation()));
-        }
+      menu.addAction("&Export Model for external Inference (Py/C)", this, SLOT(exportPLSBetaInference()));
 
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
-      } else if (modeltype.compare("LDA Model") == 0) {
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show Covariance Group Matrix", this,
-                       SLOT(showLDACovarianceGroupMatrix()));
-        menu.addAction("&Show Prior Probabilities", this,
-                       SLOT(showLDAPriorProbabilities()));
-        menu.addAction("&Show Features", this, SLOT(showLDAFeatures()));
-        menu.addAction("&Show MVA Normal Distribution", this,
-                       SLOT(showLDAMVNormDistrib()));
+    } else if (modeltype == "MLR Model") {
+      menu.addAction("&Show Regression Coefficient", this, SLOT(showMLRCoeff()));
+      menu.addAction("&Show Recalculated Y", this, SLOT(showMLRRecalcY()));
 
-        if (projects->value(pid)->getLDAModel(mid)->getValidation() > 0) {
-          menu.addAction("&Show Validation", this, SLOT(showLDAValidation()));
-        }
-
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
-      } else {
-        return;
-      }
-    } else if (CurrentIsProject() == true) { // this is the project
-      menu.addAction("&Add Data", this, SLOT(addData()));
-      menu.addAction("&Remove Project", this, SLOT(removeProject()));
-      menu.exec(globalPos);
-    } else if (CurrentIsPrediction() == true) { // this is the ModelPrediction
-      QString predictiontype = getCurrentPredictionType();
-      if (predictiontype.compare("PCA Prediction") == 0) {
-        menu.addAction("&Show Prediction Score", this,
-                       SLOT(showPCAPredScore()));
-        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
-        menu.exec(globalPos);
-      } else if (predictiontype.compare("CPCA Prediction") == 0) {
-        menu.addAction("&Show Prediction Super Score", this,
-                       SLOT(showCPCASuperScorePred()));
-        menu.addAction("&Show Prediction Block Score", this,
-                       SLOT(showCPCABlockScoresPred()));
-        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
-        menu.exec(globalPos);
-      } else if (predictiontype.compare("PLS Prediction") == 0) {
-        menu.addAction("&Show Prediction Score", this,
-                       SLOT(showPLSPredScore()));
-        menu.addAction("&Show Predicted Y", this, SLOT(showPLSPrediction()));
-        if (getCurrentPredictionYhash().compare("None") != 0) {
-          menu.addAction("&Show Prediction Error", this,
-                         SLOT(showPLSPredictionRSquared()));
-        }
-        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
-        menu.exec(globalPos);
+      if (project->getMLRModel(mid)->getValidation() > 0) {
+        menu.addAction("&Show Predicted Y", this, SLOT(showMLRValidatedPrediction()));
+        menu.addAction("&Show Validation", this, SLOT(showMLRValidation()));
       }
 
-      else if (predictiontype.compare("MLR Prediction") == 0) {
-        menu.addAction("&Show Predicted Y", this, SLOT(showMLRPrediction()));
-        if (getCurrentPredictionYhash().compare("None") != 0) {
-          menu.addAction("&Show Prediction Error", this,
-                         SLOT(showMLRPredictionRSquared()));
-        }
-        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
-        menu.exec(globalPos);
-      } else if (predictiontype.compare("LDA Prediction") == 0) {
-        menu.addAction("&Show Predicted Class", this,
-                       SLOT(showLDAPrediction()));
-        menu.addAction("&Show Predicted Features", this,
-                       SLOT(showLDAPredictionFeatures()));
-        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
-        menu.exec(globalPos);
-      } else {
-        return;
+    } else if (modeltype == "LDA Model") {
+      menu.addAction("&Show Covariance Group Matrix", this, SLOT(showLDACovarianceGroupMatrix()));
+      menu.addAction("&Show Prior Probabilities", this, SLOT(showLDAPriorProbabilities()));
+      menu.addAction("&Show Features", this, SLOT(showLDAFeatures()));
+      menu.addAction("&Show MVA Normal Distribution", this, SLOT(showLDAMVNormDistrib()));
+
+      if (project->getLDAModel(mid)->getValidation() > 0) {
+        menu.addAction("&Show Validation", this, SLOT(showLDAValidation()));
       }
     } else {
       return;
     }
+    menu.addAction("&Remove Model", this, SLOT(removeModel()));
+
+  } else if (CurrentIsProject()) {
+    menu.addAction("&Add Data", this, SLOT(addData()));
+    menu.addAction("&Remove Project", this, SLOT(removeProject()));
+
+  } else if (CurrentIsPrediction()) {
+    QString predictiontype = getCurrentPredictionType();
+
+    if (predictiontype == "PCA Prediction") {
+      menu.addAction("&Show Prediction Score", this, SLOT(showPCAPredScore()));
+
+    } else if (predictiontype == "CPCA Prediction") {
+      menu.addAction("&Show Prediction Super Score", this, SLOT(showCPCASuperScorePred()));
+      menu.addAction("&Show Prediction Block Score", this, SLOT(showCPCABlockScoresPred()));
+
+    } else if (predictiontype == "PLS Prediction") {
+      menu.addAction("&Show Prediction Score", this, SLOT(showPLSPredScore()));
+      menu.addAction("&Show Predicted Y", this, SLOT(showPLSPrediction()));
+      if (getCurrentPredictionYhash() != "None") {
+        menu.addAction("&Show Prediction Error", this, SLOT(showPLSPredictionRSquared()));
+      }
+
+    } else if (predictiontype == "MLR Prediction") {
+      menu.addAction("&Show Predicted Y", this, SLOT(showMLRPrediction()));
+      if (getCurrentPredictionYhash() != "None") {
+        menu.addAction("&Show Prediction Error", this, SLOT(showMLRPredictionRSquared()));
+      }
+
+    } else if (predictiontype == "LDA Prediction") {
+      menu.addAction("&Show Predicted Class", this, SLOT(showLDAPrediction()));
+      menu.addAction("&Show Predicted Features", this, SLOT(showLDAPredictionFeatures()));
+
+    } else {
+      return;
+    }
+    menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
+
+  } else {
+    return;
+  }
+
+  if (!menu.isEmpty()) {
+    menu.exec(globalPos);
     TopMenuEnableDisable();
   }
 }
@@ -4191,7 +4192,7 @@ void MainWindow::showData() {
   }
 }
 
-void MainWindow::showDescrpitiveStatistics() {
+void MainWindow::showDescriptiveStatistics() {
   if (CurrentIsData() == true) {
     int pid = getCurrentDataProjectID();
     int tabid = getCurrentDataTableID();
@@ -7852,8 +7853,8 @@ void MainWindow::DoLDAValidation() {
         for (int i = 0;
              i < projects->value(pid)->getMatrix(did)->getObjName().size();
              i++) {
-          int ii = _index_of_(
-              objsel, projects->value(pid)->getMatrix(did)->getObjName()[i]);
+          int ii = objsel.indexOf(
+              projects->value(pid)->getMatrix(did)->getObjName()[i]);
           if (ii > -1) {
             for (int j = 0; j < classes.size(); j++) {
               if (classes[j].contains(
@@ -7970,8 +7971,8 @@ void MainWindow::DoLDA() {
         for (int i = 0;
              i < projects->value(pid)->getMatrix(did)->getObjName().size();
              i++) {
-          int ii = _index_of_(
-              objsel, projects->value(pid)->getMatrix(did)->getObjName()[i]);
+          int ii = objsel.indexOf(
+              projects->value(pid)->getMatrix(did)->getObjName()[i]);
           if (ii > -1) {
             for (int j = 0; j < classes.size(); j++) {
               if (classes[j].contains(
