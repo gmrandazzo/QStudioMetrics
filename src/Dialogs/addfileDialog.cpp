@@ -32,7 +32,8 @@
 auto AddFileDialog::CountNumberColum(QString file_) {
   ssize_t ncol = 0;
   QFile file(file_);
-  file.open(QIODevice::ReadOnly | QIODevice::Text);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    return ncol;
   QTextStream in(&file);
   while (!in.atEnd()) {
     if (in.readLine().contains("#", Qt::CaseInsensitive) == true) { // skip line
@@ -49,7 +50,8 @@ auto AddFileDialog::CountNumberColum(QString file_) {
 auto AddFileDialog::CountNumberRow(QString file_) {
   ssize_t nrow = 0;
   QFile file(file_);
-  file.open(QIODevice::ReadOnly | QIODevice::Text);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    return nrow;
   QTextStream in(&file);
   while (!in.atEnd()) {
     QString line = in.readLine();
@@ -69,7 +71,8 @@ auto AddFileDialog::CountNumberRow(QString file_) {
 QStringList AddFileDialog::ListRead(QString file_) {
   QStringList lst;
   QFile file(file_);
-  file.open(QIODevice::ReadOnly | QIODevice::Text);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    return lst;
   QTextStream in(&file);
   while (!in.atEnd()) {
     lst.append(

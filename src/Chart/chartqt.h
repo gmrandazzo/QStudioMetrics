@@ -119,10 +119,11 @@ protected:
   void mouseReleaseEvent(QMouseEvent *event) override;
   void wheelEvent(QWheelEvent *event) override;
   void keyPressEvent(QKeyEvent *event) override;
+  void resizeEvent(QResizeEvent *event) override;
 
 private:
-  // QToolButton *zoomInButton;
-  // QToolButton *zoomOutButton;
+  QToolButton *zoomInButton;
+  QToolButton *zoomOutButton;
 
   /*Divide, conqueror method for selection/unselection */
   void refreshPlot();
@@ -159,6 +160,7 @@ private:
 
   // used to define "point selection";
   QPointF mPresscc, mReleasecc;
+  QPoint m_lastMousePos;
 
   QList<QLabel *> plotLabels;
   QLabel *m_valueLabel;

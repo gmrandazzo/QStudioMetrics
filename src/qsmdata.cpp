@@ -238,8 +238,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
    * ui is started... */
   QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
   db.setDatabaseName(sqlfile);
-  db.open();
-  if (db.isOpen()) {
+  if (db.open()) {
     projectpath = sqlfile;
     QSqlQuery query = QSqlQuery(db);
     query.exec("SELECT * from matrixTable");
@@ -1367,8 +1366,9 @@ QString DATA::SaveSQLData(QString savepath) {
       for (int i = 0; i < getImages().size(); i++) {
         QByteArray inByteArray;
         QBuffer inBuffer(&inByteArray);
-        inBuffer.open(QIODevice::WriteOnly);
-        getImages()[i].image.save(&inBuffer, "PNG");
+        if (inBuffer.open(QIODevice::WriteOnly)) {
+          getImages()[i].image.save(&inBuffer, "PNG");
+        }
         query.prepare("INSERT INTO imgTable (name, imagedata) VALUES (:name, "
                       ":imagedata)");
         query.bindValue(":name", getImages()[i].name);

@@ -56,7 +56,8 @@ size_t ImportFileDialog::getHeader(QStringList *header) {
   QFileInfo info(ui.file->text());
   if (info.exists()) {
     QFile f(ui.file->text());
-    f.open(QIODevice::ReadOnly | QIODevice::Text);
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+      return 0;
     QString skipchar = getSkipChar();
     QString sep = getSeparator();
     QTextStream in(&f);
@@ -83,7 +84,8 @@ QList<size_t> ImportFileDialog::getLineToSkip() {
     QFileInfo info(ui.file->text());
     if (info.exists()) {
       QFile f(ui.file->text());
-      f.open(QIODevice::ReadOnly | QIODevice::Text);
+      if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+        return lskip;
       QTextStream in(&f);
 
       QString skipchar = getSkipChar();
@@ -130,7 +132,8 @@ void ImportFileDialog::ImportType0() {
     // open the file
     Clean_rnames();
     QFile f(ui.file->text());
-    f.open(QIODevice::ReadOnly | QIODevice::Text);
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+      return;
     QTextStream in(&f);
 
     size_t lnum = 0;

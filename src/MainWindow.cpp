@@ -4428,7 +4428,9 @@ void MainWindow::WriteRecentsModelsFile() {
   if (recents_changed == true) {
     QFile file(QFileInfo(QString("%1/%2").arg(confdir).arg("recents"))
                    .absoluteFilePath());
-    file.open(QIODevice::WriteOnly | QIODevice::Text);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+      return;
+    }
     QTextStream out(&file);
     for (int i = 0; i < recents.size(); i++) {
       if (recents[i].name.compare("-") != 0 && recents[i].name.size() > 0) {

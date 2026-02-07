@@ -555,14 +555,15 @@ void Chart::mouseMoveEvent(QMouseEvent *event) {
           if (m_images.contains(nearest->name())) {
               QByteArray bArray;
               QBuffer buffer(&bArray);
-              buffer.open(QIODevice::WriteOnly);
-              QPixmap pm = m_images[nearest->name()];
-              if (pm.width() > 200) {
-                 pm = pm.scaledToWidth(200, Qt::SmoothTransformation);
+              if (buffer.open(QIODevice::WriteOnly)) {
+                  QPixmap pm = m_images[nearest->name()];
+                  if (pm.width() > 200) {
+                     pm = pm.scaledToWidth(200, Qt::SmoothTransformation);
+                  }
+                  pm.save(&buffer, "PNG");
+                  QString imgBase64 = QString::fromLatin1(bArray.toBase64().data());
+                  text = QString("<img src='data:image/png;base64,%1'><br>").arg(imgBase64) + text;
               }
-              pm.save(&buffer, "PNG");
-              QString imgBase64 = QString::fromLatin1(bArray.toBase64().data());
-              text = QString("<img src='data:image/png;base64,%1'><br>").arg(imgBase64) + text;
           }
 
           QToolTip::showText(event->globalPosition().toPoint(), text, this);

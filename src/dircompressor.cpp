@@ -137,8 +137,9 @@ void DirCompressor::WriteFile(QStringList flist, char *path_) {
       //       simage.save(QString::fromUtf8(fname.toUtf8()), "JPG");
 
       QFile imgfile(fname.toUtf8());
-      imgfile.open(QIODevice::WriteOnly);
-      simage.save(&imgfile, "JPG");
+      if (imgfile.open(QIODevice::WriteOnly)) {
+        simage.save(&imgfile, "JPG");
+      }
     } else {
       QFile file(QString::fromUtf8(fname.toUtf8()));
       if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -171,8 +172,9 @@ void DirCompressor::ReadFileToString(char *fname, QStringList *filemem) {
 #endif
     QByteArray ba;
     QBuffer buffer(&ba);
-    buffer.open(QIODevice::WriteOnly);
-    image.save(&buffer, "JPG"); // writes image into ba in JGP format
+    if (buffer.open(QIODevice::WriteOnly)) {
+      image.save(&buffer, "JPG"); // writes image into ba in JGP format
+    }
     QString encoded = QString(ba.toBase64());
     /*
      QImage image;

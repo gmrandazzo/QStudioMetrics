@@ -59,6 +59,13 @@ bool ChartQt::viewportEvent(QEvent *event) {
   return QChartView::viewportEvent(event);
 }
 
+void ChartQt::resizeEvent(QResizeEvent *event) {
+  QChartView::resizeEvent(event);
+  int x = width() - (zoomInButton->width() + zoomOutButton->width() + 10);
+  zoomInButton->move(x, 5);
+  zoomOutButton->move(x + zoomInButton->width() + 5, 5);
+}
+
 void ChartQt::mousePressEvent(QMouseEvent *event) {
   qDebug() << "mousePressEvent " << event;
   if (m_isTouching)
@@ -70,13 +77,27 @@ void ChartQt::mousePressEvent(QMouseEvent *event) {
   auto const chartItemPos = chart()->mapFromScene(scenePos);
   mPresscc = chart()->mapToValue(chartItemPos);
 
-  setDragMode(QGraphicsView::RubberBandDrag);
+  if (event->button() == Qt::LeftButton) {
+      setDragMode(QGraphicsView::RubberBandDrag);
+  } else if (event->button() == Qt::RightButton) {
+      m_lastMousePos = event->pos();
+      setCursor(Qt::ClosedHandCursor);
+  }
+
   QChartView::mousePressEvent(event);
 }
 
 void ChartQt::mouseMoveEvent(QMouseEvent *event) {
   if (m_isTouching)
     return;
+
+  if (event->buttons() & Qt::RightButton) {
+      QPoint delta = event->pos() - m_lastMousePos;
+      chart()->scroll(-delta.x(), delta.y());
+      m_lastMousePos = event->pos();
+      event->accept();
+  }
+
   QChartView::mouseMoveEvent(event);
 }
 
@@ -112,6 +133,10 @@ void ChartQt::mouseReleaseEvent(QMouseEvent *event) {
   qDebug() << "mouseReleaseEvent " << event;
   if (m_isTouching)
     m_isTouching = false;
+
+  if (event->button() == Qt::RightButton) {
+      unsetCursor();
+  }
 
   auto const widgetPos = event->position();
   auto const scenePos = mapToScene(
@@ -301,22 +326,24 @@ void ChartQt::slotPointHoverd(const QPointF &point, bool state) {
     if (nearest && m_images.contains(name)) {
       QByteArray bArray;
       QBuffer buffer(&bArray);
-      buffer.open(QIODevice::WriteOnly);
-      QPixmap pm = m_images[name];
-      if (pm.width() > 200) {
-        pm = pm.scaledToWidth(200, Qt::SmoothTransformation);
+      if (buffer.open(QIODevice::WriteOnly)) {
+        QPixmap pm = m_images[name];
+        if (pm.width() > 200) {
+          pm = pm.scaledToWidth(200, Qt::SmoothTransformation);
+        }
+        pm.save(&buffer, "PNG");
+        QString imgBase64 = QString::fromLatin1(bArray.toBase64().data());
+        text =
+            QString("<img src='data:image/png;base64,%1'><br>").arg(imgBase64) +
+            text;
       }
-      pm.save(&buffer, "PNG");
-      QString imgBase64 = QString::fromLatin1(bArray.toBase64().data());
-      text =
-          QString("<img src='data:image/png;base64,%1'><br>").arg(imgBase64) +
-          text;
     }
 
     m_valueLabel->setText(text);
+    m_valueLabel->adjustSize();
     QPoint curPos = mapFromGlobal(QCursor::pos());
     m_valueLabel->move(curPos.x() - m_valueLabel->width() / 2,
-                       curPos.y() - m_valueLabel->height() * 1.5);
+                       curPos.y() - m_valueLabel->height() - 10);
     m_valueLabel->show();
   } else {
     m_valueLabel->hide();
@@ -337,22 +364,24 @@ void ChartQt::slotBarHovered(bool status, int index, QBarSet *barset) {
     if (m_images.contains(name)) {
       QByteArray bArray;
       QBuffer buffer(&bArray);
-      buffer.open(QIODevice::WriteOnly);
-      QPixmap pm = m_images[name];
-      if (pm.width() > 200) {
-        pm = pm.scaledToWidth(200, Qt::SmoothTransformation);
+      if (buffer.open(QIODevice::WriteOnly)) {
+        QPixmap pm = m_images[name];
+        if (pm.width() > 200) {
+          pm = pm.scaledToWidth(200, Qt::SmoothTransformation);
+        }
+        pm.save(&buffer, "PNG");
+        QString imgBase64 = QString::fromLatin1(bArray.toBase64().data());
+        text =
+            QString("<img src='data:image/png;base64,%1'><br>").arg(imgBase64) +
+            text;
       }
-      pm.save(&buffer, "PNG");
-      QString imgBase64 = QString::fromLatin1(bArray.toBase64().data());
-      text =
-          QString("<img src='data:image/png;base64,%1'><br>").arg(imgBase64) +
-          text;
     }
 
     m_valueLabel->setText(text);
+    m_valueLabel->adjustSize();
     QPoint curPos = mapFromGlobal(QCursor::pos());
     m_valueLabel->move(curPos.x() - m_valueLabel->width() / 2,
-                       curPos.y() - m_valueLabel->height() * 1.5);
+                       curPos.y() - m_valueLabel->height() - 10);
     m_valueLabel->show();
   } else {
     m_valueLabel->hide();
@@ -487,6 +516,9 @@ void ChartQt::drawBars() {
 
   QStringList categories;
   QBarSeries *series = new QBarSeries();
+  series->setLabelsVisible(true);
+  series->setLabelsPosition(QAbstractBarSeries::LabelsOutsideEnd);
+  series->setLabelsAngle(-90);
 
   for (int i = 0; i < b.size(); i++) {
     QBarSet *set = new QBarSet("");
@@ -507,6 +539,7 @@ void ChartQt::drawBars() {
   if (plot_ready == false) {
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
     axisX->append(categories);
+    axisX->setLabelsAngle(-90);
     chart()->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
 
@@ -831,20 +864,16 @@ ChartQt::ChartQt(QWidget *parent)
   // setRubberBand(QChartView::RectangleRubberBand); Disable default zoom in/out
   setRubberBand(QChartView::NoRubberBand);
   setRenderHint(QPainter::Antialiasing);
-  /*
+
   zoomInButton = new QToolButton(this);
   zoomInButton->setIcon(QIcon(":/images/zoomin.png"));
   zoomInButton->adjustSize();
-  zoomInButton->move(QPoint(5, 5));
   connect(zoomInButton, SIGNAL(clicked()), this, SLOT(zoomIn()));
-
 
   zoomOutButton = new QToolButton(this);
   zoomOutButton->setIcon(QIcon(":/images/zoomout.png"));
   zoomOutButton->adjustSize();
-  zoomOutButton->move(QPoint(40, 5));
   connect(zoomOutButton, SIGNAL(clicked()), this, SLOT(zoomOut()));
-  */
 
   m_valueLabel = new QLabel(this);
   m_valueLabel->setStyleSheet(
@@ -852,7 +881,6 @@ ChartQt::ChartQt(QWidget *parent)
               "font-size:12px; font-weight:bold;"
               " background-color:rgba(21, 100, 255, 51); border-radius:4px; "
               "text-align:center;}"));
-  m_valueLabel->setFixedSize(44, 24);
   m_valueLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   m_valueLabel->hide();
 
