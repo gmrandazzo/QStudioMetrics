@@ -108,6 +108,7 @@ public:
 public slots:
   void zoomIn();
   void zoomOut();
+  void recentre();
 
 protected:
   void paintEvent(QPaintEvent *event) override;
@@ -145,6 +146,7 @@ private:
   double Margin = 80;
   QToolButton *zoomInButton;
   QToolButton *zoomOutButton;
+  QToolButton *recentreButton;
 
   QVector<DataPoint *> p;      // used for scatter plot
   QVector<DataCurve> curveMap; // used for line plot

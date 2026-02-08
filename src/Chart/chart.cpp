@@ -88,6 +88,12 @@ Chart::Chart(QWidget *parent) : QWidget(parent) {
   zoomOutButton->adjustSize();
   connect(zoomOutButton, SIGNAL(clicked()), this, SLOT(zoomOut()));
 
+  recentreButton = new QToolButton(this);
+  recentreButton->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
+  recentreButton->setToolTip(tr("Recentre Plot"));
+  recentreButton->adjustSize();
+  connect(recentreButton, SIGNAL(clicked()), this, SLOT(recentre()));
+
   m_xaxisname = "x";
   m_yaxisname = "y";
   titleSize = 1;
@@ -111,6 +117,17 @@ Chart::~Chart() {
 
   delete zoomInButton;
   delete zoomOutButton;
+  delete recentreButton;
+}
+
+void Chart::recentre() {
+  if (zoomStack.count() > 1) {
+    zoomStack.resize(1);
+    curZoom = 0;
+    zoomOutButton->hide();
+    zoomInButton->setEnabled(zoomStack.count() > 1);
+    refreshPixmap();
+  }
 }
 
 QWidget *Chart::weview() { return this; }
@@ -303,6 +320,7 @@ void Chart::setPlotSettings(const PlotSettings &settings) {
   curZoom = 0;
   zoomInButton->hide();
   zoomOutButton->hide();
+  recentreButton->hide();
   refreshPixmap();
 }
 
@@ -312,6 +330,7 @@ void Chart::zoomOut() {
     zoomOutButton->setEnabled(curZoom > 0);
     zoomInButton->setEnabled(true);
     zoomInButton->show();
+    recentreButton->setVisible(zoomStack.count() > 1);
     refreshPixmap();
   }
 }
@@ -322,6 +341,7 @@ void Chart::zoomIn() {
     zoomInButton->setEnabled(curZoom < zoomStack.count() - 1);
     zoomOutButton->setEnabled(true);
     zoomOutButton->show();
+    recentreButton->show();
     refreshPixmap();
   }
 }
@@ -448,9 +468,13 @@ void Chart::paintEvent(QPaintEvent *event) {
 
 void Chart::resizeEvent(QResizeEvent *event) {
   Q_UNUSED(event);
-  int x = width() - (zoomInButton->width() + zoomOutButton->width() + 10);
+  int spacing = 5;
+  int x = width() - (zoomInButton->width() + zoomOutButton->width() + recentreButton->width() + spacing * 2 + 10);
   zoomInButton->move(x, 5);
-  zoomOutButton->move(x + zoomInButton->width() + 5, 5);
+  x += zoomInButton->width() + spacing;
+  zoomOutButton->move(x, 5);
+  x += zoomOutButton->width() + spacing;
+  recentreButton->move(x, 5);
   refreshPixmap();
 }
 
