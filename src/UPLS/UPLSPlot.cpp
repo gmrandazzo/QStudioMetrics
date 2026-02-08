@@ -1071,7 +1071,7 @@ void UPLSPlot::R2Q2(QList<SimpleLine2DPlot *> *plot2D) {
   */
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-  uint npc = projects->value(pid)->getUPLSModel(mid)->getNPC();
+  uint model_npc = projects->value(pid)->getUPLSModel(mid)->getNPC();
   uint yval = projects->value(pid)
                   ->getUPLSModel(mid)
                   ->Model()
@@ -1087,18 +1087,18 @@ void UPLSPlot::R2Q2(QList<SimpleLine2DPlot *> *plot2D) {
   QStringList curvenames;
   if (projects->value(pid)->getUPLSModel(mid)->Model()->q2y_yscrambling->order >
       0) {
-    NewMatrix(&m, npc + 1, 4); // +1 because we start from 0
+    NewMatrix(&m, model_npc + 1, 4); // +1 because we start from 0
     curvenames << "R2"
                << "Q2"
                << "Y Scrambling";
   } else {
-    NewMatrix(&m, npc + 1, 3); // +1 because we start from 0
+    NewMatrix(&m, model_npc + 1, 3); // +1 because we start from 0
     curvenames << "R2"
                << "Q2";
   }
 
   // set the X assis that is the principal component
-  for (uint i = 0; i < npc + 1; i++) {
+  for (uint i = 0; i < model_npc + 1; i++) {
     setMatrixValue(m, i, 0, i);
   }
 
@@ -1143,7 +1143,7 @@ void UPLSPlot::R2Q2(QList<SimpleLine2DPlot *> *plot2D) {
       setMatrixValue(m, 0, 1, 0); // R^2 in 0 pc is 0
       setMatrixValue(m, 0, 2, 0); // Q^2 in 0 pc is 0
 
-      for (uint i = 0; i < npc; i++) {
+      for (uint i = 0; i < model_npc; i++) {
         setMatrixValue(
             m, i + 1, 1,
             getArrayValue(

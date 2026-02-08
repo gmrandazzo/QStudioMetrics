@@ -61,12 +61,12 @@ public:
 private:
   enum { DIRECTORY = 0, FILE = 1 };
   void ScanDir(QDir dir, QFileInfoList *list);
-  void ReadFileToString(char *fname, QStringList *filemem);
-  void WriteFile(QStringList flist, char *path_);
-  void GenRandomString(QString *s, int len);
-  bool rmdir(char *dirName);
+  void ReadFileToString(const char *fname, QStringList *filemem);
+  static void WriteFile(QStringList flist, const char *path_);
+  static void GenRandomString(QString *s, int len);
+  static bool rmdir(const char *dirName);
   int dtype;
-  bool SupportedFile(char *fname);
+  bool SupportedFile(const char *fname);
   QStringList fsupported;
   QString dirorfile;
   QString extrpath;

@@ -98,7 +98,7 @@ void DeserializeDVector(QString serialized_dvector, dvector *v) {
   }
 }
 
-QString SerializeDVector(dvector *v) {
+QString SerializeDVector(const dvector *v) {
   if (v->size > 0) {
     std::string serialized_dvector;
     for (size_t i = 0; i < v->size - 1; i++)
@@ -123,7 +123,7 @@ void DeserializeUIVector(QString serialized_uivector, uivector *v) {
   }
 }
 
-QString SerializeUIVector(uivector *v) {
+QString SerializeUIVector(const uivector *v) {
   if (v->size > 0) {
     std::string serialized_uivector;
     for (size_t i = 0; i < v->size - 1; i++)
@@ -155,7 +155,7 @@ void DeserializeMatrix(QString serialized_mx, matrix *mx) {
   }
 }
 
-QString SerializeMatrix(matrix *mx) {
+QString SerializeMatrix(const matrix *mx) {
   if (mx->row > 0 && mx->col > 0) {
     std::string serialized_mx;
     for (size_t i = 0; i < mx->row - 1; i++) {
@@ -207,7 +207,7 @@ void DeserializeTensor(QString serialized_ar, tensor *ar) {
   }
 }
 
-QString SerializeTensor(tensor *ar) {
+QString SerializeTensor(const tensor *ar) {
   if (ar->order > 0) {
     if (ar->m[0]->row > 0 && ar->m[0]->col > 0) {
       std::string serialized_ar;

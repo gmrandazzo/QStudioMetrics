@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
         inhgm.empty() && grid_step_size > 0) { // make a model
       matrix *data;
       initMatrix(&data);
-      DATAIO::ImportMatrix((char *)inputdata.c_str(), sep, data);
+      DATAIO::ImportMatrix(inputdata.c_str(), sep, data);
 
       // Calculate the manhattan distance from the centroid of points and the
       // mahlanobis Distance
@@ -194,17 +194,17 @@ int main(int argc, char **argv) {
       NewHyperGridMap(&hgm);
       HyperGridMap(data, grid_step_size, &bins_id, &hgm);
       printf("Total number of bins : %e %zu\n", hgm->bsize, hgm->gsize);
-      DATAIO::MakeDir((char *)outhgm.c_str());
+      DATAIO::MakeDir(outhgm.c_str());
       string gmap_dir = outhgm + "/gmap.txt";
       string colavg_dir = outhgm + "/colavg.txt";
       string colscaling_dir = outhgm + "/colscaling.txt";
       /*string centroid_dir = outhgm+"/centroid.txt";
       string invcov_dir = outhgm+"/invcov.txt";
       string dsts_dir = outhgm+"/dists.txt";*/
-      DATAIO::WriteMatrix((char *)gmap_dir.c_str(), hgm->gmap);
+      DATAIO::WriteMatrix(gmap_dir.c_str(), hgm->gmap);
       // DATAIO::WriteMatrix((char*)dsts_dir.c_str(), dsts);
-      DATAIO::WriteDvector((char *)colavg_dir.c_str(), hgm->colaverage);
-      DATAIO::WriteDvector((char *)colscaling_dir.c_str(), hgm->colscaling);
+      DATAIO::WriteDvector(colavg_dir.c_str(), hgm->colaverage);
+      DATAIO::WriteDvector(colscaling_dir.c_str(), hgm->colscaling);
       /* Store the centroid
       DATAIO::WriteMatrix((char*)centroid_dir.c_str(), centroid);*/
       /* Store the inverse covariance matrix
@@ -237,12 +237,12 @@ int main(int argc, char **argv) {
                outhgm.empty() && grid_step_size == 0) { // make prediction
       matrix *data;
       initMatrix(&data);
-      DATAIO::ImportMatrix((char *)inputdata.c_str(), sep, data);
+      DATAIO::ImportMatrix(inputdata.c_str(), sep, data);
       hgmbins *bins_id;
       HyperGridModel *hgm;
       NewHyperGridMap(&hgm);
       string gmap_dir = inhgm + "/gmap.txt";
-      DATAIO::ImportMatrix((char *)gmap_dir.c_str(), sep, hgm->gmap);
+      DATAIO::ImportMatrix(gmap_dir.c_str(), sep, hgm->gmap);
       grid_step_size = ceil((hgm->gmap->data[0][1] - hgm->gmap->data[0][0]) /
                             hgm->gmap->data[0][2]);
       hgm->gsize = grid_step_size;

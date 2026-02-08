@@ -24,6 +24,7 @@
 #ifndef BARPLOT_H
 #define BARPLOT_H
 
+
 #include "ui_BarPlot.h"
 #include <QColor>
 #include <QList>

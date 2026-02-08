@@ -28,9 +28,8 @@ DataCurve::DataCurve()
       m_visible(true), m_isSmooth(false), lt(L) {}
 
 DataCurve::DataCurve(QVector<QPointF> curve, QString name, QColor color)
-    : m_name(name), m_color(color), m_radius(2), m_width(1), m_visible(true),
+    : m_curve(curve), m_name(name), m_color(color), m_radius(2), m_width(1), m_visible(true),
       m_isSmooth(false), lt(L) {
-  m_curve = curve;
 }
 
 void DataCurve::addPoint(qreal x, qreal y) { m_curve.append(QPointF(x, y)); }

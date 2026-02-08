@@ -22,6 +22,7 @@
 #ifndef FindCorrelationWidget_H
 #define FindCorrelationWidget_H
 
+
 #include <QStandardItemModel>
 #include <QString>
 #include <QStringList>

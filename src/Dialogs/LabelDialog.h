@@ -43,7 +43,7 @@ class LabelDialog : public QDialog {
 public:
   enum { OBJLABELS = 0, VARLABELS = 1, SHOWOBJLABELS = 2, SHOWVARLABELS = 3 };
   LabelDialog(PROJECTS *projects_, int windowtype_); // used in mainwindow
-  LabelDialog(LABELS *objlabels_, QStringList &selectedobject_,
+  LabelDialog(LABELS *objlabels_, const QStringList &selectedobject_,
               int windowtype_); // used for table selection and plot2D/3D
   ~LabelDialog();
   void setPath(QString path_) { lastpath = path_; }

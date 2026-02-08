@@ -139,9 +139,9 @@ void ClassDialog::Remove() {
   for (int i = 0; i < indexes.size(); i++) {
     int indx = indexes[i].row();
     if (indx > -1 && indx < (*classes).size()) {
-      for (int i = 0; i < (*classes)[indx].objlst.size(); i++) {
+      for (int j = 0; j < (*classes)[indx].objlst.size(); j++) {
         QList<QStandardItem *> mname;
-        mname.append(new QStandardItem((*classes)[indx].objlst[i]));
+        mname.append(new QStandardItem((*classes)[indx].objlst[j]));
         tab1->appendRow(mname);
       }
       (*classes).removeAt(indx);

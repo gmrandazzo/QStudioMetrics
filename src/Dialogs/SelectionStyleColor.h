@@ -34,10 +34,10 @@ class SelectionStyleColor : public QDialog {
 
 public:
   SelectionStyleColor();
-  SelectionStyleColor(QStringList &xvarname_, QStringList &yvarname_);
-  SelectionStyleColor(QStringList &xvarname_, QStringList &yvarname_,
-                      int &xlevels_,
-                      int &ylevels_); // used for array multiway where could be
+  SelectionStyleColor(const QStringList &xvarname_, const QStringList &yvarname_);
+  SelectionStyleColor(const QStringList &xvarname_, const QStringList &yvarname_,
+                      const int &xlevels_,
+                      const int &ylevels_); // used for array multiway where could be
                                       // more than one layer
 
   int ChangeColorType();

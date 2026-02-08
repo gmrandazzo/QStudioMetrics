@@ -244,9 +244,9 @@ void ModelDialogWizard::removeBlock() {
   for (int i = 0; i < indexes.size(); i++) {
     int indx = indexes[i].row();
     if (indx > -1 && indx < xblocks.size()) {
-      for (int i = 0; i < xblocks[indx].objects.size(); i++) {
+      for (int j = 0; j < xblocks[indx].objects.size(); j++) {
         QList<QStandardItem *> mname;
-        mname.append(new QStandardItem(xblocks[indx].objects[i]));
+        mname.append(new QStandardItem(xblocks[indx].objects[j]));
         tab6->appendRow(mname);
       }
       xblocks.removeAt(indx);
@@ -344,9 +344,9 @@ void ModelDialogWizard::removeClass() {
   for (int i = 0; i < indexes.size(); i++) {
     int indx = indexes[i].row();
     if (indx > -1 && indx < classes.size()) {
-      for (int i = 0; i < classes[indx].objects.size(); i++) {
+      for (int j = 0; j < classes[indx].objects.size(); j++) {
         QList<QStandardItem *> mname;
-        mname.append(new QStandardItem(classes[indx].objects[i]));
+        mname.append(new QStandardItem(classes[indx].objects[j]));
         tab6->appendRow(mname);
       }
       classes.removeAt(indx);
@@ -434,14 +434,9 @@ void ModelDialogWizard::EnableDisableButtons() {
       }
       // Multiblock methods
       else if (type == CPCA_) {
-        if (type == CPCA_) {
-          if (ui.listView_9->model()->rowCount() > 0) {
-            this->button(QWizard::FinishButton)->setEnabled(true);
-          } else {
-            this->button(QWizard::FinishButton)->setEnabled(false);
-          }
+        if (ui.listView_9->model()->rowCount() > 0) {
+          this->button(QWizard::FinishButton)->setEnabled(true);
         } else {
-          // finish button disabled by default!
           this->button(QWizard::FinishButton)->setEnabled(false);
         }
       } else {

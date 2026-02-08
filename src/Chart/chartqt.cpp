@@ -135,8 +135,7 @@ void ChartQt::showLabels() {
 
 void ChartQt::mouseReleaseEvent(QMouseEvent *event) {
   qDebug() << "mouseReleaseEvent " << event;
-  if (m_isTouching)
-    m_isTouching = false;
+  m_isTouching = false;
 
   if (event->button() == Qt::RightButton) {
       unsetCursor();
@@ -186,7 +185,7 @@ void ChartQt::mouseReleaseEvent(QMouseEvent *event) {
     }
 
     // select bars
-    QBarCategoryAxis *axisX =
+    const QBarCategoryAxis *axisX =
         qobject_cast<QBarCategoryAxis *>(chart()->axes(Qt::Horizontal).at(0));
     if (axisX) {
         for (int i = 0; i < b.size(); i++) {
@@ -321,7 +320,7 @@ void ChartQt::updateCurves() {
 
 void ChartQt::slotPointHoverd(const QPointF &point, bool state) {
   if (state) {
-    DataPoint *nearest = nullptr;
+    const DataPoint *nearest = nullptr;
     for (int i = 0; i < p.size(); ++i) {
       if (std::abs(p[i]->x() - point.x()) < 1e-7 &&
           std::abs(p[i]->y() - point.y()) < 1e-7) {
@@ -650,7 +649,10 @@ void ChartQt::Plot() {
   plot_ready = true;
 }
 
-void ChartQt::setAntialiasing(bool antialiasing_) {}
+void ChartQt::setAntialiasing(bool antialiasing_) {
+  antialiasing = antialiasing_;
+  setRenderHint(QPainter::Antialiasing, antialiasing);
+}
 
 void ChartQt::setXaxisName(QString xaxisname) { m_xaxisname = xaxisname; }
 

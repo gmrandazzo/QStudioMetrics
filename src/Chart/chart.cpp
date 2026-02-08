@@ -36,6 +36,7 @@
 #include <QSettings>
 
 #include "chart.h"
+#include "plotsettings.h"
 
 #define EPSILON 1e-3 /*Define your own tolerance*/
 
@@ -551,12 +552,12 @@ void Chart::mouseMoveEvent(QMouseEvent *event) {
       auto itLow = std::lower_bound(m_searchIndex.begin(), m_searchIndex.end(), mouseDataX - tolDataX);
       auto itHigh = std::lower_bound(m_searchIndex.begin(), m_searchIndex.end(), mouseDataX + tolDataX);
       
-      DataPoint* nearest = nullptr;
+      const DataPoint* nearest = nullptr;
       double minDistSq = tolSq + 1.0; // Start with max allowed
       
       for(auto it = itLow; it != itHigh; ++it) {
           int idx = it->index;
-          DataPoint* dp = p[idx];
+          const DataPoint* dp = p[idx];
           if (!dp->isVisible()) continue;
           
           // Calculate screen position of point
@@ -935,8 +936,8 @@ void Chart::drawCurves(QPainter *painter) {
             }
         } else {
             for (int j = 1; j < points.size(); ++j) {
-                QPointF p = points[j];
-                path.lineTo(offsetX + p.x() * scaleX, offsetY - p.y() * scaleY);
+                QPointF pt = points[j];
+                path.lineTo(offsetX + pt.x() * scaleX, offsetY - pt.y() * scaleY);
             }
         }
         
@@ -1007,7 +1008,7 @@ void Chart::drawScatters(QPainter *painter) {
   }
 
   // Helper to get cached marker
-  auto drawMarker = [&](double x, double y, DataPoint* dp, bool selected) {
+  auto drawMarker = [&](double x, double y, const DataPoint* dp, bool selected) {
        QString key = getMarkerKey(dp->marker(), dp->radius(), dp->color(), selected);
        QPixmap* pm = markerCache.object(key);
        if (!pm) {
@@ -1046,7 +1047,7 @@ void Chart::drawScatters(QPainter *painter) {
 
   // Draw unselected (decimated)
   for (int i = 0; i < p.size(); i++) {
-    DataPoint* dp = p[i];
+    const DataPoint* dp = p[i];
     if (!dp->isVisible() || dp->isSelected()) continue; // Draw selected later
 
     double x = offsetX + dp->x() * scaleX;
@@ -1068,7 +1069,7 @@ void Chart::drawScatters(QPainter *painter) {
 
   // Draw selected (ALWAYS draw, no decimation, on top)
   for (int i = 0; i < p.size(); i++) {
-    DataPoint* dp = p[i];
+    const DataPoint* dp = p[i];
     if (dp->isVisible() && dp->isSelected()) {
        double x = offsetX + dp->x() * scaleX;
        double y = offsetY - dp->y() * scaleY;
@@ -1083,7 +1084,7 @@ void Chart::drawScatters(QPainter *painter) {
   labelFont.setPointSize(8);
   painter->setFont(labelFont);
   for (int i = 0; i < p.size(); i++) {
-    DataPoint* dp = p[i];
+    const DataPoint* dp = p[i];
     if (dp->isVisible() && dp->isLabelVisible()) {
        double x = offsetX + dp->x() * scaleX;
        double y = offsetY - dp->y() * scaleY;

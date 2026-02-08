@@ -92,8 +92,6 @@ void ListView::exportlst() {
   }
 }
 
-void ListView::search() {}
-
 ListView::ListView(QStringList lst) : QWidget(0) {
   ui.setupUi(this);
   ui.listView->setModel(new QStringListModel(lst));

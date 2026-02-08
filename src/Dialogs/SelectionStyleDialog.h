@@ -37,7 +37,7 @@ public:
   enum ChangeType { NOCHANGE, FIXED, GRADIENT };
 
   SelectionStyleDialog();
-  SelectionStyleDialog(QStringList &varname);
+  explicit SelectionStyleDialog(const QStringList &varname);
   void setSymbolNames(QStringList);
 
   int ChangeShape();

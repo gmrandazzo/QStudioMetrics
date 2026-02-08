@@ -496,23 +496,23 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
           //         ModelPrediction Name - Tab Count - pid_ - Model ID - xdata
           //         id - ydata id - Data Position - Data Type (PCA Prediction,
           //         UPCA Prediction, ...) (8)
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(
+          QTreeWidgetItem *preditem = new QTreeWidgetItem;
+          preditem->setText(
               0, getPCAModel((*mid_))->getLastPCAPrediction()->getName());
-          subitem->setText(1, QString::number((*tabcount_)));
-          subitem->setText(2, QString::number(getProjectID()));
-          subitem->setText(3, QString::number((*mid_)));
-          subitem->setText(
+          preditem->setText(1, QString::number((*tabcount_)));
+          preditem->setText(2, QString::number(getProjectID()));
+          preditem->setText(3, QString::number((*mid_)));
+          preditem->setText(
               4, getLastPCAModel()->getLastPCAPrediction()->getDataHash());
-          subitem->setText(5, "-");
-          subitem->setText(
+          preditem->setText(5, "-");
+          preditem->setText(
               6,
               QString::number(
                   getPCAModel((*mid_))->getLastPCAPrediction()->getPredID()));
-          subitem->setText(7, QString("PCA Prediction"));
+          preditem->setText(7, QString("PCA Prediction"));
           (*tabcount_)++;
           MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)
-              ->addChild(subitem);
+              ->addChild(preditem);
         } else {
           continue;
         }
@@ -786,24 +786,24 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
           }
 
           getLastPLSModel()->getLastPLSPrediction()->setDID(predid);
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(
+          QTreeWidgetItem *preditem = new QTreeWidgetItem;
+          preditem->setText(
               0, getPLSModel((*mid_))->getLastPLSPrediction()->getName());
-          subitem->setText(1, QString::number((*tabcount_)));
-          subitem->setText(2, QString::number(getProjectID()));
-          subitem->setText(3, QString::number((*mid_)));
-          subitem->setText(
+          preditem->setText(1, QString::number((*tabcount_)));
+          preditem->setText(2, QString::number(getProjectID()));
+          preditem->setText(3, QString::number((*mid_)));
+          preditem->setText(
               4, getLastPLSModel()->getLastPLSPrediction()->getDataHash());
-          subitem->setText(
+          preditem->setText(
               5, getLastPLSModel()->getLastPLSPrediction()->getDataHash());
-          subitem->setText(
+          preditem->setText(
               6,
               QString::number(
                   getPLSModel((*mid_))->getLastPLSPrediction()->getPredID()));
-          subitem->setText(7, QString("PLS Prediction"));
+          preditem->setText(7, QString("PLS Prediction"));
           (*tabcount_)++;
           MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)
-              ->addChild(subitem);
+              ->addChild(preditem);
         } else {
           continue;
         }
@@ -934,42 +934,42 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
               mlrpredlist[i][7],
               getLastMLRModel()->getLastMLRPrediction()->getSDEC());
 
-          int did = -1;
+          int preddid = -1;
           for (int k = 0; k < MatrixCount(); k++) {
             if (getMatrix(k)->getHash().compare(
                     getLastMLRModel()->getLastMLRPrediction()->getDataHash()) ==
                 0) {
-              did = k;
+              preddid = k;
               break;
             } else {
               continue;
             }
           }
 
-          if (did == -1) {
+          if (preddid == -1) {
             (*log).append(QString("Warning on MLR Prediction %1. Unable to "
                                   "find origin data matrix.")
                               .arg(mlrpredlist[i][0]));
           }
 
-          getLastMLRModel()->getLastMLRPrediction()->setDID(did);
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(
+          getLastMLRModel()->getLastMLRPrediction()->setDID(preddid);
+          QTreeWidgetItem *preditem = new QTreeWidgetItem;
+          preditem->setText(
               0, getLastMLRModel()->getLastMLRPrediction()->getName());
-          subitem->setText(1, QString::number((*tabcount_)));
-          subitem->setText(2, QString::number(getProjectID()));
-          subitem->setText(3, QString::number((*mid_)));
-          subitem->setText(
+          preditem->setText(1, QString::number((*tabcount_)));
+          preditem->setText(2, QString::number(getProjectID()));
+          preditem->setText(3, QString::number((*mid_)));
+          preditem->setText(
               4, getLastMLRModel()->getLastMLRPrediction()->getDataHash());
-          subitem->setText(
+          preditem->setText(
               5, getLastMLRModel()->getLastMLRPrediction()->getDataHash());
-          subitem->setText(
+          preditem->setText(
               6, QString::number(
                      getLastMLRModel()->getLastMLRPrediction()->getPredID()));
-          subitem->setText(7, QString("MLR Prediction"));
+          preditem->setText(7, QString("MLR Prediction"));
           (*tabcount_)++;
           MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)
-              ->addChild(subitem);
+              ->addChild(preditem);
         } else {
           i++;
         }
@@ -1144,45 +1144,45 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
               ldapredlist[j][10],
               getLastLDAModel()->getLastLDAPrediction()->getProbPred());
 
-          int did = -1;
+          int preddid = -1;
           for (int k = 0; k < MatrixCount(); k++) {
             if (getMatrix(k)->getHash().compare(
                     getLastLDAModel()->getLastLDAPrediction()->getDataHash()) ==
                 0) {
-              did = k;
+              preddid = k;
               break;
             } else {
               continue;
             }
           }
 
-          if (did == -1) {
+          if (preddid == -1) {
             (*log).append(QString("Warning in LDA Prediction %1. Unable to "
                                   "find the origin data matrix. ")
                               .arg(ldapredlist[j][0]));
           }
 
-          getLastLDAModel()->getLastLDAPrediction()->setDID(did);
+          getLastLDAModel()->getLastLDAPrediction()->setDID(preddid);
           //         ModelPrediction Name - Tab Count - pid_ - Model ID - xdata
           //         id - ydata id - Data Position - Data Type (LDA Prediction,
           //         ULDA Prediction, ...) (8)
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(
+          QTreeWidgetItem *preditem = new QTreeWidgetItem;
+          preditem->setText(
               0, getLDAModel((*mid_))->getLastLDAPrediction()->getName());
-          subitem->setText(1, QString::number((*tabcount_)));
-          subitem->setText(2, QString::number(getProjectID()));
-          subitem->setText(3, QString::number((*mid_)));
-          subitem->setText(
+          preditem->setText(1, QString::number((*tabcount_)));
+          preditem->setText(2, QString::number(getProjectID()));
+          preditem->setText(3, QString::number((*mid_)));
+          preditem->setText(
               4, getLastLDAModel()->getLastLDAPrediction()->getDataHash());
-          subitem->setText(5, "-");
-          subitem->setText(
+          preditem->setText(5, "-");
+          preditem->setText(
               6,
               QString::number(
                   getLDAModel((*mid_))->getLastLDAPrediction()->getPredID()));
-          subitem->setText(7, QString("LDA Prediction"));
+          preditem->setText(7, QString("LDA Prediction"));
           (*tabcount_)++;
           MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)
-              ->addChild(subitem);
+              ->addChild(preditem);
         }
       }
       (*mid_)++;
@@ -1666,7 +1666,6 @@ QString DATA::SaveSQLData(QString savepath) {
     pbdialog.setValue(5);
     return dbName;
   }
-  return QString();
 }
 
 void DATA::addMatrix() { matrix_.append(new MATRIX()); }
@@ -1969,7 +1968,6 @@ PCAModel *DATA::getPCAModel(int mid) {
   for (int i = 0; i < pcamodel.size(); i++) {
     if (mid == pcamodel[i]->getModelID()) {
       return pcamodel[i];
-      break;
     } else {
       continue;
     }
@@ -1981,7 +1979,6 @@ CPCAModel *DATA::getCPCAModel(int mid) {
   for (int i = 0; i < cpcamodel.size(); i++) {
     if (mid == cpcamodel[i]->getModelID()) {
       return cpcamodel[i];
-      break;
     } else {
       continue;
     }
@@ -1993,7 +1990,6 @@ PLSModel *DATA::getPLSModel(int mid) {
   for (int i = 0; i < plsmodel.size(); i++) {
     if (mid == plsmodel[i]->getModelID()) {
       return plsmodel[i];
-      break;
     } else {
       continue;
     }
@@ -2005,7 +2001,6 @@ PLSModel *DATA::getPLSModel(QString hash) {
   for (int i = 0; i < plsmodel.size(); i++) {
     if (plsmodel[i]->getHash().compare(hash) == 0) {
       return plsmodel[i];
-      break;
     } else {
       continue;
     }
@@ -2017,7 +2012,6 @@ LDAModel *DATA::getLDAModel(int mid) {
   for (int i = 0; i < ldamodel.size(); i++) {
     if (mid == ldamodel[i]->getModelID()) {
       return ldamodel[i];
-      break;
     } else {
       continue;
     }
@@ -2029,7 +2023,6 @@ MLRModel *DATA::getMLRModel(int mid) {
   for (int i = 0; i < mlrmodel.size(); i++) {
     if (mid == mlrmodel[i]->getModelID()) {
       return mlrmodel[i];
-      break;
     } else {
       continue;
     }

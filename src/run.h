@@ -59,7 +59,11 @@ public:
           cpcamod(nullptr),                  // Initialize cpcamod to nullptr
           plsmod(nullptr),                   // Initialize plsmod to nullptr
           mlrmodel(nullptr),                 // Initialize mlrmodel to nullptr
-          ldamodel(nullptr)                  // Initialize ldamodel to nullptr 
+          ldamodel(nullptr),                 // Initialize ldamodel to nullptr 
+          algtype(-1),
+          vt(-1),
+          linkype(-1),
+          dendogram(nullptr)
     {};
   void AbortRun();
   void Test();

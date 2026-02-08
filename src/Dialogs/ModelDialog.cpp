@@ -517,34 +517,17 @@ void ModelDialog::OK() {
     modelname_ = ui.modelname->text();
 
     if (type == PCA_) {
-      if (type == PCA_) {
-        if (ui.NPrincipalComponent->value() >
-            (int)projects_->value(selectedproject_)
-                ->getMatrix(selecteddata_)
-                ->Matrix()
-                ->col) {
-          n_pc = projects_->value(selectedproject_)
-                     ->getMatrix(selecteddata_)
-                     ->Matrix()
-                     ->col;
-        } else {
-          n_pc = ui.NPrincipalComponent->value();
-        }
+      if (ui.NPrincipalComponent->value() >
+          (int)projects_->value(selectedproject_)
+              ->getMatrix(selecteddata_)
+              ->Matrix()
+              ->col) {
+        n_pc = projects_->value(selectedproject_)
+                   ->getMatrix(selecteddata_)
+                   ->Matrix()
+                   ->col;
       } else {
-        if (ui.NPrincipalComponent->value() >
-            (int)projects_->value(selectedproject_)
-                ->getArray(selecteddata_)
-                ->Array()
-                ->m[0]
-                ->col) {
-          n_pc = projects_->value(selectedproject_)
-                     ->getArray(selecteddata_)
-                     ->Array()
-                     ->m[0]
-                     ->col;
-        } else {
-          n_pc = ui.NPrincipalComponent->value();
-        }
+        n_pc = ui.NPrincipalComponent->value();
       }
       xscaling = ui.xscalinglist->currentIndex();
     } else if (type == PLS_) {

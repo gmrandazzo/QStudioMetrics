@@ -20,7 +20,13 @@
  */
 
 #ifndef DOPREDICTIONDIALOG_H
+
 #define DOPREDICTIONDIALOG_H
+
+
+
+
+
 
 #include <QDialog>
 #include <QStandardItemModel>

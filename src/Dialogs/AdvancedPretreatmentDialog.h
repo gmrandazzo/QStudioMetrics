@@ -22,6 +22,7 @@
 #ifndef ADVANCEDPRETREATMENTDIALOG_H
 #define ADVANCEDPRETREATMENTDIALOG_H
 
+
 #include <QDialog>
 #include <QStandardItemModel>
 

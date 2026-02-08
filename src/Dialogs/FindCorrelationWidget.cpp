@@ -32,13 +32,13 @@ void FindCorrelationWidget::SelectAll() { ui.listView->selectAll(); }
 
 void FindCorrelationWidget::InvertSelection() {
   QItemSelectionModel *selectionModel = ui.listView->selectionModel();
-  QAbstractItemModel *model = ui.listView->model();
+  QAbstractItemModel *itemModel = ui.listView->model();
 
   QModelIndex topLeft;
   QModelIndex bottomRight;
   QItemSelection toggleSelection;
-  topLeft = model->index(0, 0);
-  bottomRight = model->index(model->rowCount() - 1, 0);
+  topLeft = itemModel->index(0, 0);
+  bottomRight = itemModel->index(itemModel->rowCount() - 1, 0);
   toggleSelection.select(topLeft, bottomRight);
   selectionModel->select(toggleSelection, QItemSelectionModel::Toggle);
 }

@@ -52,10 +52,8 @@ public:
 
   void setNumberOfClusters(int nclusters_) { nclusters = nclusters_; };
   int getNumberOfClusters() { return nclusters; };
-  void setClusterAlgorithm(QString clusteralgo_) {
-    clusteralgo_ = clusteralgo_;
-  }
-  int setClusterAlgorithm() { return clusteralgo; }
+  void setClusterAlgorithm(int clusteralgo_) { clusteralgo = clusteralgo_; }
+  int getClusterAlgorithm() { return clusteralgo; }
 
 private:
   void ImportClusterModelInfo(QString path);

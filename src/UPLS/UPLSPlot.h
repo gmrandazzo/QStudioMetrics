@@ -33,7 +33,7 @@
 
 class UPLSPlot {
 public:
-  UPLSPlot(PROJECTS *projects_);
+  explicit UPLSPlot(PROJECTS *projects_);
   void setPID(int pid_) { pid = pid_; }
   void setMID(int mid_) { mid = mid_; }
   void setPREDID(int predid_) { predid = predid_; }

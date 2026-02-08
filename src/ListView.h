@@ -22,6 +22,7 @@
 #ifndef LISTVIEW_H
 #define LISTVIEW_H
 
+
 #include <QContextMenuEvent>
 #include <QStringList>
 #include <QWidget>
@@ -37,7 +38,6 @@ public:
 private slots:
   void copy();
   void exportlst();
-  void search();
 
 private:
   Ui::ListView ui;

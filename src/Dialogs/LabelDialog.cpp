@@ -299,7 +299,7 @@ LabelDialog::LabelDialog(PROJECTS *projects_, int windowtype_) : QDialog() {
           SLOT(setLabelId(QModelIndex)));
 }
 
-LabelDialog::LabelDialog(LABELS *labels_, QStringList &selectedobject_,
+LabelDialog::LabelDialog(LABELS *labels_, const QStringList &selectedobject_,
                          int windowtype_)
     : QDialog() {
   ui.setupUi(this);

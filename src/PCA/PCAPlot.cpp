@@ -463,5 +463,6 @@ void PCAPlot::ScorePlotPrediction3D(ScatterPlot **plot3D) {
 
 PCAPlot::PCAPlot(PROJECTS *projects_) {
   pid = mid = predid = -1;
+  nlv = 0;
   projects = projects_;
 }

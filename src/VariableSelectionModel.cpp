@@ -63,6 +63,7 @@ VariableSelectionModel::VariableSelectionModel() {
   initMatrix(&map);
   initUIVector(&selectedvariables);
   initUIVector(&vardistribution);
+  pid = modelid = -1;
 }
 
 VariableSelectionModel::~VariableSelectionModel() {

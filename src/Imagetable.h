@@ -42,7 +42,7 @@
 class ImageTableModel : public QAbstractTableModel {
   Q_OBJECT
 public:
-  ImageTableModel(QObject *parent);
+  explicit ImageTableModel(QObject *parent);
   int rowCount(const QModelIndex &parent = QModelIndex()) const override;
   int columnCount(const QModelIndex &parent = QModelIndex()) const override;
   QVariant data(const QModelIndex &index,

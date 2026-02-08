@@ -49,7 +49,7 @@ public:
   QString getFileName();
   MATRIX *getMatrix() { return m; }
   ARRAY *getArray() { return a; }
-  void setPath(QString &path_) { path = path_; }
+  void setPath(const QString &path_) { path = path_; }
 
 private slots:
   void Open();

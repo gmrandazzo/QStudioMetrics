@@ -90,7 +90,6 @@ QList<size_t> ImportFileDialog::getLineToSkip() {
 
       QString skipchar = getSkipChar();
       size_t row = 0;
-      std::string line;
       while (!in.atEnd()) {
         QString line = in.readLine();
         if (QString(line).compare(skipchar, Qt::CaseInsensitive) == 0 ||
@@ -503,20 +502,21 @@ void ImportFileDialog::Preview() {
 
   model->setHorizontalHeaderLabels(varnames);
   for (int i = 0; i < fpreview.size(); i++) {
-    QList<QStandardItem *> row;
-    row.append(new QStandardItem(objnames[i]));
+    QList<QStandardItem *> rowItems;
+    rowItems.append(new QStandardItem(objnames[i]));
     for (int j = 0; j < fpreview[i].size(); j++) {
-      row.append(new QStandardItem(fpreview[i][j]));
+      rowItems.append(new QStandardItem(fpreview[i][j]));
     }
-    model->appendRow(row);
+    model->appendRow(rowItems);
   }
 
   if (row == max_row && fpreview.size() > 0) {
-    QList<QStandardItem *> row;
-    row.append(new QStandardItem("...."));
+    QList<QStandardItem *> rowItems;
+    rowItems.append(new QStandardItem("...."));
     for (int j = 0; j < fpreview.last().size(); j++) {
-      row.append(new QStandardItem("...."));
+      rowItems.append(new QStandardItem("...."));
     }
+    model->appendRow(rowItems);
   }
 }
 

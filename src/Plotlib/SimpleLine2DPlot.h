@@ -23,6 +23,7 @@
 #ifndef SIMPLELINE2DPLOT_H
 #define SIMPLELINE2DPLOT_H
 
+
 #include "ui_SimpleLine2DPlot.h"
 #include <QColor>
 #include <QList>

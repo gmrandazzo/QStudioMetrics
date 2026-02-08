@@ -211,7 +211,10 @@ SelectionStyleDialog::SelectionStyleDialog() : QDialog() {
   connect(ui.cancelButton, SIGNAL(clicked(bool)), SLOT(Cancel()));
 }
 
-SelectionStyleDialog::SelectionStyleDialog(QStringList &varnames_) : QDialog() {
+SelectionStyleDialog::SelectionStyleDialog(const QStringList &varnames_)
+
+    : QDialog() {
+
   ui.setupUi(this);
 
   ui.solidcolor->setChecked(true);

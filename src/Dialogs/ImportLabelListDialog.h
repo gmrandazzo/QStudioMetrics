@@ -31,10 +31,10 @@ class ImportLabelListDialog : public QDialog {
   Q_OBJECT
 
 public:
-  ImportLabelListDialog(QString path_);
+  explicit ImportLabelListDialog(QString path_);
   QString getFileName();
   QString getLabel();
-  void setPath(QString &path_) { path = path_; }
+  void setPath(const QString &path_) { path = path_; }
 
 private slots:
   void Open();

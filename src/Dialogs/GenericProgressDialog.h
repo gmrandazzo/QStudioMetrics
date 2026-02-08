@@ -20,7 +20,13 @@
  */
 
 #ifndef GENERICPROGRESSDIALOG_H
+
 #define GENERICPROGRESSDIALOG_H
+
+
+
+
+
 
 #include <QDialog>
 

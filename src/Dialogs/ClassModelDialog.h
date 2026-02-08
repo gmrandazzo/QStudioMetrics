@@ -22,7 +22,13 @@
 // ClassModelDialog.h
 
 #ifndef CLASSMODELDIALOG_H
+
 #define CLASSMODELDIALOG_H
+
+
+
+
+
 
 #include <QDialog>
 #include <QDialogButtonBox>

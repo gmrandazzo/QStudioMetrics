@@ -34,7 +34,7 @@ public:
   ~UPCAPREDICTION();
   void setName(QString name_) { name = name_; }
   QString &getName() { return name; }
-  void setObjName(QStringList &objname_) { objname = objname_; }
+  void setObjName(const QStringList &objname_) { objname = objname_; }
   QStringList &getObjName() { return objname; }
   void setPredID(int id_) { id = id_; }
   int getPredID() { return id; }
@@ -60,9 +60,9 @@ public:
   UPCAMODEL *Model() { return m; }
   void setName(QString name_) { name = name_; }
   QString &getName() { return name; }
-  void setObjName(QStringList &objname_) { objname = objname_; }
+  void setObjName(const QStringList &objname_) { objname = objname_; }
   QStringList &getObjName() { return objname; }
-  void setVarName(QStringList &varname_) { varname = varname_; }
+  void setVarName(const QStringList &varname_) { varname = varname_; }
   QStringList &getVarName() { return varname; }
   void setDID(int did_) { did = did_; }
   void setDataHash(QString hash_) { hash = hash_; }

@@ -42,7 +42,7 @@ public:
   QString getSkipChar();
   QString getFileObjName();
   QString getFileVarName();
-  void setPath(QString &path_) { path = path_; }
+  void setPath(const QString &path_) { path = path_; }
   void setSimpleOpen();
 
 private slots:

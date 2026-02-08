@@ -34,7 +34,7 @@ class HighlightTableVarDialog : public QDialog {
   Q_OBJECT
 
 public:
-  HighlightTableVarDialog(QStringList varname);
+  explicit HighlightTableVarDialog(QStringList varname);
 
   int getVariableType() { return var; }
   QColor &getMinColor() { return colormin; }

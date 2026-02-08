@@ -23,6 +23,7 @@
 #ifndef QSTUDIOMETRICSTYPES_H
 #define QSTUDIOMETRICSTYPES_H
 
+
 #include <QList>
 #include <QPixmap>
 #include <QString>

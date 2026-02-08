@@ -242,7 +242,7 @@ public:
   QString &getProjectPath() { return projectpath; }
   void ImportFileMatrix(const FILEDATA &f);
   void ImportFileArray(const FILEDATA &f);
-  bool isSQLDatabase(QString sqlfile);
+  static bool isSQLDatabase(QString sqlfile);
   void OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
                    int *mid_, QStringList *log);
   QString SaveSQLData(QString dbName);
@@ -340,8 +340,8 @@ public:
                        const QString &destinationDir);
 
 private:
-  void saveMatrixToSQL(QSqlQuery *query, MATRIX *m);
-  void saveArrayToSQL(QSqlQuery *query, ARRAY *a);
+  static void saveMatrixToSQL(QSqlQuery *query, MATRIX *m);
+  static void saveArrayToSQL(QSqlQuery *query, ARRAY *a);
 
   QString projectpath;
   QString projectname;

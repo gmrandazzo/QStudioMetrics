@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
   } else {
     size_t npc = 0;
     int autoscaling = 0;
-    string inputdata, labelfname, datamodel, outputfile, sep;
+    string inputdata, datamodel, outputfile, sep;
     bool genmodel, makeprediction;
     genmodel = makeprediction = false;
     sep = ", \t";
@@ -132,11 +132,11 @@ int main(int argc, char **argv) {
 
       initMatrix(&data);
 
-      DATAIO::ImportMatrix((char *)inputdata.c_str(), sep, data);
+      DATAIO::ImportMatrix(inputdata.c_str(), sep, data);
       NewPCAModel(&m);
       PCA(data, autoscaling, npc, m, NULL);
 
-      DATAIO::WritePCAModel((char *)outputfile.c_str(), m);
+      DATAIO::WritePCAModel(outputfile.c_str(), m);
 
       DelPCAModel(&m);
       DelMatrix(&data);
@@ -145,14 +145,14 @@ int main(int argc, char **argv) {
       matrix *xdata;
       initMatrix(&xdata);
 
-      DATAIO::ImportMatrix((char *)inputdata.c_str(), sep, xdata);
+      DATAIO::ImportMatrix(inputdata.c_str(), sep, xdata);
 
       // PrintMatrix(xdata);
 
       PCAMODEL *m;
       NewPCAModel(&m);
 
-      DATAIO::ImportPCAModel((char *)datamodel.c_str(), m);
+      DATAIO::ImportPCAModel(datamodel.c_str(), m);
 
       matrix *xscores, *indvar;
       dvector *seps;
@@ -165,16 +165,16 @@ int main(int argc, char **argv) {
       PCAIndVarPredictor(xscores, m->loadings, m->colaverage, m->colscaling,
                          npc, indvar);
 
-      if (DATAIO::DirExists((char *)outputfile.c_str()) == true) {
-        DATAIO::RemoveDir((char *)outputfile.c_str());
+      if (DATAIO::DirExists(outputfile.c_str()) == true) {
+        DATAIO::RemoveDir(outputfile.c_str());
       }
 
-      DATAIO::MakeDir((char *)outputfile.c_str());
+      DATAIO::MakeDir(outputfile.c_str());
 
       string pscores = outputfile + "/" + "T-Score-Pred.txt";
       string pindvar = outputfile + "/" + "Ind-Var-Pred.txt";
-      DATAIO::WriteMatrix((char *)pscores.c_str(), xscores);
-      DATAIO::WriteMatrix((char *)pindvar.c_str(), indvar);
+      DATAIO::WriteMatrix(pscores.c_str(), xscores);
+      DATAIO::WriteMatrix(pindvar.c_str(), indvar);
 
       DelMatrix(&indvar);
       DelMatrix(&xscores);

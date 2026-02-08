@@ -22,9 +22,7 @@
 #include <QApplication>
 #include <QFile>
 #include <QtGlobal>
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
 #include <QRandomGenerator>
-#endif
 #include "chartqt.h"
 #include "plotinfo.h"
 #include <cmath>
@@ -172,13 +170,8 @@ void _2DScattePlotExampleBIS(ChartQt *chart) {
   int n_points = 5000;
   QRandomGenerator rndgen(n_points);
   for (int i = 0; i < n_points; i++) {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
     qreal x = QRandomGenerator::global()->generateDouble();
     qreal y = QRandomGenerator::global()->generateDouble();
-#else
-    qreal x = randnum(-10, 10, rndgen);
-    qreal y = randnum(-10, 10, rndgen);
-#endif
     QString name = QString("Obj%1").arg(i);
     chart->addPoint(x, y, name);
   }

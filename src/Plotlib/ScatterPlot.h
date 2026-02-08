@@ -50,52 +50,52 @@ public:
   enum { SIMPLE = 0, SCORES, LOADINGS, SINGLEAXIS, DOUBLEAXIS, TRIPLEAXIS };
 
   // Simple scatter plot without line
-  ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+  ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
               QString xaxsisname_, QString yaxsisname_, QString windowtitle);
 
   // Scatter plot for matrix data (SCORES, LOADINGS, VAR vs VAR)
-  ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+  ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
               QList<MATRIX *> *mxlst_, QStringList xhash_, QStringList yhash_,
               LABELS *objlabels_, LABELS *varlabels_, QString xaxsisname_,
               QString yaxsisname_, QString windowtitle, int type_);
 
-  ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+  ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
               QList<MATRIX *> *mxlst_, QStringList xhash_, QStringList yhash_,
               LABELS *objlabels_, LABELS *varlabels_, QString xaxsisname_,
               QString yaxsisname_, QString zaxsisname_, QString windowtitle,
               int type_);
 
   // Scatter Plot for matrix data (SCORES, LOADINGS, VAR vs VAR and TABLABELS
-  ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+  ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
               QList<MATRIX *> *mxlst_, QStringList xhash_, QStringList yhash_,
               TABLABELS *vartablabels, LABELS *objlabels_, LABELS *varlabels_,
               QString xaxsisname_, QString yaxsisname_, QString windowtitle,
               int type_);
 
   // Simple scatter plot with line
-  ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_, dvector *b_,
-              QList<QStringList> &objname, QString xaxsisname_,
+  ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_, dvector *b_,
+              const QList<QStringList> &objname, QString xaxsisname_,
               QString yaxsisname_,
               QString windowtitle); // typeplot = 1
 
   // Scatter Plot with line and selector options. for matrix
-  ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_, dvector *b_,
-              QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
+  ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_, dvector *b_,
+              const QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
               QStringList xhash_, QStringList yhash_, LABELS *objlabels_,
               LABELS *varlabels_, QString xaxsisname_, QString yaxsisname_,
               QString windowtitle,
               int type_); // MATRIXDATA
 
   /* Scatter Plot without line but with x and y*/
-  ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
-              QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
+  ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
+              const QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
               QStringList xhash_, QStringList yhash_, LABELS *objlabels_,
               LABELS *varlabels_, QString xaxsisname_, QString yaxsisname_,
               QString windowtitle,
               int type_); // MATRIXDATA
 
-  ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
-              QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
+  ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
+              const QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
               QStringList xhash_, QStringList yhash_, TABLABELS *vartablabels_,
               LABELS *objlabels_, LABELS *varlabels_, QString xaxsisname_,
               QString yaxsisname_, QString windowtitle,
@@ -190,9 +190,9 @@ private:
   int layer;
   void getPointSelected();
   void UpdateAxisName();
-  void initPoint(QList<matrix *> mx, QList<QStringList> name);
-  void initPoint(QList<matrix *> mx, QList<matrix *> my,
-                 QList<QStringList> name);
+  void initPoint(const QList<matrix *> &mx, const QList<QStringList> &name);
+  void initPoint(const QList<matrix *> &mx, const QList<matrix *> &my,
+                 const QList<QStringList> &name);
   void BuildLine(qreal angular_coeff);
   void BuildHotellingEllipse();
   int random(int min, int max);

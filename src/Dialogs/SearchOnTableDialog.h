@@ -34,7 +34,7 @@ class SearchOnTableDialog : public QDialog {
   Q_OBJECT
 
 public:
-  SearchOnTableDialog(QStringList objlist);
+  explicit SearchOnTableDialog(QStringList objlist);
   int getSelectionType();
   QString getLabel();
   double getMin();

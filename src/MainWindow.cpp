@@ -222,8 +222,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
 
   if (!varnotfound.isEmpty()) {
     QString msg = "The following features were not found: \n";
-    for (const QString& vname : varnotfound)
-      msg += QString("%1\n").arg(vname);
+    msg += varnotfound.join('\n') + '\n';
 
     QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
@@ -306,8 +305,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   bool retval = true;
   if (!xvarnotfound.isEmpty()) {
     QString msg = "The following features were not found: \n";
-    for (const QString& xvname : xvarnotfound)
-      msg += QString("%1\n").arg(xvname);
+    msg += xvarnotfound.join('\n') + '\n';
 
     QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
@@ -316,8 +314,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
 
   if (!yvarnotfound.isEmpty()) {
     QString msg = "The following dependent variables were not found: \n";
-    for (const QString& yvname : yvarnotfound)
-      msg += QString("%1\n").arg(yvname);
+    msg += yvarnotfound.join('\n') + '\n';
 
     QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
@@ -423,8 +420,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
 
   if (!xvarnotfound.isEmpty()) {
     QString msg = "The following features were not found: \n";
-    for (const QString& xvname : xvarnotfound)
-      msg += QString("%1\n").arg(xvname);
+    msg += xvarnotfound.join('\n') + '\n';
 
     QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
@@ -502,8 +498,7 @@ bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames,
 
   if (!varnotfound.isEmpty()) {
     QString msg = "The following features were not found: \n";
-    for (const QString& vname : varnotfound)
-      msg += QString("%1\n").arg(vname);
+    msg += varnotfound.join('\n') + '\n';
 
     QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
@@ -918,8 +913,9 @@ QString MainWindow::getCurrentPredictionName() {
 QTreeWidgetItem *MainWindow::getPredictionItem(int pid, int mid, int preid) {
   QTreeWidgetItemIterator it(getProjectItem(pid)->child(1)->child(mid));
   while (*it) {
-    if ((*it)->columnCount() == 8 && (*it)->text(6).toInt() == preid) {
-      return (*it);
+    QTreeWidgetItem *item = *it;
+    if (item->columnCount() == 8 && item->text(6).toInt() == preid) {
+      return item;
     }
     ++it;
   }
@@ -1209,8 +1205,9 @@ QTreeWidgetItem *MainWindow::getModelItem(
 {
   QTreeWidgetItemIterator it(getProjectItem(pid, treeWidget)->child(1));
   while (*it) {
-    if ((*it)->columnCount() == 10 && (*it)->text(9).toInt() == mid) {
-      return (*it);
+    QTreeWidgetItem *item = *it;
+    if (item->columnCount() == 10 && item->text(9).toInt() == mid) {
+      return item;
     }
     ++it;
   }
@@ -1222,8 +1219,9 @@ MainWindow::getModelItem(int pid, int mid) // pid = project id, mid = model id
 {
   QTreeWidgetItemIterator it(getProjectItem(pid)->child(1));
   while (*it) {
-    if ((*it)->columnCount() == 10 && (*it)->text(9).toInt() == mid) {
-      return (*it);
+    QTreeWidgetItem *item = *it;
+    if (item->columnCount() == 10 && item->text(9).toInt() == mid) {
+      return item;
     }
     ++it;
   }
@@ -1320,8 +1318,9 @@ MainWindow::getDataItem(int pid, int did) // pid = project id, did = data id
 {
   QTreeWidgetItemIterator it(getProjectItem(pid)->child(0));
   while (*it) {
-    if ((*it)->columnCount() == 5 && (*it)->text(3).toInt() == did) {
-      return (*it);
+    QTreeWidgetItem *item = *it;
+    if (item->columnCount() == 5 && item->text(3).toInt() == did) {
+      return item;
     }
     ++it;
   }
@@ -1375,8 +1374,9 @@ QTreeWidgetItem *MainWindow::getCurrentProjectItem() {
 QTreeWidgetItem *MainWindow::getProjectItem(int pid, QTreeWidget *treeWidget) {
   QTreeWidgetItemIterator it(treeWidget);
   while (*it) {
-    if ((*it)->columnCount() == 2 && (*it)->text(1).toInt() == pid) {
-      return (*it);
+    QTreeWidgetItem *item = *it;
+    if (item->columnCount() == 2 && item->text(1).toInt() == pid) {
+      return item;
     }
     ++it;
   }
@@ -1386,8 +1386,9 @@ QTreeWidgetItem *MainWindow::getProjectItem(int pid, QTreeWidget *treeWidget) {
 QTreeWidgetItem *MainWindow::getProjectItem(int pid) {
   QTreeWidgetItemIterator it(ui.treeWidget);
   while (*it) {
-    if ((*it)->columnCount() == 2 && (*it)->text(1).toInt() == pid) {
-      return (*it);
+    QTreeWidgetItem *item = *it;
+    if (item->columnCount() == 2 && item->text(1).toInt() == pid) {
+      return item;
     }
     ++it;
   }

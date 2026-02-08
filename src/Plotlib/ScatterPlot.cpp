@@ -155,7 +155,7 @@ QList<QColor> ScatterPlot::GenColorList(int size) {
 void ScatterPlot::BuildLine(qreal angular_coeff) {
   qreal xmin, xmax, ymin, ymax;
   xmin = xmax = chart->getPoint(0)->x();
-  ymin = ymax = chart->getPoint(0)->y();
+  ymax = chart->getPoint(0)->y();
   for (int i = 1; i < chart->PointSize(); i++) {
     if (chart->getPoint(i)->x() < xmin) {
       xmin = chart->getPoint(i)->x();
@@ -455,8 +455,8 @@ void ScatterPlot::UpdateAxisName() {
   }
 }
 
-void ScatterPlot::initPoint(QList<matrix *> mx, QList<matrix *> my,
-                            QList<QStringList> name) {
+void ScatterPlot::initPoint(const QList<matrix *> &mx, const QList<matrix *> &my,
+                            const QList<QStringList> &name) {
   // Only for 2D plot!
   QList<QColor> colors = GenColorList(mx.size());
 
@@ -482,7 +482,7 @@ void ScatterPlot::initPoint(QList<matrix *> mx, QList<matrix *> my,
   UpdateAxisName();
 }
 
-void ScatterPlot::initPoint(QList<matrix *> mx, QList<QStringList> name) {
+void ScatterPlot::initPoint(const QList<matrix *> &mx, const QList<QStringList> &name) {
 // For 2D and 3D plots!
 #ifdef DEBUG
   qDebug() << "2D and 3D plot init";
@@ -703,9 +703,9 @@ void ScatterPlot::setSelectionStyle() {
         SelectionStyleDialog::ChangeType changesize = obj.ChangeSize();
 
         if (changeshape == 1) {
-          MarkerType mtype = MarkerType(obj.getSymbolType());
+          MarkerType markerType = MarkerType(obj.getSymbolType());
           for (int i = 0; i < selectedIDS.size(); i++) {
-            chart->getPoint(selectedIDS[i])->setMarkerType(mtype);
+            chart->getPoint(selectedIDS[i])->setMarkerType(markerType);
           }
         }
 
@@ -856,9 +856,9 @@ void ScatterPlot::setSelectionStyle() {
       SelectionStyleDialog::ChangeType changesize = obj.ChangeSize();
 
       if (changeshape == 1) {
-        MarkerType mtype = MarkerType(obj.getSymbolType());
+        MarkerType markerType = MarkerType(obj.getSymbolType());
         for (int i = 0; i < selectedIDS.size(); i++) {
-          chart->getPoint(selectedIDS[i])->setMarkerType(mtype);
+          chart->getPoint(selectedIDS[i])->setMarkerType(markerType);
         }
       }
 
@@ -979,14 +979,14 @@ void ScatterPlot::OpenPlotSettingsDialog() {
     int axisvaluesize = psettings.getAxisValueSize();
 
     int xlabelsize = psettings.getXlabelSize();
-    double xmin = psettings.getXmin();
-    double xmax = psettings.getXmax();
-    int xtick = psettings.getXTick();
+    xmin = psettings.getXmin();
+    xmax = psettings.getXmax();
+    xtick = psettings.getXTick();
 
     int ylabelsize = psettings.getYlabelSize();
-    double ymin = psettings.getYmin();
-    double ymax = psettings.getYmax();
-    int ytick = psettings.getYTick();
+    ymin = psettings.getYmin();
+    ymax = psettings.getYmax();
+    ytick = psettings.getYTick();
 
     QSettings settings("QStudioMetrics", "PlotSettings");
     settings.setValue("titleSize", titlesize);
@@ -1261,10 +1261,9 @@ void ScatterPlot::DoClusterAnalysis() {
 
       StopRun();
     } else {
-      matrix *m;
       int dataid = GetIDinmxlst(docluster.getDataHash());
       if (dataid > -1) {
-        m = (*mxlst)[dataid]->Matrix();
+        matrix *m = (*mxlst)[dataid]->Matrix();
 
         int ncluster = 2;
         if (docluster.ValidateCluster() == true) {
@@ -1531,13 +1530,12 @@ void ScatterPlot::FindCorrelations() {
   for (uint i = 0; i < coordinates->row; i++) {
     double p1c =
         sqrt(square(coordinates->data[i][0]) + square(coordinates->data[i][1]));
-    double p2c = 0.f, p1p2 = 0.f;
     correl->data[i][i] = disterr->data[i][i] =
         0; // the distance between it self is 0
     for (uint j = i + 1; j < coordinates->row; j++) {
-      p2c = sqrt(square(coordinates->data[j][0]) +
+      double p2c = sqrt(square(coordinates->data[j][0]) +
                  square(coordinates->data[j][1]));
-      p1p2 = sqrt(square(coordinates->data[i][0] - coordinates->data[j][0]) +
+      double p1p2 = sqrt(square(coordinates->data[i][0] - coordinates->data[j][0]) +
                   square(coordinates->data[i][1] - coordinates->data[j][1]));
       correl->data[i][j] = correl->data[j][i] =
           (acos((square(p1c) + square(p2c) - square(p1p2)) / (2 * p1c * p2c))) *
@@ -1816,7 +1814,7 @@ void ScatterPlot::BuildDiagonal() {
   PlotUpdate();
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+ScatterPlot::ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
                          QString xaxsisname_, QString yaxsisname_,
                          QString windowtitle) {
 #ifdef DEBUG
@@ -1897,7 +1895,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
           this, SLOT(ShowContextMenu(const QPoint &)));
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+ScatterPlot::ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
                          QList<MATRIX *> *mxlst_, QStringList xhash_,
                          QStringList yhash_, LABELS *objlabels_,
                          LABELS *varlabels_, QString xaxsisname_,
@@ -1976,7 +1974,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
           this, SLOT(ShowContextMenu(const QPoint &)));
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+ScatterPlot::ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
                          QList<MATRIX *> *mxlst_, QStringList xhash_,
                          QStringList yhash_, LABELS *objlabels_,
                          LABELS *varlabels_, QString xaxsisname_,
@@ -2059,7 +2057,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
           SLOT(ShowContextMenu(const QPoint &)));
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+ScatterPlot::ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
                          QList<MATRIX *> *mxlst_, QStringList xhash_,
                          QStringList yhash_, TABLABELS *vartablabels_,
                          LABELS *objlabels_, LABELS *varlabels_,
@@ -2133,8 +2131,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
           this, SLOT(ShowContextMenu(const QPoint &)));
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
-                         dvector *b_, QList<QStringList> &objname,
+ScatterPlot::ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
+                         dvector *b_, const QList<QStringList> &objname,
                          QString xaxsisname_, QString yaxsisname_,
                          QString windowtitle) {
   ui.setupUi(this);
@@ -2210,8 +2208,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
   }
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
-                         dvector *b_, QList<QStringList> &objname,
+ScatterPlot::ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
+                         dvector *b_, const QList<QStringList> &objname,
                          QList<MATRIX *> *mxlst_, QStringList xhash_,
                          QStringList yhash_, LABELS *objlabels_,
                          LABELS *varlabels_, QString xaxsisname_,
@@ -2300,12 +2298,17 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
   }
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
-                         QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
-                         QStringList xhash_, QStringList yhash_,
-                         LABELS *objlabels_, LABELS *varlabels_,
-                         QString xaxsisname_, QString yaxsisname_,
-                         QString windowtitle, int type_) {
+ScatterPlot::ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
+
+                         const QList<QStringList> &objname,
+
+                         QList<MATRIX *> *mxlst_, QStringList xhash_,
+
+                         QStringList yhash_, LABELS *objlabels_,
+
+                         LABELS *varlabels_, QString xaxsisname_,
+
+                         QString yaxsisname_, QString windowtitle, int type_) {
   ui.setupUi(this);
   type = type_;
   pid = mid = mtype = -1;
@@ -2381,12 +2384,19 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
   }
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
-                         QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
-                         QStringList xhash_, QStringList yhash_,
-                         TABLABELS *vartablabels_, LABELS *objlabels_,
-                         LABELS *varlabels_, QString xaxsisname_,
-                         QString yaxsisname_, QString windowtitle, int type_) {
+ScatterPlot::ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
+
+                         const QList<QStringList> &objname,
+
+                         QList<MATRIX *> *mxlst_, QStringList xhash_,
+
+                         QStringList yhash_, TABLABELS *vartablabels_,
+
+                         LABELS *objlabels_, LABELS *varlabels_,
+
+                         QString xaxsisname_, QString yaxsisname_,
+
+                         QString windowtitle, int type_) {
   ui.setupUi(this);
   type = type_;
   pid = mid = mtype = -1;

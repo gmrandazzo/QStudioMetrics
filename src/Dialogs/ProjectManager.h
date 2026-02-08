@@ -20,7 +20,12 @@
  */
 
 #ifndef PROJECTMANAGER_H
+
 #define PROJECTMANAGER_H
+
+
+
+
 #include "qsmdata.h"
 #include "ui_ProjectManager.h"
 #include <QDialog>

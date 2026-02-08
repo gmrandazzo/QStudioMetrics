@@ -66,8 +66,6 @@ void VariablePlotDialog::GenDataViewAndLabelView(QModelIndex current) {
 }
 
 void VariablePlotDialog::GenVariableViewAndSetHash() {
-  bool status = true;
-
   QModelIndexList indexes = ui.dataView->selectionModel()->selectedIndexes();
 
   if (pid > -1 && projects->keys().contains(pid) == true &&
@@ -89,6 +87,7 @@ void VariablePlotDialog::GenVariableViewAndSetHash() {
 
     // check if the number of variable differ betweeen more matrix/array differ;
     if (nmx > 0) { // are matrix
+      bool status = true;
       vtype = MATRIXDATA;
       auto ncol = projects->value(pid)->getMatrix(hash[0])->Matrix()->col;
       for (int i = 1; i < hash.size(); i++) {

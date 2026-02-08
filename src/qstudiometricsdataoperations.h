@@ -39,13 +39,13 @@ QString SerializeLABELS(LABELS l);
 QStringList DeserializeQStringList(QString serialized_lst);
 QString SerializeQStringList(QStringList lst);
 void DeserializeDVector(QString serialized_dvector, dvector *v);
-QString SerializeDVector(dvector *v);
+QString SerializeDVector(const dvector *v);
 void DeserializeUIVector(QString serialized_dvector, uivector *v);
-QString SerializeUIVector(uivector *v);
+QString SerializeUIVector(const uivector *v);
 void DeserializeMatrix(QString serialized_mx, matrix *mx);
-QString SerializeMatrix(matrix *mx);
+QString SerializeMatrix(const matrix *mx);
 void DeserializeTensor(QString serialized_ar, tensor *ar);
-QString SerializeTensor(tensor *ar);
+QString SerializeTensor(const tensor *ar);
 
 // hash functions
 // Serialze the matrix and return a QCryptographicHash in hexadecimal

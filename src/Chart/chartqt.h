@@ -21,6 +21,8 @@
 
 #ifndef CHARTQT_H
 #define CHARTQT_H
+
+
 #include "graph.h"
 
 #include "databar.h"
@@ -39,8 +41,8 @@ class QToolButton;
 class ChartQt : public QChartView, public Graphs {
   Q_OBJECT
 public:
-  ChartQt(QWidget *parent = 0);
-  ~ChartQt();
+  explicit ChartQt(QWidget *parent = 0);
+  ~ChartQt() override;
   QWidget *weview() override;
   void Plot() override;
   void setAntialiasing(bool antialiasing_);

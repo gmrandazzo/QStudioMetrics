@@ -21,6 +21,8 @@
 
 #ifndef CHART_H
 #define CHART_H
+
+
 // ONLY 2D SCATTER PLOTS
 #include "graph.h"
 #include <QMap>
@@ -31,6 +33,7 @@
 
 #include "datacurve.h"
 #include "datapoint.h"
+#include "plotsettings.h"
 
 class id;
 class id;
@@ -41,8 +44,8 @@ class Chart : public QWidget, public Graphs {
   Q_OBJECT
 
 public:
-  Chart(QWidget *parent = 0);
-  ~Chart();
+  explicit Chart(QWidget *parent = 0);
+  ~Chart() override;
   QWidget *weview() override;
   void Plot() override;
   void setAntialiasing(bool antialiasing_);
@@ -175,26 +178,6 @@ private:
   int yLabelSize;
 
   QMap<QString, QPixmap> m_images;
-};
-
-class PlotSettings {
-public:
-  PlotSettings();
-
-  void scroll(int dx, int dy);
-  void adjust();
-  double spanX() const { return maxX - minX; }
-  double spanY() const { return maxY - minY; }
-
-  double minX;
-  double maxX;
-  int numXTicks;
-  double minY;
-  double maxY;
-  int numYTicks;
-
-private:
-  static void adjustAxis(double &min, double &max, int &numTicks);
 };
 
 #endif

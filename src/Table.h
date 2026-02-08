@@ -51,7 +51,7 @@ public:
   void setObjNames(QStringList labels_);
   QStringList getObjNames() { return labels; }
 
-  void setHorizontalHeaderLabels(QStringList &headerlabels);
+  void setHorizontalHeaderLabels(const QStringList &headerlabels);
   QStringList getHorizontalHeaderLabels() { return header; }
 
   //   bool setData(matrix *m_, int role=Qt::EditRole);

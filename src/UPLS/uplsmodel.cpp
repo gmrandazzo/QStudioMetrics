@@ -35,7 +35,7 @@ UPLSPREDICTION::UPLSPREDICTION() {
   initArray(&py);
   initArray(&r2y);
   initArray(&sdec);
-  id = did = -1;
+  id = did = xid = yid = -1;
 }
 
 UPLSPREDICTION::~UPLSPREDICTION() {

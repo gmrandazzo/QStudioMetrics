@@ -59,8 +59,8 @@ int main(int argc, char *argv[]) {
   QString k;
   path = QString("%1/.QStudioMetrics/").arg(QDir::homePath());
 
-  if (DATAIO::DirExists((char *)path.toStdString().c_str()) != true) {
-    DATAIO::MakeDir((char *)path.toStdString().c_str());
+  if (DATAIO::DirExists(path.toStdString().c_str()) != true) {
+    DATAIO::MakeDir(path.toStdString().c_str());
   }
 
   MainWindow mainWin(path, k);

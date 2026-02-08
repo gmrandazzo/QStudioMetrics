@@ -322,7 +322,7 @@ void Model::setObjNames(QStringList labels_) {
   */
 }
 
-void Model::setHorizontalHeaderLabels(QStringList &headerlabels) {
+void Model::setHorizontalHeaderLabels(const QStringList &headerlabels) {
   header = headerlabels;
 }
 
@@ -406,25 +406,27 @@ void Model::delMatrix() {
 
 void Model::UpdateModel() { emit layoutChanged(); }
 
-Model::Model(QObject *parent) : QAbstractTableModel(parent) {
-  isallocatedmatrix = false;
-  m = NULL;
-  minval = 0.f;
-  maxval = 0.f;
-  variable = 0;
-  mincolor = QColor(Qt::green);
-  maxcolor = QColor(Qt::red);
-}
+Model::Model(QObject *parent)
+    : QAbstractTableModel(parent),
+      m(NULL),
+      isallocatedmatrix(false),
+      mincolor(Qt::green),
+      maxcolor(Qt::red),
+      minval(0.f),
+      maxval(0.f),
+      variable(0) {}
 
-Model::Model(matrix *m_, QObject *parent) : QAbstractTableModel(parent) {
-  isallocatedmatrix = true;
+Model::Model(matrix *m_, QObject *parent)
+    : QAbstractTableModel(parent),
+      m(NULL),
+      isallocatedmatrix(true),
+      mincolor(Qt::green),
+      maxcolor(Qt::red),
+      minval(0.f),
+      maxval(0.f),
+      variable(0) {
   initMatrix(&m);
   MatrixCopy(m_, &m);
-  minval = 0.f;
-  maxval = 0.f;
-  variable = 0;
-  mincolor = QColor(Qt::green);
-  maxcolor = QColor(Qt::red);
   for (uint i = 0; i < m->row; i++) {
     labels << "####";
     id.append(i + 1);
@@ -435,16 +437,15 @@ Model::Model(matrix *m_, QObject *parent) : QAbstractTableModel(parent) {
 }
 
 Model::Model(QList<QStringList> tab_, QObject *parent)
-    : QAbstractTableModel(parent) {
-  isallocatedmatrix = false;
-  m = 0;
-  tab = tab_;
-  minval = 0.f;
-  maxval = 0.f;
-  variable = 0;
-  mincolor = QColor(Qt::green);
-  maxcolor = QColor(Qt::red);
-
+    : QAbstractTableModel(parent),
+      m(0),
+      tab(tab_),
+      isallocatedmatrix(false),
+      mincolor(Qt::green),
+      maxcolor(Qt::red),
+      minval(0.f),
+      maxval(0.f),
+      variable(0) {
   for (int i = 0; i < tab.size(); i++) {
     labels << "####";
     id.append(i + 1);
@@ -783,7 +784,6 @@ void Table::ExportTable() {
     pdialog.setRange(0, 0);
     pdialog.hideCancel();
     pdialog.show();
-    int barvalue = 0;
 
     QString fname = exptabdialog.getFileName();
     QString sep = exptabdialog.getSeparator();
@@ -794,6 +794,7 @@ void Table::ExportTable() {
     std::ofstream out;
     out.open(fname.toStdString().c_str());
     if (out.is_open()) {
+      int barvalue = 0;
       QStringList selectedobj = exptabdialog.getSelectedObjects();
       QStringList selectedvar = exptabdialog.getSelectedVariables();
 
@@ -1069,7 +1070,7 @@ void Table::stopRun() { StopSelectionRun(); }
 void Table::contextMenuEvent(QContextMenuEvent *event) {
   if (model_) {
     QAction *copyAct = 0, *addObjLabel = 0, *addVarLabel = 0, *searchAct = 0,
-            *selectByAct = 0, *highlitingCell = 0, *resethighliting = 0,
+            *selectByAct = 0, *highlightCellAct = 0, *resethighliting = 0,
             *exportTable = 0;
 
     copyAct = new QAction(tr("&Copy"), this);
@@ -1134,11 +1135,11 @@ void Table::contextMenuEvent(QContextMenuEvent *event) {
 
       menu.addSeparator();
 
-      highlitingCell = new QAction(tr("&Highliting Column"), this);
-      highlitingCell->setStatusTip(tr("Highliting Cell from min to max"));
-      connect(highlitingCell, SIGNAL(triggered()), this,
+      highlightCellAct = new QAction(tr("&Highliting Column"), this);
+      highlightCellAct->setStatusTip(tr("Highliting Cell from min to max"));
+      connect(highlightCellAct, SIGNAL(triggered()), this,
               SLOT(highlitingCell()));
-      menu.addAction(highlitingCell);
+      menu.addAction(highlightCellAct);
 
       resethighliting = new QAction(tr("&Reset Highliting"), this);
       resethighliting->setStatusTip(tr("Reset the table Highliting"));
@@ -1158,7 +1159,7 @@ void Table::contextMenuEvent(QContextMenuEvent *event) {
     delete copyAct;
     delete searchAct;
     delete selectByAct;
-    delete highlitingCell;
+    delete highlightCellAct;
     delete resethighliting;
 
     if (addObjLabel != 0) {

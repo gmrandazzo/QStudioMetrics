@@ -20,7 +20,13 @@
  */
 
 #ifndef CLASSDIALOG_H
+
 #define CLASSDIALOG_H
+
+
+
+
+
 
 #include <QDialog>
 #include <QList>

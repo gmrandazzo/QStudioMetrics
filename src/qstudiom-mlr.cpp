@@ -151,8 +151,8 @@ int main(int argc, char **argv) {
       initMatrix(&xdata);
       initMatrix(&ydata);
 
-      DATAIO::ImportMatrix((char *)xinputdata.c_str(), xsep, xdata);
-      DATAIO::ImportMatrix((char *)yinputdata.c_str(), ysep, ydata);
+      DATAIO::ImportMatrix(xinputdata.c_str(), xsep, xdata);
+      DATAIO::ImportMatrix(yinputdata.c_str(), ysep, ydata);
 
       MLRMODEL *m;
       NewMLRModel(&m);
@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
       MLRRegressionStatistics(ydata, m->recalculated_y, m->r2y_model, m->sdec,
                               NULL);
 
-      DATAIO::WriteMLRModel((char *)outputfile.c_str(), m);
+      DATAIO::WriteMLRModel(outputfile.c_str(), m);
 
       DelMLRModel(&m);
       DelMatrix(&xdata);
@@ -176,19 +176,19 @@ int main(int argc, char **argv) {
       matrix *xdata;
       initMatrix(&xdata);
 
-      DATAIO::ImportMatrix((char *)xinputdata.c_str(), xsep, xdata);
+      DATAIO::ImportMatrix(xinputdata.c_str(), xsep, xdata);
 
       MLRMODEL *m;
       NewMLRModel(&m);
-      DATAIO::ImportMLRModel((char *)pathmodel.c_str(), m);
+      DATAIO::ImportMLRModel(pathmodel.c_str(), m);
 
       matrix *predicted_y;
       initMatrix(&predicted_y);
       MLRPredictY(xdata, NULL, m, predicted_y, NULL, NULL, NULL);
 
-      DATAIO::MakeDir((char *)outputfile.c_str());
+      DATAIO::MakeDir(outputfile.c_str());
       string ypred = outputfile + "/Y-Pred.txt";
-      DATAIO::WriteMatrix((char *)ypred.c_str(), predicted_y);
+      DATAIO::WriteMatrix(ypred.c_str(), predicted_y);
 
       DelMatrix(&predicted_y);
       DelMLRModel(&m);
@@ -201,8 +201,8 @@ int main(int argc, char **argv) {
 
       initMatrix(&xdata);
       initMatrix(&ydata);
-      DATAIO::ImportMatrix((char *)xinputdata.c_str(), xsep, xdata);
-      DATAIO::ImportMatrix((char *)yinputdata.c_str(), ysep, ydata);
+      DATAIO::ImportMatrix(xinputdata.c_str(), xsep, xdata);
+      DATAIO::ImportMatrix(yinputdata.c_str(), ysep, ydata);
 
       initDVector(&q2y);
       initDVector(&sdep);
@@ -223,10 +223,10 @@ int main(int argc, char **argv) {
         string sdepfile = pathmodel + "/Validated_sdep.txt";
         string predfile = pathmodel + "/Validated_Predicted_Y.txt";
         string resfile = pathmodel + "/Validated_Predicted_Residuals.txt";
-        DATAIO::WriteDvector((char *)q2yfile.c_str(), q2y);
-        DATAIO::WriteDvector((char *)sdepfile.c_str(), sdep);
-        DATAIO::WriteMatrix((char *)predfile.c_str(), pred);
-        DATAIO::WriteMatrix((char *)resfile.c_str(), predresiduals);
+        DATAIO::WriteDvector(q2yfile.c_str(), q2y);
+        DATAIO::WriteDvector(sdepfile.c_str(), sdep);
+        DATAIO::WriteMatrix(predfile.c_str(), pred);
+        DATAIO::WriteMatrix(resfile.c_str(), predresiduals);
       }
 
       /*

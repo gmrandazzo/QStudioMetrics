@@ -39,7 +39,7 @@
 #include <cstdlib>
 #include <ctime>
 
-bool DirCompressor::SupportedFile(char *fname) {
+bool DirCompressor::SupportedFile(const char *fname) {
   QString fname_ = QString::fromUtf8(fname);
   for (int i = 0; i < fsupported.size(); i++) {
     if (fname_.endsWith(fsupported[i].toLower()) == true ||
@@ -52,7 +52,7 @@ bool DirCompressor::SupportedFile(char *fname) {
   return false;
 }
 
-bool DirCompressor::rmdir(char *dirName) {
+bool DirCompressor::rmdir(const char *dirName) {
   bool result = true;
   QDir dir(QString::fromUtf8(dirName));
 
@@ -86,7 +86,7 @@ void DirCompressor::GenRandomString(QString *s, int len) {
   }
 }
 
-void DirCompressor::WriteFile(QStringList flist, char *path_) {
+void DirCompressor::WriteFile(QStringList flist, const char *path_) {
   QDir path(QString::fromUtf8(path_));
   if (flist.size() > 0 && path.exists()) {
     QString relfilepath =
@@ -144,16 +144,16 @@ void DirCompressor::WriteFile(QStringList flist, char *path_) {
       QFile file(QString::fromUtf8(fname.toUtf8()));
       if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
         return;
-      QTextStream out(&file);
+      QTextStream stream(&file);
       for (int i = 1; i < flist.size(); i++) {
-        out << flist[i];
+        stream << flist[i];
       }
       file.close();
     }
   }
 }
 
-void DirCompressor::ReadFileToString(char *fname, QStringList *filemem) {
+void DirCompressor::ReadFileToString(const char *fname, QStringList *filemem) {
   QString fname_ = QString::fromUtf8(fname);
 
   if (fname_.toLower().endsWith(".jpg") == true ||
@@ -381,8 +381,8 @@ QString("%1/%2").arg(QString::fromUtf8(dir.absolutePath().toUtf8())).arg(tmp);
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
       return -1;
 
-    QTextStream out(&file);
-    out << uncompressedData;
+    QTextStream stream(&file);
+    stream << uncompressedData;
     file.close();
 
     QStringList flist;
@@ -452,8 +452,8 @@ int DirCompressor::decompress() {
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
       return -1;
 
-    QTextStream out(&file);
-    out << uncompressedData;
+    QTextStream stream(&file);
+    stream << uncompressedData;
     file.close();
 
     QStringList flist;

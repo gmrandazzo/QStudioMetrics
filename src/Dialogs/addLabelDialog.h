@@ -31,7 +31,7 @@ class addLabelDialog : public QDialog {
   Q_OBJECT
 
 public:
-  addLabelDialog(QString windowname);
+  explicit addLabelDialog(QString windowname);
   QString getLabel();
 
 private:

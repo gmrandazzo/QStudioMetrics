@@ -186,8 +186,8 @@ int main(int argc, char **argv) {
       initMatrix(&xdata);
       initMatrix(&ydata);
 
-      DATAIO::ImportMatrix((char *)xinputdata.c_str(), xsep, xdata);
-      DATAIO::ImportMatrix((char *)yinputdata.c_str(), ysep, ydata);
+      DATAIO::ImportMatrix(xinputdata.c_str(), xsep, xdata);
+      DATAIO::ImportMatrix(yinputdata.c_str(), ysep, ydata);
 
       PLSMODEL *m;
       NewPLSModel(&m);
@@ -204,7 +204,7 @@ int main(int argc, char **argv) {
         PLSDiscriminantAnalysisStatistics(ydata, m->recalculated_y, NULL,
                                           m->r2y_recalculated, NULL, m->sdec);
 
-      DATAIO::WritePLSModel((char *)outputfile.c_str(), m);
+      DATAIO::WritePLSModel(outputfile.c_str(), m);
 
       DelPLSModel(&m);
       DelMatrix(&xdata);
@@ -216,8 +216,8 @@ int main(int argc, char **argv) {
       initMatrix(&xdata);
       initMatrix(&ydata);
 
-      DATAIO::ImportMatrix((char *)xinputdata.c_str(), xsep, xdata);
-      DATAIO::ImportMatrix((char *)yinputdata.c_str(), ysep, ydata);
+      DATAIO::ImportMatrix(xinputdata.c_str(), xsep, xdata);
+      DATAIO::ImportMatrix(yinputdata.c_str(), ysep, ydata);
 
       PLSMODEL *m;
       NewPLSModel(&m);
@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
 
       if (!pathmodel.empty()) {
         string betasfile = pathmodel + "/betas.txt";
-        DATAIO::WriteDvector((char *)betasfile.c_str(), betas);
+        DATAIO::WriteDvector(betasfile.c_str(), betas);
       }
 
       DelDVector(&betas);
@@ -244,11 +244,11 @@ int main(int argc, char **argv) {
       matrix *xdata;
       initMatrix(&xdata);
 
-      DATAIO::ImportMatrix((char *)xinputdata.c_str(), xsep, xdata);
+      DATAIO::ImportMatrix(xinputdata.c_str(), xsep, xdata);
 
       PLSMODEL *m;
       NewPLSModel(&m);
-      DATAIO::ImportPLSModel((char *)pathmodel.c_str(), m);
+      DATAIO::ImportPLSModel(pathmodel.c_str(), m);
 
       matrix *xscores, *y;
       initMatrix(&xscores);
@@ -257,11 +257,11 @@ int main(int argc, char **argv) {
       PLSScorePredictor(xdata, m, npc, xscores);
       PLSYPredictor(xscores, m, npc, y);
 
-      DATAIO::MakeDir((char *)outputfile.c_str());
+      DATAIO::MakeDir(outputfile.c_str());
       string ptscores = outputfile + "/T-Scores-Pred.txt";
       string ypred = outputfile + "/Y-Pred.txt";
-      DATAIO::WriteMatrix((char *)ptscores.c_str(), xscores);
-      DATAIO::WriteMatrix((char *)ypred.c_str(), y);
+      DATAIO::WriteMatrix(ptscores.c_str(), xscores);
+      DATAIO::WriteMatrix(ypred.c_str(), y);
 
       DelMatrix(&y);
       DelMatrix(&xscores);
@@ -275,8 +275,8 @@ int main(int argc, char **argv) {
 
       initMatrix(&xdata);
       initMatrix(&ydata);
-      DATAIO::ImportMatrix((char *)xinputdata.c_str(), xsep, xdata);
-      DATAIO::ImportMatrix((char *)yinputdata.c_str(), ysep, ydata);
+      DATAIO::ImportMatrix(xinputdata.c_str(), xsep, xdata);
+      DATAIO::ImportMatrix(yinputdata.c_str(), ysep, ydata);
 
       initMatrix(&q2y);
       initMatrix(&sdep);
@@ -305,10 +305,10 @@ int main(int argc, char **argv) {
         string sdepfile = pathmodel + "/Validated_sdep.txt";
         string predfile = pathmodel + "/Validated_Predicted_Y.txt";
         string resfile = pathmodel + "/Validated_Predicted_Residuals.txt";
-        DATAIO::WriteMatrix((char *)q2yfile.c_str(), q2y);
-        DATAIO::WriteMatrix((char *)sdepfile.c_str(), sdep);
-        DATAIO::WriteMatrix((char *)predfile.c_str(), pred);
-        DATAIO::WriteMatrix((char *)resfile.c_str(), predresiduals);
+        DATAIO::WriteMatrix(q2yfile.c_str(), q2y);
+        DATAIO::WriteMatrix(sdepfile.c_str(), sdep);
+        DATAIO::WriteMatrix(predfile.c_str(), pred);
+        DATAIO::WriteMatrix(resfile.c_str(), predresiduals);
       }
 
       cout.setf(ios_base::right, ios_base::adjustfield);

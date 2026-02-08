@@ -72,7 +72,7 @@ public:
   int width() const;
   MarkerType marker() const;
 
-  bool compare(DataPoint &p) {
+  bool compare(const DataPoint &p) {
     if (CHART_FLOAT_EQ(this->x(), p.x(), QEPSILON) &&
         CHART_FLOAT_EQ(this->y(), p.y(), QEPSILON) &&
         CHART_FLOAT_EQ(this->z(), p.z(), QEPSILON)) {

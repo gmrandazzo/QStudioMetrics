@@ -250,9 +250,9 @@ void ProjectManager::AddImagesAsRGB() {
             rowname.remove(".xpm");
             imgname.append(rowname);
 
-            for (int row = 1; row < img.height() + 1; ++row) {
+            for (int imgRow = 1; imgRow < img.height() + 1; ++imgRow) {
               for (int col = 1; col < img.width() + 1; ++col) {
-                QColor clrCurrent(img.pixel(row, col));
+                QColor clrCurrent(img.pixel(imgRow, col));
                 imgmx.last().append(clrCurrent.red() + clrCurrent.green() +
                                     clrCurrent.blue());
               }

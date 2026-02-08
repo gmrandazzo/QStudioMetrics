@@ -164,8 +164,8 @@ SelectionStyleColor::SelectionStyleColor() : QDialog() {
   connect(ui.cancelButton, SIGNAL(clicked(bool)), SLOT(Cancel()));
 }
 
-SelectionStyleColor::SelectionStyleColor(QStringList &xvarname_,
-                                         QStringList &yvarname_)
+SelectionStyleColor::SelectionStyleColor(const QStringList &xvarname_,
+                                         const QStringList &yvarname_)
     : QDialog() {
   ui.setupUi(this);
 
@@ -232,9 +232,10 @@ SelectionStyleColor::SelectionStyleColor(QStringList &xvarname_,
   connect(ui.variablecolor, SIGNAL(clicked(bool)), SLOT(CheckUncheck()));
 }
 
-SelectionStyleColor::SelectionStyleColor(QStringList &xvarname_,
-                                         QStringList &yvarname_, int &xlevels_,
-                                         int &ylevels_)
+SelectionStyleColor::SelectionStyleColor(const QStringList &xvarname_,
+                                         const QStringList &yvarname_,
+                                         const int &xlevels_,
+                                         const int &ylevels_)
     : QDialog() {
   ui.setupUi(this);
 
