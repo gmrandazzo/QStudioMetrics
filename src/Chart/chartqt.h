@@ -108,6 +108,7 @@ public slots:
   void showLabels();
   void zoomIn();
   void zoomOut();
+  void recentre();
   void slotPointHoverd(const QPointF &point, bool state);
   void slotPointClicked(const QPointF &point);
   void slotBarHovered(bool status, int index, QBarSet *barset);
@@ -124,6 +125,7 @@ protected:
 private:
   QToolButton *zoomInButton;
   QToolButton *zoomOutButton;
+  QToolButton *recentreButton;
 
   /*Divide, conqueror method for selection/unselection */
   void refreshPlot();

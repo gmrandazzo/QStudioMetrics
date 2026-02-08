@@ -61,9 +61,13 @@ bool ChartQt::viewportEvent(QEvent *event) {
 
 void ChartQt::resizeEvent(QResizeEvent *event) {
   QChartView::resizeEvent(event);
-  int x = width() - (zoomInButton->width() + zoomOutButton->width() + 10);
+  int spacing = 5;
+  int x = width() - (zoomInButton->width() + zoomOutButton->width() + recentreButton->width() + spacing * 3);
   zoomInButton->move(x, 5);
-  zoomOutButton->move(x + zoomInButton->width() + 5, 5);
+  x += zoomInButton->width() + spacing;
+  zoomOutButton->move(x, 5);
+  x += zoomOutButton->width() + spacing;
+  recentreButton->move(x, 5);
 }
 
 void ChartQt::mousePressEvent(QMouseEvent *event) {
@@ -165,23 +169,9 @@ void ChartQt::mouseReleaseEvent(QMouseEvent *event) {
   }
 
   if (event->button() == Qt::MiddleButton) {
-
     chart()->zoomIn();
-    // zoom and store the zoom domain region
-    /*
-    zoom_region = this->sceneRect();
-    or ..
-    zoom_region.setX(minX);
-    zoom_region.setY(maxY);
-    zoom_region.setWidth(maxX-minX);
-    zoom_region.setHeight(maxY-minY);
-
-    qDebug() << zoom_region;
-    */
   } else if (event->button() == Qt::LeftButton) {
-    // select
-    /*qDebug() << "Select Objects..";
-    qDebug() << minX << maxX << minY << maxY;*/
+    // select points
     for (int i = 0; i < p.size(); i++) {
       if (p[i]->x() > minX && p[i]->x() < maxX && p[i]->y() > minY &&
           p[i]->y() < maxY) {
@@ -194,7 +184,32 @@ void ChartQt::mouseReleaseEvent(QMouseEvent *event) {
         continue;
       }
     }
+
+    // select bars
+    QBarCategoryAxis *axisX =
+        qobject_cast<QBarCategoryAxis *>(chart()->axes(Qt::Horizontal).at(0));
+    if (axisX) {
+        for (int i = 0; i < b.size(); i++) {
+            for (int j = 0; j < b[i]->x().size(); j++) {
+                // For categorical axis, the values are indices 0, 1, 2...
+                // We check if the index j is within [minX, maxX] 
+                // and the value y[j] is within [minY, maxY]
+                if (j >= minX - 0.5 && j <= maxX + 0.5 &&
+                    ((b[i]->y()[j] >= minY && b[i]->y()[j] <= maxY) ||
+                     (b[i]->y()[j] <= minY && b[i]->y()[j] >= maxY))) {
+                    // Note: DataBar selection might need to be per-bar if we want to be precise,
+                    // but the current DataBar class seems to have a single selection state.
+                    // If we want to support per-bar selection we might need to change DataBar.
+                    // For now let's toggle the whole DataBar if any of its bars are selected.
+                    b[i]->setSelection(!b[i]->isSelected());
+                    break; // break inner loop if series is selected
+                }
+            }
+        }
+    }
     refreshPlot();
+  } else if (event->button() == Qt::RightButton) {
+      // Panning handled in mouseMove, do nothing here to avoid zoomOut
   } else {
     chart()->zoomOut();
   }
@@ -206,24 +221,20 @@ void ChartQt::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 void ChartQt::wheelEvent(QWheelEvent *event) {
-  /*
-  QPoint numDegrees = event->angleDelta() / 8;
-  qreal rVal = std::pow(0.999, numDegrees.x());
-  QRectF oPlotAreaRect = chart()->plotArea();
-
-  oPlotAreaRect.setWidth(oPlotAreaRect.width() * rVal);
-  oPlotAreaRect.setHeight(oPlotAreaRect.height() * rVal);
-
-  auto const widgetPos = event->globalPosition();
-  auto const scenePos = mapToScene(QPoint(static_cast<int>(widgetPos.x()),
-  static_cast<int>(widgetPos.y()))); auto const chartItemPos =
-  chart()->mapFromScene(scenePos); auto const valueGivenSeries =
-  chart()->mapToValue(chartItemPos); qDebug() << valueGivenSeries;
-  oPlotAreaRect.moveCenter(valueGivenSeries);
-  chart()->zoomIn(oPlotAreaRect);
-  QChartView::wheelEvent(event);
-  */
-  QChartView::wheelEvent(event);
+    qreal factor = event->angleDelta().y() > 0 ? 1.1 : 0.9;
+    
+    QRectF rect = chart()->plotArea();
+    QPointF mousePos = event->position();
+    
+    // Zoom around mouse position
+    qreal width = rect.width() / factor;
+    qreal height = rect.height() / factor;
+    qreal x = mousePos.x() - (mousePos.x() - rect.left()) / factor;
+    qreal y = mousePos.y() - (mousePos.y() - rect.top()) / factor;
+    
+    chart()->zoomIn(QRectF(x, y, width, height));
+    
+    event->accept();
 }
 
 void ChartQt::keyPressEvent(QKeyEvent *event) {
@@ -528,6 +539,11 @@ void ChartQt::drawBars() {
       //                set->color(b[i]->color());
     }
     // set->color(b[i]->color());
+    if (b[i]->isSelected()) {
+        set->setPen(QPen(Qt::red, 2.0));
+    } else {
+        set->setPen(QPen(Qt::transparent, 0));
+    }
     series->append(set);
     barsList.append(set);
     // void addBars(QStringList x, QVector<qreal> y, QStringList text, QColor
@@ -557,6 +573,11 @@ void ChartQt::updateBars() {
   for (int i = 0; i < b.size(); i++) {
     for (int j = 0; j < b[i]->x().size(); j++) {
       barsList[i]->replace(j, b[i]->y()[j]);
+    }
+    if (b[i]->isSelected()) {
+        barsList[i]->setPen(QPen(Qt::red, 2.0));
+    } else {
+        barsList[i]->setPen(QPen(Qt::transparent, 0));
     }
      // barsList[i]->color(b[i]->color());
   }
@@ -859,6 +880,8 @@ void ChartQt::zoomIn() { chart()->zoomIn(); }
 
 void ChartQt::zoomOut() { chart()->zoomOut(); }
 
+void ChartQt::recentre() { chart()->zoomReset(); }
+
 ChartQt::ChartQt(QWidget *parent)
     : QChartView(new QChart(), parent), m_isTouching(false) {
   // setRubberBand(QChartView::RectangleRubberBand); Disable default zoom in/out
@@ -874,6 +897,12 @@ ChartQt::ChartQt(QWidget *parent)
   zoomOutButton->setIcon(QIcon(":/images/zoomout.png"));
   zoomOutButton->adjustSize();
   connect(zoomOutButton, SIGNAL(clicked()), this, SLOT(zoomOut()));
+
+  recentreButton = new QToolButton(this);
+  recentreButton->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
+  recentreButton->setToolTip(tr("Recentre Plot"));
+  recentreButton->adjustSize();
+  connect(recentreButton, SIGNAL(clicked()), this, SLOT(recentre()));
 
   m_valueLabel = new QLabel(this);
   m_valueLabel->setStyleSheet(

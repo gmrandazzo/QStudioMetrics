@@ -36,6 +36,29 @@ using namespace std;
 
 #include "scientific.h"
 
+bool ValidateFilename(const std::string &filename) {
+  if (filename.empty())
+    return false;
+  // Prevent directory traversal and usage of absolute paths or subdirectories
+  // for outbins
+  if (filename.find("..") != std::string::npos ||
+      filename.find('/') != std::string::npos ||
+      filename.find('\\') != std::string::npos) {
+    return false;
+  }
+  return true;
+}
+
+bool ValidatePath(const std::string &path) {
+  if (path.empty())
+    return false;
+  // Prevent directory traversal and absolute paths
+  if (path.find("..") != std::string::npos || path[0] == '/') {
+    return false;
+  }
+  return true;
+}
+
 void help(char **argv) {
   std::cout << "Usage" << endl;
   std::cout
@@ -72,19 +95,32 @@ int main(int argc, char **argv) {
     for (int i = 0; i < argc; i++) {
       if (strcmp(argv[i], "-input") == 0 || strcmp(argv[i], "-i") == 0) {
         if (i + 1 < argc) {
+          if (!ValidatePath(argv[i + 1])) {
+            std::cerr << "Invalid input path: " << argv[i + 1] << std::endl;
+            exit(1);
+          }
           inputdata = argv[i + 1];
         }
       }
 
       if (strcmp(argv[i], "-out") == 0 || strcmp(argv[i], "-o") == 0) {
         if (i + 1 < argc) {
+          if (!ValidatePath(argv[i + 1])) {
+            std::cerr << "Invalid output path: " << argv[i + 1] << std::endl;
+            exit(1);
+          }
           outhgm = argv[i + 1];
         }
       }
 
       if (strcmp(argv[i], "-outbins") == 0 || strcmp(argv[i], "-b") == 0) {
-        if (i + 1 < argc)
+        if (i + 1 < argc) {
+          if (!ValidateFilename(argv[i + 1])) {
+            std::cerr << "Invalid outbins path: " << argv[i + 1] << std::endl;
+            exit(1);
+          }
           outbins = argv[i + 1];
+        }
       }
 
       if (strcmp(argv[i], "-grid") == 0 || strcmp(argv[i], "-g") == 0) {
@@ -95,6 +131,10 @@ int main(int argc, char **argv) {
 
       if (strcmp(argv[i], "-hgminput") == 0 || strcmp(argv[i], "-h") == 0) {
         if (i + 1 < argc) {
+          if (!ValidatePath(argv[i + 1])) {
+            std::cerr << "Invalid hgm input path: " << argv[i + 1] << std::endl;
+            exit(1);
+          }
           inhgm = argv[i + 1];
         }
       }
@@ -170,6 +210,11 @@ int main(int argc, char **argv) {
       /* Store the inverse covariance matrix
       DATAIO::WriteMatrix((char*)invcov_dir.c_str(), invcov);*/
 
+      if (!ValidateFilename(outbins)) {
+        std::cerr << "Invalid output bins file name: " << outbins << std::endl;
+        exit(1);
+      }
+
       ofstream fbins;
       fbins.open(outbins);
       for (size_t i = 0; i < bins_id->nobj; i++) {
@@ -244,6 +289,11 @@ int main(int argc, char **argv) {
       DelDVector(&mdst);
       */
       HyperGridMapObjects(data, hgm, &bins_id);
+
+      if (!ValidateFilename(outbins)) {
+        std::cerr << "Invalid output bins file name: " << outbins << std::endl;
+        exit(1);
+      }
 
       ofstream fbins;
       fbins.open(outbins);
