@@ -1069,17 +1069,17 @@ void Table::stopRun() { StopSelectionRun(); }
 
 void Table::contextMenuEvent(QContextMenuEvent *event) {
   if (model_) {
+    QMenu menu(this);
     QAction *copyAct = 0, *addObjLabel = 0, *addVarLabel = 0, *searchAct = 0,
             *selectByAct = 0, *highlightCellAct = 0, *resethighliting = 0,
             *exportTable = 0;
 
-    copyAct = new QAction(tr("&Copy"), this);
+    copyAct = new QAction(tr("&Copy"), &menu);
     copyAct->setShortcuts(QKeySequence::Copy);
     copyAct->setStatusTip(tr("Copy the current selection's contents to the "
                              "clipboard"));
     connect(copyAct, SIGNAL(triggered()), this, SLOT(copy()));
 
-    QMenu menu(this);
     menu.addAction(copyAct);
     menu.addSeparator();
 
@@ -1091,19 +1091,10 @@ void Table::contextMenuEvent(QContextMenuEvent *event) {
     auto selected =
         ((ceil(indexessize / (int)(model()->Matrix()->col + 1))) +
          1); //(ceil(indexessize / (int)(model()->columnCount()+1)))+1)
-    /*
-    qDebug() << "indexes " << indexessize;
-    qDebug() << "col" << colindexessize << " " << (int)model()->Matrix()->col;
-    qDebug() << "row" << rowindexessize;
-    qDebug() << "Selected: " << selected;
-    qDebug() << "#############################################";
-    */
 
     if (objlabels != 0) {
-      //     if(((ceil(indexessize / (int)(model()->Matrix()->col+1)))+1) ==
-      //     rowindexessize && rowindexessize > 0){
       if (selected == rowindexessize && rowindexessize > 0) {
-        addObjLabel = new QAction(("&Add Object Label"), this);
+        addObjLabel = new QAction(("&Add Object Label"), &menu);
         addObjLabel->setStatusTip(tr("Add Label to selected objects"));
         connect(addObjLabel, SIGNAL(triggered()), this, SLOT(addObjectLabel()));
         menu.addAction(addObjLabel);
@@ -1112,7 +1103,7 @@ void Table::contextMenuEvent(QContextMenuEvent *event) {
 
     if (varlabels != 0) {
       if (colindexessize > 0) {
-        addVarLabel = new QAction(("&Add Variable Label"), this);
+        addVarLabel = new QAction(("&Add Variable Label"), &menu);
         addVarLabel->setStatusTip(tr("Add Label to selected Variables"));
         connect(addVarLabel, SIGNAL(triggered()), this,
                 SLOT(addVariableLabel()));
@@ -1121,13 +1112,13 @@ void Table::contextMenuEvent(QContextMenuEvent *event) {
     }
 
     if (model()->Matrix() != 0) {
-      searchAct = new QAction(tr("&Search by column.."), this);
+      searchAct = new QAction(tr("&Search by column.."), &menu);
       searchAct->setStatusTip(tr("Search objects in the table by column..."));
       connect(searchAct, SIGNAL(triggered()), this, SLOT(searchBy()));
       menu.addAction(searchAct);
 
       if (varlabels != 0) {
-        selectByAct = new QAction(tr("&Select objects by"), this);
+        selectByAct = new QAction(tr("&Select objects by"), &menu);
         selectByAct->setStatusTip(tr("Select objects in the table by..."));
         connect(selectByAct, SIGNAL(triggered()), this, SLOT(selectBy()));
         menu.addAction(selectByAct);
@@ -1135,13 +1126,13 @@ void Table::contextMenuEvent(QContextMenuEvent *event) {
 
       menu.addSeparator();
 
-      highlightCellAct = new QAction(tr("&Highliting Column"), this);
+      highlightCellAct = new QAction(tr("&Highliting Column"), &menu);
       highlightCellAct->setStatusTip(tr("Highliting Cell from min to max"));
       connect(highlightCellAct, SIGNAL(triggered()), this,
               SLOT(highlitingCell()));
       menu.addAction(highlightCellAct);
 
-      resethighliting = new QAction(tr("&Reset Highliting"), this);
+      resethighliting = new QAction(tr("&Reset Highliting"), &menu);
       resethighliting->setStatusTip(tr("Reset the table Highliting"));
       connect(resethighliting, SIGNAL(triggered()), this,
               SLOT(resetHighliting()));
@@ -1149,38 +1140,22 @@ void Table::contextMenuEvent(QContextMenuEvent *event) {
       menu.addSeparator();
     }
 
-    exportTable = new QAction(tr("&Export table..."), this);
+    exportTable = new QAction(tr("&Export table..."), &menu);
     exportTable->setStatusTip(tr("Export table to file..."));
     connect(exportTable, SIGNAL(triggered()), this, SLOT(ExportTable()));
     menu.addAction(exportTable);
 
     menu.exec(event->globalPos());
-
-    delete copyAct;
-    delete searchAct;
-    delete selectByAct;
-    delete highlightCellAct;
-    delete resethighliting;
-
-    if (addObjLabel != 0) {
-      delete addObjLabel;
-    }
-
-    if (addVarLabel != 0) {
-      delete addVarLabel;
-    }
   } else {
+    QMenu menu(this);
     QAction *saveAsImage = 0;
 
-    saveAsImage = new QAction(tr("&Save As Image..."), this);
+    saveAsImage = new QAction(tr("&Save As Image..."), &menu);
     saveAsImage->setStatusTip(tr("Save the table as image."));
     connect(saveAsImage, SIGNAL(triggered()), this, SLOT(SaveAsImage()));
 
-    QMenu menu(this);
     menu.addAction(saveAsImage);
     menu.exec(event->globalPos());
-
-    delete saveAsImage;
   }
 }
 

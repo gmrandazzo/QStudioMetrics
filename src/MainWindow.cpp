@@ -4312,10 +4312,9 @@ void MainWindow::closeEvent(QCloseEvent *bar) {
 void MainWindow::closeMDI(const int &id) {
   foreach (QMdiSubWindow *window, ui.mdiArea->subWindowList()) {
     MDIChild *mdiChild = qobject_cast<MDIChild *>(window);
-    if (mdiChild->getWindowID() == id) {
-      delete mdiChild;
-    } else
-      continue;
+    if (mdiChild && mdiChild->getWindowID() == id) {
+      mdiChild->close();
+    }
   }
 }
 

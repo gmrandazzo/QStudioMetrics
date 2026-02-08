@@ -115,10 +115,6 @@ Chart::~Chart() {
   for (int i = 0; i < p.size(); i++)
     delete p[i];
   p.clear();
-
-  delete zoomInButton;
-  delete zoomOutButton;
-  delete recentreButton;
 }
 
 void Chart::recentre() {
