@@ -19,14 +19,14 @@ jobs:
 
       - name: Run cppcheck
         run: |
-          cppcheck --enable=all
-            --checkers-report=report.txt 
-            --check-level=exhaustive 
-            --suppress=missingIncludeSystem 
-            --suppress=unusedFunction 
-            --suppress=missingInclude 
-            --suppress=unknownMacro 
-            --error-exitcode=1 
+          cppcheck --enable=all \
+            --checkers-report=report.txt \
+            --check-level=exhaustive \
+            --suppress=missingIncludeSystem \
+            --suppress=unusedFunction \
+            --suppress=missingInclude \
+            --suppress=unknownMacro \
+            --error-exitcode=1 \
             src
 
       - name: Upload report
