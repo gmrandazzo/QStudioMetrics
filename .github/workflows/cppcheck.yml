@@ -2,9 +2,9 @@ name: Cppcheck Analysis
 
 on:
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
   push:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
 
 jobs:
   cppcheck:
