@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Core data structure or utility for data.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef QSMDATA_H
 #define QSMDATA_H
 
@@ -221,7 +242,7 @@ public:
   QString &getProjectPath() { return projectpath; }
   void ImportFileMatrix(const FILEDATA &f);
   void ImportFileArray(const FILEDATA &f);
-  bool isSQLDatabase(QString sqlfile);
+  static bool isSQLDatabase(QString sqlfile);
   void OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
                    int *mid_, QStringList *log);
   QString SaveSQLData(QString dbName);
@@ -319,8 +340,8 @@ public:
                        const QString &destinationDir);
 
 private:
-  void saveMatrixToSQL(QSqlQuery *query, MATRIX *m);
-  void saveArrayToSQL(QSqlQuery *query, ARRAY *a);
+  static void saveMatrixToSQL(QSqlQuery *query, MATRIX *m);
+  static void saveArrayToSQL(QSqlQuery *query, ARRAY *a);
 
   QString projectpath;
   QString projectname;

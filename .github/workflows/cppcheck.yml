@@ -1,0 +1,37 @@
+name: Cppcheck Analysis
+
+on:
+  pull_request:
+    branches: [ main, master, develop ]
+  push:
+    branches: [ main, master, develop ]
+
+jobs:
+  cppcheck:
+    name: Run cppcheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck
+
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=all \
+            --checkers-report=report.txt \
+            --check-level=exhaustive \
+            --suppress=missingIncludeSystem \
+            --suppress=unusedFunction \
+            --suppress=missingInclude \
+            --suppress=unknownMacro \
+            --error-exitcode=1 \
+            src
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cppcheck-report
+          path: report.txt

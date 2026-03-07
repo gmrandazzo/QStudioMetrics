@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Dialog for mergedata operations.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "MergeDataDialog.h"
 
 // //
@@ -7,12 +28,13 @@
  * but share same object names (firstcol_name)
  */
 
+#include <QHash>
+
 void MergeDataDialog::MergeDialogPrepare() {
   ui.okButton->hide();
   ui.cancelButton->hide();
   ui.progressBar->show();
-  ui.progressBar->setMinimum(0);
-  ui.progressBar->setMaximum(100);
+  ui.progressBar->setRange(0, 100);
   ui.progressBar->setValue(0);
   ui.listView->setSelectionMode(QAbstractItemView::NoSelection);
   ui.listView_2->setSelectionMode(QAbstractItemView::NoSelection);
@@ -22,145 +44,132 @@ void MergeDataDialog::MergeDialogPrepare() {
 }
 
 void MergeDataDialog::MergeType0() {
-  // Merge and Exit
-  /* Create a map of objectname and a list of matrix id, and row position */
-  QMap<QString, QList<QPair<int, int>>> objmap;
+  // Merge along rows (different variables, shared objects)
+  QHash<QString, QList<QPair<int, int>>> objmap;
   QStringList varnames;
-  for (int i = 0; i < mxids.size(); i++) {
-    QApplication::processEvents();
-    for (int j = 0;
-         j < projects->value(pid)->getMatrix(mxids[i])->getObjName().size();
-         j++) {
-      QString objname =
-          projects->value(pid)->getMatrix(mxids[i])->getObjName()[j];
-      QPair<int, int> p;
-      p.first = i;
-      p.second = j;
-      objmap[objname].append(p);
+  
+  DATA* project = projects->value(pid);
+  for (int i = 0; i < mxids.size(); ++i) {
+    MATRIX* currentMx = project->getMatrix(mxids[i]);
+    const QStringList& objNames = currentMx->getObjName();
+    const QStringList& varNames = currentMx->getVarName();
+
+    for (int j = 0; j < objNames.size(); ++j) {
+      objmap[objNames[j]].append({i, j});
     }
-    /* we start from 1 because at 0 there is the standard sample name
-     * firstcol_name */
-    for (int j = 1;
-         j < projects->value(pid)->getMatrix(mxids[i])->getVarName().size();
-         j++) {
-      varnames.append(
-          projects->value(pid)->getMatrix(mxids[i])->getVarName()[j]);
+    
+    // Add variables, excluding the first column (Object Names)
+    for (int j = 1; j < varNames.size(); ++j) {
+      varnames.append(varNames[j]);
     }
   }
 
-  /*
-   * Remove items that do not contains the row object in all the matrix in
-   * question
-   */
-  int i = 0;
-  while (i < objmap.size()) {
-    QApplication::processEvents();
-    if (objmap.values()[i].size() == mxids.size()) {
-      i++;
-    } else {
-      QString key = objmap.keys()[i];
-      objmap.remove(key);
+  // Filter objects that don't exist in all matrices
+  QStringList intersectionKeys;
+  for (auto it = objmap.begin(); it != objmap.end(); ++it) {
+    if (it.value().size() == mxids.size()) {
+      intersectionKeys.append(it.key());
     }
   }
-  ui.progressBar->setMaximum(objmap.size() + 1);
+  
+  if (intersectionKeys.isEmpty()) return;
 
-  /*Slow step...*/
-  mx->MatrixResize(objmap.size(), varnames.size());
-  for (int i = 0; i < objmap.size(); i++) {
+  ui.progressBar->setMaximum(intersectionKeys.size());
+  mx->MatrixResize(intersectionKeys.size(), varnames.size());
+  QStringList finalObjNames;
+  finalObjNames.reserve(intersectionKeys.size());
+
+  for (int i = 0; i < intersectionKeys.size(); ++i) {
+    if (i % 100 == 0) QApplication::processEvents();
     ui.progressBar->setValue(i + 1);
-    QApplication::processEvents();
-    mx->getObjName() << objmap.keys()[i];
-    int c = 0;
-    for (int k = 0; k < objmap.values()[i].size(); k++) {
-      int mxpos = objmap.values()[i][k].first;
-      int mxrow = objmap.values()[i][k].second;
-      for (int j = 1;
-           j < projects->value(pid)->getMatrix(mxpos)->getVarName().size();
-           j++) {
-        mx->Matrix()->data[i][c] =
-            projects->value(pid)->getMatrix(mxpos)->Matrix()->data[mxrow]
-                                                                  [j - 1];
-        c += 1;
+    
+    const QString& key = intersectionKeys[i];
+    finalObjNames.append(key);
+    
+    int current_col = 0;
+    const auto& occurrences = objmap[key];
+    for (const auto& pair : occurrences) {
+      int mxIdx = pair.first;
+      int rowIdx = pair.second;
+      matrix* srcMx = project->getMatrix(mxids[mxIdx])->Matrix();
+      
+      for (uint j = 0; j < srcMx->col; ++j) {
+        setMatrixValue(mx->Matrix(), i, current_col++, getMatrixValue(srcMx, rowIdx, j));
       }
     }
   }
 
-  mx->getVarName().append(firstcol_name);
-  mx->getVarName().append(varnames);
+  mx->getObjName() = finalObjNames;
+  QStringList finalVarNames;
+  finalVarNames.reserve(varnames.size() + 1);
+  finalVarNames.append(firstcol_name);
+  finalVarNames.append(varnames);
+  mx->getVarName() = finalVarNames;
   mx->setName(ui.dataname->text());
 }
 
-/*
- * Merge along columns
- * This means that the two matrix share the
- * same columns
- */
 void MergeDataDialog::MergeType1() {
-  QStringList varnames;
-  QStringList objnames;
-  for (int i = 0; i < mxids.size(); i++) {
-    objnames << projects->value(pid)->getMatrix(mxids[i])->getObjName();
-    /* we start from 1 because at 0 there is the standard sample name
-     * firstcol_name */
-    for (int j = 1;
-         j < projects->value(pid)->getMatrix(mxids[i])->getVarName().size();
-         j++) {
-      varnames.append(
-          projects->value(pid)->getMatrix(mxids[i])->getVarName()[j]);
-    }
-    QApplication::processEvents();
-  }
-  varnames.removeDuplicates();
+  // Merge along columns (same variables, shared columns)
+  QStringList allObjNames;
+  QStringList candidateVarnames;
+  DATA* project = projects->value(pid);
 
-  QMap<QString, QList<int>> varmap;
-  for (int i = 0; i < varnames.size(); i++) {
-    QList<int> cids;
-    for (int j = 0; j < mxids.size(); j++) {
-      /*-1 because first name of getVarName() is firstcol_name */
-      int vindx =
-          projects->value(pid)->getMatrix(mxids[j])->getVarName().indexOf(
-              varnames[i]) -
-          1;
-      if (vindx > -1) {
-        cids.append(vindx);
+  for (int mId : mxids) {
+    MATRIX* m = project->getMatrix(mId);
+    allObjNames << m->getObjName();
+    candidateVarnames << m->getVarName();
+  }
+  candidateVarnames.removeDuplicates();
+  candidateVarnames.removeAll(firstcol_name);
+
+  struct VarMapping {
+    QString name;
+    QVector<int> colIndices;
+  };
+  QVector<VarMapping> validMappings;
+
+  for (const QString& vName : candidateVarnames) {
+    QVector<int> indices;
+    bool foundInAll = true;
+    for (int mId : mxids) {
+      int idx = project->getMatrix(mId)->getVarName().indexOf(vName);
+      if (idx > 0) { // Found and not the first column
+        indices.append(idx - 1);
       } else {
-        break; // Not all matrix contains this column and we can skip
-      }
-      if (cids.size() == mxids.size()) {
-        varmap[varnames[i]] = cids;
-      } else {
-        continue;
+        foundInAll = false;
+        break;
       }
     }
-    QApplication::processEvents();
-  }
-
-  mx->MatrixResize(objnames.size(), varmap.size());
-  int r = 0;
-  for (int k = 0; k < mxids.size(); k++) {
-    for (int i = 0;
-         i < projects->value(pid)->getMatrix(mxids[k])->getObjName().size();
-         i++) {
-      for (int j = 0; j < varmap.size(); j++) {
-        QString key = varmap.keys()[j];
-        int c = varmap[key][k];
-        mx->Matrix()->data[r][j] =
-            projects->value(pid)->getMatrix(mxids[k])->Matrix()->data[i][c];
-      }
-      r++;
+    if (foundInAll) {
+      validMappings.append({vName, indices});
     }
   }
 
-  mx->getObjName().append(objnames);
-  mx->getVarName().append(firstcol_name);
-  for (int j = 0; j < varmap.size(); j++) {
-    mx->getVarName().append(varmap.keys()[j]);
+  if (validMappings.isEmpty()) return;
+
+  mx->MatrixResize(allObjNames.size(), validMappings.size());
+  int currentRow = 0;
+  for (int k = 0; k < mxids.size(); ++k) {
+    matrix* src = project->getMatrix(mxids[k])->Matrix();
+    for (uint i = 0; i < src->row; ++i) {
+      if (currentRow % 100 == 0) QApplication::processEvents();
+      for (int j = 0; j < validMappings.size(); ++j) {
+        setMatrixValue(mx->Matrix(), currentRow, j, getMatrixValue(src, i, validMappings[j].colIndices[k]));
+      }
+      currentRow++;
+    }
   }
+
+  mx->getObjName() = allObjNames;
+  QStringList finalVarNames;
+  finalVarNames.reserve(validMappings.size() + 1);
+  finalVarNames.append(firstcol_name);
+  for (const auto& mapping : validMappings) finalVarNames.append(mapping.name);
+  mx->getVarName() = finalVarNames;
   mx->setName(ui.dataname->text());
 }
 
 void MergeDataDialog::OK() {
-  // Merge and Exit
   MergeDialogPrepare();
   if (ui.mergematchcol->isChecked()) {
     MergeType1();
@@ -173,84 +182,69 @@ void MergeDataDialog::OK() {
 void MergeDataDialog::genListView() {
   if (pid != -1) {
     tab2->clear();
-    if (projects->value(pid)->MatrixCount() > 0) {
-      for (int i = 0; i < projects->value(pid)->MatrixCount(); i++) {
-        QList<QStandardItem *> tab2matrix;
-        tab2matrix.append(
-            new QStandardItem(projects->value(pid)->getMatrix(i)->getName()));
-        tab2->appendRow(tab2matrix);
-      }
+    DATA* project = projects->value(pid);
+    for (int i = 0; i < project->MatrixCount(); ++i) {
+      tab2->appendRow(new QStandardItem(project->getMatrix(i)->getName()));
     }
-  } else {
-    return;
   }
 }
 
 void MergeDataDialog::set_unset_MatrixID(QModelIndex current) {
   if (current.isValid()) {
-    int indx = mxids.indexOf(current.row());
+    int row = current.row();
+    int indx = mxids.indexOf(row);
     if (indx > -1) {
       mxids.removeAt(indx);
-      EnableOKButton();
     } else {
-      mxids.append(current.row());
-      EnableOKButton();
+      mxids.append(row);
     }
-  } else {
     EnableOKButton();
-    return;
   }
 }
 
 void MergeDataDialog::setProjectID(QModelIndex current) {
   if (current.isValid()) {
     pid = pids[current.row()];
+    mxids.clear(); // Clear matrix selection when project changes
     genListView();
+    EnableOKButton();
   } else {
     pid = -1;
   }
 }
 
 void MergeDataDialog::EnableOKButton() {
-  if (mxids.size() > 1 && !ui.dataname->text().isEmpty()) {
-    ui.okButton->setEnabled(true);
-  } else {
-    ui.okButton->setEnabled(false);
-  }
+  ui.okButton->setEnabled(mxids.size() > 1 && !ui.dataname->text().trimmed().isEmpty());
 }
 
-MergeDataDialog::MergeDataDialog(PROJECTS *projects_) {
+MergeDataDialog::MergeDataDialog(PROJECTS *projects_) : QDialog() {
   ui.setupUi(this);
   projects = projects_;
   mx = new MATRIX();
-  tab1 = new QStandardItemModel();
-  tab2 = new QStandardItemModel();
+  pid = -1;
+  
+  tab1 = new QStandardItemModel(this);
+  tab2 = new QStandardItemModel(this);
   ui.listView->setModel(tab1);
   ui.listView_2->setModel(tab2);
   ui.progressBar->hide();
 
-  QList<QStandardItem *> projectsname;
-  for (int i = 0; i < projects->keys().size(); i++) {
-    projectsname.append(new QStandardItem(
-        projects->value(projects->keys()[i])->getProjectName()));
-    pids.append(projects->keys()[i]);
+  for (int key : projects->keys()) {
+    tab1->appendRow(new QStandardItem(projects->value(key)->getProjectName()));
+    pids.append(key);
   }
-  tab1->appendColumn(projectsname);
 
-  connect(ui.listView->selectionModel(),
-          SIGNAL(currentChanged(QModelIndex, QModelIndex)),
-          SLOT(setProjectID(QModelIndex)));
-  connect(ui.listView_2->selectionModel(),
-          SIGNAL(currentChanged(QModelIndex, QModelIndex)),
-          SLOT(set_unset_MatrixID(QModelIndex)));
-  connect(ui.cancelButton, SIGNAL(clicked()), SLOT(reject()));
-  connect(ui.dataname, SIGNAL(textChanged(QString)), SLOT(EnableOKButton()));
-  connect(ui.okButton, SIGNAL(clicked()), SLOT(OK()));
+  connect(ui.listView->selectionModel(), &QItemSelectionModel::currentChanged,
+          this, &MergeDataDialog::setProjectID);
+  connect(ui.listView_2->selectionModel(), &QItemSelectionModel::currentChanged,
+          this, &MergeDataDialog::set_unset_MatrixID);
+  connect(ui.cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+  connect(ui.dataname, &QLineEdit::textChanged, this, &MergeDataDialog::EnableOKButton);
+  connect(ui.okButton, &QPushButton::clicked, this, &MergeDataDialog::OK);
+  
   EnableOKButton();
 }
 
 MergeDataDialog::~MergeDataDialog() {
-  delete tab1;
-  delete tab2;
   delete mx;
 }

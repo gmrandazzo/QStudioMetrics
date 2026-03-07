@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Visualization component for ldaplot.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "LDAPlot.h"
 #include <unistd.h>
 
@@ -37,6 +58,7 @@ void LDAPlot::FeaturePlot2D(ScatterPlot **plot2D) {
         QString(projectname + modelname + " - LDA Feature Plot "),
         ScatterPlot::SCORES);
     (*plot2D)->setPID(pid);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
   }
 }
 
@@ -75,6 +97,7 @@ void LDAPlot::FeaturePlot3D(ScatterPlot **plot3D) {
         QString("%1 - %2 - LDA Feature Plot").arg(projectname).arg(modelname),
         "LD", "LD", "LD", ScatterPlot::SCORES);
     (*plot3D)->setPID(pid);
+    (*plot3D)->setImages(projects->value(pid)->getImages());
   }
 }
 
@@ -214,8 +237,9 @@ void LDAPlot::ProbabilityDistribution(ScatterPlot **plot2D) {
             " - LDA Multivariate Normal Distribution of Probabilities",
         ScatterPlot::SCORES);
 
-    (*plot2D)->addCurve(mnpdf, mnpdfname, colors);
+    (*plot2D)->addCurve(mnpdf, mnpdfname, colors, true);
     (*plot2D)->setPID(pid);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
 
     for (uint k = 0; k < lda->features->order; k++) {
       DelMatrix(&mnpdf[k]);
@@ -358,6 +382,7 @@ void LDAPlot::FeaturePlotAndPrediction2D(ScatterPlot **plot2D) {
         QString(projectname + modelname + " - LDA Feature Plot "),
         ScatterPlot::SCORES);
     (*plot2D)->setPID(pid);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
   }
 }
 
@@ -410,6 +435,7 @@ void LDAPlot::FeaturePlotAndPrediction3D(ScatterPlot **plot3D) {
         QString("%1 - %2 - LDA Feature Plot").arg(projectname).arg(modelname),
         "LD", "LD", "LD", ScatterPlot::SCORES);
     (*plot3D)->setPID(pid);
+    (*plot3D)->setImages(projects->value(pid)->getImages());
   }
 }
 
@@ -569,8 +595,9 @@ void LDAPlot::ProbabilityDistributionWithPredictions(ScatterPlot **plot2D) {
             " - LDA Multivariate Normal Distribution of Probabilities",
         ScatterPlot::SCORES);
 
-    (*plot2D)->addCurve(mnpdf, mnpdfname, colors);
+    (*plot2D)->addCurve(mnpdf, mnpdfname, colors, true);
     (*plot2D)->setPID(pid);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
     (*plot2D)->PlotUpdate();
     for (uint k = 0; k < lda->features->order; k++) {
       DelMatrix(&mnpdf[k]);

@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Visualization component for barplot.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "BarPlot.h"
 
 #include <QDialog>
@@ -10,6 +31,14 @@
 #include "Chart/chartqt.h"
 
 void BarPlot::slotExit() { qApp->exit(); }
+
+void BarPlot::setImages(QList<IMAGE> &images) {
+  QMap<QString, QPixmap> imgmap;
+  for (int i = 0; i < images.size(); ++i) {
+    imgmap.insert(images[i].name, images[i].image);
+  }
+  chart->setImages(imgmap);
+}
 
 void BarPlot::genBars(dvector *v, int split, double min, double max,
                       QVector<qreal> *bval, QStringList *bnames) {
@@ -67,6 +96,7 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle,
   ui.widget->setLayout(plotLayout.release());
   // Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
+  chart->LoadSettings();
   chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
 }
@@ -98,6 +128,7 @@ BarPlot::BarPlot(dvector *v_, QStringList varnames, QString windowtitle,
   ui.widget->setLayout(plotLayout.release());
   // Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
+  chart->LoadSettings();
   chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
 }
@@ -161,6 +192,7 @@ BarPlot::BarPlot(QList<dvector *> vlst_, QString windowtitle,
   }
   // Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
+  chart->LoadSettings();
   chart->Plot();
 
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
@@ -221,6 +253,7 @@ BarPlot::BarPlot(QList<dvector *> bar_lists_, QStringList windowtitles_,
   ui.widget->setLayout(plotLayout.release());
   // Finally render the scene
   chart->weview()->setContextMenuPolicy(Qt::NoContextMenu);
+  chart->LoadSettings();
   chart->Plot();
   connect(ui.bar_list_id, SIGNAL(valueChanged(int)), SLOT(BarPlotUpdate()));
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));

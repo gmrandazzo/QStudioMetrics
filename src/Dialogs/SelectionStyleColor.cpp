@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Implementation file for SelectionStyleColor.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "SelectionStyleColor.h"
 
 #include <QColorDialog>
@@ -143,8 +164,8 @@ SelectionStyleColor::SelectionStyleColor() : QDialog() {
   connect(ui.cancelButton, SIGNAL(clicked(bool)), SLOT(Cancel()));
 }
 
-SelectionStyleColor::SelectionStyleColor(QStringList &xvarname_,
-                                         QStringList &yvarname_)
+SelectionStyleColor::SelectionStyleColor(const QStringList &xvarname_,
+                                         const QStringList &yvarname_)
     : QDialog() {
   ui.setupUi(this);
 
@@ -211,9 +232,10 @@ SelectionStyleColor::SelectionStyleColor(QStringList &xvarname_,
   connect(ui.variablecolor, SIGNAL(clicked(bool)), SLOT(CheckUncheck()));
 }
 
-SelectionStyleColor::SelectionStyleColor(QStringList &xvarname_,
-                                         QStringList &yvarname_, int &xlevels_,
-                                         int &ylevels_)
+SelectionStyleColor::SelectionStyleColor(const QStringList &xvarname_,
+                                         const QStringList &yvarname_,
+                                         const int &xlevels_,
+                                         const int &ylevels_)
     : QDialog() {
   ui.setupUi(this);
 

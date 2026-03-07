@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Implementation file for chartqt.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "chartqt.h"
 #include "databar.h"
 #include "datapoint.h"
@@ -18,6 +39,9 @@
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
 #include <QtWidgets/QGraphicsTextItem>
+#include <QBuffer>
+#include <QByteArray>
+#include <QSettings>
 
 bool ChartQt::viewportEvent(QEvent *event) {
   if (event->type() == QEvent::TouchBegin) {
@@ -35,6 +59,17 @@ bool ChartQt::viewportEvent(QEvent *event) {
   return QChartView::viewportEvent(event);
 }
 
+void ChartQt::resizeEvent(QResizeEvent *event) {
+  QChartView::resizeEvent(event);
+  int spacing = 5;
+  int x = width() - (zoomInButton->width() + zoomOutButton->width() + recentreButton->width() + spacing * 3);
+  zoomInButton->move(x, 5);
+  x += zoomInButton->width() + spacing;
+  zoomOutButton->move(x, 5);
+  x += zoomOutButton->width() + spacing;
+  recentreButton->move(x, 5);
+}
+
 void ChartQt::mousePressEvent(QMouseEvent *event) {
   qDebug() << "mousePressEvent " << event;
   if (m_isTouching)
@@ -46,13 +81,27 @@ void ChartQt::mousePressEvent(QMouseEvent *event) {
   auto const chartItemPos = chart()->mapFromScene(scenePos);
   mPresscc = chart()->mapToValue(chartItemPos);
 
-  setDragMode(QGraphicsView::RubberBandDrag);
+  if (event->button() == Qt::LeftButton) {
+      setDragMode(QGraphicsView::RubberBandDrag);
+  } else if (event->button() == Qt::RightButton) {
+      m_lastMousePos = event->pos();
+      setCursor(Qt::ClosedHandCursor);
+  }
+
   QChartView::mousePressEvent(event);
 }
 
 void ChartQt::mouseMoveEvent(QMouseEvent *event) {
   if (m_isTouching)
     return;
+
+  if (event->buttons() & Qt::RightButton) {
+      QPoint delta = event->pos() - m_lastMousePos;
+      chart()->scroll(-delta.x(), delta.y());
+      m_lastMousePos = event->pos();
+      event->accept();
+  }
+
   QChartView::mouseMoveEvent(event);
 }
 
@@ -86,8 +135,11 @@ void ChartQt::showLabels() {
 
 void ChartQt::mouseReleaseEvent(QMouseEvent *event) {
   qDebug() << "mouseReleaseEvent " << event;
-  if (m_isTouching)
-    m_isTouching = false;
+  m_isTouching = false;
+
+  if (event->button() == Qt::RightButton) {
+      unsetCursor();
+  }
 
   auto const widgetPos = event->position();
   auto const scenePos = mapToScene(
@@ -116,23 +168,9 @@ void ChartQt::mouseReleaseEvent(QMouseEvent *event) {
   }
 
   if (event->button() == Qt::MiddleButton) {
-
     chart()->zoomIn();
-    // zoom and store the zoom domain region
-    /*
-    zoom_region = this->sceneRect();
-    or ..
-    zoom_region.setX(minX);
-    zoom_region.setY(maxY);
-    zoom_region.setWidth(maxX-minX);
-    zoom_region.setHeight(maxY-minY);
-
-    qDebug() << zoom_region;
-    */
   } else if (event->button() == Qt::LeftButton) {
-    // select
-    /*qDebug() << "Select Objects..";
-    qDebug() << minX << maxX << minY << maxY;*/
+    // select points
     for (int i = 0; i < p.size(); i++) {
       if (p[i]->x() > minX && p[i]->x() < maxX && p[i]->y() > minY &&
           p[i]->y() < maxY) {
@@ -145,7 +183,32 @@ void ChartQt::mouseReleaseEvent(QMouseEvent *event) {
         continue;
       }
     }
+
+    // select bars
+    const QBarCategoryAxis *axisX =
+        qobject_cast<QBarCategoryAxis *>(chart()->axes(Qt::Horizontal).at(0));
+    if (axisX) {
+        for (int i = 0; i < b.size(); i++) {
+            for (int j = 0; j < b[i]->x().size(); j++) {
+                // For categorical axis, the values are indices 0, 1, 2...
+                // We check if the index j is within [minX, maxX] 
+                // and the value y[j] is within [minY, maxY]
+                if (j >= minX - 0.5 && j <= maxX + 0.5 &&
+                    ((b[i]->y()[j] >= minY && b[i]->y()[j] <= maxY) ||
+                     (b[i]->y()[j] <= minY && b[i]->y()[j] >= maxY))) {
+                    // Note: DataBar selection might need to be per-bar if we want to be precise,
+                    // but the current DataBar class seems to have a single selection state.
+                    // If we want to support per-bar selection we might need to change DataBar.
+                    // For now let's toggle the whole DataBar if any of its bars are selected.
+                    b[i]->setSelection(!b[i]->isSelected());
+                    break; // break inner loop if series is selected
+                }
+            }
+        }
+    }
     refreshPlot();
+  } else if (event->button() == Qt::RightButton) {
+      // Panning handled in mouseMove, do nothing here to avoid zoomOut
   } else {
     chart()->zoomOut();
   }
@@ -157,24 +220,20 @@ void ChartQt::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 void ChartQt::wheelEvent(QWheelEvent *event) {
-  /*
-  QPoint numDegrees = event->angleDelta() / 8;
-  qreal rVal = std::pow(0.999, numDegrees.x());
-  QRectF oPlotAreaRect = chart()->plotArea();
-
-  oPlotAreaRect.setWidth(oPlotAreaRect.width() * rVal);
-  oPlotAreaRect.setHeight(oPlotAreaRect.height() * rVal);
-
-  auto const widgetPos = event->globalPosition();
-  auto const scenePos = mapToScene(QPoint(static_cast<int>(widgetPos.x()),
-  static_cast<int>(widgetPos.y()))); auto const chartItemPos =
-  chart()->mapFromScene(scenePos); auto const valueGivenSeries =
-  chart()->mapToValue(chartItemPos); qDebug() << valueGivenSeries;
-  oPlotAreaRect.moveCenter(valueGivenSeries);
-  chart()->zoomIn(oPlotAreaRect);
-  QChartView::wheelEvent(event);
-  */
-  QChartView::wheelEvent(event);
+    qreal factor = event->angleDelta().y() > 0 ? 1.1 : 0.9;
+    
+    QRectF rect = chart()->plotArea();
+    QPointF mousePos = event->position();
+    
+    // Zoom around mouse position
+    qreal width = rect.width() / factor;
+    qreal height = rect.height() / factor;
+    qreal x = mousePos.x() - (mousePos.x() - rect.left()) / factor;
+    qreal y = mousePos.y() - (mousePos.y() - rect.top()) / factor;
+    
+    chart()->zoomIn(QRectF(x, y, width, height));
+    
+    event->accept();
 }
 
 void ChartQt::keyPressEvent(QKeyEvent *event) {
@@ -213,7 +272,11 @@ void ChartQt::drawCurves() {
     const DataCurve data = curveMap[i];
     if (data.getPoints().size() > 0) {
       QXYSeries *series = 0;
-      series = new QLineSeries;
+      if (data.isSmooth()) {
+          series = new QSplineSeries;
+      } else {
+          series = new QLineSeries;
+      }
       QLineSeries *line = static_cast<QLineSeries *>(series);
 
       // QLineSeries *lseries = new QLineSeries();
@@ -257,21 +320,81 @@ void ChartQt::updateCurves() {
 
 void ChartQt::slotPointHoverd(const QPointF &point, bool state) {
   if (state) {
-    m_valueLabel->setText(QString::asprintf("%s - (%.2f; %.2f)", "pippone",
-                                            point.x(), point.y()));
+    const DataPoint *nearest = nullptr;
+    for (int i = 0; i < p.size(); ++i) {
+      if (std::abs(p[i]->x() - point.x()) < 1e-7 &&
+          std::abs(p[i]->y() - point.y()) < 1e-7) {
+        nearest = p[i];
+        break;
+      }
+    }
+
+    QString name = nearest ? nearest->name() : "Unknown";
+    QString text =
+        QString("<b>%1</b><br>(%.2f; %.2f)").arg(name).arg(point.x()).arg(point.y());
+
+    if (nearest && m_images.contains(name)) {
+      QByteArray bArray;
+      QBuffer buffer(&bArray);
+      if (buffer.open(QIODevice::WriteOnly)) {
+        QPixmap pm = m_images[name];
+        if (pm.width() > 200) {
+          pm = pm.scaledToWidth(200, Qt::SmoothTransformation);
+        }
+        pm.save(&buffer, "PNG");
+        QString imgBase64 = QString::fromLatin1(bArray.toBase64().data());
+        text =
+            QString("<img src='data:image/png;base64,%1'><br>").arg(imgBase64) +
+            text;
+      }
+    }
+
+    m_valueLabel->setText(text);
+    m_valueLabel->adjustSize();
     QPoint curPos = mapFromGlobal(QCursor::pos());
     m_valueLabel->move(curPos.x() - m_valueLabel->width() / 2,
-                       curPos.y() - m_valueLabel->height() * 1.5);
+                       curPos.y() - m_valueLabel->height() - 10);
     m_valueLabel->show();
-
-    /*QScatterSeries *series1 = (QScatterSeries *)chart()->series().at(1);
-    series1->clear();
-    series1->append(point);
-    series1->setVisible(true);*/
   } else {
     m_valueLabel->hide();
-    /*QScatterSeries *series1 = (QScatterSeries *)chart()->series().at(1);
-    series1->setVisible(false);*/
+  }
+}
+
+void ChartQt::slotBarHovered(bool status, int index, QBarSet *barset) {
+  if (status) {
+    QBarCategoryAxis *axisX =
+        qobject_cast<QBarCategoryAxis *>(chart()->axes(Qt::Horizontal).at(0));
+    if (!axisX || index >= axisX->categories().size())
+      return;
+
+    QString name = axisX->categories().at(index);
+    QString text =
+        QString("<b>%1</b><br>Value: %2").arg(name).arg(barset->at(index));
+
+    if (m_images.contains(name)) {
+      QByteArray bArray;
+      QBuffer buffer(&bArray);
+      if (buffer.open(QIODevice::WriteOnly)) {
+        QPixmap pm = m_images[name];
+        if (pm.width() > 200) {
+          pm = pm.scaledToWidth(200, Qt::SmoothTransformation);
+        }
+        pm.save(&buffer, "PNG");
+        QString imgBase64 = QString::fromLatin1(bArray.toBase64().data());
+        text =
+            QString("<img src='data:image/png;base64,%1'><br>").arg(imgBase64) +
+            text;
+      }
+    }
+
+    m_valueLabel->setText(text);
+    m_valueLabel->adjustSize();
+    QPoint curPos = mapFromGlobal(QCursor::pos());
+    m_valueLabel->move(curPos.x() - m_valueLabel->width() / 2,
+                       curPos.y() - m_valueLabel->height() - 10);
+    m_valueLabel->show();
+  } else {
+    m_valueLabel->hide();
   }
 }
 
@@ -337,8 +460,14 @@ void ChartQt::drawScatters() {
     }
 
     QColor c = p[i]->getColor();
-    c.setAlpha(127);
-    series->setColor(c);
+    if (!p[i]->isSelected()) c.setAlpha(127);
+    scatter->setColor(c);
+
+    if (p[i]->isSelected()) {
+        scatter->setPen(QPen(Qt::red, 2.0));
+    } else {
+        scatter->setPen(QPen(c.darker(150), 0.5));
+    }
 
     scatter->setMarkerSize(p[i]->radius());
     scatter->append(p[i]->x(), p[i]->y());
@@ -366,8 +495,15 @@ void ChartQt::updateScatters() {
     }
 
     QColor c = p[i]->getColor();
-    c.setAlpha(127);
+    if (!p[i]->isSelected()) c.setAlpha(127);
     scatter->setColor(c);
+    
+    if (p[i]->isSelected()) {
+        scatter->setPen(QPen(Qt::red, 2.0));
+    } else {
+        scatter->setPen(QPen(c.darker(150), 0.5));
+    }
+
     scatter->setMarkerSize(p[i]->radius());
     scatter->replace(0, p[i]->x(), p[i]->y());
   }
@@ -378,11 +514,21 @@ void ChartQt::drawBars() {
   printf("ChartQt::drawBars\n");
   //#endif
 
-  chart()->removeAllSeries();
+  const auto allSeries = chart()->series();
+  for (auto s : allSeries) {
+    if (dynamic_cast<QBarSeries *>(s)) {
+      chart()->removeSeries(s);
+      delete s;
+    }
+  }
+
   barsList.clear();
 
   QStringList categories;
   QBarSeries *series = new QBarSeries();
+  series->setLabelsVisible(true);
+  series->setLabelsPosition(QAbstractBarSeries::LabelsOutsideEnd);
+  series->setLabelsAngle(-90);
 
   for (int i = 0; i < b.size(); i++) {
     QBarSet *set = new QBarSet("");
@@ -392,16 +538,23 @@ void ChartQt::drawBars() {
       //                set->color(b[i]->color());
     }
     // set->color(b[i]->color());
+    if (b[i]->isSelected()) {
+        set->setPen(QPen(Qt::red, 2.0));
+    } else {
+        set->setPen(QPen(Qt::transparent, 0));
+    }
     series->append(set);
     barsList.append(set);
     // void addBars(QStringList x, QVector<qreal> y, QStringList text, QColor
     // color);
   }
   chart()->addSeries(series);
+  connect(series, &QBarSeries::hovered, this, &ChartQt::slotBarHovered);
 
   if (plot_ready == false) {
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
     axisX->append(categories);
+    axisX->setLabelsAngle(-90);
     chart()->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
 
@@ -419,6 +572,11 @@ void ChartQt::updateBars() {
   for (int i = 0; i < b.size(); i++) {
     for (int j = 0; j < b[i]->x().size(); j++) {
       barsList[i]->replace(j, b[i]->y()[j]);
+    }
+    if (b[i]->isSelected()) {
+        barsList[i]->setPen(QPen(Qt::red, 2.0));
+    } else {
+        barsList[i]->setPen(QPen(Qt::transparent, 0));
     }
      // barsList[i]->color(b[i]->color());
   }
@@ -469,6 +627,9 @@ void ChartQt::Plot() {
     }
 
     chart()->setTitle(m_plottitle);
+    QFont titleFont = chart()->titleFont();
+    titleFont.setBold(true);
+    chart()->setTitleFont(titleFont);
 
     chart()->createDefaultAxes();
     chart()->setDropShadowEnabled(false);
@@ -488,7 +649,10 @@ void ChartQt::Plot() {
   plot_ready = true;
 }
 
-void ChartQt::setAntialiasing(bool antialiasing_) {}
+void ChartQt::setAntialiasing(bool antialiasing_) {
+  antialiasing = antialiasing_;
+  setRenderHint(QPainter::Antialiasing, antialiasing);
+}
 
 void ChartQt::setXaxisName(QString xaxisname) { m_xaxisname = xaxisname; }
 
@@ -639,11 +803,13 @@ void ChartQt::addPoint(qreal x, qreal y, QString name, QColor color,
   p.last()->setRadius(radius);
 }
 
-void ChartQt::addCurve(QVector<QPointF> curve, QString name, QColor color) {
+void ChartQt::addCurve(QVector<QPointF> curve, QString name, QColor color, bool smooth) {
 #ifdef DEBUG
   printf("ChartQt::addCurve\n");
 #endif
-  curveMap.append(DataCurve(curve, name, color));
+  DataCurve dc(curve, name, color);
+  dc.setSmooth(smooth);
+  curveMap.append(dc);
 }
 
 void ChartQt::setCurveStyle(int indx, LTYPE cs) {
@@ -716,25 +882,29 @@ void ChartQt::zoomIn() { chart()->zoomIn(); }
 
 void ChartQt::zoomOut() { chart()->zoomOut(); }
 
+void ChartQt::recentre() { chart()->zoomReset(); }
+
 ChartQt::ChartQt(QWidget *parent)
     : QChartView(new QChart(), parent), m_isTouching(false) {
   // setRubberBand(QChartView::RectangleRubberBand); Disable default zoom in/out
   setRubberBand(QChartView::NoRubberBand);
   setRenderHint(QPainter::Antialiasing);
-  /*
+
   zoomInButton = new QToolButton(this);
   zoomInButton->setIcon(QIcon(":/images/zoomin.png"));
   zoomInButton->adjustSize();
-  zoomInButton->move(QPoint(5, 5));
   connect(zoomInButton, SIGNAL(clicked()), this, SLOT(zoomIn()));
-
 
   zoomOutButton = new QToolButton(this);
   zoomOutButton->setIcon(QIcon(":/images/zoomout.png"));
   zoomOutButton->adjustSize();
-  zoomOutButton->move(QPoint(40, 5));
   connect(zoomOutButton, SIGNAL(clicked()), this, SLOT(zoomOut()));
-  */
+
+  recentreButton = new QToolButton(this);
+  recentreButton->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
+  recentreButton->setToolTip(tr("Recentre Plot"));
+  recentreButton->adjustSize();
+  connect(recentreButton, SIGNAL(clicked()), this, SLOT(recentre()));
 
   m_valueLabel = new QLabel(this);
   m_valueLabel->setStyleSheet(
@@ -742,7 +912,6 @@ ChartQt::ChartQt(QWidget *parent)
               "font-size:12px; font-weight:bold;"
               " background-color:rgba(21, 100, 255, 51); border-radius:4px; "
               "text-align:center;}"));
-  m_valueLabel->setFixedSize(44, 24);
   m_valueLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   m_valueLabel->hide();
 
@@ -751,31 +920,27 @@ ChartQt::ChartQt(QWidget *parent)
 }
 
 ChartQt::~ChartQt() {
-  // #ifdef DEBUG
-  printf("ChartQt::~ChartQt\n");
-  // #endif
-  int i;
-  for (i = 0; i < p.size(); i++)
+  for (int i = 0; i < p.size(); i++)
     delete p[i];
   p.clear();
+}
 
-  for (i = 0; i < seriesList.size(); i++)
-    delete seriesList[i];
-  seriesList.clear();
+void ChartQt::setImages(const QMap<QString, QPixmap> &images) {
+  m_images = images;
+}
 
-  for (i = 0; i < curvesList.size(); i++)
-    delete curvesList[i];
-  curvesList.clear();
-
-  for (i = 0; i < barsList.size(); i++)
-    delete barsList[i];
-  barsList.clear();
-
-  for (i = 0; i < plotLabels.size(); i++)
-    delete plotLabels[i];
-  plotLabels.clear();
-
-  /*delete zoomInButton;
-  delete zoomOutButton;*/
-  delete m_valueLabel;
+void ChartQt::LoadSettings() {
+  QSettings settings("QStudioMetrics", "PlotSettings");
+  if (settings.contains("titleSize")) {
+    setPlotTitleSize(settings.value("titleSize").toInt());
+  }
+  if (settings.contains("axisValueSize")) {
+    setAxisValueSize(settings.value("axisValueSize").toInt());
+  }
+  if (settings.contains("xLabelSize")) {
+    setXLabelSize(settings.value("xLabelSize").toInt());
+  }
+  if (settings.contains("yLabelSize")) {
+    setYLabelSize(settings.value("yLabelSize").toInt());
+  }
 }

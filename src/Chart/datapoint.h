@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Header file for datapoint.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef DATAPOINT_H
 #define DATAPOINT_H
 
@@ -12,8 +33,8 @@
 #endif
 
 #define QEPSILON 1e-3 /* Define your own tolerance*/
-#ifndef FLOAT_EQ
-#define FLOAT_EQ(x, v, EPSILON) (((v - EPSILON) < x) && (x < (v + EPSILON)))
+#ifndef CHART_FLOAT_EQ
+#define CHART_FLOAT_EQ(x, v, EPSILON) (((v - EPSILON) < x) && (x < (v + EPSILON)))
 #endif
 
 enum MarkerType { CIRCLE, SQUARE, TRIANGLE };
@@ -51,10 +72,10 @@ public:
   int width() const;
   MarkerType marker() const;
 
-  bool compare(DataPoint &p) {
-    if (FLOAT_EQ(this->x(), p.x(), QEPSILON) &&
-        FLOAT_EQ(this->y(), p.y(), QEPSILON) &&
-        FLOAT_EQ(this->z(), p.z(), QEPSILON)) {
+  bool compare(const DataPoint &p) {
+    if (CHART_FLOAT_EQ(this->x(), p.x(), QEPSILON) &&
+        CHART_FLOAT_EQ(this->y(), p.y(), QEPSILON) &&
+        CHART_FLOAT_EQ(this->z(), p.z(), QEPSILON)) {
       if (this->getName().compare(p.getName()) == 0) {
         return true;
       } else {

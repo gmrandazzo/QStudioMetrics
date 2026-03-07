@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Dialog for modelwizard operations.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "ModelDialogWizard.h"
 #include "addLabelDialog.h"
 
@@ -223,9 +244,9 @@ void ModelDialogWizard::removeBlock() {
   for (int i = 0; i < indexes.size(); i++) {
     int indx = indexes[i].row();
     if (indx > -1 && indx < xblocks.size()) {
-      for (int i = 0; i < xblocks[indx].objects.size(); i++) {
+      for (int j = 0; j < xblocks[indx].objects.size(); j++) {
         QList<QStandardItem *> mname;
-        mname.append(new QStandardItem(xblocks[indx].objects[i]));
+        mname.append(new QStandardItem(xblocks[indx].objects[j]));
         tab6->appendRow(mname);
       }
       xblocks.removeAt(indx);
@@ -323,9 +344,9 @@ void ModelDialogWizard::removeClass() {
   for (int i = 0; i < indexes.size(); i++) {
     int indx = indexes[i].row();
     if (indx > -1 && indx < classes.size()) {
-      for (int i = 0; i < classes[indx].objects.size(); i++) {
+      for (int j = 0; j < classes[indx].objects.size(); j++) {
         QList<QStandardItem *> mname;
-        mname.append(new QStandardItem(classes[indx].objects[i]));
+        mname.append(new QStandardItem(classes[indx].objects[j]));
         tab6->appendRow(mname);
       }
       classes.removeAt(indx);
@@ -413,14 +434,9 @@ void ModelDialogWizard::EnableDisableButtons() {
       }
       // Multiblock methods
       else if (type == CPCA_) {
-        if (type == CPCA_) {
-          if (ui.listView_9->model()->rowCount() > 0) {
-            this->button(QWizard::FinishButton)->setEnabled(true);
-          } else {
-            this->button(QWizard::FinishButton)->setEnabled(false);
-          }
+        if (ui.listView_9->model()->rowCount() > 0) {
+          this->button(QWizard::FinishButton)->setEnabled(true);
         } else {
-          // finish button disabled by default!
           this->button(QWizard::FinishButton)->setEnabled(false);
         }
       } else {
@@ -673,9 +689,9 @@ void ModelDialogWizard::next() {
 void ModelDialogWizard::OK() {
   if (selectedproject_ == -1 || selecteddata_ == -1 ||
       ui.modelname->text().isEmpty()) {
-    QMessageBox::warning(this, tr("Warning!"),
+    QMessageBox::warning(this, tr("Warning"),
                          tr("No project, data selected or no model name "
-                            "setted!\nPlease check your settings.\n"),
+                            "set!\nPlease check your settings.\n"),
                          QMessageBox::Close);
     reject();
     return;

@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Dialog for label operations.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "LabelDialog.h"
 #include <QMessageBox>
 #include <qdial.h>
@@ -63,7 +84,7 @@ void LabelDialog::AddLabel() {
       else
         lidlst.last().type = TABLABELST;
     } else {
-      QMessageBox::warning(this, tr("Warning!"), tr("Duplicated Label Name!\n"),
+      QMessageBox::warning(this, tr("Warning"), tr("Duplicate label name."),
                            QMessageBox::Close);
     }
   }
@@ -114,7 +135,7 @@ void LabelDialog::ImportLabelList() {
       else
         lidlst.last().type = TABLABELST;
     } else {
-      QMessageBox::warning(this, tr("Warning!"), tr("Duplicated Label Name!\n"),
+      QMessageBox::warning(this, tr("Warning"), tr("Duplicate label name."),
                            QMessageBox::Close);
     }
   }
@@ -278,7 +299,7 @@ LabelDialog::LabelDialog(PROJECTS *projects_, int windowtype_) : QDialog() {
           SLOT(setLabelId(QModelIndex)));
 }
 
-LabelDialog::LabelDialog(LABELS *labels_, QStringList &selectedobject_,
+LabelDialog::LabelDialog(LABELS *labels_, const QStringList &selectedobject_,
                          int windowtype_)
     : QDialog() {
   ui.setupUi(this);

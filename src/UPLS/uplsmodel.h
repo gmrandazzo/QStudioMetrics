@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Header file for uplsmodel.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef UPLSMODEL_H
 #define UPLSMODEL_H
 
@@ -15,7 +36,7 @@ public:
   ~UPLSPREDICTION();
   void setName(QString name_) { name = name_; }
   QString &getName() { return name; }
-  void setObjName(QStringList &objname_) { objname = objname_; }
+  void setObjName(const QStringList &objname_) { objname = objname_; }
   QStringList &getObjName() { return objname; }
   void setPredID(int id_) { id = id_; }
   int getPredID() { return id; }
@@ -51,11 +72,11 @@ public:
   UPLSMODEL *Model() { return m; }
   void setName(QString name_) { name = name_; }
   QString &getName() { return name; }
-  void setObjName(QStringList &objname_) { objname = objname_; }
+  void setObjName(const QStringList &objname_) { objname = objname_; }
   QStringList &getObjName() { return objname; }
-  void setXVarName(QStringList &varname_) { xvarname = varname_; }
+  void setXVarName(const QStringList &varname_) { xvarname = varname_; }
   QStringList &getXVarName() { return xvarname; }
-  void setYVarName(QStringList &varname_) { yvarname = varname_; }
+  void setYVarName(const QStringList &varname_) { yvarname = varname_; }
   QStringList &getYVarName() { return yvarname; }
   void setValidation(int v) { validation = v; }
   int getValidation() { return validation; }

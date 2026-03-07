@@ -1,15 +1,35 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Implementation file for datacurve.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "datacurve.h"
 #include <QPointF>
 #include <QVector>
 
 DataCurve::DataCurve()
     : m_name("No name"), m_color(Qt::black), m_radius(2), m_width(1),
-      m_visible(true), lt(L) {}
+      m_visible(true), m_isSmooth(false), lt(L) {}
 
 DataCurve::DataCurve(QVector<QPointF> curve, QString name, QColor color)
-    : m_name(name), m_color(color), m_radius(2), m_width(1), m_visible(true),
-      lt(L) {
-  m_curve = curve;
+    : m_curve(curve), m_name(name), m_color(color), m_radius(2), m_width(1), m_visible(true),
+      m_isSmooth(false), lt(L) {
 }
 
 void DataCurve::addPoint(qreal x, qreal y) { m_curve.append(QPointF(x, y)); }
@@ -26,6 +46,8 @@ void DataCurve::setVisible(bool visible) { m_visible = visible; }
 
 void DataCurve::setStyle(LTYPE lt_) { lt = lt_; }
 
+void DataCurve::setSmooth(bool smooth) { m_isSmooth = smooth; }
+
 QVector<QPointF> DataCurve::getPoints() const { return m_curve; }
 
 QString DataCurve::name() const { return m_name; }
@@ -39,3 +61,5 @@ int DataCurve::radius() const { return m_radius; }
 int DataCurve::width() const { return m_width; }
 
 bool DataCurve::isVisible() const { return m_visible; }
+
+bool DataCurve::isSmooth() const { return m_isSmooth; }

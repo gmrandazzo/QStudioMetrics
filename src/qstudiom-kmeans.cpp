@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Implementation file for qstudiom-kmeans.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 // QStudiom-clustering
 #include <fstream>
 #include <iomanip>
@@ -45,8 +66,7 @@ int main(int argc, char **argv) {
     help(argv);
   } else {
     int n_clusters = 0, init = 1, nthreads = 1;
-    string inputdata, outcentroids, outputfile, sep;
-    sep = ", \t";
+    string inputdata, outcentroids, outputfile;
 
     for (int i = 0; i < argc; i++) {
       if (strcmp(argv[i], "-input") == 0 || strcmp(argv[i], "-i") == 0) {
@@ -87,16 +107,17 @@ int main(int argc, char **argv) {
 
     if (!inputdata.empty() && !outputfile.empty() && !outcentroids.empty() &&
         n_clusters > 0) {
+      string sep = ", \t";
       matrix *data;
       initMatrix(&data);
       matrix *centroids;
       initMatrix(&centroids);
       uivector *clusters;
       initUIVector(&clusters);
-      DATAIO::ImportMatrix((char *)inputdata.c_str(), sep, data);
+      DATAIO::ImportMatrix(inputdata.c_str(), sep, data);
       KMeans(data, n_clusters, init, clusters, centroids, nthreads);
-      DATAIO::WriteUIvector((char *)outputfile.c_str(), clusters);
-      DATAIO::WriteMatrix((char *)outcentroids.c_str(), centroids);
+      DATAIO::WriteUIvector(outputfile.c_str(), clusters);
+      DATAIO::WriteMatrix(outcentroids.c_str(), centroids);
       DelUIVector(&clusters);
       DelMatrix(&centroids);
       DelMatrix(&data);

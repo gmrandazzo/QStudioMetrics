@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Visualization component for pcaplot.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "PCAPlot.h"
 #include <memory>
 
@@ -20,6 +41,7 @@ void PCAPlot::ScorePlot2D(ScatterPlot **plot2D) {
   
   temp_plot->setHotellingConfidenceEllipse(true);
   temp_plot->setPID(pid);
+  temp_plot->setImages(projects->value(pid)->getImages());
   *plot2D = temp_plot.release();
 }
 
@@ -52,6 +74,7 @@ void PCAPlot::ScorePlotPrediction2D(ScatterPlot **plot2D) {
       ScatterPlot::SCORES);
   temp_plot->setHotellingConfidenceEllipse(true);
   temp_plot->setPID(pid);
+  temp_plot->setImages(projects->value(pid)->getImages());
   *plot2D = temp_plot.release();
 }
 
@@ -80,6 +103,25 @@ void PCAPlot::LoadingsPlot2D(ScatterPlot **plot2D) {
   *plot2D = temp_plot.release();
 }
 
+void PCAPlot::DModXPlot(BarPlot **bar_plot) {
+  QString projectname = projects->value(pid)->getProjectName();
+  QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
+  QStringList objnames = projects->value(pid)->getPCAModel(mid)->getObjName();
+  if (nlv > projects->value(pid)->getPCAModel(mid)->getNPC()) {
+    nlv = projects->value(pid)->getPCAModel(mid)->getNPC();
+  }
+
+  dvector *dmodx;
+  dmodx = getMatrixColumn(projects->value(pid)->getPCAModel(mid)->Model()->dmodx, nlv-1);
+  (*bar_plot) =
+      new BarPlot(dmodx, objnames,
+                  QString("DModX Model - %1 PC %2")
+                      .arg(modelname)
+                      .arg(QString::number(nlv)));
+  (*bar_plot)->setImages(projects->value(pid)->getImages());
+  DelDVector(&dmodx);
+}
+
 void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
@@ -106,6 +148,8 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
   );
 
   const matrix *orig_x = projects->value(pid)->getMatrix(did)->Matrix();
+  const dvector *colaverage = projects->value(pid)->getPCAModel(mid)->Model()->colaverage;
+  const dvector *colscaling = projects->value(pid)->getPCAModel(mid)->Model()->colscaling;
 
   /*
   * Calculate SPE (Squared Prediction Error) and SPE contributions in one pass
@@ -117,17 +161,36 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
       spe_contributions.append(new dvector);
       NewDVector(&spe_contributions.last(), orig_x->col);
       for (size_t j = 0; j < orig_x->col; j++) {
-          double diff = orig_x->data[i][j] - reconstructed_mx->data[i][j];
-          double squared_diff = diff * diff;
-          sum_squared_diff += squared_diff;
-          spe_contributions.last()->data[j] = squared_diff;
+          // normalize to avoid dwarf everthing.
+          double diff = ((orig_x->data[i][j]-colaverage->data[j])/colscaling->data[j]) - ((reconstructed_mx->data[i][j]-colaverage->data[j])/colscaling->data[j]);
+          if (std::isfinite(diff)) {
+              double squared_diff = diff * diff;
+              sum_squared_diff += squared_diff;
+              spe_contributions.last()->data[j] = std::isfinite(squared_diff) ? squared_diff : 0.0;
+          }
       }
       spe.push_back(sum_squared_diff);
   }
 
+  /* READY FOR MIGRATION TO NEW libscientific release 
+  dvector *spe;
+  initDVector(&spe);
+  matrix *contributions;
+  initMatrix(&contributions);
+  PCATsqContributions(
+    orig_x,
+    projects->value(pid)->getPCAModel(mid)->Model(),
+    nlv,
+    spe,
+    contributions);
+
+  // conversion to be accepted by barplot
+  QList<dvector *> spe_contributions;
+  */
   QStringList windowtitles;
   for (size_t i = 0; i < orig_x->row; i++){
     windowtitles.append(QString("%1 - Sample %2 -  Total SPE = %3").arg(projectname).arg(objnames[i]).arg(QString::number(spe[i], 'f', 4)));
+    // spe_contributions.append(getMatrixRow(contributions, i)); READY FOR MIGRATION TO NEW libscientific release
   }
 
   auto temp_plot = std::make_unique<BarPlot>(
@@ -136,6 +199,8 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
         "Features",
         "Contribution to SPE",
         varnames);
+
+  temp_plot->setImages(projects->value(pid)->getImages());
 
   for (dvector* contribution : spe_contributions) {
     DelDVector(&contribution);
@@ -186,6 +251,7 @@ void PCAPlot::ExpVarPlot(SimpleLine2DPlot **plot2D) {
     curvenames,
     QString(" %1 - %2 - Explained Variance Plot").arg(projectname).arg(modelname),
     "PC", "Exp. Var.");
+  temp_plot->setImages(projects->value(pid)->getImages());
   DelMatrix(&m);
   *plot2D = temp_plot.release();
 }
@@ -336,6 +402,7 @@ void PCAPlot::ScorePlot3D(ScatterPlot **plot3D) {
       QString("%1 - %2 - PCA Score Plot").arg(projectname).arg(modelname),
       ScatterPlot::SCORES);
   temp_plot->setPID(pid);
+  temp_plot->setImages(projects->value(pid)->getImages());
   *plot3D = temp_plot.release();
 
 }
@@ -390,10 +457,12 @@ void PCAPlot::ScorePlotPrediction3D(ScatterPlot **plot3D) {
           .arg(modelname),
       ScatterPlot::SCORES);
    temp_plot->setPID(pid);
+   temp_plot->setImages(projects->value(pid)->getImages());
   *plot3D = temp_plot.release();
 }
 
 PCAPlot::PCAPlot(PROJECTS *projects_) {
   pid = mid = predid = -1;
+  nlv = 0;
   projects = projects_;
 }

@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Visualization component for mlrplot.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "MLRPlot.h"
 #include "scientific.h"
 
@@ -138,6 +159,7 @@ void MLRPlot::RecalcVSExperimentalAndPrediction(ScatterPlot **plot2D) {
           projectname + modelname + " - MLR Recalc VS Experimental Plot",
           ScatterPlot::SCORES);
       DelMatrix(&recalc_y);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setPID(pid);
       DelMatrix(&y);
@@ -284,6 +306,7 @@ void MLRPlot::PredictedVSExperimentalAndPrediction(ScatterPlot **plot2D) {
           QString(projectname + modelname +
                   " - MLR Recalc VS Experimental Plot"),
           ScatterPlot::SCORES);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       (*plot2D)->setAxisNameExtensions(varname);
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setPID(pid);
@@ -375,6 +398,7 @@ void MLRPlot::RecalcVSExperimental(ScatterPlot **plot2D) {
       QString("Recalculated"),
       projectname + modelname + " - MLR Recalculated VS Experimental Plot",
       ScatterPlot::SCORES);
+  (*plot2D)->setImages(projects->value(pid)->getImages());
   (*plot2D)->BuildDiagonal();
   (*plot2D)->setPID(pid);
   (*plot2D)->setAxisNameExtensions(varname);
@@ -447,6 +471,7 @@ void MLRPlot::RecalcResidualsVSExperimental(ScatterPlot **plot2D) {
         projectname + modelname +
             " - MLR Experimental VS Recalculated Residuals Y Plot",
         ScatterPlot::SCORES);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
     DelMatrix(&recalc_res);
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);
@@ -516,6 +541,7 @@ void MLRPlot::PredictedVSExperimental(ScatterPlot **plot2D) {
         QString("Predicted"),
         projectname + modelname + " - MLR Predicted VS Experimental Plot",
         ScatterPlot::SCORES);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
     (*plot2D)->BuildDiagonal();
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);
@@ -588,6 +614,7 @@ void MLRPlot::PredictedResidualsVSExperimental(ScatterPlot **plot2D) {
                         projectname + modelname +
                             " - MLR Experimental VS Predicted Residuals Y Plot",
                         ScatterPlot::SCORES);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
     DelMatrix(&pred_res);
     (*plot2D)->setPID(pid);
     (*plot2D)->setAxisNameExtensions(varname);

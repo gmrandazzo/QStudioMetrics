@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Implementation file for DATAIO.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "DATAIO.h"
 #include <algorithm>
 #include <cstring>
@@ -46,49 +67,42 @@ inline char *Trim(char *s) {
 }
 
 inline std::string STrim(const std::string &s) {
-  char *ptr;
-  if (!s.empty())
-    return s; // handle empty string
-
-  char *str = (char *)s.c_str();
-  for (ptr = str + strlen(str) - 1; (ptr >= str) && isspace(*ptr); --ptr)
-    ;
-  ptr[1] = '\0';
-  return (std::string)str;
+  if (s.empty()) return "";
+  size_t end = s.find_last_not_of(" \t\n\r\f\v");
+  return (end == std::string::npos) ? "" : s.substr(0, end + 1);
 }
 
 std::vector<std::string> DATAIO::split(const std::string &s,
                                        const std::string &delim,
-                                       const bool keep_empty = true) {
-  char *token;
+                                       const bool keep_empty) {
   std::vector<std::string> result;
-
-  token = strtok((char *)s.c_str(), (char *)delim.c_str());
-
-  while (token != NULL) {
-    result.push_back(token);
-    token = strtok(NULL, (char *)delim.c_str());
+  if (delim.empty()) {
+      result.push_back(s);
+      return result;
   }
-
+  size_t start = 0;
+  size_t end = s.find_first_of(delim);
+  while (end != std::string::npos) {
+      if (keep_empty || end > start) {
+          result.push_back(s.substr(start, end - start));
+      }
+      start = end + 1;
+      end = s.find_first_of(delim, start);
+  }
+  if (keep_empty || start < s.length()) {
+      result.push_back(s.substr(start));
+  }
   return result;
 }
 
-bool DATAIO::FileExists(char *file_) {
-  std::fstream foo;
-  foo.open(file_);
-
-  if (foo.is_open() == true) {
-    foo.close();
-    return true;
-  } else {
-    return false;
-  }
+bool DATAIO::FileExists(const char *file_) {
+  std::ifstream foo(file_);
+  return foo.good();
 }
 
-bool DATAIO::DirExists(char *dir_) {
-  if (access(dir_, 0) == 0) {
-    struct stat status;
-    stat(dir_, &status);
+bool DATAIO::DirExists(const char *dir_) {
+  struct stat status;
+  if (stat(dir_, &status) == 0) {
     if (status.st_mode & S_IFDIR) {
       //         std::cout << "The directory exists." << std::endl;
       return true;
@@ -102,7 +116,7 @@ bool DATAIO::DirExists(char *dir_) {
   }
 }
 
-void DATAIO::MakeDir(char *dir_) {
+void DATAIO::MakeDir(const char *dir_) {
 #ifdef WIN32
   mkdir(dir_);
 #else
@@ -110,16 +124,16 @@ void DATAIO::MakeDir(char *dir_) {
 #endif
 }
 
-void DATAIO::RemoveFile(char *path_file) {
+void DATAIO::RemoveFile(const char *path_file) {
   if (remove(path_file) != 0)
     std::cout << "Error! Unable to remove file:" << path_file << std::endl;
 }
-void DATAIO::RemoveFiles(char *dir_) {
-  struct dirent *entry;
+void DATAIO::RemoveFiles(const char *dir_) {
   DIR *dp;
 
   if ((dp = opendir(dir_))) {
     struct stat *buf = new struct stat;
+    const struct dirent *entry;
     while ((entry = readdir(dp))) {
       char p[MAXCHARS];
       strcpy(p, dir_);
@@ -148,17 +162,17 @@ void DATAIO::RemoveFiles(char *dir_) {
   }
 }
 
-void DATAIO::RemoveDir(char *dir_) {
+void DATAIO::RemoveDir(const char *dir_) {
   RemoveFiles(dir_);
   rmdir(dir_);
 }
 
-void DATAIO::FileList(char *dir_, std::vector<std::string> &list) {
-  struct dirent *entry;
+void DATAIO::FileList(const char *dir_, std::vector<std::string> &list) {
   DIR *dp;
 
   if ((dp = opendir(dir_))) {
     struct stat *buf = new struct stat;
+    const struct dirent *entry;
     while ((entry = readdir(dp))) {
       char p[MAXCHARS];
       strcpy(p, dir_);
@@ -185,15 +199,15 @@ void DATAIO::FileList(char *dir_, std::vector<std::string> &list) {
   }
 }
 
-void DATAIO::GetMatrixRowCol(char *file_, const std::string &sep, size_t *row,
+void DATAIO::GetMatrixRowCol(const char *file_, const std::string &sep, size_t *row,
                              size_t *col) {
   std::ifstream file;
-  std::string line;
 
   (*row) = (*col) = 0;
 
   file.open(file_, std::ios::in);
   if (!file.fail()) {
+    std::string line;
     while (getline(file, line)) {
       if (line.starts_with("#") == true || line.empty()) { // skip line
         continue;
@@ -212,9 +226,8 @@ void DATAIO::GetMatrixRowCol(char *file_, const std::string &sep, size_t *row,
   file.close();
 }
 
-void DATAIO::ImportMatrix(char *file_, const std::string &sep, matrix *data) {
+void DATAIO::ImportMatrix(const char *file_, const std::string &sep, matrix *data) {
   std::ifstream file;
-  std::string line;
   size_t row, col;
 
   GetMatrixRowCol(file_, sep, &row, &col);
@@ -223,6 +236,7 @@ void DATAIO::ImportMatrix(char *file_, const std::string &sep, matrix *data) {
   row = col = 0;
   file.open(file_, std::ios::in);
   if (!file.fail()) {
+    std::string line;
     while (getline(file, line)) {
       if (line.starts_with("#") == true || line.empty()) { // skip line
         continue;
@@ -238,17 +252,17 @@ void DATAIO::ImportMatrix(char *file_, const std::string &sep, matrix *data) {
   file.close();
 }
 
-void DATAIO::GetArrayOrderRowCol(char *file_, const std::string &sep,
+void DATAIO::GetArrayOrderRowCol(const char *file_, const std::string &sep,
                                  size_t *order, size_t *row, size_t *col) {
   std::ifstream file;
-  std::string line;
-  std::string delim = sep;
-  size_t row_tmp = 0;
 
   (*order) = (*row) = (*col) = 0;
 
   file.open(file_, std::ios::in);
   if (!file.fail()) {
+    std::string line;
+    std::string delim = sep;
+    size_t row_tmp = 0;
     while (getline(file, line)) {
       if (line.starts_with("#") == true || line.empty()) { // skip line
         continue;
@@ -283,10 +297,8 @@ void DATAIO::GetArrayOrderRowCol(char *file_, const std::string &sep,
   file.close();
 }
 
-void DATAIO::ImportTensor(char *file_, const std::string &sep, tensor *data) {
+void DATAIO::ImportTensor(const char *file_, const std::string &sep, tensor *data) {
   std::ifstream file;
-  std::string line;
-  std::string delim = sep;
   size_t order, row, col;
 
   GetArrayOrderRowCol(file_, sep, &order, &row, &col);
@@ -299,6 +311,8 @@ void DATAIO::ImportTensor(char *file_, const std::string &sep, tensor *data) {
   file.open(file_, std::ios::in);
 
   if (!file.fail()) {
+    std::string line;
+    std::string delim = sep;
     while (getline(file, line)) {
       if (line.starts_with("#") == true || line.empty()) { // skip line
         continue;
@@ -317,14 +331,14 @@ void DATAIO::ImportTensor(char *file_, const std::string &sep, tensor *data) {
   file.close();
 }
 
-void DATAIO::GetVectorSize(char *file_, size_t *size_) {
+void DATAIO::GetVectorSize(const char *file_, size_t *size_) {
   std::ifstream file;
-  std::string line;
 
   (*size_) = 0;
 
   file.open(file_, std::ios::in);
   if (!file.fail()) {
+    std::string line;
     while (getline(file, line)) {
       if (line.starts_with("#") == true || line.empty()) { // skip line
         continue;
@@ -336,9 +350,8 @@ void DATAIO::GetVectorSize(char *file_, size_t *size_) {
   file.close();
 }
 
-void DATAIO::ImportStrvector(char *file_, strvector *strv) {
+void DATAIO::ImportStrvector(const char *file_, strvector *strv) {
   std::ifstream file;
-  std::string line;
   size_t size_;
 
   GetVectorSize(file_, &size_);
@@ -347,11 +360,12 @@ void DATAIO::ImportStrvector(char *file_, strvector *strv) {
   size_ = 0;
   file.open(file_, std::ios::in);
   if (!file.fail()) {
+    std::string line;
     while (getline(file, line)) {
       if (line.starts_with("#") == true || line.empty()) { // skip line
         continue;
       } else {
-        setStr(strv, size_, Trim((char *)line.c_str()));
+        setStr(strv, size_, STrim(line).data());
         size_++;
       }
     }
@@ -359,9 +373,8 @@ void DATAIO::ImportStrvector(char *file_, strvector *strv) {
   file.close();
 }
 
-void DATAIO::ImportDvector(char *file_, dvector *v) {
+void DATAIO::ImportDvector(const char *file_, dvector *v) {
   std::ifstream file;
-  std::string line;
   size_t size_;
 
   GetVectorSize(file_, &size_);
@@ -370,11 +383,12 @@ void DATAIO::ImportDvector(char *file_, dvector *v) {
   size_ = 0;
   file.open(file_, std::ios::in);
   if (!file.fail()) {
+    std::string line;
     while (getline(file, line)) {
       if (line.starts_with("#") == true || line.empty()) { // skip line
         continue;
       } else {
-        setDVectorValue(v, size_, atof(Trim((char *)line.c_str())));
+        setDVectorValue(v, size_, atof(STrim(line).c_str()));
         size_++;
       }
     }
@@ -382,9 +396,8 @@ void DATAIO::ImportDvector(char *file_, dvector *v) {
   file.close();
 }
 
-void DATAIO::ImportUIvector(char *file_, uivector *v) {
+void DATAIO::ImportUIvector(const char *file_, uivector *v) {
   std::ifstream file;
-  std::string line;
   size_t size_;
 
   GetVectorSize(file_, &size_);
@@ -392,11 +405,12 @@ void DATAIO::ImportUIvector(char *file_, uivector *v) {
   size_ = 0;
   file.open(file_, std::ios::in);
   if (!file.fail()) {
+    std::string line;
     while (getline(file, line)) {
       if (line.starts_with("#") == true || line.empty()) { // skip line
         continue;
       } else {
-        UIVectorAppend(v, atoi(Trim((char *)line.c_str())));
+        UIVectorAppend(v, atoi(STrim(line).c_str()));
         size_++;
       }
     }
@@ -404,19 +418,18 @@ void DATAIO::ImportUIvector(char *file_, uivector *v) {
   file.close();
 }
 
-void DATAIO::GetDVectorListSize(char *file_, uivector *sizes) {
+void DATAIO::GetDVectorListSize(const char *file_, uivector *sizes) {
   std::ifstream file;
-  std::string line;
-
-  size_t sz = 0;
 
   file.open(file_, std::ios::in);
   if (!file.fail()) {
+    std::string line;
+    size_t sz = 0;
     while (getline(file, line)) {
       if (line.starts_with("#") == true || line.empty()) { // skip line
         continue;
       } else {
-        if (line.starts_with("//") == true || line.empty()) { // skip line
+        if (line.starts_with("//") == true) { // skip line
           UIVectorAppend(sizes, sz);
           sz = 0;
         } else {
@@ -428,14 +441,12 @@ void DATAIO::GetDVectorListSize(char *file_, uivector *sizes) {
   file.close();
 }
 
-void DATAIO::ImportDvectorList(char *file_, dvectorlist *lst) {
+void DATAIO::ImportDvectorList(const char *file_, dvectorlist *lst) {
   std::ifstream file;
-  std::string line;
   uivector *sizes;
   initUIVector(&sizes);
   GetDVectorListSize(file_, sizes);
 
-  size_t sz = 0;
   size_t dvx = 0;
   dvector *dv;
   NewDVector(&dv, sizes->data[dvx]);
@@ -443,18 +454,20 @@ void DATAIO::ImportDvectorList(char *file_, dvectorlist *lst) {
 
   file.open(file_, std::ios::in);
   if (!file.fail()) {
+    std::string line;
+    size_t sz = 0;
     while (getline(file, line)) {
       if (line.starts_with("#") == true || line.empty()) { // skip line
         continue;
       } else {
-        if (line.starts_with("//") == true || line.empty()) { // skip line
+        if (line.starts_with("//") == true) { // skip line
           DVectorListAppend(lst, dv);
           DelDVector(&dv);
           sz = 0;
           dvx += 1;
           NewDVector(&dv, sizes->data[dvx]);
         } else {
-          dv->data[sz] = atof(Trim((char *)line.c_str()));
+          dv->data[sz] = atof(STrim(line).c_str());
           sz++;
         }
       }
@@ -468,7 +481,7 @@ void DATAIO::ImportDvectorList(char *file_, dvectorlist *lst) {
   DelDVector(&dv);
 }
 
-void DATAIO::ImportPCAModel(char *path_, PCAMODEL *m) {
+void DATAIO::ImportPCAModel(const char *path_, PCAMODEL *m) {
   char tscore[MAXCHARS], ploadings[MAXCHARS], expvar[MAXCHARS],
       columnscaling[MAXCHARS], columnaverage[MAXCHARS];
 
@@ -491,7 +504,7 @@ void DATAIO::ImportPCAModel(char *path_, PCAMODEL *m) {
   ImportDvector(columnaverage, m->colaverage);
 }
 
-void DATAIO::ImportPLSModel(char *path_, PLSMODEL *m) {
+void DATAIO::ImportPLSModel(const char *path_, PLSMODEL *m) {
   char tscore[MAXCHARS], ploadings[MAXCHARS], weights[MAXCHARS],
       xexpvar[MAXCHARS], xcolumnscaling[MAXCHARS], xcolumnaverage[MAXCHARS],
       uscore[MAXCHARS], qloadings[MAXCHARS], ycolumnscaling[MAXCHARS],
@@ -577,7 +590,7 @@ void DATAIO::ImportPLSModel(char *path_, PLSMODEL *m) {
   ImportMatrix(yscrambling, sep, m->yscrambling);
 }
 
-void DATAIO::ImportUPCAModel(char *path_, UPCAMODEL *m) {
+void DATAIO::ImportUPCAModel(const char *path_, UPCAMODEL *m) {
   char tscore[MAXCHARS], ploadings[MAXCHARS], expvar[MAXCHARS],
       columnscaling[MAXCHARS], columnaverage[MAXCHARS];
 
@@ -602,7 +615,7 @@ void DATAIO::ImportUPCAModel(char *path_, UPCAMODEL *m) {
   ImportDvectorList(columnaverage, m->colaverage);
 }
 
-void DATAIO::ImportUPLSModel(char *path_, UPLSMODEL *m) {
+void DATAIO::ImportUPLSModel(const char *path_, UPLSMODEL *m) {
   char tscore[MAXCHARS], ploadings[MAXCHARS], weights[MAXCHARS],
       xexpvar[MAXCHARS], xcolumnscaling[MAXCHARS], xcolumnaverage[MAXCHARS],
       uscore[MAXCHARS], qloadings[MAXCHARS], ycolumnscaling[MAXCHARS],
@@ -695,7 +708,7 @@ void DATAIO::ImportUPLSModel(char *path_, UPLSMODEL *m) {
   ImportTensor(yscramblingsdep, sep, m->sdep_yscrambling);
 }
 
-void DATAIO::ImportMLRModel(char *path_, MLRMODEL *m) {
+void DATAIO::ImportMLRModel(const char *path_, MLRMODEL *m) {
   char bcoeff[MAXCHARS], r2y[MAXCHARS], sdec[MAXCHARS], ymean[MAXCHARS],
       validatedypred[MAXCHARS], validatedq2y[MAXCHARS], validatedsdep[MAXCHARS],
       validatedbias[MAXCHARS], r2q2scrambling[MAXCHARS], recalc_y[MAXCHARS],
@@ -747,7 +760,7 @@ void DATAIO::ImportMLRModel(char *path_, MLRMODEL *m) {
   ImportMatrix(r2q2scrambling, sep, m->r2q2scrambling);
 }
 
-void DATAIO::ImportLDAModel(char *path_, LDAMODEL *m) {
+void DATAIO::ImportLDAModel(const char *path_, LDAMODEL *m) {
   uivector *otherinfo;
   char roc[MAXCHARS], roc_aucs[MAXCHARS], pr[MAXCHARS], pr_aucs[MAXCHARS],
       pprob[MAXCHARS], eval[MAXCHARS], mu[MAXCHARS], evect[MAXCHARS],
@@ -828,7 +841,7 @@ void DATAIO::ImportLDAModel(char *path_, LDAMODEL *m) {
   ImportUIvector(classid, m->classid);
 }
 
-void DATAIO::WriteStringList(char *file_, std::vector<std::string> &strlst) {
+void DATAIO::WriteStringList(const char *file_, const std::vector<std::string> &strlst) {
   std::fstream out;
   out.open(file_, std::ios::out | std::ios::app);
   out.setf(std::ios_base::right, std::ios_base::adjustfield);
@@ -839,7 +852,7 @@ void DATAIO::WriteStringList(char *file_, std::vector<std::string> &strlst) {
   out.close();
 }
 
-void DATAIO::WriteComments(char *file_, std::vector<std::string> &strvect) {
+void DATAIO::WriteComments(const char *file_, const std::vector<std::string> &strvect) {
   std::fstream out;
   out.open(file_, std::ios::out | std::ios::app);
   out.setf(std::ios_base::right, std::ios_base::adjustfield);
@@ -850,7 +863,7 @@ void DATAIO::WriteComments(char *file_, std::vector<std::string> &strvect) {
   out.close();
 }
 
-void DATAIO::WriteDvector(char *file_, dvector *v) {
+void DATAIO::WriteDvector(const char *file_, dvector *v) {
   std::fstream out;
   out.open(file_, std::ios::out | std::ios::app);
   out.setf(std::ios_base::right, std::ios_base::adjustfield);
@@ -861,7 +874,7 @@ void DATAIO::WriteDvector(char *file_, dvector *v) {
   out.close();
 }
 
-void DATAIO::WriteUIvector(char *file_, uivector *v) {
+void DATAIO::WriteUIvector(const char *file_, uivector *v) {
   std::fstream out;
   out.open(file_, std::ios::out | std::ios::app);
   out.setf(std::ios_base::right, std::ios_base::adjustfield);
@@ -872,7 +885,7 @@ void DATAIO::WriteUIvector(char *file_, uivector *v) {
   out.close();
 }
 
-void DATAIO::WriteDVectorList(char *file_, dvectorlist *lst) {
+void DATAIO::WriteDVectorList(const char *file_, dvectorlist *lst) {
   std::fstream out;
   out.open(file_, std::ios::out | std::ios::app);
   out.setf(std::ios_base::right, std::ios_base::adjustfield);
@@ -889,7 +902,7 @@ void DATAIO::WriteDVectorList(char *file_, dvectorlist *lst) {
   out.close();
 }
 
-void DATAIO::WriteMatrix(char *file_, matrix *m) {
+void DATAIO::WriteMatrix(const char *file_, matrix *m) {
   std::fstream out;
   out.open(file_, std::ios::out | std::ios::app);
   out.setf(std::ios_base::right, std::ios_base::adjustfield);
@@ -906,7 +919,7 @@ void DATAIO::WriteMatrix(char *file_, matrix *m) {
   out.close();
 }
 
-void DATAIO::WriteTensor(char *file_, tensor *a) {
+void DATAIO::WriteTensor(const char *file_, tensor *a) {
   std::fstream out;
   out.open(file_, std::ios::out | std::ios::app);
   out.setf(std::ios_base::right, std::ios_base::adjustfield);
@@ -927,7 +940,7 @@ void DATAIO::WriteTensor(char *file_, tensor *a) {
   out.close();
 }
 
-void DATAIO::WritePCAModel(char *path_, PCAMODEL *m) {
+void DATAIO::WritePCAModel(const char *path_, PCAMODEL *m) {
   char tscore[MAXCHARS], ploadings[MAXCHARS], expvar[MAXCHARS],
       columnscaling[MAXCHARS], columnaverage[MAXCHARS];
 
@@ -955,7 +968,7 @@ void DATAIO::WritePCAModel(char *path_, PCAMODEL *m) {
   WriteDvector(columnaverage, m->colaverage);
 }
 
-void DATAIO::WritePLSModel(char *path_, PLSMODEL *m) {
+void DATAIO::WritePLSModel(const char *path_, PLSMODEL *m) {
   char tscore[MAXCHARS], ploadings[MAXCHARS], weights[MAXCHARS],
       xexpvar[MAXCHARS], xcolumnscaling[MAXCHARS], xcolumnaverage[MAXCHARS],
       uscore[MAXCHARS], qloadings[MAXCHARS], ycolumnscaling[MAXCHARS],
@@ -1046,7 +1059,7 @@ void DATAIO::WritePLSModel(char *path_, PLSMODEL *m) {
   WriteMatrix(yscrambling, m->yscrambling);
 }
 
-void DATAIO::WriteUPCAModel(char *path_, UPCAMODEL *m) {
+void DATAIO::WriteUPCAModel(const char *path_, UPCAMODEL *m) {
   char tscore[MAXCHARS], ploadings[MAXCHARS], expvar[MAXCHARS],
       columnscaling[MAXCHARS], columnaverage[MAXCHARS];
 
@@ -1074,7 +1087,7 @@ void DATAIO::WriteUPCAModel(char *path_, UPCAMODEL *m) {
   WriteDVectorList(columnaverage, m->colaverage);
 }
 
-void DATAIO::WriteUPLSModel(char *path_, UPLSMODEL *m) {
+void DATAIO::WriteUPLSModel(const char *path_, UPLSMODEL *m) {
   char tscore[MAXCHARS], ploadings[MAXCHARS], weights[MAXCHARS],
       xexpvar[MAXCHARS], xcolumnscaling[MAXCHARS], xcolumnaverage[MAXCHARS],
       uscore[MAXCHARS], qloadings[MAXCHARS], ycolumnscaling[MAXCHARS],
@@ -1171,7 +1184,7 @@ void DATAIO::WriteUPLSModel(char *path_, UPLSMODEL *m) {
   WriteTensor(yscramblingsdep, m->sdep_yscrambling);
 }
 
-void DATAIO::WriteMLRModel(char *path_, MLRMODEL *m) {
+void DATAIO::WriteMLRModel(const char *path_, MLRMODEL *m) {
   char bcoeff[MAXCHARS], r2y[MAXCHARS], sdec[MAXCHARS], ymean[MAXCHARS],
       validatedypred[MAXCHARS], validatedq2y[MAXCHARS], validatedsdep[MAXCHARS],
       validatedbias[MAXCHARS], r2q2scrambling[MAXCHARS], recalc_y[MAXCHARS],
@@ -1225,7 +1238,7 @@ void DATAIO::WriteMLRModel(char *path_, MLRMODEL *m) {
   WriteMatrix(r2q2scrambling, m->r2q2scrambling);
 }
 
-void DATAIO::WriteLDAModel(char *path_, LDAMODEL *m) {
+void DATAIO::WriteLDAModel(const char *path_, LDAMODEL *m) {
   uivector *otherinfo;
   char roc[MAXCHARS], roc_aucs[MAXCHARS], pr[MAXCHARS], pr_aucs[MAXCHARS],
       pprob[MAXCHARS], eval[MAXCHARS], mu[MAXCHARS], evect[MAXCHARS],

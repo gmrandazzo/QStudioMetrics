@@ -1,11 +1,35 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Visualization component for scatterplot.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "ScatterPlot.h"
 #include <scientific.h>
+#include <limits>
+#include <cmath>
 
 #include <QColorDialog>
 #include <QContextMenuEvent>
 #include <QFileDialog>
 #include <QMenu>
 #include <QMessageBox>
+#include <QSettings>
 #include <QStringListModel>
 
 #include <unistd.h>
@@ -66,6 +90,11 @@ int ScatterPlot::GetIDinmxlst(QString mxhash) {
   }
 }
 
+int ScatterPlot::GetIDinarlst(QString arhash) {
+  Q_UNUSED(arhash);
+  return -1;
+}
+
 int ScatterPlot::makeSize(double val, double min, double max, int sizemin,
                           int sizemax) {
   double normval = (val - min) / (max - min);
@@ -108,9 +137,10 @@ QList<QColor> ScatterPlot::GenColorList(int size) {
   colors << Qt::black << Qt::blue << Qt::red << Qt::green << Qt::magenta
          << Qt::cyan;
 
-  if (size > colors.size()) {
+  int toAdd = size - colors.size();
+  if (toAdd > 0) {
     srand(time(0));
-    for (int i = 0; i < size - colors.size(); i++) {
+    for (int i = 0; i < toAdd; i++) {
       colors.append(QColor(random(0, 256), random(0, 256), random(0, 256)));
     }
   }
@@ -125,7 +155,7 @@ QList<QColor> ScatterPlot::GenColorList(int size) {
 void ScatterPlot::BuildLine(qreal angular_coeff) {
   qreal xmin, xmax, ymin, ymax;
   xmin = xmax = chart->getPoint(0)->x();
-  ymin = ymax = chart->getPoint(0)->y();
+  ymax = chart->getPoint(0)->y();
   for (int i = 1; i < chart->PointSize(); i++) {
     if (chart->getPoint(i)->x() < xmin) {
       xmin = chart->getPoint(i)->x();
@@ -340,7 +370,7 @@ void ScatterPlot::BuildHotellingEllipse() {
     curve.append(
         QPointF(r_ellipse->data[0][0] + cc->data[0],
                 r_ellipse->data[0][1] + cc->data[1])); // Close the curve
-    chart->addCurve(curve, "Hotelling ellipse 95% confidence", Qt::black);
+    chart->addCurve(curve, "Hotelling ellipse 95% confidence", Qt::black, true);
   }
 
   DelDVector(&cc);
@@ -425,8 +455,8 @@ void ScatterPlot::UpdateAxisName() {
   }
 }
 
-void ScatterPlot::initPoint(QList<matrix *> mx, QList<matrix *> my,
-                            QList<QStringList> name) {
+void ScatterPlot::initPoint(const QList<matrix *> &mx, const QList<matrix *> &my,
+                            const QList<QStringList> &name) {
   // Only for 2D plot!
   QList<QColor> colors = GenColorList(mx.size());
 
@@ -452,7 +482,7 @@ void ScatterPlot::initPoint(QList<matrix *> mx, QList<matrix *> my,
   UpdateAxisName();
 }
 
-void ScatterPlot::initPoint(QList<matrix *> mx, QList<QStringList> name) {
+void ScatterPlot::initPoint(const QList<matrix *> &mx, const QList<QStringList> &name) {
 // For 2D and 3D plots!
 #ifdef DEBUG
   qDebug() << "2D and 3D plot init";
@@ -673,9 +703,9 @@ void ScatterPlot::setSelectionStyle() {
         SelectionStyleDialog::ChangeType changesize = obj.ChangeSize();
 
         if (changeshape == 1) {
-          MarkerType mtype = MarkerType(obj.getSymbolType());
+          MarkerType markerType = MarkerType(obj.getSymbolType());
           for (int i = 0; i < selectedIDS.size(); i++) {
-            chart->getPoint(selectedIDS[i])->setMarkerType(mtype);
+            chart->getPoint(selectedIDS[i])->setMarkerType(markerType);
           }
         }
 
@@ -690,52 +720,36 @@ void ScatterPlot::setSelectionStyle() {
           QString symcolvname = obj.getVariableSymbolColor();
           QColor mincolor = obj.getMinSymbolColor();
           QColor maxcolor = obj.getMaxSymbolColor();
-          double min, max;
-          QStringList objnameselected;
+          double min = std::numeric_limits<double>::max();
+          double max = -std::numeric_limits<double>::max();
           QList<double> dval;
+          dval.reserve(selectedIDS.size());
 
           for (int i = 0; i < selectedIDS.size(); i++) {
-            objnameselected.append(chart->getPoint(selectedIDS[i])->name());
-            dval.append(9999.0);
-          }
+            QString objName = chart->getPoint(selectedIDS[i])->name();
+            double val = std::numeric_limits<double>::quiet_NaN();
 
-          min = 9999.0;
-          max = -9999.0;
-          for (int i = 0; i < objnameselected.size(); i++) {
             for (int j = 0; j < (*vartablabels).size(); j++) {
-              int objindx = (*vartablabels)[j]->getObjectsName().indexOf(
-                  objnameselected[i]);
+              int objindx = (*vartablabels)[j]->getObjectsName().indexOf(objName);
               if (objindx > -1) {
-                int varindx =
-                    (*vartablabels)[j]->getFeaturesName().indexOf(symcolvname) -
-                    1;
+                int varindx = (*vartablabels)[j]->getFeaturesName().indexOf(symcolvname) - 1;
                 if (varindx > -1) {
-                  dval[i] =
-                      (*vartablabels)[j]->getMatrix()->data[objindx][varindx];
-                  if (dval[i] < min) {
-                    min = dval[i];
-                  }
-
-                  if (dval[i] > max && dval[i] < 9999) {
-                    max = dval[i];
-                  }
-
+                  val = (*vartablabels)[j]->getMatrix()->data[objindx][varindx];
+                  if (val < min) min = val;
+                  if (val > max) max = val;
                   break;
-                } else {
-                  break; // this object do not contain this variable in matrix
                 }
-              } else {
-                continue;
               }
             }
+            dval.append(val);
           }
 
-          for (int i = 0; i < dval.size(); i++) {
-            if (FLOAT_EQ(dval[i], 9999.0, 1e-1)) {
-              continue;
-            } else {
-              chart->getPoint(selectedIDS[i])
-                  ->setColor(makeColor(dval[i], min, max, mincolor, maxcolor));
+          if (min != std::numeric_limits<double>::max() && max != -std::numeric_limits<double>::max()) {
+            for (int i = 0; i < dval.size(); i++) {
+              if (!std::isnan(dval[i])) {
+                chart->getPoint(selectedIDS[i])
+                    ->setColor(makeColor(dval[i], min, max, mincolor, maxcolor));
+              }
             }
           }
         }
@@ -751,53 +765,36 @@ void ScatterPlot::setSelectionStyle() {
           QString symcolvname = obj.getVariableSymbolSize();
           int minsymbsize = obj.getMinSymbolSize();
           int maxsymbsize = obj.getMaxSymbolSize();
-          double min, max;
-          QStringList objnameselected;
+          double min = std::numeric_limits<double>::max();
+          double max = -std::numeric_limits<double>::max();
           QList<double> dval;
+          dval.reserve(selectedIDS.size());
 
           for (int i = 0; i < selectedIDS.size(); i++) {
-            objnameselected.append(chart->getPoint(selectedIDS[i])->name());
-            dval.append(9999.0);
-          }
+            QString objName = chart->getPoint(selectedIDS[i])->name();
+            double val = std::numeric_limits<double>::quiet_NaN();
 
-          min = 9999.0;
-          max = -9999.0;
-          for (int i = 0; i < objnameselected.size(); i++) {
             for (int j = 0; j < (*vartablabels).size(); j++) {
-              int objindx = (*vartablabels)[j]->getObjectsName().indexOf(
-                  objnameselected[i]);
+              int objindx = (*vartablabels)[j]->getObjectsName().indexOf(objName);
               if (objindx > -1) {
-                int varindx =
-                    (*vartablabels)[j]->getFeaturesName().indexOf(symcolvname) -
-                    1;
+                int varindx = (*vartablabels)[j]->getFeaturesName().indexOf(symcolvname) - 1;
                 if (varindx > -1) {
-                  dval[i] =
-                      (*vartablabels)[j]->getMatrix()->data[objindx][varindx];
-                  if (dval[i] < min) {
-                    min = dval[i];
-                  }
-
-                  if (dval[i] > max && dval[i] < 9999) {
-                    max = dval[i];
-                  }
-
+                  val = (*vartablabels)[j]->getMatrix()->data[objindx][varindx];
+                  if (val < min) min = val;
+                  if (val > max) max = val;
                   break;
-                } else {
-                  break; // this object do not contain this variable in matrix
                 }
-              } else {
-                continue;
               }
             }
+            dval.append(val);
           }
 
-          for (int i = 0; i < dval.size(); i++) {
-            if (FLOAT_EQ(dval[i], 9999.0, 1e-1)) {
-              continue;
-            } else {
-              chart->getPoint(selectedIDS[i])
-                  ->setRadius(
-                      makeSize(dval[i], min, max, minsymbsize, maxsymbsize));
+          if (min != std::numeric_limits<double>::max() && max != -std::numeric_limits<double>::max()) {
+            for (int i = 0; i < dval.size(); i++) {
+              if (!std::isnan(dval[i])) {
+                chart->getPoint(selectedIDS[i])
+                    ->setRadius(makeSize(dval[i], min, max, minsymbsize, maxsymbsize));
+              }
             }
           }
         }
@@ -859,9 +856,9 @@ void ScatterPlot::setSelectionStyle() {
       SelectionStyleDialog::ChangeType changesize = obj.ChangeSize();
 
       if (changeshape == 1) {
-        MarkerType mtype = MarkerType(obj.getSymbolType());
+        MarkerType markerType = MarkerType(obj.getSymbolType());
         for (int i = 0; i < selectedIDS.size(); i++) {
-          chart->getPoint(selectedIDS[i])->setMarkerType(mtype);
+          chart->getPoint(selectedIDS[i])->setMarkerType(markerType);
         }
       }
 
@@ -873,48 +870,36 @@ void ScatterPlot::setSelectionStyle() {
         QString symcolvname = obj.getVariableSymbolColor();
         QColor mincolor = obj.getMinSymbolColor();
         QColor maxcolor = obj.getMaxSymbolColor();
-        double min, max;
-        QStringList objnameselected;
+        double min = std::numeric_limits<double>::max();
+        double max = -std::numeric_limits<double>::max();
         QList<double> dval;
+        dval.reserve(selectedIDS.size());
 
         for (int i = 0; i < selectedIDS.size(); i++) {
-          objnameselected.append(chart->getPoint(selectedIDS[i])->name());
-          dval.append(9999.0);
-        }
+          QString objName = chart->getPoint(selectedIDS[i])->name();
+          double val = std::numeric_limits<double>::quiet_NaN();
 
-        min = 9999.0;
-        max = -9999.0;
-        for (int i = 0; i < objnameselected.size(); i++) {
           for (int j = 0; j < (*mxlst).size(); j++) {
-            int objindx = (*mxlst)[j]->getObjName().indexOf(objnameselected[i]);
+            int objindx = (*mxlst)[j]->getObjName().indexOf(objName);
             if (objindx > -1) {
               int varindx = (*mxlst)[j]->getVarName().indexOf(symcolvname) - 1;
               if (varindx > -1) {
-                dval[i] = (*mxlst)[j]->Matrix()->data[objindx][varindx];
-                if (dval[i] < min) {
-                  min = dval[i];
-                }
-
-                if (dval[i] > max && dval[i] < 9999) {
-                  max = dval[i];
-                }
-
+                val = (*mxlst)[j]->Matrix()->data[objindx][varindx];
+                if (val < min) min = val;
+                if (val > max) max = val;
                 break;
-              } else {
-                break; // this object do not contain this variable in matrix
               }
-            } else {
-              continue;
             }
           }
+          dval.append(val);
         }
 
-        for (int i = 0; i < dval.size(); i++) {
-          if (FLOAT_EQ(dval[i], 9999.0, 1e-1)) {
-            continue;
-          } else {
-            chart->getPoint(selectedIDS[i])
-                ->setColor(makeColor(dval[i], min, max, mincolor, maxcolor));
+        if (min != std::numeric_limits<double>::max() && max != -std::numeric_limits<double>::max()) {
+          for (int i = 0; i < dval.size(); i++) {
+            if (!std::isnan(dval[i])) {
+              chart->getPoint(selectedIDS[i])
+                  ->setColor(makeColor(dval[i], min, max, mincolor, maxcolor));
+            }
           }
         }
       }
@@ -927,49 +912,36 @@ void ScatterPlot::setSelectionStyle() {
         QString symcolvname = obj.getVariableSymbolSize();
         int minsymbsize = obj.getMinSymbolSize();
         int maxsymbsize = obj.getMaxSymbolSize();
-        double min, max;
-        QStringList objnameselected;
+        double min = std::numeric_limits<double>::max();
+        double max = -std::numeric_limits<double>::max();
         QList<double> dval;
+        dval.reserve(selectedIDS.size());
 
         for (int i = 0; i < selectedIDS.size(); i++) {
-          objnameselected.append(chart->getPoint(selectedIDS[i])->name());
-          dval.append(-9999.0);
-        }
+          QString objName = chart->getPoint(selectedIDS[i])->name();
+          double val = std::numeric_limits<double>::quiet_NaN();
 
-        min = 9999.0;
-        max = -9999.0;
-        for (int i = 0; i < objnameselected.size(); i++) {
           for (int j = 0; j < (*mxlst).size(); j++) {
-            int objindx = (*mxlst)[j]->getObjName().indexOf(objnameselected[i]);
+            int objindx = (*mxlst)[j]->getObjName().indexOf(objName);
             if (objindx > -1) {
               int varindx = (*mxlst)[j]->getVarName().indexOf(symcolvname) - 1;
               if (varindx > -1) {
-                dval[i] = (*mxlst)[j]->Matrix()->data[objindx][varindx];
-                if (dval[i] < min) {
-                  min = dval[i];
-                }
-
-                if (dval[i] > max && dval[i] < 9999) {
-                  max = dval[i];
-                }
-
+                val = (*mxlst)[j]->Matrix()->data[objindx][varindx];
+                if (val < min) min = val;
+                if (val > max) max = val;
                 break;
-              } else {
-                break; // this object do not contain this variable in matrix
               }
-            } else {
-              continue;
             }
           }
+          dval.append(val);
         }
 
-        for (int i = 0; i < dval.size(); i++) {
-          if (FLOAT_EQ(dval[i], -9999.0, 1e-1)) {
-            continue;
-          } else {
-            chart->getPoint(selectedIDS[i])
-                ->setRadius(
-                    makeSize(dval[i], min, max, minsymbsize, maxsymbsize));
+        if (min != std::numeric_limits<double>::max() && max != -std::numeric_limits<double>::max()) {
+          for (int i = 0; i < dval.size(); i++) {
+            if (!std::isnan(dval[i])) {
+              chart->getPoint(selectedIDS[i])
+                  ->setRadius(makeSize(dval[i], min, max, minsymbsize, maxsymbsize));
+            }
           }
         }
       }
@@ -998,20 +970,30 @@ void ScatterPlot::OpenPlotSettingsDialog() {
   chart->getXminXmaxXTick(&xmin, &xmax, &xtick);
   chart->getYminYmaxYTick(&ymin, &ymax, &ytick);
 
-  PlotSettingsDialog psettings(xmin, xmax, xtick, ymin, ymax, ytick);
+  PlotSettingsDialog psettings(xmin, xmax, xtick, ymin, ymax, ytick,
+                               chart->getPlotTitleSize(),
+                               chart->getAxisValueSize(),
+                               chart->getXLabelSize(), chart->getYLabelSize());
   if (psettings.exec() == QDialog::Accepted) {
     int titlesize = psettings.getPlotTitleSize();
     int axisvaluesize = psettings.getAxisValueSize();
 
     int xlabelsize = psettings.getXlabelSize();
-    double xmin = psettings.getXmin();
-    double xmax = psettings.getXmax();
-    int xtick = psettings.getXTick();
+    xmin = psettings.getXmin();
+    xmax = psettings.getXmax();
+    xtick = psettings.getXTick();
 
     int ylabelsize = psettings.getYlabelSize();
-    double ymin = psettings.getYmin();
-    double ymax = psettings.getYmax();
-    int ytick = psettings.getYTick();
+    ymin = psettings.getYmin();
+    ymax = psettings.getYmax();
+    ytick = psettings.getYTick();
+
+    QSettings settings("QStudioMetrics", "PlotSettings");
+    settings.setValue("titleSize", titlesize);
+    settings.setValue("axisValueSize", axisvaluesize);
+    settings.setValue("xLabelSize", xlabelsize);
+    settings.setValue("yLabelSize", ylabelsize);
+
     QString qdb =
         QString(" ScatterPlot::OpenPlotSettingsDialog title size %1 axis val "
                 "size %2 xlbl size %3  ylbl size %4 xtick %5 ytick %6")
@@ -1127,6 +1109,14 @@ void ScatterPlot::DoClusterAnalysis() {
           }
         }
 
+        if (abort == true) {
+          DelMatrix(&coordinates);
+          DelUIVector(&clusterids);
+          DelDVector(&toplot);
+          StopRun();
+          return;
+        }
+
         StopRun();
 
         if (toplot->size > 0) {
@@ -1174,48 +1164,106 @@ void ScatterPlot::DoClusterAnalysis() {
         }
       }
 
-      DelMatrix(&coordinates);
-
-      QList<QColor> colors = GenColorList(ncluster);
-
-      for (int i = 0; i < chart->PointSize(); i++) {
-        int cid = getUIVectorValue(clusterids, i) - 1;
-        if (cid > -1) {
-          chart->getPoint(i)->setColor(colors[cid]);
-        } else {
-          continue;
-        }
+      if (abort == true) {
+        DelMatrix(&coordinates);
+        DelUIVector(&clusterids);
+        StopRun();
+        return;
       }
 
-      if (docluster.SaveClusterLabels() == true) {
-        // Set Labels
-        LABELS clusterobjlabels;
-        for (int i = 0; i < ncluster; i++) {
-          clusterobjlabels.append(LABEL());
-          clusterobjlabels.last().name =
-              QString("%1_%2")
-                  .arg(docluster.getClusterLabelSufix())
-                  .arg(QString::number(i + 1));
-        }
+              DelMatrix(&coordinates);
 
-        for (int i = 0; i < chart->PointSize(); i++) {
-          int id = getUIVectorValue(clusterids, i) - 1;
-          if (id > -1) {
-            clusterobjlabels[id].objects.append(chart->getPoint(i)->name());
-          } else {
-            continue;
-          }
-        }
+      
 
-        objlabels->append(clusterobjlabels);
-      }
+              int max_cid = ncluster - 1;
+
+              for (int i = 0; i < chart->PointSize(); i++) {
+
+                int cid = getUIVectorValue(clusterids, i) - 1;
+
+                if (cid > max_cid)
+
+                  max_cid = cid;
+
+              }
+
+              int actual_ncluster = max_cid + 1;
+
+      
+
+              QList<QColor> colors = GenColorList(actual_ncluster);
+
+      
+
+              for (int i = 0; i < chart->PointSize(); i++) {
+
+                int cid = getUIVectorValue(clusterids, i) - 1;
+
+                if (cid > -1) {
+
+                  chart->getPoint(i)->setColor(colors[cid]);
+
+                } else {
+
+                  continue;
+
+                }
+
+              }
+
+      
+
+              if (docluster.SaveClusterLabels() == true) {
+
+                // Set Labels
+
+                LABELS clusterobjlabels;
+
+                for (int i = 0; i < actual_ncluster; i++) {
+
+                  clusterobjlabels.append(LABEL());
+
+                  clusterobjlabels.last().name =
+
+                      QString("%1_%2")
+
+                          .arg(docluster.getClusterLabelSufix())
+
+                          .arg(QString::number(i + 1));
+
+                }
+
+      
+
+                for (int i = 0; i < chart->PointSize(); i++) {
+
+                  int id = getUIVectorValue(clusterids, i) - 1;
+
+                  if (id > -1) {
+
+                    clusterobjlabels[id].objects.append(chart->getPoint(i)->name());
+
+                  } else {
+
+                    continue;
+
+                  }
+
+                }
+
+      
+
+                objlabels->append(clusterobjlabels);
+
+              }
+
+      
 
       StopRun();
     } else {
-      matrix *m;
       int dataid = GetIDinmxlst(docluster.getDataHash());
       if (dataid > -1) {
-        m = (*mxlst)[dataid]->Matrix();
+        matrix *m = (*mxlst)[dataid]->Matrix();
 
         int ncluster = 2;
         if (docluster.ValidateCluster() == true) {
@@ -1241,6 +1289,13 @@ void ScatterPlot::DoClusterAnalysis() {
             } else {
               QApplication::processEvents();
             }
+          }
+
+          if (abort == true) {
+            DelUIVector(&clusterids);
+            DelDVector(&toplot);
+            StopRun();
+            return;
           }
 
           StopRun();
@@ -1290,47 +1345,117 @@ void ScatterPlot::DoClusterAnalysis() {
           }
         }
 
-        QList<QColor> colors = GenColorList(ncluster);
+                  if (abort == true) {
 
-        // Set Labels
-        LABELS clusterobjlabels;
-        if (docluster.SaveClusterLabels() == true) {
-          for (int i = 0; i < ncluster; i++) {
-            clusterobjlabels.append(LABEL());
-            clusterobjlabels.last().name =
-                QString("%1 - %2")
-                    .arg(docluster.getClusterLabelSufix())
-                    .arg(QString::number(i + 1));
-          }
-        }
+                    DelUIVector(&clusterids);
 
-        for (uint i = 0; i < clusterids->size; i++) {
-          int objid = -1;
-          for (int j = 0; j < chart->PointSize(); j++) {
-            if ((*mxlst)[dataid]->getObjName()[i].compare(
-                    chart->getPoint(j)->name()) == 0) {
-              objid = j;
-              break;
-            } else {
-              continue;
-            }
-          }
+                    StopRun();
 
-          if (objid > -1) {
-            int cid = getUIVectorValue(clusterids, i) - 1;
-            if (cid > -1) {
-              chart->getPoint(objid)->setColor(colors[cid]);
-              if (docluster.SaveClusterLabels() == true) {
-                clusterobjlabels[cid].objects.append(
-                    chart->getPoint(objid)->name());
-              }
-            } else {
-              continue;
-            }
-          } else {
-            continue;
-          }
-        }
+                    return;
+
+                  }
+
+        
+
+                  int max_cid = ncluster - 1;
+
+                  for (uint i = 0; i < clusterids->size; i++) {
+
+                    int cid = getUIVectorValue(clusterids, i) - 1;
+
+                    if (cid > max_cid)
+
+                      max_cid = cid;
+
+                  }
+
+                  int actual_ncluster = max_cid + 1;
+
+        
+
+                  QList<QColor> colors = GenColorList(actual_ncluster);
+
+        
+
+                  // Set Labels
+
+                  LABELS clusterobjlabels;
+
+                  if (docluster.SaveClusterLabels() == true) {
+
+                    for (int i = 0; i < actual_ncluster; i++) {
+
+                      clusterobjlabels.append(LABEL());
+
+                      clusterobjlabels.last().name =
+
+                          QString("%1 - %2")
+
+                              .arg(docluster.getClusterLabelSufix())
+
+                              .arg(QString::number(i + 1));
+
+                    }
+
+                  }
+
+        
+
+                  for (uint i = 0; i < clusterids->size; i++) {
+
+                    int objid = -1;
+
+                    for (int j = 0; j < chart->PointSize(); j++) {
+
+                      if ((*mxlst)[dataid]->getObjName()[i].compare(
+
+                              chart->getPoint(j)->name()) == 0) {
+
+                        objid = j;
+
+                        break;
+
+                      } else {
+
+                        continue;
+
+                      }
+
+                    }
+
+        
+
+                    if (objid > -1) {
+
+                      int cid = getUIVectorValue(clusterids, i) - 1;
+
+                      if (cid > -1) {
+
+                        chart->getPoint(objid)->setColor(colors[cid]);
+
+                        if (docluster.SaveClusterLabels() == true) {
+
+                          clusterobjlabels[cid].objects.append(
+
+                              chart->getPoint(objid)->name());
+
+                        }
+
+                      } else {
+
+                        continue;
+
+                      }
+
+                    } else {
+
+                      continue;
+
+                    }
+
+                  }
+
+        
 
         if (docluster.SaveClusterLabels() == true) {
           objlabels->append(clusterobjlabels);
@@ -1405,13 +1530,12 @@ void ScatterPlot::FindCorrelations() {
   for (uint i = 0; i < coordinates->row; i++) {
     double p1c =
         sqrt(square(coordinates->data[i][0]) + square(coordinates->data[i][1]));
-    double p2c = 0.f, p1p2 = 0.f;
     correl->data[i][i] = disterr->data[i][i] =
         0; // the distance between it self is 0
     for (uint j = i + 1; j < coordinates->row; j++) {
-      p2c = sqrt(square(coordinates->data[j][0]) +
+      double p2c = sqrt(square(coordinates->data[j][0]) +
                  square(coordinates->data[j][1]));
-      p1p2 = sqrt(square(coordinates->data[i][0] - coordinates->data[j][0]) +
+      double p1p2 = sqrt(square(coordinates->data[i][0] - coordinates->data[j][0]) +
                   square(coordinates->data[i][1] - coordinates->data[j][1]));
       correl->data[i][j] = correl->data[j][i] =
           (acos((square(p1c) + square(p2c) - square(p1p2)) / (2 * p1c * p2c))) *
@@ -1443,12 +1567,14 @@ void ScatterPlot::FindCorrelations() {
   DelMatrix(&coordinates);
 }
 
-void ScatterPlot::ShowContextMenu(const QPoint &pos) {
-  getPointSelected();
-  /*QPoint globalPos = ui.plotwidget->mapToGlobal(pos);*/
-  QPoint globalPos = chart->weview()->mapToGlobal(pos);
-  QMenu menu;
+  void ScatterPlot::ShowContextMenu(const QPoint &pos) {
+    if (abort == false)
+      return;
 
+    getPointSelected();
+    /*QPoint globalPos = ui.plotwidget->mapToGlobal(pos);*/
+    QPoint globalPos = chart->weview()->mapToGlobal(pos);
+    QMenu menu;
   if (type == SCORES) {
     menu.addAction("&Select All", this, SLOT(SelectAll()));
     menu.addAction("&Select by...", this, SLOT(SelectBy()));
@@ -1509,17 +1635,18 @@ void ScatterPlot::ShowContextMenu(const QPoint &pos) {
     }
   }
 
-  menu.addSeparator();
-  menu.addAction("&Save Plot Image", this, SLOT(SavePlotImage()));
-  menu.addAction("&Save Selection", this, SLOT(SaveSelection()));
-
-  if (selectedIDS.size() > 0) {
-    menu.actions().last()->setEnabled(true);
-  } else {
-    menu.actions().last()->setEnabled(false);
-  }
-
-  menu.addSeparator();
+      menu.addSeparator();
+      menu.addAction("&Save Plot Image", this, SLOT(SavePlotImage()));
+      menu.addAction("&Save Selection", this, SLOT(SaveSelection()));
+  
+      if (!menu.actions().isEmpty()) {
+        if (selectedIDS.size() > 0) {
+          menu.actions().last()->setEnabled(true);
+        } else {
+          menu.actions().last()->setEnabled(false);
+        }
+      }
+    menu.addSeparator();
   menu.addAction("&Plot Settings", this, SLOT(OpenPlotSettingsDialog()));
 
   menu.addAction("&Reset Plot", this, SLOT(ResetPlot()));
@@ -1619,7 +1746,7 @@ void ScatterPlot::UpdatePointPosition() {
       for (uint i = 0; i < curves[k]->row; i++) {
         line.append(QPointF(curves[k]->data[i][x], curves[k]->data[i][y]));
       }
-      chart->addCurve(line, curvenames[k], curvecolors[k]);
+      chart->addCurve(line, curvenames[k], curvecolors[k], curvesmooth[k]);
     }
   }
 
@@ -1656,11 +1783,12 @@ void ScatterPlot::SetAutoNameAxes(bool autonameaxes_) {
 }
 
 void ScatterPlot::addCurve(QList<matrix *> curves_, QStringList curvenames_,
-                           QList<QColor> curvecolors_) {
+                           QList<QColor> curvecolors_, bool smooth) {
   for (int i = 0; i < curves_.size(); i++) {
     curves.append(new matrix);
     initMatrix(&curves.last());
     MatrixCopy(curves_.at(i), &curves.last());
+    curvesmooth.append(smooth);
   }
   curvenames.append(curvenames_);
   curvecolors.append(curvecolors_);
@@ -1674,6 +1802,7 @@ void ScatterPlot::removeAllCurves() {
   curves.clear();
   curvenames.clear();
   curvecolors.clear();
+  curvesmooth.clear();
 }
 
 void ScatterPlot::BuildDiagonal() {
@@ -1685,7 +1814,7 @@ void ScatterPlot::BuildDiagonal() {
   PlotUpdate();
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+ScatterPlot::ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
                          QString xaxsisname_, QString yaxsisname_,
                          QString windowtitle) {
 #ifdef DEBUG
@@ -1696,6 +1825,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
   pid = mid = mtype - 1;
   cwidget = 0;
   ehotel = false;
+  abort = true;
   markersymbls << "Circle"
                << "Square"
                << "Triangle";
@@ -1747,6 +1877,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
   ui.axis1->setMaximum(maxcol);
   ui.axis2->setMaximum(maxcol);
 
+  chart->LoadSettings();
+
   // Finally render the scene
   chart->Center();
   chart->Plot();
@@ -1763,7 +1895,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
           this, SLOT(ShowContextMenu(const QPoint &)));
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+ScatterPlot::ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
                          QList<MATRIX *> *mxlst_, QStringList xhash_,
                          QStringList yhash_, LABELS *objlabels_,
                          LABELS *varlabels_, QString xaxsisname_,
@@ -1776,6 +1908,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
+  abort = true;
   markersymbls << "Circle"
                << "Square"
                << "Triangle";
@@ -1826,6 +1959,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
   ui.axis1->setMaximum(maxcol);
   ui.axis2->setMaximum(maxcol);
 
+  chart->LoadSettings();
+
   // Finally render the scene
   chart->Center();
   chart->Plot();
@@ -1839,7 +1974,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
           this, SLOT(ShowContextMenu(const QPoint &)));
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+ScatterPlot::ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
                          QList<MATRIX *> *mxlst_, QStringList xhash_,
                          QStringList yhash_, LABELS *objlabels_,
                          LABELS *varlabels_, QString xaxsisname_,
@@ -1853,6 +1988,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
+  abort = true;
   markersymbls << "Circle"
                << "Square"
                << "Cross";
@@ -1904,6 +2040,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
   ui.axis2->setMaximum(maxcol);
   ui.axis3->setMaximum(maxcol);
 
+  chart->LoadSettings();
+
   // Finally render the scene
   chart->Center();
   // chart->Refresh();
@@ -1919,7 +2057,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
           SLOT(ShowContextMenu(const QPoint &)));
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+ScatterPlot::ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
                          QList<MATRIX *> *mxlst_, QStringList xhash_,
                          QStringList yhash_, TABLABELS *vartablabels_,
                          LABELS *objlabels_, LABELS *varlabels_,
@@ -1930,6 +2068,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
+  abort = true;
   markersymbls << "Circle"
                << "Square"
                << "Triangle";
@@ -1976,6 +2115,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
   ui.axis1->setMaximum(maxcol);
   ui.axis2->setMaximum(maxcol);
 
+  chart->LoadSettings();
+
   // Finally render the scene
   chart->Center();
   chart->Plot();
@@ -1990,8 +2131,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
           this, SLOT(ShowContextMenu(const QPoint &)));
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
-                         dvector *b_, QList<QStringList> &objname,
+ScatterPlot::ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
+                         dvector *b_, const QList<QStringList> &objname,
                          QString xaxsisname_, QString yaxsisname_,
                          QString windowtitle) {
   ui.setupUi(this);
@@ -1999,6 +2140,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
+  abort = true;
   markersymbls << "Circle"
                << "Square"
                << "Triangle";
@@ -2046,6 +2188,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
 
     BuildLine(acoeff.first());
 
+    chart->LoadSettings();
+
     // Finally render the scene
     chart->Center();
     chart->Plot();
@@ -2064,8 +2208,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
   }
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
-                         dvector *b_, QList<QStringList> &objname,
+ScatterPlot::ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
+                         dvector *b_, const QList<QStringList> &objname,
                          QList<MATRIX *> *mxlst_, QStringList xhash_,
                          QStringList yhash_, LABELS *objlabels_,
                          LABELS *varlabels_, QString xaxsisname_,
@@ -2075,6 +2219,7 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
+  abort = true;
   markersymbls << "Circle"
                << "Square"
                << "Triangle";
@@ -2129,6 +2274,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
 
     BuildLine(acoeff.first());
 
+    chart->LoadSettings();
+
     // Finally render the scene
     chart->Center();
     chart->Plot();
@@ -2151,17 +2298,23 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
   }
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
-                         QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
-                         QStringList xhash_, QStringList yhash_,
-                         LABELS *objlabels_, LABELS *varlabels_,
-                         QString xaxsisname_, QString yaxsisname_,
-                         QString windowtitle, int type_) {
+ScatterPlot::ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
+
+                         const QList<QStringList> &objname,
+
+                         QList<MATRIX *> *mxlst_, QStringList xhash_,
+
+                         QStringList yhash_, LABELS *objlabels_,
+
+                         LABELS *varlabels_, QString xaxsisname_,
+
+                         QString yaxsisname_, QString windowtitle, int type_) {
   ui.setupUi(this);
   type = type_;
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
+  abort = true;
   markersymbls << "Circle"
                << "Square"
                << "Triangle";
@@ -2211,6 +2364,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
     maxcol /= 2;
     ui.axis3->setMaximum(maxcol);
 
+    chart->LoadSettings();
+
     // Finally render the scene
     chart->Center();
     chart->Plot();
@@ -2229,17 +2384,25 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
   }
 }
 
-ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
-                         QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
-                         QStringList xhash_, QStringList yhash_,
-                         TABLABELS *vartablabels_, LABELS *objlabels_,
-                         LABELS *varlabels_, QString xaxsisname_,
-                         QString yaxsisname_, QString windowtitle, int type_) {
+ScatterPlot::ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
+
+                         const QList<QStringList> &objname,
+
+                         QList<MATRIX *> *mxlst_, QStringList xhash_,
+
+                         QStringList yhash_, TABLABELS *vartablabels_,
+
+                         LABELS *objlabels_, LABELS *varlabels_,
+
+                         QString xaxsisname_, QString yaxsisname_,
+
+                         QString windowtitle, int type_) {
   ui.setupUi(this);
   type = type_;
   pid = mid = mtype = -1;
   cwidget = 0;
   ehotel = false;
+  abort = true;
   markersymbls << "Circle"
                << "Square"
                << "Triangle";
@@ -2290,6 +2453,8 @@ ScatterPlot::ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
 
     ui.axis3->setMaximum(maxcol);
 
+    chart->LoadSettings();
+
     // Finally render the scene
     chart->Center();
     chart->Plot();
@@ -2313,4 +2478,12 @@ ScatterPlot::~ScatterPlot() {
   delete chart;
   if (cwidget != 0)
     delete cwidget;
+}
+
+void ScatterPlot::setImages(QList<IMAGE> &images) {
+  QMap<QString, QPixmap> imgmap;
+  for(int i=0; i<images.size(); ++i) {
+      imgmap.insert(images[i].name, images[i].image);
+  }
+  chart->setImages(imgmap);
 }

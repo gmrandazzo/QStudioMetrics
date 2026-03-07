@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Visualization component for scatterplot.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef SCATTERPLOT2D_H
 #define SCATTERPLOT2D_H
 
@@ -29,52 +50,52 @@ public:
   enum { SIMPLE = 0, SCORES, LOADINGS, SINGLEAXIS, DOUBLEAXIS, TRIPLEAXIS };
 
   // Simple scatter plot without line
-  ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+  ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
               QString xaxsisname_, QString yaxsisname_, QString windowtitle);
 
   // Scatter plot for matrix data (SCORES, LOADINGS, VAR vs VAR)
-  ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+  ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
               QList<MATRIX *> *mxlst_, QStringList xhash_, QStringList yhash_,
               LABELS *objlabels_, LABELS *varlabels_, QString xaxsisname_,
               QString yaxsisname_, QString windowtitle, int type_);
 
-  ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+  ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
               QList<MATRIX *> *mxlst_, QStringList xhash_, QStringList yhash_,
               LABELS *objlabels_, LABELS *varlabels_, QString xaxsisname_,
               QString yaxsisname_, QString zaxsisname_, QString windowtitle,
               int type_);
 
   // Scatter Plot for matrix data (SCORES, LOADINGS, VAR vs VAR and TABLABELS
-  ScatterPlot(QList<matrix *> &m_, QList<QStringList> &objname,
+  ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &objname,
               QList<MATRIX *> *mxlst_, QStringList xhash_, QStringList yhash_,
               TABLABELS *vartablabels, LABELS *objlabels_, LABELS *varlabels_,
               QString xaxsisname_, QString yaxsisname_, QString windowtitle,
               int type_);
 
   // Simple scatter plot with line
-  ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_, dvector *b_,
-              QList<QStringList> &objname, QString xaxsisname_,
+  ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_, dvector *b_,
+              const QList<QStringList> &objname, QString xaxsisname_,
               QString yaxsisname_,
               QString windowtitle); // typeplot = 1
 
   // Scatter Plot with line and selector options. for matrix
-  ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_, dvector *b_,
-              QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
+  ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_, dvector *b_,
+              const QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
               QStringList xhash_, QStringList yhash_, LABELS *objlabels_,
               LABELS *varlabels_, QString xaxsisname_, QString yaxsisname_,
               QString windowtitle,
               int type_); // MATRIXDATA
 
   /* Scatter Plot without line but with x and y*/
-  ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
-              QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
+  ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
+              const QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
               QStringList xhash_, QStringList yhash_, LABELS *objlabels_,
               LABELS *varlabels_, QString xaxsisname_, QString yaxsisname_,
               QString windowtitle,
               int type_); // MATRIXDATA
 
-  ScatterPlot(QList<matrix *> &mx_, QList<matrix *> &my_,
-              QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
+  ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
+              const QList<QStringList> &objname, QList<MATRIX *> *mxlst_,
               QStringList xhash_, QStringList yhash_, TABLABELS *vartablabels_,
               LABELS *objlabels_, LABELS *varlabels_, QString xaxsisname_,
               QString yaxsisname_, QString windowtitle,
@@ -87,9 +108,11 @@ public:
   void setAxisNameExtensions(QStringList nameaxisext_);
   void setHotellingConfidenceEllipse(bool ehotel_);
 
+  void setImages(QList<IMAGE> &images);
+
   void BuildDiagonal();
   void addCurve(QList<matrix *> m, QStringList curvenames_,
-                QList<QColor> curvecolors_);
+                QList<QColor> curvecolors_, bool smooth = false);
   void removeAllCurves();
 
   void setPID(int pid_) { pid = pid_; }
@@ -148,6 +171,7 @@ private:
   QList<matrix *> curves;
   QStringList curvenames;
   QList<QColor> curvecolors;
+  QVector<bool> curvesmooth;
   QString xaxisname, yaxisname, zaxisname;
   QStringList nameaxisext;
   QStringList markersymbls;
@@ -166,9 +190,9 @@ private:
   int layer;
   void getPointSelected();
   void UpdateAxisName();
-  void initPoint(QList<matrix *> mx, QList<QStringList> name);
-  void initPoint(QList<matrix *> mx, QList<matrix *> my,
-                 QList<QStringList> name);
+  void initPoint(const QList<matrix *> &mx, const QList<QStringList> &name);
+  void initPoint(const QList<matrix *> &mx, const QList<matrix *> &my,
+                 const QList<QStringList> &name);
   void BuildLine(qreal angular_coeff);
   void BuildHotellingEllipse();
   int random(int min, int max);

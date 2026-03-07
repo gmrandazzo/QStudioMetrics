@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Dialog for addfile operations.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "addfileDialog.h"
 #include "qstudiometricstypes.h"
 #include <QDialogButtonBox>
@@ -11,7 +32,8 @@
 auto AddFileDialog::CountNumberColum(QString file_) {
   ssize_t ncol = 0;
   QFile file(file_);
-  file.open(QIODevice::ReadOnly | QIODevice::Text);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    return ncol;
   QTextStream in(&file);
   while (!in.atEnd()) {
     if (in.readLine().contains("#", Qt::CaseInsensitive) == true) { // skip line
@@ -28,7 +50,8 @@ auto AddFileDialog::CountNumberColum(QString file_) {
 auto AddFileDialog::CountNumberRow(QString file_) {
   ssize_t nrow = 0;
   QFile file(file_);
-  file.open(QIODevice::ReadOnly | QIODevice::Text);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    return nrow;
   QTextStream in(&file);
   while (!in.atEnd()) {
     QString line = in.readLine();
@@ -48,7 +71,8 @@ auto AddFileDialog::CountNumberRow(QString file_) {
 QStringList AddFileDialog::ListRead(QString file_) {
   QStringList lst;
   QFile file(file_);
-  file.open(QIODevice::ReadOnly | QIODevice::Text);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    return lst;
   QTextStream in(&file);
   while (!in.atEnd()) {
     lst.append(
@@ -204,7 +228,7 @@ void AddFileDialog::Preview() {
       objname = ListRead(getFileObjName());
 
       if (file_nrow != objname.size()) {
-        QMessageBox::warning(this, tr("Import Warning!!"),
+        QMessageBox::warning(this, tr("Import Warning"),
                              tr("Object name size and data row differ.\n "
                                 "Please check your data."),
                              QMessageBox::Ok);
@@ -230,7 +254,7 @@ void AddFileDialog::Preview() {
 
             if (file_ncol != varname.size()) {
               QMessageBox::warning(
-                  this, tr("Import Warning!!"),
+                  this, tr("Import Warning"),
                   tr("Variable name size and data column differ.\n Please "
                      "check your data or variable file."),
                   QMessageBox::Ok);

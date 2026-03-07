@@ -1,0 +1,14 @@
+
+stages:
+  - test
+
+semgrep:
+  stage: test
+  image: returntocorp/semgrep
+  variables:
+    SEMGREP_RULES: p/default # scan with default rules
+  script:
+    - semgrep ci
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_PIPELINE_SOURCE == "pull_request"

@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Visualization component for simpleline2dplot.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "SimpleLine2DPlot.h"
 
 #include <QFileDialog>
@@ -36,9 +57,17 @@ void SimpleLine2DPlot::setPlotTitle(QString title) {
   chart->setPlotTitle(title);
 }
 
+void SimpleLine2DPlot::setImages(QList<IMAGE> &images) {
+  QMap<QString, QPixmap> imgmap;
+  for (int i = 0; i < images.size(); ++i) {
+    imgmap.insert(images[i].name, images[i].image);
+  }
+  chart->setImages(imgmap);
+}
+
 SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename,
                                    QString windowtitle, QString xaxestitle,
-                                   QString yaxestitle) {
+                                   QString yaxestitle, bool smooth) {
   ui.setupUi(this);
   setWindowTitle(windowtitle);
 
@@ -62,6 +91,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename,
 
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
+  chart->LoadSettings();
   chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
@@ -69,7 +99,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename,
 
 SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames,
                                    QString windowtitle, QString xaxestitle,
-                                   QString yaxestitle) {
+                                   QString yaxestitle, bool smooth) {
   ui.setupUi(this);
   setWindowTitle(windowtitle);
 
@@ -99,12 +129,13 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames,
                       5);
       curve.append(QPointF(x, y));
     }
-    chart->addCurve(curve, QString("%1").arg(curvenames[j - 1]), colors[j - 1]);
+    chart->addCurve(curve, QString("%1").arg(curvenames[j - 1]), colors[j - 1], smooth);
     // chart->setCurveStyle(j-1, LM);
   }
 
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
+  chart->LoadSettings();
   chart->Plot();
 
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
@@ -113,7 +144,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames,
 
 SimpleLine2DPlot::SimpleLine2DPlot(QList<matrix *> mlst, QStringList curvenames,
                                    QString windowtitle, QString xaxestitle,
-                                   QString yaxestitle) {
+                                   QString yaxestitle, bool smooth) {
   ui.setupUi(this);
   setWindowTitle(windowtitle);
 
@@ -141,12 +172,13 @@ SimpleLine2DPlot::SimpleLine2DPlot(QList<matrix *> mlst, QStringList curvenames,
       qreal y = mlst[i]->data[j][1];
       curve.append(QPointF(x, y));
     }
-    chart->addCurve(curve, QString("%1").arg(curvenames[i]), colors[i]);
+    chart->addCurve(curve, QString("%1").arg(curvenames[i]), colors[i], smooth);
     // chart->setCurveStyle(i, LM);
   }
 
   chart->setXaxisName(xaxestitle);
   chart->setYaxisName(yaxestitle);
+  chart->LoadSettings();
   chart->Plot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));

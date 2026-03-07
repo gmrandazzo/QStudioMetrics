@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Main window implementation for the GUI.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 // MainWindow
 #include <QCryptographicHash>
 #include <QDir>
@@ -17,6 +38,11 @@
 #include <scientific.h>
 #include <unistd.h>
 
+#include <QInputDialog>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QDialog>
 #include "MainWindow.h"
 #include "qsmdata.h"
 #include "run.h"
@@ -137,75 +163,72 @@ void MainWindow::CheckProjects() {
 }
 
 /*Fast implementation of index_of for QStringList*/
-static inline int _index_of_(QStringList lst, QString str) {
-  int indx = 0;
-  QStringMatcher matcher(str);
-  foreach (const QString &lstitem, lst) {
-    if (matcher.indexIn(lstitem) != -1) {
-      return indx;
-    } else {
-      indx++;
-    }
-  }
-  return -1;
-}
+// Removed _index_of_ as it was inefficient and replaced with QHash lookups in caller functions
 
 bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
                                QStringList varsel, matrix *x) {
   ResizeMatrix(x, objnames.size(), varsel.size());
 
-  QMap<QString, int> objmap;
-  for (int i = 0; i < indata->getObjName().size(); i++) {
-    objmap[indata->getObjName()[i]] = i;
+  QHash<QString, int> objmap;
+  const QStringList& dataObjNames = indata->getObjName();
+  objmap.reserve(dataObjNames.size());
+  for (int i = 0; i < dataObjNames.size(); ++i) {
+    objmap.insert(dataObjNames[i], i);
   }
 
-  QMap<QString, int> varmap;
-  for (int i = 1; i < indata->getVarName().size(); i++) {
-    varmap[indata->getVarName()[i]] = i - 1;
+  QHash<QString, int> varmap;
+  const QStringList& dataVarNames = indata->getVarName();
+  varmap.reserve(dataVarNames.size());
+  for (int i = 1; i < dataVarNames.size(); ++i) {
+    varmap.insert(dataVarNames[i], i - 1);
   }
 
-  QList<int> aligned_varid, aligned_objid;
-  for (int i = 0; i < objnames.size(); i++) {
-    auto it = objmap.find(objnames[i]);
+  QList<int> aligned_varid;
+  aligned_varid.reserve(varsel.size());
+  
+  QList<int> aligned_objid;
+  aligned_objid.reserve(objnames.size());
+
+  for (const QString& obj : objnames) {
+    auto it = objmap.find(obj);
     if (it != objmap.end()) {
       aligned_objid.append(it.value());
-    } else {
-      continue;
     }
   }
 
   QStringList varnotfound;
-  for (int i = 0; i < varsel.size(); i++) {
-    auto it = varmap.find(varsel[i]);
+  for (const QString& var : varsel) {
+    auto it = varmap.find(var);
     if (it != varmap.end()) {
       aligned_varid.append(it.value());
     } else {
-      varnotfound << varsel[i];
+      varnotfound << var;
     }
   }
 
   // Copy the data
-  for (int i = 0; i < aligned_objid.size(); i++) {
+  int progressCounter = 0;
+  for (int i = 0; i < aligned_objid.size(); ++i) {
+    if (stoprun) return false;
+    
     int ii = aligned_objid[i];
-    for (int j = 0; j < aligned_varid.size(); j++) {
+    for (int j = 0; j < aligned_varid.size(); ++j) {
       int jx = aligned_varid[j];
       x->data[i][j] = indata->Matrix()->data[ii][jx];
     }
-    QApplication::processEvents();
+    
+    if (++progressCounter % 100 == 0) QApplication::processEvents();
   }
 
-  if (varnotfound.size() > 0) {
+  if (!varnotfound.isEmpty()) {
     QString msg = "The following features were not found: \n";
-    QString vname;
-    foreach (vname, varnotfound)
-      msg += QString("%1\n").arg(vname);
+    msg += varnotfound.join('\n') + '\n';
 
-    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()),
+    QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     return false;
-  } else {
-    return true;
   }
+  return true;
 }
 
 bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
@@ -214,82 +237,86 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   ResizeMatrix(x, objnames.size(), xvarsel.size());
   ResizeMatrix(y, objnames.size(), yvarsel.size());
 
-  QMap<QString, int> objmap;
-  for (int i = 0; i < indata->getObjName().size(); i++) {
-    objmap[indata->getObjName()[i]] = i;
+  QHash<QString, int> objmap;
+  const QStringList& dataObjNames = indata->getObjName();
+  objmap.reserve(dataObjNames.size());
+  for (int i = 0; i < dataObjNames.size(); ++i) {
+    objmap.insert(dataObjNames[i], i);
   }
 
-  QMap<QString, int> varmap;
-  for (int i = 1; i < indata->getVarName().size(); i++) {
-    varmap[indata->getVarName()[i]] = i - 1;
+  QHash<QString, int> varmap;
+  const QStringList& dataVarNames = indata->getVarName();
+  varmap.reserve(dataVarNames.size());
+  for (int i = 1; i < dataVarNames.size(); ++i) {
+    varmap.insert(dataVarNames[i], i - 1);
   }
 
   QList<int> aligned_xvarid, aligned_yvarid, aligned_objid;
+  aligned_xvarid.reserve(xvarsel.size());
+  aligned_yvarid.reserve(yvarsel.size());
+  aligned_objid.reserve(objnames.size());
 
-  for (int i = 0; i < objnames.size(); i++) {
-    auto it = objmap.find(objnames[i]);
+  for (const QString& obj : objnames) {
+    auto it = objmap.find(obj);
     if (it != objmap.end()) {
       aligned_objid.append(it.value());
-    } else {
-      continue;
     }
   }
 
   QStringList xvarnotfound;
-  for (int i = 0; i < xvarsel.size(); i++) {
-    auto it = varmap.find(xvarsel[i]);
+  for (const QString& var : xvarsel) {
+    auto it = varmap.find(var);
     if (it != varmap.end()) {
       aligned_xvarid.append(it.value());
     } else {
-      xvarnotfound << xvarsel[i];
+      xvarnotfound << var;
     }
   }
 
   QStringList yvarnotfound;
-  for (int i = 0; i < yvarsel.size(); i++) {
-    auto it = varmap.find(yvarsel[i]);
+  for (const QString& var : yvarsel) {
+    auto it = varmap.find(var);
     if (it != varmap.end()) {
       aligned_yvarid.append(it.value());
     } else {
-      yvarnotfound << yvarsel[i];
+      yvarnotfound << var;
     }
   }
 
   // Copy the data
-  for (int i = 0; i < aligned_objid.size(); i++) {
+  int progressCounter = 0;
+  for (int i = 0; i < aligned_objid.size(); ++i) {
+    if (stoprun) return false;
+    
     int ii = aligned_objid[i];
-    for (int j = 0; j < aligned_xvarid.size(); j++) {
+    for (int j = 0; j < aligned_xvarid.size(); ++j) {
       int jx = aligned_xvarid[j];
-      // printf("%d %d %d %d\n", i, j, ii, jx);
       x->data[i][j] = indata->Matrix()->data[ii][jx];
     }
 
-    for (int j = 0; j < aligned_yvarid.size(); j++) {
+    for (int j = 0; j < aligned_yvarid.size(); ++j) {
       int jy = aligned_yvarid[j];
       y->data[i][j] = indata->Matrix()->data[ii][jy];
     }
-    QApplication::processEvents();
+    
+    if (++progressCounter % 100 == 0) QApplication::processEvents();
   }
 
   bool retval = true;
-  if (xvarnotfound.size() > 0) {
+  if (!xvarnotfound.isEmpty()) {
     QString msg = "The following features were not found: \n";
-    QString xvname;
-    foreach (xvname, xvarnotfound)
-      msg += QString("%1\n").arg(xvname);
+    msg += xvarnotfound.join('\n') + '\n';
 
-    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()),
+    QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     retval = false;
   }
 
-  if (yvarnotfound.size() > 0) {
+  if (!yvarnotfound.isEmpty()) {
     QString msg = "The following dependent variables were not found: \n";
-    QString yvname;
-    foreach (yvname, yvarnotfound)
-      msg += QString("%1\n").arg(yvname);
+    msg += yvarnotfound.join('\n') + '\n';
 
-    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()),
+    QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     retval = false;
   }
@@ -308,76 +335,98 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
     ResizeMatrix(y, objnames.size(), classes.size());
   }
 
-  QMap<QString, int> objmap;
-  for (int i = 0; i < indata->getObjName().size(); i++) {
-    objmap[indata->getObjName()[i]] = i;
+  QHash<QString, int> objmap;
+  const QStringList& dataObjNames = indata->getObjName();
+  objmap.reserve(dataObjNames.size());
+  for (int i = 0; i < dataObjNames.size(); ++i) {
+    objmap.insert(dataObjNames[i], i);
   }
 
-  QMap<QString, int> varmap;
-  for (int i = 1; i < indata->getVarName().size(); i++) {
-    varmap[indata->getVarName()[i]] = i - 1;
+  QHash<QString, int> varmap;
+  const QStringList& dataVarNames = indata->getVarName();
+  varmap.reserve(dataVarNames.size());
+  for (int i = 1; i < dataVarNames.size(); ++i) {
+    varmap.insert(dataVarNames[i], i - 1);
   }
 
   QList<int> aligned_xvarid, aligned_objid;
+  aligned_xvarid.reserve(xvarsel.size());
+  aligned_objid.reserve(objnames.size());
 
-  for (int i = 0; i < objnames.size(); i++) {
-    auto it = objmap.find(objnames[i]);
+  for (const QString& obj : objnames) {
+    auto it = objmap.find(obj);
     if (it != objmap.end()) {
       aligned_objid.append(it.value());
-    } else {
-      continue;
     }
   }
 
   QStringList xvarnotfound;
-  for (int i = 0; i < xvarsel.size(); i++) {
-    auto it = varmap.find(xvarsel[i]);
+  for (const QString& var : xvarsel) {
+    auto it = varmap.find(var);
     if (it != varmap.end()) {
       aligned_xvarid.append(it.value());
     } else {
-      xvarnotfound << xvarsel[i];
+      xvarnotfound << var;
     }
   }
 
+  // Pre-process classes for faster lookup
+  QHash<QString, int> classMap; // Map object name to class index (or presence)
+  // Since an object can belong to only one class in standard classification,
+  // we can map object -> class index. 
+  // However, LABELS structure suggests list of objects per class.
+  // We can invert this mapping: Object -> List of Class Indices (if multilabel) or just Class Index.
+  // Assuming standard classification (one class per object) for simplicity based on matrix resize logic.
+  
+  // Actually, 'classes' is a list of LABEL (name, list of objects).
+  // Optimization: Create a Hash<QString, QVector<int>> mapping ObjectName -> ClassIndices.
+  QHash<QString, QVector<int>> objectClassMap;
+  for (int j = 0; j < classes.size(); ++j) {
+      for (const QString& objName : classes[j].objects) {
+          objectClassMap[objName].append(j);
+      }
+  }
+
   // Copy the data
-  for (int i = 0; i < aligned_objid.size(); i++) {
+  int progressCounter = 0;
+  for (int i = 0; i < aligned_objid.size(); ++i) {
+    if (stoprun) return false;
+    
     int ii = aligned_objid[i];
-    for (int j = 0; j < aligned_xvarid.size(); j++) {
+    QString currentObjName = indata->getObjName()[ii];
+
+    for (int j = 0; j < aligned_xvarid.size(); ++j) {
       int jx = aligned_xvarid[j];
       x->data[i][j] = indata->Matrix()->data[ii][jx];
     }
 
     if (classes.size() == 2) {
-      // contains maybe slow...
-      if (classes[0].objects.contains(indata->getObjName()[ii]) == true) {
+      // For binary classification, check membership in first class (index 0)
+      if (objectClassMap.value(currentObjName).contains(0)) {
         y->data[i][0] = 1; // TRUE
       } else {
         y->data[i][0] = 0; // FALSE
       }
     } else {
-      for (int j = 0; j < classes.size(); j++) {
-        if (classes[j].objects.contains(indata->getObjName()[ii]) == true) {
-          y->data[i][j] = 1; // TRUE
-        } else {
-          y->data[i][j] = 0; // FALSE
-        }
+      // Multi-class
+      QVector<int> belongTo = objectClassMap.value(currentObjName);
+      for (int j = 0; j < classes.size(); ++j) {
+          y->data[i][j] = belongTo.contains(j) ? 1 : 0;
       }
     }
-    QApplication::processEvents();
+    
+    if (++progressCounter % 100 == 0) QApplication::processEvents();
   }
 
-  if (xvarnotfound.size() > 0) {
+  if (!xvarnotfound.isEmpty()) {
     QString msg = "The following features were not found: \n";
-    QString xvname;
-    foreach (xvname, xvarnotfound)
-      msg += QString("%1\n").arg(xvname);
+    msg += xvarnotfound.join('\n') + '\n';
 
-    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()),
+    QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     return false;
-  } else {
-    return true;
   }
+  return true;
 }
 
 bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames,
@@ -385,69 +434,77 @@ bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames,
 
   // ResizeMatrix(x, objnames.size(), varsel.size());
 
-  QMap<QString, int> objmap;
-  for (int i = 0; i < indata->getObjName().size(); i++) {
-    objmap[indata->getObjName()[i]] = i;
+  QHash<QString, int> objmap;
+  const QStringList& dataObjNames = indata->getObjName();
+  objmap.reserve(dataObjNames.size());
+  for (int i = 0; i < dataObjNames.size(); ++i) {
+    objmap.insert(dataObjNames[i], i);
   }
 
-  QMap<QString, int> varmap;
-  for (int i = 1; i < indata->getVarName().size(); i++) {
-    varmap[indata->getVarName()[i]] = i - 1;
+  QHash<QString, int> varmap;
+  const QStringList& dataVarNames = indata->getVarName();
+  varmap.reserve(dataVarNames.size());
+  for (int i = 1; i < dataVarNames.size(); ++i) {
+    varmap.insert(dataVarNames[i], i - 1);
   }
 
   QList<int> aligned_objid;
-  for (int i = 0; i < objnames.size(); i++) {
-    auto it = objmap.find(objnames[i]);
+  aligned_objid.reserve(objnames.size());
+  for (const QString& obj : objnames) {
+    auto it = objmap.find(obj);
     if (it != objmap.end()) {
       aligned_objid.append(it.value());
-    } else {
-      continue;
     }
   }
 
   QList<QList<int>> aligned_varid;
+  aligned_varid.reserve(block_varsel.size());
   QStringList varnotfound;
-  for (int k = 0; k < block_varsel.size(); k++) {
-    aligned_varid << QList<int>();
-    for (int i = 0; i < block_varsel[k].objects.size(); i++) {
-      auto it = varmap.find(block_varsel[k].objects[i]);
+  
+  for (int k = 0; k < block_varsel.size(); ++k) {
+    QList<int> current_vars;
+    current_vars.reserve(block_varsel[k].objects.size());
+    for (const QString& var : block_varsel[k].objects) {
+      auto it = varmap.find(var);
       if (it != varmap.end()) {
-        aligned_varid.last().append(it.value());
+        current_vars.append(it.value());
       } else {
-        varnotfound << block_varsel[k].objects[i];
+        varnotfound << var;
       }
     }
+    aligned_varid << current_vars;
   }
 
   // Prepare the tensor structure
-  for (int k = 0; k < aligned_varid.size(); k++) {
+  for (int k = 0; k < aligned_varid.size(); ++k) {
     AddTensorMatrix(x, objnames.size(), aligned_varid[k].size());
   }
 
   // Copy the data
-  for (int i = 0; i < aligned_objid.size(); i++) {
+  int progressCounter = 0;
+  for (int i = 0; i < aligned_objid.size(); ++i) {
+    if (stoprun) return false;
+    
     int ii = aligned_objid[i];
-    for (int k = 0; k < aligned_varid.size(); k++) {
-      for (int j = 0; j < aligned_varid[k].size(); j++) {
+    for (int k = 0; k < aligned_varid.size(); ++k) {
+      for (int j = 0; j < aligned_varid[k].size(); ++j) {
         int jx = aligned_varid[k][j];
         x->m[k]->data[i][j] = indata->Matrix()->data[ii][jx];
       }
     }
-    QApplication::processEvents();
+    
+    if (++progressCounter % 100 == 0) QApplication::processEvents();
   }
 
-  if (varnotfound.size() > 0) {
+  if (!varnotfound.isEmpty()) {
     QString msg = "The following features were not found: \n";
-    QString vname;
-    foreach (vname, varnotfound)
-      msg += QString("%1\n").arg(vname);
+    msg += varnotfound.join('\n') + '\n';
 
-    QMessageBox::warning(this, tr("Warning!"), tr(msg.toStdString().c_str()),
+    QMessageBox::warning(this, tr("Warning"), tr(msg.toStdString().c_str()),
                          QMessageBox::Close);
     return false;
-  } else {
-    return true;
   }
+  return true;
 }
 
 void MainWindow::PrepareKFoldClasses(QStringList objects, LABELS kfclasses,
@@ -856,8 +913,9 @@ QString MainWindow::getCurrentPredictionName() {
 QTreeWidgetItem *MainWindow::getPredictionItem(int pid, int mid, int preid) {
   QTreeWidgetItemIterator it(getProjectItem(pid)->child(1)->child(mid));
   while (*it) {
-    if ((*it)->columnCount() == 8 && (*it)->text(6).toInt() == preid) {
-      return (*it);
+    QTreeWidgetItem *item = *it;
+    if (item->columnCount() == 8 && item->text(6).toInt() == preid) {
+      return item;
     }
     ++it;
   }
@@ -1147,8 +1205,9 @@ QTreeWidgetItem *MainWindow::getModelItem(
 {
   QTreeWidgetItemIterator it(getProjectItem(pid, treeWidget)->child(1));
   while (*it) {
-    if ((*it)->columnCount() == 10 && (*it)->text(9).toInt() == mid) {
-      return (*it);
+    QTreeWidgetItem *item = *it;
+    if (item->columnCount() == 10 && item->text(9).toInt() == mid) {
+      return item;
     }
     ++it;
   }
@@ -1160,8 +1219,9 @@ MainWindow::getModelItem(int pid, int mid) // pid = project id, mid = model id
 {
   QTreeWidgetItemIterator it(getProjectItem(pid)->child(1));
   while (*it) {
-    if ((*it)->columnCount() == 10 && (*it)->text(9).toInt() == mid) {
-      return (*it);
+    QTreeWidgetItem *item = *it;
+    if (item->columnCount() == 10 && item->text(9).toInt() == mid) {
+      return item;
     }
     ++it;
   }
@@ -1258,8 +1318,9 @@ MainWindow::getDataItem(int pid, int did) // pid = project id, did = data id
 {
   QTreeWidgetItemIterator it(getProjectItem(pid)->child(0));
   while (*it) {
-    if ((*it)->columnCount() == 5 && (*it)->text(3).toInt() == did) {
-      return (*it);
+    QTreeWidgetItem *item = *it;
+    if (item->columnCount() == 5 && item->text(3).toInt() == did) {
+      return item;
     }
     ++it;
   }
@@ -1313,8 +1374,9 @@ QTreeWidgetItem *MainWindow::getCurrentProjectItem() {
 QTreeWidgetItem *MainWindow::getProjectItem(int pid, QTreeWidget *treeWidget) {
   QTreeWidgetItemIterator it(treeWidget);
   while (*it) {
-    if ((*it)->columnCount() == 2 && (*it)->text(1).toInt() == pid) {
-      return (*it);
+    QTreeWidgetItem *item = *it;
+    if (item->columnCount() == 2 && item->text(1).toInt() == pid) {
+      return item;
     }
     ++it;
   }
@@ -1324,12 +1386,94 @@ QTreeWidgetItem *MainWindow::getProjectItem(int pid, QTreeWidget *treeWidget) {
 QTreeWidgetItem *MainWindow::getProjectItem(int pid) {
   QTreeWidgetItemIterator it(ui.treeWidget);
   while (*it) {
-    if ((*it)->columnCount() == 2 && (*it)->text(1).toInt() == pid) {
-      return (*it);
+    QTreeWidgetItem *item = *it;
+    if (item->columnCount() == 2 && item->text(1).toInt() == pid) {
+      return item;
     }
     ++it;
   }
   return 0;
+}
+
+void MainWindow::exportPLSBetaInference() {
+  int pid = getCurrentModelProjectID();
+  int mid = getCurrentModelID();
+  PLSModel *plsmod = projects->value(pid)->getPLSModel(mid);
+  if (!plsmod)
+    return;
+
+  bool ok;
+  int nlv = QInputDialog::getInt(this, tr("Export PLS Inference"),
+                                 tr("Number of Latent Variables:"),
+                                 plsmod->getNPC(), 1, plsmod->getNPC(), 1, &ok);
+  if (!ok)
+    return;
+
+  dvector *betas;
+  initDVector(&betas);
+  PLSBetasCoeff(plsmod->Model(), nlv, betas);
+
+  QString x_avg_str, x_scal_str, y_avg_str, y_scal_str, beta_str;
+  auto vecToString = [](dvector *v, int size) {
+    QStringList lst;
+    for (int i = 0; i < size; ++i) {
+      lst << QString::number(v->data[i], 'g', 17);
+    }
+    return lst.join(", ");
+  };
+
+  x_avg_str = vecToString(plsmod->Model()->xcolaverage, plsmod->Model()->xcolaverage->size);
+  x_scal_str = vecToString(plsmod->Model()->xcolscaling, plsmod->Model()->xcolscaling->size);
+  y_avg_str = vecToString(plsmod->Model()->ycolaverage, plsmod->Model()->ycolaverage->size);
+  y_scal_str = vecToString(plsmod->Model()->ycolscaling, plsmod->Model()->ycolscaling->size);
+  beta_str = vecToString(betas, betas->size);
+
+  QString pythonCode = QString(
+      "def pls_predict(x_input):\n"
+      "    # x_input is a list of features\n"
+      "    x_avg = [%1]\n"
+      "    x_scal = [%2]\n"
+      "    y_avg = [%3]\n"
+      "    y_scal = [%4]\n"
+      "    beta = [%5]\n\n"
+      "    # Apply X scaling\n"
+      "    x_scaled = [(x_input[i] - x_avg[i]) / x_scal[i] for i in range(len(x_input))]\n\n"
+      "    # Dot product with Beta\n"
+      "    y_pred_scaled = sum(x_scaled[i] * beta[i] for i in range(len(x_scaled)))\n\n"
+      "    # Revert Y scaling\n"
+      "    y_pred = (y_pred_scaled * y_scal[0]) + y_avg[0]\n"
+      "    return y_pred\n").arg(x_avg_str, x_scal_str, y_avg_str, y_scal_str, beta_str);
+
+  QString cCode = QString(
+      "double pls_predict(const double* x_input) {\n"
+      "    const double x_avg[] = {%1};\n"
+      "    const double x_scal[] = {%2};\n"
+      "    const double y_avg[] = {%3};\n"
+      "    const double y_scal[] = {%4};\n"
+      "    const double beta[] = {%5};\n"
+      "    const int n_features = %6;\n\n"
+      "    double y_pred_scaled = 0.0;\n"
+      "    for (int i = 0; i < n_features; ++i) {\n"
+      "        double x_scaled = (x_input[i] - x_avg[i]) / x_scal[i];\n"
+      "        y_pred_scaled += x_scaled * beta[i];\n"
+      "    }\n\n"
+      "    return (y_pred_scaled * y_scal[0]) + y_avg[0];\n"
+      "}\n").arg(x_avg_str, x_scal_str, y_avg_str, y_scal_str, beta_str).arg(betas->size);
+
+  QDialog *exportDlg = new QDialog(this);
+  exportDlg->setWindowTitle("PLS Export for Inference");
+  QVBoxLayout *layout = new QVBoxLayout(exportDlg);
+  QTextEdit *textEdit = new QTextEdit(exportDlg);
+  textEdit->setReadOnly(true);
+  textEdit->setPlainText("### PYTHON CODE ###\n\n" + pythonCode + "\n\n### C CODE ###\n\n" + cCode);
+  layout->addWidget(textEdit);
+  QPushButton *closeBtn = new QPushButton("Close", exportDlg);
+  connect(closeBtn, &QPushButton::clicked, exportDlg, &QDialog::accept);
+  layout->addWidget(closeBtn);
+  exportDlg->resize(800, 600);
+  exportDlg->show();
+
+  DelDVector(&betas);
 }
 
 void MainWindow::StartRun() {
@@ -1344,8 +1488,12 @@ void MainWindow::StartRun() {
 void MainWindow::WaitRun() { ui.abortButton->setEnabled(false); }
 
 void MainWindow::StopRun() {
-  ui.progressframe->hide();
   stoprun = true;
+  ui.abortButton->setEnabled(false);
+}
+
+void MainWindow::FinalizeRun() {
+  ui.progressframe->hide();
   ui.progressBar->setMinimum(0);
   ui.progressBar->setMaximum(100);
   ui.progressBar->setValue(20);
@@ -1398,7 +1546,7 @@ void MainWindow::PlotVariableVSVariableBis(vvplotSignal vvs) {
       MDIChild *graphchild = createMdiChild();
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(vvs.pid);
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
     } else {
       return;
@@ -3737,151 +3885,128 @@ void MainWindow::ModelInfo() {
  * Model, PLS Model, LDA Model, MLR Model
  */
 void MainWindow::ShowContextMenu(const QPoint &pos) {
-  if (ui.treeWidget->topLevelItemCount() > 0 &&
-      ui.treeWidget->selectedItems().size() > 0 &&
-      ui.treeWidget->currentItem()->isSelected() == true &&
-      ui.treeWidget->currentItem()->columnCount() > 1) {
+  if (ui.treeWidget->topLevelItemCount() == 0 ||
+      ui.treeWidget->selectedItems().isEmpty() ||
+      !ui.treeWidget->currentItem()->isSelected() ||
+      ui.treeWidget->currentItem()->columnCount() <= 1) {
+    return;
+  }
 
-    QPoint globalPos = ui.treeWidget->mapToGlobal(pos);
-    QMenu menu;
+  QPoint globalPos = ui.treeWidget->mapToGlobal(pos);
+  QMenu menu;
 
 #ifdef DEBUG
-    qDebug() << "[SHOWCONTEXTMENU] Selected item number of column: "
-             << ui.treeWidget->currentItem()->columnCount();
+  qDebug() << "[SHOWCONTEXTMENU] Selected item number of column: "
+           << ui.treeWidget->currentItem()->columnCount();
 #endif
 
-    if (CurrentIsData() == true) { // this is a Data
-      menu.addAction("&Show data", this, SLOT(showData()));
-      menu.addAction("&Show descriptive statistics", this,
-                     SLOT(showDescrpitiveStatistics()));
-      menu.addAction("&Remove data", this, SLOT(removeData()));
-      menu.exec(globalPos);
-    } else if (CurrentIsModel() == true) {
-      QString modeltype = getCurrentModelType();
-      int pid = getCurrentModelProjectID();
-      int mid = getCurrentModelID();
-      if (modeltype.compare("PCA Model") == 0) {
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show T Score", this, SLOT(showPCAScore()));
-        menu.addAction("&Show P Loadings", this, SLOT(showPCALoadings()));
-        menu.addAction("&Show Explained Variance", this, SLOT(showPCAExpVar()));
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
+  if (CurrentIsData()) {
+    menu.addAction("&Show data", this, SLOT(showData()));
+    menu.addAction("&Show descriptive statistics", this,
+                   SLOT(showDescriptiveStatistics()));
+    menu.addAction("&Remove data", this, SLOT(removeData()));
+
+  } else if (CurrentIsModel()) {
+    QString modeltype = getCurrentModelType();
+    int pid = getCurrentModelProjectID();
+    int mid = getCurrentModelID();
+    auto* project = projects->value(pid);
+
+    menu.addAction("&Model Info", this, SLOT(ModelInfo()));
+
+    if (modeltype == "PCA Model") {
+      menu.addAction("&Show T Score", this, SLOT(showPCAScore()));
+      menu.addAction("&Show P Loadings", this, SLOT(showPCALoadings()));
+      menu.addAction("&Show Explained Variance", this, SLOT(showPCAExpVar()));
+
+    } else if (modeltype == "CPCA Model") {
+      menu.addAction("&Show Super Score", this, SLOT(showCPCASuperScore()));
+      menu.addAction("&Show Super Weights", this, SLOT(showCPCASuperWeights()));
+      menu.addAction("&Show Block Scores", this, SLOT(showCPCABlockScores()));
+      menu.addAction("&Show Block Loadings", this, SLOT(showCPCABlockLoadings()));
+      menu.addAction("&Show Explained Variance", this, SLOT(showCPCAExpVar()));
+
+    } else if (modeltype == "PLS Model") {
+      menu.addAction("&Show T Score", this, SLOT(showPLSTScores()));
+      menu.addAction("&Show U Score", this, SLOT(showPLSUSCores()));
+      menu.addAction("&Show P Loadings", this, SLOT(showPLSPLoadings()));
+      menu.addAction("&Show Q Loadings", this, SLOT(showPLSQLoadings()));
+      menu.addAction("&Show W Weights", this, SLOT(showPLSWWeights()));
+      menu.addAction("&Show Regression Coefficient", this, SLOT(showPLSRegCoeff()));
+      menu.addAction("&Show Explained Variance", this, SLOT(showPLSExpVar()));
+      menu.addAction("&Show Recalculated Y", this, SLOT(showPLSRecalcY()));
+
+      if (project->getPLSModel(mid)->getValidation() > 0) {
+        menu.addAction("&Show Predicted Y", this, SLOT(showPLSValidatedPrediction()));
+        menu.addAction("&Show Validation", this, SLOT(showPLSValidation()));
       }
-      if (modeltype.compare("CPCA Model") == 0) {
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show Super Score", this, SLOT(showCPCASuperScore()));
-        menu.addAction("&Show Super Weights", this,
-                       SLOT(showCPCASuperWeights()));
-        menu.addAction("&Show Block Scores", this, SLOT(showCPCABlockScores()));
-        menu.addAction("&Show Block Loadings", this,
-                       SLOT(showCPCABlockLoadings()));
-        menu.addAction("&Show Explained Variance", this,
-                       SLOT(showCPCAExpVar()));
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
-      } else if (modeltype.compare("PLS Model") == 0) {
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show T Score", this, SLOT(showPLSTScores()));
-        menu.addAction("&Show U Score", this, SLOT(showPLSUSCores()));
-        menu.addAction("&Show P Loadings", this, SLOT(showPLSPLoadings()));
-        menu.addAction("&Show Q Loadings", this, SLOT(showPLSQLoadings()));
-        menu.addAction("&Show W Weights", this, SLOT(showPLSWWeights()));
-        menu.addAction("&Show Regression Coefficient", this,
-                       SLOT(showPLSRegCoeff()));
-        menu.addAction("&Show Explained Variance", this, SLOT(showPLSExpVar()));
-        menu.addAction("&Show Recalculated Y", this, SLOT(showPLSRecalcY()));
-        if (projects->value(pid)->getPLSModel(mid)->getValidation() > 0) {
-          menu.addAction("&Show Predicted Y", this,
-                         SLOT(showPLSValidatedPrediction()));
-          menu.addAction("&Show Validation", this, SLOT(showPLSValidation()));
-        }
+      menu.addAction("&Export Model for external Inference (Py/C)", this, SLOT(exportPLSBetaInference()));
 
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
-      } else if (modeltype.compare("MLR Model") == 0) {
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show Regression Coefficient", this,
-                       SLOT(showMLRCoeff()));
-        menu.addAction("&Show Recalculated Y", this, SLOT(showMLRRecalcY()));
-        if (projects->value(pid)->getMLRModel(mid)->getValidation() > 0) {
-          menu.addAction("&Show Predicted Y", this,
-                         SLOT(showMLRValidatedPrediction()));
-          menu.addAction("&Show Validation", this, SLOT(showMLRValidation()));
-        }
+    } else if (modeltype == "MLR Model") {
+      menu.addAction("&Show Regression Coefficient", this, SLOT(showMLRCoeff()));
+      menu.addAction("&Show Recalculated Y", this, SLOT(showMLRRecalcY()));
 
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
-      } else if (modeltype.compare("LDA Model") == 0) {
-        menu.addAction("&Model Info", this, SLOT(ModelInfo()));
-        menu.addAction("&Show Covariance Group Matrix", this,
-                       SLOT(showLDACovarianceGroupMatrix()));
-        menu.addAction("&Show Prior Probabilities", this,
-                       SLOT(showLDAPriorProbabilities()));
-        menu.addAction("&Show Features", this, SLOT(showLDAFeatures()));
-        menu.addAction("&Show MVA Normal Distribution", this,
-                       SLOT(showLDAMVNormDistrib()));
-
-        if (projects->value(pid)->getLDAModel(mid)->getValidation() > 0) {
-          menu.addAction("&Show Validation", this, SLOT(showLDAValidation()));
-        }
-
-        menu.addAction("&Remove Model", this, SLOT(removeModel()));
-        menu.exec(globalPos);
-      } else {
-        return;
-      }
-    } else if (CurrentIsProject() == true) { // this is the project
-      menu.addAction("&Add Data", this, SLOT(addData()));
-      menu.addAction("&Remove Project", this, SLOT(removeProject()));
-      menu.exec(globalPos);
-    } else if (CurrentIsPrediction() == true) { // this is the ModelPrediction
-      QString predictiontype = getCurrentPredictionType();
-      if (predictiontype.compare("PCA Prediction") == 0) {
-        menu.addAction("&Show Prediction Score", this,
-                       SLOT(showPCAPredScore()));
-        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
-        menu.exec(globalPos);
-      } else if (predictiontype.compare("CPCA Prediction") == 0) {
-        menu.addAction("&Show Prediction Super Score", this,
-                       SLOT(showCPCASuperScorePred()));
-        menu.addAction("&Show Prediction Block Score", this,
-                       SLOT(showCPCABlockScoresPred()));
-        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
-        menu.exec(globalPos);
-      } else if (predictiontype.compare("PLS Prediction") == 0) {
-        menu.addAction("&Show Prediction Score", this,
-                       SLOT(showPLSPredScore()));
-        menu.addAction("&Show Predicted Y", this, SLOT(showPLSPrediction()));
-        if (getCurrentPredictionYhash().compare("None") != 0) {
-          menu.addAction("&Show Prediction Error", this,
-                         SLOT(showPLSPredictionRSquared()));
-        }
-        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
-        menu.exec(globalPos);
+      if (project->getMLRModel(mid)->getValidation() > 0) {
+        menu.addAction("&Show Predicted Y", this, SLOT(showMLRValidatedPrediction()));
+        menu.addAction("&Show Validation", this, SLOT(showMLRValidation()));
       }
 
-      else if (predictiontype.compare("MLR Prediction") == 0) {
-        menu.addAction("&Show Predicted Y", this, SLOT(showMLRPrediction()));
-        if (getCurrentPredictionYhash().compare("None") != 0) {
-          menu.addAction("&Show Prediction Error", this,
-                         SLOT(showMLRPredictionRSquared()));
-        }
-        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
-        menu.exec(globalPos);
-      } else if (predictiontype.compare("LDA Prediction") == 0) {
-        menu.addAction("&Show Predicted Class", this,
-                       SLOT(showLDAPrediction()));
-        menu.addAction("&Show Predicted Features", this,
-                       SLOT(showLDAPredictionFeatures()));
-        menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
-        menu.exec(globalPos);
-      } else {
-        return;
+    } else if (modeltype == "LDA Model") {
+      menu.addAction("&Show Covariance Group Matrix", this, SLOT(showLDACovarianceGroupMatrix()));
+      menu.addAction("&Show Prior Probabilities", this, SLOT(showLDAPriorProbabilities()));
+      menu.addAction("&Show Features", this, SLOT(showLDAFeatures()));
+      menu.addAction("&Show MVA Normal Distribution", this, SLOT(showLDAMVNormDistrib()));
+
+      if (project->getLDAModel(mid)->getValidation() > 0) {
+        menu.addAction("&Show Validation", this, SLOT(showLDAValidation()));
       }
     } else {
       return;
     }
+    menu.addAction("&Remove Model", this, SLOT(removeModel()));
+
+  } else if (CurrentIsProject()) {
+    menu.addAction("&Add Data", this, SLOT(addData()));
+    menu.addAction("&Remove Project", this, SLOT(removeProject()));
+
+  } else if (CurrentIsPrediction()) {
+    QString predictiontype = getCurrentPredictionType();
+
+    if (predictiontype == "PCA Prediction") {
+      menu.addAction("&Show Prediction Score", this, SLOT(showPCAPredScore()));
+
+    } else if (predictiontype == "CPCA Prediction") {
+      menu.addAction("&Show Prediction Super Score", this, SLOT(showCPCASuperScorePred()));
+      menu.addAction("&Show Prediction Block Score", this, SLOT(showCPCABlockScoresPred()));
+
+    } else if (predictiontype == "PLS Prediction") {
+      menu.addAction("&Show Prediction Score", this, SLOT(showPLSPredScore()));
+      menu.addAction("&Show Predicted Y", this, SLOT(showPLSPrediction()));
+      if (getCurrentPredictionYhash() != "None") {
+        menu.addAction("&Show Prediction Error", this, SLOT(showPLSPredictionRSquared()));
+      }
+
+    } else if (predictiontype == "MLR Prediction") {
+      menu.addAction("&Show Predicted Y", this, SLOT(showMLRPrediction()));
+      if (getCurrentPredictionYhash() != "None") {
+        menu.addAction("&Show Prediction Error", this, SLOT(showMLRPredictionRSquared()));
+      }
+
+    } else if (predictiontype == "LDA Prediction") {
+      menu.addAction("&Show Predicted Class", this, SLOT(showLDAPrediction()));
+      menu.addAction("&Show Predicted Features", this, SLOT(showLDAPredictionFeatures()));
+
+    } else {
+      return;
+    }
+    menu.addAction("&Remove Prediction", this, SLOT(removePrediction()));
+
+  } else {
+    return;
+  }
+
+  if (!menu.isEmpty()) {
+    menu.exec(globalPos);
     TopMenuEnableDisable();
   }
 }
@@ -4068,7 +4193,7 @@ void MainWindow::showData() {
   }
 }
 
-void MainWindow::showDescrpitiveStatistics() {
+void MainWindow::showDescriptiveStatistics() {
   if (CurrentIsData() == true) {
     int pid = getCurrentDataProjectID();
     int tabid = getCurrentDataTableID();
@@ -4187,10 +4312,9 @@ void MainWindow::closeEvent(QCloseEvent *bar) {
 void MainWindow::closeMDI(const int &id) {
   foreach (QMdiSubWindow *window, ui.mdiArea->subWindowList()) {
     MDIChild *mdiChild = qobject_cast<MDIChild *>(window);
-    if (mdiChild->getWindowID() == id) {
-      delete mdiChild;
-    } else
-      continue;
+    if (mdiChild && mdiChild->getWindowID() == id) {
+      mdiChild->close();
+    }
   }
 }
 
@@ -4304,7 +4428,9 @@ void MainWindow::WriteRecentsModelsFile() {
   if (recents_changed == true) {
     QFile file(QFileInfo(QString("%1/%2").arg(confdir).arg("recents"))
                    .absoluteFilePath());
-    file.open(QIODevice::WriteOnly | QIODevice::Text);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+      return;
+    }
     QTextStream out(&file);
     for (int i = 0; i < recents.size(); i++) {
       if (recents[i].name.compare("-") != 0 && recents[i].name.size() > 0) {
@@ -4655,8 +4781,8 @@ int MainWindow::ProjectOpen(QString fproject) {
                                        ui.treeWidget, &tabcount_, &mid_, &log);
   } else {
     // OLD Version
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("QSM old file version unsupported!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("QSM old file version unsupported."),
                          QMessageBox::Close);
   }
 
@@ -4713,8 +4839,8 @@ void MainWindow::SaveAs() {
       QString fproject = projects->value(savedialog.getProjectID())
                              ->SaveSQLData(savedialog.getPathToSave());
       if (fproject.isEmpty()) {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Unable to save the project!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Unable to save the project."),
                              QMessageBox::Close);
       } else {
         RECENTMODELS m;
@@ -4965,7 +5091,7 @@ void MainWindow::PlotVariableVSVariable() {
     MDIChild *graphchild = createMdiChild();
     graphchild->setWidget(plot2D);
     graphchild->setWindowID(vvplot.getProjectID());
-    graphchild->resize(510, 530);
+    graphchild->resize(default_window_size_w, default_window_size_h);
     graphchild->show();
   }
 }
@@ -4985,7 +5111,7 @@ void MainWindow::PlotVariableDistribution() {
     MDIChild *graphchild = createMdiChild();
     graphchild->setWidget(vplot.VariableDistribution());
     graphchild->setWindowID(vdist.getProjectID());
-    graphchild->resize(510, 530);
+    graphchild->resize(default_window_size_w, default_window_size_h);
     graphchild->show();
   }
 }
@@ -5029,13 +5155,13 @@ void MainWindow::PCA2DScorePlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5055,13 +5181,13 @@ void MainWindow::PCA2DLoadingsMVANDPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(getModelTableID(classplotdialog.selectedProject(),
                                               classplotdialog.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5082,7 +5208,7 @@ void MainWindow::PCA2DLoadingsPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5090,7 +5216,32 @@ void MainWindow::PCA2DLoadingsPlot() {
               SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
+                         QMessageBox::Close);
+  }
+}
+
+void MainWindow::PCADModXPlot() {
+  if (ProjectsHavePCA() == true) {
+    ProjectTree pjtree;
+    GetPCAProjects(&pjtree);
+    DialogPlots dp(pjtree, DialogPlots::TwoColumns);
+    if (dp.exec() == QDialog::Accepted) {
+      PCAPlot pcaplot(projects);
+      pcaplot.setPID(dp.getProjectID());
+      pcaplot.setMID(dp.getModelID());
+      pcaplot.setNLatentVariables(dp.getNLV());
+      MDIChild *graphchild = createMdiChild();
+      BarPlot *bar_plots = nullptr;
+      pcaplot.DModXPlot(&bar_plots);
+      graphchild->setWidget(bar_plots);
+      graphchild->setWindowID(
+          getModelTableID(dp.getProjectID(), dp.getModelID()));
+      graphchild->resize(default_window_size_w, default_window_size_h);
+      graphchild->show();
+    }
+  } else {
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5111,11 +5262,11 @@ void MainWindow::PCA2DExpVarPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5137,16 +5288,16 @@ void MainWindow::PCATsqContributionPlot() {
         graphchild->setWidget(bar_plots);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Problem with Barplot and T squared contribution plot!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Problem with Barplot and T squared contribution plot."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5168,13 +5319,13 @@ void MainWindow::PCA2DScorePlotPrediction() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5196,13 +5347,13 @@ void MainWindow::CPCA2DSuperScorePlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No CPCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5224,13 +5375,13 @@ void MainWindow::CPCA2DSuperWeightsPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No CPCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5252,14 +5403,14 @@ void MainWindow::CPCA2DBlockScoresPlot() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plots[i], SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No CPCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5281,14 +5432,14 @@ void MainWindow::CPCA2DBlockLoadingsPlot() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plots[i], SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No CPCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5309,11 +5460,11 @@ void MainWindow::CPCA2DExpVarPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5335,13 +5486,13 @@ void MainWindow::CPCA2DSuperScoresPlotPrediction() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No CPCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5364,14 +5515,14 @@ void MainWindow::CPCA2DBlockScoresPlotPrediction() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plots[i], SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No CPCA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No CPCA models found."),
                          QMessageBox::Close);
   }
 }
@@ -5392,13 +5543,13 @@ void MainWindow::PLS2DPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5419,13 +5570,13 @@ void MainWindow::PLS2DTTScorePlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5446,7 +5597,7 @@ void MainWindow::PLS2DPPLoadingsPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5454,7 +5605,7 @@ void MainWindow::PLS2DPPLoadingsPlot() {
               SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5475,7 +5626,7 @@ void MainWindow::PLS2DWWWeightsPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5483,7 +5634,7 @@ void MainWindow::PLS2DWWWeightsPlot() {
               SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5504,13 +5655,13 @@ void MainWindow::PLS2DUUScorePlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5531,7 +5682,7 @@ void MainWindow::PLS2DQQLoadingsPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5539,7 +5690,7 @@ void MainWindow::PLS2DQQLoadingsPlot() {
               SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5560,7 +5711,7 @@ void MainWindow::PLS2DPQLoadingsPlot() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
@@ -5568,7 +5719,7 @@ void MainWindow::PLS2DPQLoadingsPlot() {
               SLOT(PlotVariableVSVariableBis(vvplotSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5590,13 +5741,13 @@ void MainWindow::PLS2DTTScorePlotPrediction() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5617,11 +5768,11 @@ void MainWindow::PLSPlotBetaCoefficients() {
       graphchild->setWidget(betas_barplot);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5641,11 +5792,11 @@ void MainWindow::PLSPlotBetaCoeffDWPlot() {
       graphchild->setWidget(dw_betas_plot);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5668,18 +5819,18 @@ void MainWindow::PLSRecalcVSExpPlotPrediction() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5702,18 +5853,18 @@ void MainWindow::PLSPredictedVSExpAndPredictionPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5739,13 +5890,13 @@ void MainWindow::PLSRecalcVSExpPlot() {
           graphchild->setWidget(plot2D);
           graphchild->setWindowID(
               getModelTableID(dp.getProjectID(), dp.getModelID()));
-          graphchild->resize(510, 530);
+          graphchild->resize(default_window_size_w, default_window_size_h);
           graphchild->show();
           connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                   SLOT(UpdateImageWindow(ImageSignal)));
         } else {
-          QMessageBox::warning(this, tr("Warning!"),
-                               tr("Original Data Model not found!\n"),
+          QMessageBox::warning(this, tr("Warning"),
+                               tr("Original data model not found."),
                                QMessageBox::Close);
         }
       } else {
@@ -5767,7 +5918,7 @@ void MainWindow::PLSRecalcVSExpPlot() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5789,18 +5940,18 @@ void MainWindow::PLSRecalcResidualsVSExpPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5826,13 +5977,13 @@ void MainWindow::PLSPredVSExpPlot() {
           graphchild->setWidget(plot2D);
           graphchild->setWindowID(
               getModelTableID(dp.getProjectID(), dp.getModelID()));
-          graphchild->resize(510, 530);
+          graphchild->resize(default_window_size_w, default_window_size_h);
           graphchild->show();
           connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                   SLOT(UpdateImageWindow(ImageSignal)));
         } else {
-          QMessageBox::warning(this, tr("Warning!"),
-                               tr("Original Data Model not found!\n"),
+          QMessageBox::warning(this, tr("Warning"),
+                               tr("Original data model not found."),
                                QMessageBox::Close);
         }
       } else {
@@ -5853,7 +6004,7 @@ void MainWindow::PLSPredVSExpPlot() {
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5875,18 +6026,18 @@ void MainWindow::PLSPredResidualsVSExpPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -5907,13 +6058,13 @@ void MainWindow::PLSPlotR2Q2() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -5934,13 +6085,13 @@ void MainWindow::PLSPlotRMSE() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -5961,13 +6112,13 @@ void MainWindow::PLSPlotROCAucs() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -5988,13 +6139,13 @@ void MainWindow::PLSPlotROCCurves() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -6016,13 +6167,13 @@ void MainWindow::PLSPlotPRAucs() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -6044,13 +6195,13 @@ void MainWindow::PLSPlotPRCurves() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -6072,13 +6223,13 @@ void MainWindow::PLSPlotR2R2Predicted() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -6100,13 +6251,13 @@ void MainWindow::PLSPlotRMSEPredicted() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No PLS model and/or validation found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No PLS model or validation found."),
                          QMessageBox::Close);
   }
 }
@@ -6127,14 +6278,14 @@ void MainWindow::PLSPlotYScrambling() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
     QMessageBox::warning(
-        this, tr("Warning!"),
-        tr("No PLS Models and Y Scrambling Validation Model Found!\n"),
+        this, tr("Warning"),
+        tr("No PLS models or Y-scrambling validation model found."),
         QMessageBox::Close);
   }
 }
@@ -6156,18 +6307,18 @@ void MainWindow::MLRRecalcVSExpPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No PLS Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No PLS models found."),
                          QMessageBox::Close);
   }
 }
@@ -6189,18 +6340,18 @@ void MainWindow::MLRRecalcResidualsVSExpPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No MLR Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No MLR models found."),
                          QMessageBox::Close);
   }
 }
@@ -6221,12 +6372,12 @@ void MainWindow::MLRBetaCoefficients() {
         graphchild->setWidget(barplots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No MLR Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No MLR models found."),
                          QMessageBox::Close);
   }
 }
@@ -6248,18 +6399,18 @@ void MainWindow::MLRPredVSExpPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No MLR Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No MLR models found."),
                          QMessageBox::Close);
   }
 }
@@ -6281,18 +6432,18 @@ void MainWindow::MLRPredResidualsVSExpPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No MLR Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No MLR models found."),
                          QMessageBox::Close);
   }
 }
@@ -6315,18 +6466,18 @@ void MainWindow::MLRRecalcVSExpAndPredictionPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No MLR Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No MLR models found."),
                          QMessageBox::Close);
   }
 }
@@ -6349,18 +6500,18 @@ void MainWindow::MLRPredictedVSExpAndPredictionPlot() {
         graphchild->setWidget(plot2D);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
         connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
                 SLOT(UpdateImageWindow(ImageSignal)));
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("Original Data Model not found!\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Original data model not found."),
                              QMessageBox::Close);
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No MLR Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No MLR models found."),
                          QMessageBox::Close);
   }
 }
@@ -6381,14 +6532,14 @@ void MainWindow::MLRPlotYScrambling() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
     QMessageBox::warning(
-        this, tr("Warning!"),
-        tr("No MLR Models and Y Scrambling Validation Model Found!\n"),
+        this, tr("Warning"),
+        tr("No MLR models or Y-scrambling validation model found."),
         QMessageBox::Close);
   }
 }
@@ -6409,13 +6560,13 @@ void MainWindow::LDAFeaturePlot2D() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No LDA models found."),
                          QMessageBox::Close);
   }
 }
@@ -6437,13 +6588,13 @@ void MainWindow::LDAProbabilityDistribution() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No LDA models found."),
                          QMessageBox::Close);
   }
 }
@@ -6465,13 +6616,13 @@ void MainWindow::LDAROCPlot() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No LDA Models Validated Found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No validated LDA models found."),
                          QMessageBox::Close);
   }
 }
@@ -6493,13 +6644,13 @@ void MainWindow::LDAPRPlot() {
         graphchild->setWidget(plots[i]);
         graphchild->setWindowID(
             getModelTableID(dp.getProjectID(), dp.getModelID()));
-        graphchild->resize(510, 530);
+        graphchild->resize(default_window_size_w, default_window_size_h);
         graphchild->show();
       }
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No LDA Models Validated Found!\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No validated LDA models found."),
                          QMessageBox::Close);
   }
 }
@@ -6521,13 +6672,13 @@ void MainWindow::LDAFeaturePlotAndPrediction2D() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No LDA models found."),
                          QMessageBox::Close);
   }
 }
@@ -6549,13 +6700,13 @@ void MainWindow::LDAProbabilityDistributionWithPredictions() {
       graphchild->setWidget(plot2D);
       graphchild->setWindowID(
           getModelTableID(dp.getProjectID(), dp.getModelID()));
-      graphchild->resize(510, 530);
+      graphchild->resize(default_window_size_w, default_window_size_h);
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
     }
   } else {
-    QMessageBox::warning(this, tr("Warning!"), tr("No LDA Models Found!\n"),
+    QMessageBox::warning(this, tr("Warning"), tr("No LDA models found."),
                          QMessageBox::Close);
   }
 }
@@ -6589,6 +6740,14 @@ void MainWindow::DoCPCAPrediction() {
 
         bool tok = PrepareTensor(projects->value(pid)->getMatrix(did), objsel,
                                  varsel, x);
+
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelTensor(&x);
+          return;
+        }
 
         if (x->order == (size_t)varsel.size() && tok == true) {
           QString str =
@@ -6630,28 +6789,40 @@ void MainWindow::DoCPCAPrediction() {
           QFuture<void> future = obj.RunCPCAPrediction();
 
           while (!future.isFinished()) {
-            QApplication::processEvents();
+            if (stoprun == true) {
+              obj.AbortRun();
+              QApplication::processEvents();
+            } else {
+              QApplication::processEvents();
+            }
           }
 
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, projects->value(pid)
-                                  ->getCPCAModel(mid)
-                                  ->getLastCPCAPrediction()
-                                  ->getName());
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, QString::number(mid));
-          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
-          subitem->setText(5, "");
-          subitem->setText(6, QString::number(projects->value(pid)
-                                                  ->getCPCAModel(mid)
-                                                  ->getLastCPCAPrediction()
-                                                  ->getPredID()));
-          subitem->setText(7, QString("CPCA Prediction"));
+          if (stoprun == false) {
+            QTreeWidgetItem *subitem = new QTreeWidgetItem;
+            subitem->setText(0, projects->value(pid)
+                                    ->getCPCAModel(mid)
+                                    ->getLastCPCAPrediction()
+                                    ->getName());
+            subitem->setText(1, QString::number(tabcount_));
+            subitem->setText(2, QString::number(pid));
+            subitem->setText(3, QString::number(mid));
+            subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+            subitem->setText(5, "");
+            subitem->setText(6, QString::number(projects->value(pid)
+                                                    ->getCPCAModel(mid)
+                                                    ->getLastCPCAPrediction()
+                                                    ->getPredID()));
+            subitem->setText(7, QString("CPCA Prediction"));
 
-          tabcount_++;
-          getModelItem(pid, mid)->addChild(subitem);
-
+            tabcount_++;
+            getModelItem(pid, mid)->addChild(subitem);
+          } else {
+            int removeid =
+                projects->value(pid)->getCPCAModel(mid)->CPCAPredictionCount() -
+                1;
+            projects->value(pid)->getCPCAModel(mid)->delCPCAPredictionAt(
+                removeid);
+          }
         } else {
           QMessageBox::critical(
               this, tr("CPCA Prediction Error"),
@@ -6664,7 +6835,7 @@ void MainWindow::DoCPCAPrediction() {
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelTensor(&x);
         projects->value(pid)->AutoSave();
       }
@@ -6712,6 +6883,16 @@ void MainWindow::DoCPCA() {
 
         PrepareTensor(projects->value(pid)->getMatrix(did), objsel, varsel, x);
 
+        if (stoprun) {
+          int removeid = projects->value(pid)->CPCACount() - 1;
+          projects->value(pid)->delCPCAModelAt(removeid);
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelTensor(&x);
+          return;
+        }
+
         RUN obj;
         obj.setXTensor(x);
         obj.setCPCAModel(projects->value(pid)->getLastCPCAModel());
@@ -6758,7 +6939,7 @@ void MainWindow::DoCPCA() {
 
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelTensor(&x);
         projects->value(pid)->AutoSave();
       }
@@ -6796,6 +6977,14 @@ void MainWindow::DoPCAPrediction() {
         NewMatrix(&x, objsel.size(), varsel.size());
         bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel,
                                   varsel, x);
+
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          return;
+        }
 
         if (x->col == (size_t)varsel.size() && mxok == true) {
           QString str = "--------------------\n Computing PCA Prediction for: ";
@@ -6836,28 +7025,39 @@ void MainWindow::DoPCAPrediction() {
           QFuture<void> future = obj.RunPCAPrediction();
 
           while (!future.isFinished()) {
-            QApplication::processEvents();
+            if (stoprun == true) {
+              obj.AbortRun();
+              QApplication::processEvents();
+            } else {
+              QApplication::processEvents();
+            }
           }
 
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, projects->value(pid)
-                                  ->getPCAModel(mid)
-                                  ->getLastPCAPrediction()
-                                  ->getName());
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, QString::number(mid));
-          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
-          subitem->setText(5, "");
-          subitem->setText(6, QString::number(projects->value(pid)
-                                                  ->getPCAModel(mid)
-                                                  ->getLastPCAPrediction()
-                                                  ->getPredID()));
-          subitem->setText(7, QString("PCA Prediction"));
+          if (stoprun == false) {
+            QTreeWidgetItem *subitem = new QTreeWidgetItem;
+            subitem->setText(0, projects->value(pid)
+                                    ->getPCAModel(mid)
+                                    ->getLastPCAPrediction()
+                                    ->getName());
+            subitem->setText(1, QString::number(tabcount_));
+            subitem->setText(2, QString::number(pid));
+            subitem->setText(3, QString::number(mid));
+            subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+            subitem->setText(5, "");
+            subitem->setText(6, QString::number(projects->value(pid)
+                                                    ->getPCAModel(mid)
+                                                    ->getLastPCAPrediction()
+                                                    ->getPredID()));
+            subitem->setText(7, QString("PCA Prediction"));
 
-          tabcount_++;
-          getModelItem(pid, mid)->addChild(subitem);
-
+            tabcount_++;
+            getModelItem(pid, mid)->addChild(subitem);
+          } else {
+            int removeid =
+                projects->value(pid)->getPCAModel(mid)->PCAPredictionCount() -
+                1;
+            projects->value(pid)->getPCAModel(mid)->delPCAPredictionAt(removeid);
+          }
         } else {
           QMessageBox::critical(
               this, tr("PCA Prediction Error"),
@@ -6870,7 +7070,7 @@ void MainWindow::DoPCAPrediction() {
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         projects->value(pid)->AutoSave();
       }
@@ -6927,6 +7127,16 @@ void MainWindow::DoPCA() {
                         x);
         }
 
+        if (stoprun) {
+          int removeid = projects->value(pid)->PCACount() - 1;
+          projects->value(pid)->delPCAModelAt(removeid);
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          return;
+        }
+
         RUN obj;
         obj.setXMatrix(x);
         obj.setPCAModel(projects->value(pid)->getLastPCAModel());
@@ -6973,7 +7183,7 @@ void MainWindow::DoPCA() {
 
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         projects->value(pid)->AutoSave();
       }
@@ -7013,6 +7223,15 @@ void MainWindow::DoPLSPrediction() {
 
         bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel,
                                   xvarsel, ysel, x, y);
+
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
 
         if (x->col == (size_t)xvarsel.size() && mxok == true) {
           QString str = "--------------------\n Computing PLS Prediction for: ";
@@ -7054,53 +7273,65 @@ void MainWindow::DoPLSPrediction() {
           obj.setPLSModel(projects->value(pid)->getPLSModel(mid));
 
           QFuture<void> future = obj.RunPLSPrediction();
-          while (!future.isFinished())
-            QApplication::processEvents();
-
-          //         ModelPrediction Name - Tab Count - pid - Model ID - xdata
-          //         id - ydata id - Data Position - Data Type (PCA Prediction,
-          //         PLS Prediction, ...) (8)
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, projects->value(pid)
-                                  ->getPLSModel(mid)
-                                  ->getLastPLSPrediction()
-                                  ->getName());
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, QString::number(mid));
-          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
-
-          if (ysel.size() > 0) {
-            subitem->setText(5,
-                             projects->value(pid)->getMatrix(did)->getHash());
-          } else {
-            subitem->setText(5, "None");
+          while (!future.isFinished()) {
+            if (stoprun == true) {
+              obj.AbortRun();
+              QApplication::processEvents();
+            } else {
+              QApplication::processEvents();
+            }
           }
 
-          subitem->setText(6, QString::number(projects->value(pid)
-                                                  ->getPLSModel(mid)
-                                                  ->getLastPLSPrediction()
-                                                  ->getPredID()));
-          subitem->setText(7, QString("PLS Prediction"));
+          if (stoprun == false) {
+            //         ModelPrediction Name - Tab Count - pid - Model ID - xdata
+            //         id - ydata id - Data Position - Data Type (PCA Prediction,
+            //         PLS Prediction, ...) (8)
+            QTreeWidgetItem *subitem = new QTreeWidgetItem;
+            subitem->setText(0, projects->value(pid)
+                                    ->getPLSModel(mid)
+                                    ->getLastPLSPrediction()
+                                    ->getName());
+            subitem->setText(1, QString::number(tabcount_));
+            subitem->setText(2, QString::number(pid));
+            subitem->setText(3, QString::number(mid));
+            subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+
+            if (ysel.size() > 0) {
+              subitem->setText(5,
+                               projects->value(pid)->getMatrix(did)->getHash());
+            } else {
+              subitem->setText(5, "None");
+            }
+
+            subitem->setText(6, QString::number(projects->value(pid)
+                                                    ->getPLSModel(mid)
+                                                    ->getLastPLSPrediction()
+                                                    ->getPredID()));
+            subitem->setText(7, QString("PLS Prediction"));
 
 #ifdef DEBUG
-          qDebug() << "X Predicted Scores";
-          PrintMatrix(projects->value(pid)
-                          ->getPLSModel(mid)
-                          ->getLastPLSPrediction()
-                          ->getXPredScores());
-          qDebug() << "Y Dipendent Value Predicted";
-          PrintMatrix(projects->value(pid)
-                          ->getPLSModel(mid)
-                          ->getLastPLSPrediction()
-                          ->getYDipVar());
-          qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2)
-                   << subitem->text(3) << subitem->text(4) << subitem->text(5);
+            qDebug() << "X Predicted Scores";
+            PrintMatrix(projects->value(pid)
+                            ->getPLSModel(mid)
+                            ->getLastPLSPrediction()
+                            ->getXPredScores());
+            qDebug() << "Y Dipendent Value Predicted";
+            PrintMatrix(projects->value(pid)
+                            ->getPLSModel(mid)
+                            ->getLastPLSPrediction()
+                            ->getYDipVar());
+            qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2)
+                     << subitem->text(3) << subitem->text(4) << subitem->text(5);
 #endif
 
-          tabcount_++;
-
-          getModelItem(pid, mid)->addChild(subitem);
+            tabcount_++;
+            getModelItem(pid, mid)->addChild(subitem);
+          } else {
+            int removeid =
+                projects->value(pid)->getPLSModel(mid)->PLSPredictionCount() -
+                1;
+            projects->value(pid)->getPLSModel(mid)->delPLSPredictionAt(removeid);
+          }
         } else {
           QMessageBox::critical(
               this, tr("PLS Prediction Error"),
@@ -7113,7 +7344,7 @@ void MainWindow::DoPLSPrediction() {
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
         projects->value(pid)->AutoSave();
@@ -7174,6 +7405,15 @@ void MainWindow::DoPLSValidation() {
                         classes, x, y);
         }
 
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         uivector *kfc;
         initUIVector(&kfc);
         PrepareKFoldClasses(objsel, kfoldclasses, kfc);
@@ -7210,7 +7450,7 @@ void MainWindow::DoPLSValidation() {
 
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
         DelUIVector(&kfc);
@@ -7278,6 +7518,17 @@ void MainWindow::DoPLS(int algtype) {
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel,
                       yvarsel, x, y);
 
+        if (stoprun) {
+          int removeid = projects->value(pid)->PLSCount() - 1;
+          projects->value(pid)->delPLSModelAt(removeid);
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         RUN obj;
         obj.setXMatrix(x);
         obj.setYMatrix(y);
@@ -7326,7 +7577,7 @@ void MainWindow::DoPLS(int algtype) {
         DelMatrix(&y);
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
       } else if (did != -1 && pid != -1 && objsel.size() > 0 &&
                  xvarsel.size() > 0 && classes.size() > 0) {
         StartRun();
@@ -7361,6 +7612,17 @@ void MainWindow::DoPLS(int algtype) {
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel,
                       classes, x, y);
 
+        if (stoprun) {
+          int removeid = projects->value(pid)->PLSCount() - 1;
+          projects->value(pid)->delPLSModelAt(removeid);
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         RUN obj;
         obj.setXMatrix(x);
         obj.setYMatrix(y);
@@ -7409,7 +7671,7 @@ void MainWindow::DoPLS(int algtype) {
         DelMatrix(&y);
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
       }
     }
   }
@@ -7434,6 +7696,14 @@ void MainWindow::DoLDAPrediction() {
 
       bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel,
                                 varsel, x);
+
+      if (stoprun) {
+        TopMenuEnableDisable();
+        CalculationMenuEnable();
+        FinalizeRun();
+        DelMatrix(&x);
+        return;
+      }
 
       if (x->col == (size_t)varsel.size() && mxok == true) {
         QString str = "--------------------\n Computing LDA Prediction for: ";
@@ -7475,76 +7745,38 @@ void MainWindow::DoLDAPrediction() {
         QFuture<void> future = obj.RunLDAPrediction();
 
         while (!future.isFinished()) {
-          QApplication::processEvents();
+          if (stoprun == true) {
+            obj.AbortRun();
+            QApplication::processEvents();
+          } else {
+            QApplication::processEvents();
+          }
         }
 
-        QList<QStringList> classes;
-        int maxclass = projects->value(pid)
-                           ->getLDAModel(mid)
-                           ->getLastLDAPrediction()
-                           ->getPredClasses()
-                           ->data[0][0];
-        for (size_t i = 1; i < projects->value(pid)
-                                   ->getLDAModel(mid)
-                                   ->getLastLDAPrediction()
-                                   ->getPredClasses()
-                                   ->row;
-             i++) {
-          if (projects->value(pid)
-                  ->getLDAModel(mid)
-                  ->getLastLDAPrediction()
-                  ->getPredClasses()
-                  ->data[i][0] > (size_t)maxclass)
-            maxclass = projects->value(pid)
-                           ->getLDAModel(mid)
-                           ->getLastLDAPrediction()
-                           ->getPredClasses()
-                           ->data[i][0];
-          else
-            continue;
+        if (stoprun == false) {
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, projects->value(pid)
+                                  ->getLDAModel(mid)
+                                  ->getLastLDAPrediction()
+                                  ->getName());
+          subitem->setText(1, QString::number(tabcount_));
+          subitem->setText(2, QString::number(pid));
+          subitem->setText(3, QString::number(mid));
+          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+          subitem->setText(5, "");
+          subitem->setText(6, QString::number(projects->value(pid)
+                                                  ->getLDAModel(mid)
+                                                  ->getLastLDAPrediction()
+                                                  ->getPredID()));
+          subitem->setText(7, QString("LDA Prediction"));
+
+          tabcount_++;
+          getModelItem(pid, mid)->addChild(subitem);
+        } else {
+          int removeid =
+              projects->value(pid)->getLDAModel(mid)->LDAPredictionCount() - 1;
+          projects->value(pid)->getLDAModel(mid)->delLDAPredictionAt(removeid);
         }
-
-        maxclass++;
-        for (int i = 0; i < maxclass; i++)
-          classes.append(QStringList());
-
-        for (size_t i = 1; i < projects->value(pid)
-                                   ->getLDAModel(mid)
-                                   ->getLastLDAPrediction()
-                                   ->getPredClasses()
-                                   ->row;
-             i++) {
-          int cid = projects->value(pid)
-                        ->getLDAModel(mid)
-                        ->getLastLDAPrediction()
-                        ->getPredClasses()
-                        ->data[i][0];
-          classes[cid].append(objsel[i]);
-        }
-
-        projects->value(pid)
-            ->getLDAModel(mid)
-            ->getLastLDAPrediction()
-            ->setClasses(classes);
-
-        QTreeWidgetItem *subitem = new QTreeWidgetItem;
-        subitem->setText(0, projects->value(pid)
-                                ->getLDAModel(mid)
-                                ->getLastLDAPrediction()
-                                ->getName());
-        subitem->setText(1, QString::number(tabcount_));
-        subitem->setText(2, QString::number(pid));
-        subitem->setText(3, QString::number(mid));
-        subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
-        subitem->setText(5, "");
-        subitem->setText(6, QString::number(projects->value(pid)
-                                                ->getLDAModel(mid)
-                                                ->getLastLDAPrediction()
-                                                ->getPredID()));
-        subitem->setText(7, QString("LDA Prediction"));
-
-        tabcount_++;
-        getModelItem(pid, mid)->addChild(subitem);
       } else {
         QMessageBox::critical(
             this, tr("LDA Prediction Error"),
@@ -7557,7 +7789,7 @@ void MainWindow::DoLDAPrediction() {
       }
       TopMenuEnableDisable();
       CalculationMenuEnable();
-      StopRun();
+      FinalizeRun();
       DelMatrix(&x);
       projects->value(pid)->AutoSave();
     }
@@ -7610,12 +7842,21 @@ void MainWindow::DoLDAValidation() {
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, x);
 
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         // Rudimental y class preparation
         for (int i = 0;
              i < projects->value(pid)->getMatrix(did)->getObjName().size();
              i++) {
-          int ii = _index_of_(
-              objsel, projects->value(pid)->getMatrix(did)->getObjName()[i]);
+          int ii = objsel.indexOf(
+              projects->value(pid)->getMatrix(did)->getObjName()[i]);
           if (ii > -1) {
             for (int j = 0; j < classes.size(); j++) {
               if (classes[j].contains(
@@ -7660,7 +7901,7 @@ void MainWindow::DoLDAValidation() {
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
         projects->value(pid)->AutoSave();
@@ -7719,12 +7960,21 @@ void MainWindow::DoLDA() {
 
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel, x);
 
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         // Rudimental y class preparation
         for (int i = 0;
              i < projects->value(pid)->getMatrix(did)->getObjName().size();
              i++) {
-          int ii = _index_of_(
-              objsel, projects->value(pid)->getMatrix(did)->getObjName()[i]);
+          int ii = objsel.indexOf(
+              projects->value(pid)->getMatrix(did)->getObjName()[i]);
           if (ii > -1) {
             for (int j = 0; j < classes.size(); j++) {
               if (classes[j].contains(
@@ -7787,7 +8037,7 @@ void MainWindow::DoLDA() {
         DelMatrix(&y);
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         projects->value(pid)->AutoSave();
       }
     }
@@ -7827,6 +8077,15 @@ void MainWindow::DoMLRPrediction() {
         bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel,
                                   xvarsel, yvarsel, x, y);
 
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         if (x->col == (size_t)xvarsel.size() && mxok == true) {
           QString str = "--------------------\n Computing MLR Prediction for: ";
           str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
@@ -7861,45 +8120,107 @@ void MainWindow::DoMLRPrediction() {
               ->getLastMLRPrediction()
               ->setYVarName(ysel);
 
-          RUN obj;
-          obj.setXMatrix(x);
-          obj.setYMatrix(y);
-          obj.setMLRModel(projects->value(pid)->getMLRModel(mid));
+                    RUN obj;
 
-          QFuture<void> future = obj.RunMLRPrediction();
-          while (!future.isFinished())
-            QApplication::processEvents();
+                    obj.setXMatrix(x);
 
-          //         ModelPrediction Name - Tab Count - pid - Model ID - xdata
-          //         id - ydata id - Data Position - Data Type (PCA Prediction,
-          //         PLS Prediction, ...) (8)
-          QTreeWidgetItem *subitem = new QTreeWidgetItem;
-          subitem->setText(0, projects->value(pid)
-                                  ->getMLRModel(mid)
-                                  ->getLastMLRPrediction()
-                                  ->getName());
-          subitem->setText(1, QString::number(tabcount_));
-          subitem->setText(2, QString::number(pid));
-          subitem->setText(3, QString::number(mid));
-          subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+                    obj.setYMatrix(y);
 
-          if (ysel.size() > 0) {
-            subitem->setText(5,
-                             projects->value(pid)->getMatrix(did)->getHash());
-          } else {
-            subitem->setText(5, "None");
-          }
+                    obj.setMLRModel(projects->value(pid)->getMLRModel(mid));
 
-          subitem->setText(6, QString::number(projects->value(pid)
-                                                  ->getMLRModel(mid)
-                                                  ->getLastMLRPrediction()
-                                                  ->getPredID()));
-          subitem->setText(7, QString("MLR Prediction"));
+          
 
-          tabcount_++;
+                    QFuture<void> future = obj.RunMLRPrediction();
 
-          getModelItem(pid, mid)->addChild(subitem);
-        } else {
+                    while (!future.isFinished()) {
+
+                      if (stoprun == true) {
+
+                        obj.AbortRun();
+
+                        QApplication::processEvents();
+
+                      } else {
+
+                        QApplication::processEvents();
+
+                      }
+
+                    }
+
+          
+
+                    if (stoprun == false) {
+
+                      //         ModelPrediction Name - Tab Count - pid - Model ID - xdata
+
+                      //         id - ydata id - Data Position - Data Type (PCA Prediction,
+
+                      //         PLS Prediction, ...) (8)
+
+                      QTreeWidgetItem *subitem = new QTreeWidgetItem;
+
+                      subitem->setText(0, projects->value(pid)
+
+                                              ->getMLRModel(mid)
+
+                                              ->getLastMLRPrediction()
+
+                                              ->getName());
+
+                      subitem->setText(1, QString::number(tabcount_));
+
+                      subitem->setText(2, QString::number(pid));
+
+                      subitem->setText(3, QString::number(mid));
+
+                      subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+
+          
+
+                      if (ysel.size() > 0) {
+
+                        subitem->setText(5,
+
+                                         projects->value(pid)->getMatrix(did)->getHash());
+
+                      } else {
+
+                        subitem->setText(5, "None");
+
+                      }
+
+          
+
+                      subitem->setText(6, QString::number(projects->value(pid)
+
+                                                              ->getMLRModel(mid)
+
+                                                              ->getLastMLRPrediction()
+
+                                                              ->getPredID()));
+
+                      subitem->setText(7, QString("MLR Prediction"));
+
+          
+
+                      tabcount_++;
+
+                      getModelItem(pid, mid)->addChild(subitem);
+
+                    } else {
+
+                      int removeid =
+
+                          projects->value(pid)->getMLRModel(mid)->MLRPredictionCount() -
+
+                          1;
+
+                      projects->value(pid)->getMLRModel(mid)->delMLRPredictionAt(removeid);
+
+                    }
+
+                  } else {
           QMessageBox::critical(
               this, tr("MLR Prediction Error"),
               tr("Unable to compute MLR Prediction.\n"
@@ -7911,7 +8232,7 @@ void MainWindow::DoMLRPrediction() {
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
         projects->value(pid)->AutoSave();
@@ -7966,6 +8287,15 @@ void MainWindow::DoMLRValidation() {
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel,
                       yvarsel, x, y);
 
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         uivector *kfc;
         initUIVector(&kfc);
         PrepareKFoldClasses(objsel, kfoldclasses, kfc);
@@ -8005,7 +8335,7 @@ void MainWindow::DoMLRValidation() {
         }
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
         DelUIVector(&kfc);
@@ -8060,6 +8390,17 @@ void MainWindow::DoMLR() {
         PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, xvarsel,
                       yvarsel, x, y);
 
+        if (stoprun) {
+          int removeid = projects->value(pid)->MLRCount() - 1;
+          projects->value(pid)->delMLRModelAt(removeid);
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          DelMatrix(&y);
+          return;
+        }
+
         RUN obj;
         obj.setXMatrix(x);
         obj.setYMatrix(y);
@@ -8105,7 +8446,7 @@ void MainWindow::DoMLR() {
         DelMatrix(&y);
         TopMenuEnableDisable();
         CalculationMenuEnable();
-        StopRun();
+        FinalizeRun();
         projects->value(pid)->AutoSave();
       }
     }
@@ -8267,6 +8608,9 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0) {
   haveldapred = false;
   haveldavalid = false;
 
+  default_window_size_w = 510;
+  default_window_size_h = 530;
+
   ui.treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(ui.treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)),
           this, SLOT(ShowContextMenu(const QPoint &)));
@@ -8324,6 +8668,8 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0) {
           SLOT(PCA2DScorePlot()));
   connect(ui.actionPCA2DLoadings_Plot, SIGNAL(triggered(bool)),
           SLOT(PCA2DLoadingsPlot()));
+  connect(ui.actionPCA2DDModX_Plot, SIGNAL(triggered(bool)),
+        SLOT(PCADModXPlot()));
   connect(ui.actionPCA2DTsq_Contribution_Plot, SIGNAL(triggered(bool)),
         SLOT(PCATsqContributionPlot()));
   connect(ui.actionPCA2DExpVarPlot, SIGNAL(triggered(bool)),

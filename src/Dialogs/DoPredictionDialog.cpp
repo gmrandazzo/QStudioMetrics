@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Dialog for doprediction operations.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "DoPredictionDialog.h"
 #include <QMessageBox>
 #include <QModelIndex>
@@ -64,9 +85,9 @@ void DoPredictionDialog::CheckDataForPrediction() {
       ui.nextButton->setEnabled(true);
     } else {
       QMessageBox::warning(
-          this, tr("Warnig"),
-          tr("The selected data have different number of descriptors with the "
-             "selected model. \n\nNo prediction can be calculated."),
+          this, tr("Warning"),
+          tr("The selected data has a different number of descriptors than the "
+             "selected model. No prediction can be calculated."),
           QMessageBox::Ok);
       ui.nextButton->setEnabled(false);
     }
@@ -380,9 +401,9 @@ void DoPredictionDialog::next() {
     adjustSize();
   } else {
     QMessageBox::warning(
-        this, tr("Warning!"),
-        tr("No Project, data, model selected or model name specified!\nPlease "
-           "select project and data and check the model name.\n"),
+        this, tr("Warning"),
+        tr("No project, data, or model selected, or model name specified! Please "
+           "select project and data and check the model name."),
         QMessageBox::Close);
     return;
   }

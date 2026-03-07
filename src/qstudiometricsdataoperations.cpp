@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Implementation file for qstudiometricsdataoperations.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "qstudiometricsdataoperations.h"
 #include "qstudiometricstypes.h"
 #include <QCryptographicHash>
@@ -7,6 +28,14 @@
 #include <iostream>
 #include <scientific.h>
 #include <string>
+#include <sstream>
+#include <iomanip>
+
+static std::string doubleToString(double val) {
+    std::ostringstream oss;
+    oss << std::setprecision(17) << val;
+    return oss.str();
+}
 
 LABELS DeserializeLABELS(QString serialized_l) {
   LABELS l;
@@ -69,12 +98,12 @@ void DeserializeDVector(QString serialized_dvector, dvector *v) {
   }
 }
 
-QString SerializeDVector(dvector *v) {
+QString SerializeDVector(const dvector *v) {
   if (v->size > 0) {
     std::string serialized_dvector;
     for (size_t i = 0; i < v->size - 1; i++)
-      serialized_dvector += std::to_string(v->data[i]) + ";";
-    serialized_dvector += std::to_string(v->data[v->size - 1]);
+      serialized_dvector += doubleToString(v->data[i]) + ";";
+    serialized_dvector += doubleToString(v->data[v->size - 1]);
     return QString(serialized_dvector.c_str()).toUtf8();
   } else {
     return QString("NULL");
@@ -94,7 +123,7 @@ void DeserializeUIVector(QString serialized_uivector, uivector *v) {
   }
 }
 
-QString SerializeUIVector(uivector *v) {
+QString SerializeUIVector(const uivector *v) {
   if (v->size > 0) {
     std::string serialized_uivector;
     for (size_t i = 0; i < v->size - 1; i++)
@@ -126,23 +155,23 @@ void DeserializeMatrix(QString serialized_mx, matrix *mx) {
   }
 }
 
-QString SerializeMatrix(matrix *mx) {
+QString SerializeMatrix(const matrix *mx) {
   if (mx->row > 0 && mx->col > 0) {
     std::string serialized_mx;
     for (size_t i = 0; i < mx->row - 1; i++) {
       // start a row and concatenate values
       for (size_t j = 0; j < mx->col - 1; j++) {
-        serialized_mx += std::to_string(mx->data[i][j]) + ";";
+        serialized_mx += doubleToString(mx->data[i][j]) + ";";
       }
       serialized_mx +=
-          std::to_string(mx->data[i][mx->col - 1]) + "//"; // end row
+          doubleToString(mx->data[i][mx->col - 1]) + "//"; // end row
     }
 
     int lrow = mx->row - 1;
     for (size_t j = 0; j < mx->col - 1; j++) {
-      serialized_mx += std::to_string(mx->data[lrow][j]) + ";";
+      serialized_mx += doubleToString(mx->data[lrow][j]) + ";";
     }
-    serialized_mx += std::to_string(mx->data[lrow][mx->col - 1]); // end row
+    serialized_mx += doubleToString(mx->data[lrow][mx->col - 1]); // end row
 
     return QString(serialized_mx.c_str()).toUtf8();
   } else {
@@ -178,7 +207,7 @@ void DeserializeTensor(QString serialized_ar, tensor *ar) {
   }
 }
 
-QString SerializeTensor(tensor *ar) {
+QString SerializeTensor(const tensor *ar) {
   if (ar->order > 0) {
     if (ar->m[0]->row > 0 && ar->m[0]->col > 0) {
       std::string serialized_ar;
@@ -186,19 +215,19 @@ QString SerializeTensor(tensor *ar) {
         for (size_t i = 0; i < ar->m[k]->row - 1; i++) {
           // start a row and concatenate values
           for (size_t j = 0; j < ar->m[k]->col - 1; j++) {
-            serialized_ar += std::to_string(ar->m[k]->data[i][j]) + ";";
+            serialized_ar += doubleToString(ar->m[k]->data[i][j]) + ";";
           }
           serialized_ar +=
-              std::to_string(ar->m[k]->data[i][ar->m[k]->col - 1]) +
+              doubleToString(ar->m[k]->data[i][ar->m[k]->col - 1]) +
               "//"; // end row
         }
 
         int lrow = ar->m[k]->row - 1;
         for (size_t j = 0; j < ar->m[k]->col - 1; j++) {
-          serialized_ar += std::to_string(ar->m[k]->data[lrow][j]) + ";";
+          serialized_ar += doubleToString(ar->m[k]->data[lrow][j]) + ";";
         }
         serialized_ar +=
-            std::to_string(ar->m[k]->data[lrow][ar->m[k]->col - 1]);
+            doubleToString(ar->m[k]->data[lrow][ar->m[k]->col - 1]);
 
         if (k < ar->order - 1)
           serialized_ar += "o";

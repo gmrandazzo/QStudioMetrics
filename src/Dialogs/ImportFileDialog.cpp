@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Dialog for importfile operations.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "ImportFileDialog.h"
 #include "qstudiometricstypes.h"
 
@@ -14,7 +35,7 @@
 void ImportFileDialog::AssignName(QStringList &list, QString name) {
   /*
    * Fast check if duplicate names in list!
-   * Test resutls: works fast with 10.000.000 names!
+   * Test results: works fast with 10.000.000 names!
    */
   try {
     int indx = rnames[name];
@@ -35,7 +56,8 @@ size_t ImportFileDialog::getHeader(QStringList *header) {
   QFileInfo info(ui.file->text());
   if (info.exists()) {
     QFile f(ui.file->text());
-    f.open(QIODevice::ReadOnly | QIODevice::Text);
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+      return 0;
     QString skipchar = getSkipChar();
     QString sep = getSeparator();
     QTextStream in(&f);
@@ -62,12 +84,12 @@ QList<size_t> ImportFileDialog::getLineToSkip() {
     QFileInfo info(ui.file->text());
     if (info.exists()) {
       QFile f(ui.file->text());
-      f.open(QIODevice::ReadOnly | QIODevice::Text);
+      if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+        return lskip;
       QTextStream in(&f);
 
       QString skipchar = getSkipChar();
       size_t row = 0;
-      std::string line;
       while (!in.atEnd()) {
         QString line = in.readLine();
         if (QString(line).compare(skipchar, Qt::CaseInsensitive) == 0 ||
@@ -109,7 +131,8 @@ void ImportFileDialog::ImportType0() {
     // open the file
     Clean_rnames();
     QFile f(ui.file->text());
-    f.open(QIODevice::ReadOnly | QIODevice::Text);
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+      return;
     QTextStream in(&f);
 
     size_t lnum = 0;
@@ -126,7 +149,7 @@ void ImportFileDialog::ImportType0() {
           bool converted;
           double val = items[j].replace(",", ".").toDouble(&converted);
           m->Matrix()->data[row][j - 1] =
-              (converted == true) ? val : DEFAULT_EMTPY_VALUE;
+              (converted == true) ? val : DEFAULT_EMPTY_VALUE;
         }
         row++;
       }
@@ -176,7 +199,7 @@ void ImportFileDialog::ImportType1() {
           bool converted;
           double val = items[j].replace(",", ".").toDouble(&converted);
           m->Matrix()->data[row][j] =
-              (converted == true) ? val : DEFAULT_EMTPY_VALUE;
+              (converted == true) ? val : DEFAULT_EMPTY_VALUE;
         }
         row++;
       }
@@ -217,7 +240,7 @@ void ImportFileDialog::ImportType2() {
           bool converted;
           double val = items[j].replace(",", ".").toDouble(&converted);
           m->Matrix()->data[row][j - 1] =
-              (converted == true) ? val : DEFAULT_EMTPY_VALUE;
+              (converted == true) ? val : DEFAULT_EMPTY_VALUE;
         }
         row++;
       }
@@ -257,7 +280,7 @@ void ImportFileDialog::ImportType3() {
           bool converted;
           double val = items[j].replace(",", ".").toDouble(&converted);
           m->Matrix()->data[row][j] =
-              (converted == true) ? val : DEFAULT_EMTPY_VALUE;
+              (converted == true) ? val : DEFAULT_EMPTY_VALUE;
         }
         row++;
       }
@@ -341,7 +364,7 @@ void ImportFileDialog::BuildMatrix() {
       double mean = 0.f;
       int empty = 0;
       for (int i = 0; i < (int)m->Matrix()->row; i++) {
-        if (FLOAT_EQ(getMatrixValue(m->Matrix(), i, j), DEFAULT_EMTPY_VALUE,
+        if (FLOAT_EQ(getMatrixValue(m->Matrix(), i, j), DEFAULT_EMPTY_VALUE,
                      EPSILON)) {
           empty++;
         } else {
@@ -355,7 +378,7 @@ void ImportFileDialog::BuildMatrix() {
         mean = 0.f;
 
       for (int i = 0; i < (int)m->Matrix()->row; i++) {
-        if (FLOAT_EQ(getMatrixValue(m->Matrix(), i, j), DEFAULT_EMTPY_VALUE,
+        if (FLOAT_EQ(getMatrixValue(m->Matrix(), i, j), DEFAULT_EMPTY_VALUE,
                      EPSILON)) {
           setMatrixValue(m->Matrix(), i, j, mean);
         } else {
@@ -388,7 +411,7 @@ void ImportFileDialog::Preview() {
     /*
      * Preview should work for any text file and should
      * allow to visualize anykind of text, also the ones not
-     * usefull for this software. These lines fix an unespected
+     * usefull for this software. These lines fix an unexpected
      * application crash while opening any txt/ascii file.
      */
     if (line.isEmpty() == true) {
@@ -479,26 +502,27 @@ void ImportFileDialog::Preview() {
 
   model->setHorizontalHeaderLabels(varnames);
   for (int i = 0; i < fpreview.size(); i++) {
-    QList<QStandardItem *> row;
-    row.append(new QStandardItem(objnames[i]));
+    QList<QStandardItem *> rowItems;
+    rowItems.append(new QStandardItem(objnames[i]));
     for (int j = 0; j < fpreview[i].size(); j++) {
-      row.append(new QStandardItem(fpreview[i][j]));
+      rowItems.append(new QStandardItem(fpreview[i][j]));
     }
-    model->appendRow(row);
+    model->appendRow(rowItems);
   }
 
   if (row == max_row && fpreview.size() > 0) {
-    QList<QStandardItem *> row;
-    row.append(new QStandardItem("...."));
+    QList<QStandardItem *> rowItems;
+    rowItems.append(new QStandardItem("...."));
     for (int j = 0; j < fpreview.last().size(); j++) {
-      row.append(new QStandardItem("...."));
+      rowItems.append(new QStandardItem("...."));
     }
+    model->appendRow(rowItems);
   }
 }
 
 FSIZE ImportFileDialog::GetSize() {
   FSIZE sz;
-  sz.row = sz.col = sz.linelenght = 0;
+  sz.row = sz.col = sz.linelength = 0;
   QFileInfo info(ui.file->text());
   if (info.exists()) {
 
@@ -519,12 +543,12 @@ FSIZE ImportFileDialog::GetSize() {
         } else {
           sz.row++;
           size_t col = line.split(sep).size();
-          size_t linelenght = line.size();
+          size_t linelength = line.size();
           if (col > sz.col)
             sz.col = col;
 
-          if (linelenght + 3 > sz.linelenght)
-            sz.linelenght = linelenght + 3;
+          if (linelength + 3 > sz.linelength)
+            sz.linelength = linelength + 3;
           lnum++;
         }
       }
@@ -533,12 +557,12 @@ FSIZE ImportFileDialog::GetSize() {
         QString line = in.readLine();
         sz.row++;
         size_t col = line.split(sep).size();
-        size_t linelenght = line.size();
+        size_t linelength = line.size();
         if (col > sz.col)
           sz.col = col;
 
-        if (linelenght + 3 > sz.linelenght)
-          sz.linelenght = linelenght + 3;
+        if (linelength + 3 > sz.linelength)
+          sz.linelength = linelength + 3;
       }
     }
     f.close();
@@ -594,14 +618,13 @@ void ImportFileDialog::OK() {
       BuildMatrix();
       accept();
     } else {
-      QMessageBox::warning(this, tr("Warnig"),
-                           tr("The selected file could not be used because the "
-                              "file does not exist. Please select a file.."),
+      QMessageBox::warning(this, tr("Warning"),
+                           tr("The selected file does not exist.\nPlease choose a valid file."),
                            QMessageBox::Ok);
       return;
     }
   } else {
-    QMessageBox::warning(this, tr("Warnig"), tr("Please select a file.."),
+    QMessageBox::warning(this, tr("Warning"), tr("Please select a file to import."),
                          QMessageBox::Ok);
   }
 }

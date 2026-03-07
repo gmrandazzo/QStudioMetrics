@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Implementation file for dircompressor.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "dircompressor.h"
 #include <QBuffer>
 #include <QByteArray>
@@ -18,7 +39,7 @@
 #include <cstdlib>
 #include <ctime>
 
-bool DirCompressor::SupportedFile(char *fname) {
+bool DirCompressor::SupportedFile(const char *fname) {
   QString fname_ = QString::fromUtf8(fname);
   for (int i = 0; i < fsupported.size(); i++) {
     if (fname_.endsWith(fsupported[i].toLower()) == true ||
@@ -31,7 +52,7 @@ bool DirCompressor::SupportedFile(char *fname) {
   return false;
 }
 
-bool DirCompressor::rmdir(char *dirName) {
+bool DirCompressor::rmdir(const char *dirName) {
   bool result = true;
   QDir dir(QString::fromUtf8(dirName));
 
@@ -65,7 +86,7 @@ void DirCompressor::GenRandomString(QString *s, int len) {
   }
 }
 
-void DirCompressor::WriteFile(QStringList flist, char *path_) {
+void DirCompressor::WriteFile(QStringList flist, const char *path_) {
   QDir path(QString::fromUtf8(path_));
   if (flist.size() > 0 && path.exists()) {
     QString relfilepath =
@@ -116,22 +137,23 @@ void DirCompressor::WriteFile(QStringList flist, char *path_) {
       //       simage.save(QString::fromUtf8(fname.toUtf8()), "JPG");
 
       QFile imgfile(fname.toUtf8());
-      imgfile.open(QIODevice::WriteOnly);
-      simage.save(&imgfile, "JPG");
+      if (imgfile.open(QIODevice::WriteOnly)) {
+        simage.save(&imgfile, "JPG");
+      }
     } else {
       QFile file(QString::fromUtf8(fname.toUtf8()));
       if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
         return;
-      QTextStream out(&file);
+      QTextStream stream(&file);
       for (int i = 1; i < flist.size(); i++) {
-        out << flist[i];
+        stream << flist[i];
       }
       file.close();
     }
   }
 }
 
-void DirCompressor::ReadFileToString(char *fname, QStringList *filemem) {
+void DirCompressor::ReadFileToString(const char *fname, QStringList *filemem) {
   QString fname_ = QString::fromUtf8(fname);
 
   if (fname_.toLower().endsWith(".jpg") == true ||
@@ -150,8 +172,9 @@ void DirCompressor::ReadFileToString(char *fname, QStringList *filemem) {
 #endif
     QByteArray ba;
     QBuffer buffer(&ba);
-    buffer.open(QIODevice::WriteOnly);
-    image.save(&buffer, "JPG"); // writes image into ba in JGP format
+    if (buffer.open(QIODevice::WriteOnly)) {
+      image.save(&buffer, "JPG"); // writes image into ba in JGP format
+    }
     QString encoded = QString(ba.toBase64());
     /*
      QImage image;
@@ -358,8 +381,8 @@ QString("%1/%2").arg(QString::fromUtf8(dir.absolutePath().toUtf8())).arg(tmp);
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
       return -1;
 
-    QTextStream out(&file);
-    out << uncompressedData;
+    QTextStream stream(&file);
+    stream << uncompressedData;
     file.close();
 
     QStringList flist;
@@ -429,8 +452,8 @@ int DirCompressor::decompress() {
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
       return -1;
 
-    QTextStream out(&file);
-    out << uncompressedData;
+    QTextStream stream(&file);
+    stream << uncompressedData;
     file.close();
 
     QStringList flist;

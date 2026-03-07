@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Implementation file for chart.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 // ONLY 2D SCATTER PLOTS
 #include <QMessageBox>
 #include <QPageLayout>
@@ -7,24 +28,43 @@
 #include <QtGui>
 #include <QtPrintSupport/QPrinter>
 #include <cmath>
+#include <QCache>
+#include <QToolTip>
+#include <algorithm>
+#include <QBuffer>
+#include <QByteArray>
+#include <QSettings>
 
 #include "chart.h"
+#include "plotsettings.h"
 
 #define EPSILON 1e-3 /*Define your own tolerance*/
-#define FLOAT_EQ(x, v, EPSILON) (((v - EPSILON) < x) && (x < (v + EPSILON)))
 
 using namespace std;
+
+// Static cache for marker pixmaps to improve performance
+static QCache<QString, QPixmap> markerCache;
+
+// Helper to generate cache key
+static QString getMarkerKey(int type, int radius, const QColor& color, bool selected) {
+    return QString("%1_%2_%3_%4").arg(type).arg(radius).arg(color.name(QColor::HexArgb)).arg(selected);
+}
 
 inline double round(double n, unsigned d) {
   return floor(n * pow(10., d) + .5) / pow(10., d);
 }
 
 Chart::Chart(QWidget *parent) : QWidget(parent) {
-#ifdef DEBUG
-  printf("Chart::Chart\n");
-#endif
+// #ifdef DEBUG
+//   printf("Chart::Chart\n");
+// #endif
   antialiasing = true;
   labeldetail = false;
+  m_indexDirty = false;
+  m_isLassoActive = false;
+  
+  // Enable mouse tracking for hover events
+  setMouseTracking(true);
 
   QPalette Pal(palette());
 
@@ -49,25 +89,42 @@ Chart::Chart(QWidget *parent) : QWidget(parent) {
   zoomOutButton->adjustSize();
   connect(zoomOutButton, SIGNAL(clicked()), this, SLOT(zoomOut()));
 
+  recentreButton = new QToolButton(this);
+  recentreButton->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
+  recentreButton->setToolTip(tr("Recentre Plot"));
+  recentreButton->adjustSize();
+  connect(recentreButton, SIGNAL(clicked()), this, SLOT(recentre()));
+
   m_xaxisname = "x";
   m_yaxisname = "y";
   titleSize = 1;
   axisValueSize = 1;
   xLabelSize = 1;
   yLabelSize = 1;
+  
+  // Initialize cache capacity (e.g., 1000 unique markers)
+  markerCache.setMaxCost(1000);
+  
   setPlotSettings(PlotSettings());
 }
 
 Chart::~Chart() {
-#ifdef DEBUG
-  printf("Chart::~Chart\n");
-#endif
+// #ifdef DEBUG
+//   printf("Chart::~Chart\n");
+// #endif
   for (int i = 0; i < p.size(); i++)
     delete p[i];
   p.clear();
+}
 
-  delete zoomInButton;
-  delete zoomOutButton;
+void Chart::recentre() {
+  if (zoomStack.count() > 1) {
+    zoomStack.resize(1);
+    curZoom = 0;
+    zoomOutButton->hide();
+    zoomInButton->setEnabled(zoomStack.count() > 1);
+    refreshPixmap();
+  }
 }
 
 QWidget *Chart::weview() { return this; }
@@ -79,44 +136,27 @@ void Chart::Center() {
   if (zoomStack.size() > 0 && p.size() > 0) {
     qreal minX, maxX, minY, maxY;
     // search min max between scatters
-    minX = maxX = p[0]->x();
-    minY = maxY = p[0]->y();
-    for (int i = 1; i < p.size(); i++) {
-      if (p[i]->x() < minX) {
-        minX = p[i]->x();
-      }
-
-      if (p[i]->x() > maxX) {
-        maxX = p[i]->x();
-      }
-
-      if (p[i]->y() < minY) {
-        minY = p[i]->y();
-      }
-
-      if (p[i]->y() > maxY) {
-        maxY = p[i]->y();
-      }
+    if (!p.isEmpty()) {
+        minX = maxX = p[0]->x();
+        minY = maxY = p[0]->y();
+        for (int i = 1; i < p.size(); i++) {
+          if (p[i]->x() < minX) minX = p[i]->x();
+          if (p[i]->x() > maxX) maxX = p[i]->x();
+          if (p[i]->y() < minY) minY = p[i]->y();
+          if (p[i]->y() > maxY) maxY = p[i]->y();
+        }
+    } else {
+        minX = 0; maxX = 1; minY = 0; maxY = 1;
     }
 
     // search min max between curves
     for (int i = 0; i < curveMap.size(); i++) {
-      for (int j = 0; j < curveMap[i].getPoints().size(); j++) {
-        if (curveMap[i].getPoints()[j].x() < minX) {
-          minX = curveMap[i].getPoints()[j].x();
-        }
-
-        if (curveMap[i].getPoints()[j].x() > maxX) {
-          maxX = curveMap[i].getPoints()[j].x();
-        }
-
-        if (curveMap[i].getPoints()[j].y() < minY) {
-          minY = curveMap[i].getPoints()[j].y();
-        }
-
-        if (curveMap[i].getPoints()[j].y() > maxY) {
-          maxY = curveMap[i].getPoints()[j].y();
-        }
+      const QVector<QPointF>& points = curveMap[i].getPoints();
+      for (int j = 0; j < points.size(); j++) {
+        if (points[j].x() < minX) minX = points[j].x();
+        if (points[j].x() > maxX) maxX = points[j].x();
+        if (points[j].y() < minY) minY = points[j].y();
+        if (points[j].y() > maxY) maxY = points[j].y();
       }
     }
 
@@ -124,31 +164,26 @@ void Chart::Center() {
     zoomStack.first().maxX = (maxX + fabs(maxX * rescalefactor));
     zoomStack.first().minY = (minY - fabs(minY * rescalefactor));
     zoomStack.first().maxY = (maxY + fabs(maxY * rescalefactor));
-
-    //     zoomStack.first().numXTicks =  zoomStack.first().spanX();
-    //     zoomStack.first().numYTicks =  zoomStack.first().spanY();
-
-    /*maxX = zoomStack.first().maxX - (int)zoomStack.first().spanX() %
-     * zoomStack.first().numXTicks;
-     *
-     * if(FLOAT_EQ(maxX, 0, EPSILON))
-     *   zoomStack.first().maxX = 1;
-     * else
-     *   zoomStack.first().maxX = maxX;
-     *
-     * maxY = zoomStack.first().maxY - (int)zoomStack.first().spanY() %
-     * zoomStack.first().numYTicks; if(FLOAT_EQ(maxY, 0, EPSILON))
-     *   zoomStack.first().maxY = 1;
-     * else
-     *   zoomStack.first().maxY = maxY;
-     */
   }
 }
 
+void Chart::buildIndex() {
+    m_searchIndex.clear();
+    m_searchIndex.reserve(p.size());
+    for(int i=0; i<p.size(); ++i) {
+        m_searchIndex.append({p[i]->x(), i});
+    }
+    std::sort(m_searchIndex.begin(), m_searchIndex.end());
+    m_indexDirty = false;
+}
+
 void Chart::Refresh() {
-#ifdef DEBUG
-  printf("Chart::Refresh\n");
-#endif
+// #ifdef DEBUG
+//   printf("Chart::Refresh\n");
+// #endif
+  if (m_indexDirty) {
+      buildIndex();
+  }
   refreshPixmap();
 }
 
@@ -157,37 +192,22 @@ void Chart::setAntialiasing(bool antialiasing_) {
 }
 
 void Chart::setXaxisName(QString xaxisname) {
-#ifdef DEBUG
-  printf("Chart::setXaxisName\n");
-#endif
   m_xaxisname = xaxisname;
 }
 
 void Chart::setYaxisName(QString yaxisname) {
-#ifdef DEBUG
-  printf("Chart::setYaxisName\n");
-#endif
   m_yaxisname = yaxisname;
 }
 
 void Chart::setPlotTitle(QString plottitle) {
-#ifdef DEBUG
-  printf("Chart::setPlotTitle\n");
-#endif
   m_plottitle = plottitle;
 }
 
 void Chart::setPlotTitleSize(int size) {
-#ifdef DEBUG
-  printf("Chart::setPlotTitleSize\n");
-#endif
   titleSize = size;
 }
 
 void Chart::setLabelDetail(bool labeldetail_) {
-#ifdef DEBUG
-  printf("Chart::setLabelDetail\n");
-#endif
   labeldetail = labeldetail_;
 }
 
@@ -196,9 +216,6 @@ void Chart::setAxisValueSize(int size) { axisValueSize = size; }
 void Chart::setXLabelSize(int size) { xLabelSize = size; }
 
 void Chart::setXminXmaxXTick(double xmin, double xmax, int xtick) {
-#ifdef DEBUG
-  printf("Chart::setXminXmaxXTick\n");
-#endif
   if (zoomStack.size() > 0 && curZoom < zoomStack.size()) {
     zoomStack[curZoom].minX = xmin;
     zoomStack[curZoom].maxX = xmax;
@@ -210,9 +227,6 @@ void Chart::setXminXmaxXTick(double xmin, double xmax, int xtick) {
 }
 
 void Chart::getXminXmaxXTick(double *xmin, double *xmax, int *xtick) {
-#ifdef DEBUG
-  printf("Chart::getXminXmaxXTick\n");
-#endif
   if (zoomStack.size() > 0 && curZoom < zoomStack.size()) {
     (*xmin) = zoomStack[curZoom].minX;
     (*xmax) = zoomStack[curZoom].maxX;
@@ -225,9 +239,6 @@ void Chart::getXminXmaxXTick(double *xmin, double *xmax, int *xtick) {
 void Chart::setYLabelSize(int size) { yLabelSize = size; }
 
 void Chart::setYminYmaxYTick(double ymin, double ymax, int ytick) {
-#ifdef DEBUG
-  printf("Chart::setYminYmaxYTick\n");
-#endif
   if (zoomStack.size() > 0 && curZoom < zoomStack.size()) {
     zoomStack[curZoom].minY = ymin;
     zoomStack[curZoom].maxY = ymax;
@@ -237,9 +248,6 @@ void Chart::setYminYmaxYTick(double ymin, double ymax, int ytick) {
 }
 
 void Chart::getYminYmaxYTick(double *ymin, double *ymax, int *ytick) {
-#ifdef DEBUG
-  printf("Chart::getYminYmaxYTick\n");
-#endif
   if (zoomStack.size() > 0 && curZoom < zoomStack.size()) {
     (*ymin) = zoomStack[curZoom].minY;
     (*ymax) = zoomStack[curZoom].maxY;
@@ -250,9 +258,6 @@ void Chart::getYminYmaxYTick(double *ymin, double *ymax, int *ytick) {
 }
 
 void Chart::DoSelection(int low, int high) {
-#ifdef DEBUG
-  printf("Chart::DoSelection\n");
-#endif
   int i;
   for (i = low; i < high; i++) {
     p[i]->setSelection(true);
@@ -260,9 +265,6 @@ void Chart::DoSelection(int low, int high) {
 }
 
 void Chart::Select(int from, int to) {
-#ifdef DEBUG
-  printf("Chart::Select\n");
-#endif
   if (from < to) {
     int mid = (from + to) / 2;
     Select(from, mid);
@@ -272,17 +274,11 @@ void Chart::Select(int from, int to) {
 }
 
 void Chart::SelectAll() {
-#ifdef DEBUG
-  printf("Chart::SelectAll\n");
-#endif
   Select(0, p.size());
   refreshPixmap();
 }
 
 void Chart::DoUnselection(int low, int high) {
-#ifdef DEBUG
-  printf("Chart::DoUnselection\n");
-#endif
   int i;
   for (i = low; i < high; i++) {
     if (p[i]->isSelected() == true) {
@@ -293,9 +289,6 @@ void Chart::DoUnselection(int low, int high) {
 }
 
 void Chart::Unselect(int from, int to) {
-#ifdef DEBUG
-  printf("Chart::Unselect\n");
-#endif
   if (from < to) {
     int mid = (from + to) / 2;
     Unselect(from, mid);
@@ -305,112 +298,74 @@ void Chart::Unselect(int from, int to) {
 }
 
 void Chart::ClearSelection() {
-#ifdef DEBUG
-  printf("Chart::ClearSelection\n");
-#endif
   /* Unselection by divide and conqueror technique*/
   Unselect(0, p.size());
   refreshPixmap();
 }
 
 void Chart::RemoveCurveAt(int cid) {
-#ifdef DEBUG
-  printf("Chart::RemoveCurveAt\n");
-#endif
   curveMap.remove(cid);
 }
 
 void Chart::RemoveAllCurves() {
-#ifdef DEBUG
-  printf("Chart::RemoveAllCurves\n");
-#endif
   curveMap.clear();
 }
 
 void Chart::setPlotSettings(const PlotSettings &settings) {
-#ifdef DEBUG
-  printf("Chart::setPlotSettings\n");
-#endif
   zoomStack.clear();
   zoomStack.append(settings);
   curZoom = 0;
   zoomInButton->hide();
   zoomOutButton->hide();
+  recentreButton->hide();
   refreshPixmap();
 }
 
 void Chart::zoomOut() {
-#ifdef DEBUG
-  printf("Chart::zoomOut\n");
-#endif
   if (curZoom > 0) {
     --curZoom;
     zoomOutButton->setEnabled(curZoom > 0);
     zoomInButton->setEnabled(true);
     zoomInButton->show();
+    recentreButton->setVisible(zoomStack.count() > 1);
     refreshPixmap();
   }
 }
 
 void Chart::zoomIn() {
-#ifdef DEBUG
-  printf("Chart::zoomIn\n");
-#endif
   if (curZoom < zoomStack.count() - 1) {
     ++curZoom;
     zoomInButton->setEnabled(curZoom < zoomStack.count() - 1);
     zoomOutButton->setEnabled(true);
     zoomOutButton->show();
+    recentreButton->show();
     refreshPixmap();
   }
 }
 
-/*
-void Chart::setCurveData(int id, const QVector<QPointF> &data)
-{
-    curveMap[id] = data;
-
-}
-*/
-
 void Chart::addPoint(qreal x, qreal y, QString name) {
-#ifdef DEBUG
-  printf("Chart::addPoint(qreal x, qreal y, QString name)\n");
-#endif
   p.append(new DataPoint(x, y, name));
-  //   p.last()->setX(x);
-  //   p.last()->setY(y);
-  //   p.last()->setName(name);
+  m_indexDirty = true;
 }
 
 void Chart::addPoint(qreal x, qreal y, QString name, QColor color, int radius) {
-#ifdef DEBUG
-  printf("Chart::addPoint(qreal x, qreal y, QString name, QColor color, int "
-         "radius)\n");
-#endif
   p.append(new DataPoint(x, y, name));
   p.last()->setColor(color);
   p.last()->setRadius(radius);
+  m_indexDirty = true;
 }
 
-void Chart::addCurve(QVector<QPointF> curve, QString name, QColor color) {
-#ifdef DEBUG
-  printf("Chart::addCurve\n");
-#endif
-  curveMap.append(DataCurve(curve, name, color));
+void Chart::addCurve(QVector<QPointF> curve, QString name, QColor color, bool smooth) {
+  DataCurve dc(curve, name, color);
+  dc.setSmooth(smooth);
+  curveMap.append(dc);
 }
 
 int Chart::PointSize() const {
-#ifdef DEBUG
-  printf("Chart::PointSize\n");
-#endif
   return p.size();
 }
 
 DataPoint *Chart::getPoint(int id) {
-#ifdef DEBUG
-  printf("Chart::getPoint\n");
-#endif
   if (id < p.size())
     return p[id];
   else
@@ -418,75 +373,43 @@ DataPoint *Chart::getPoint(int id) {
 }
 
 void Chart::RemovePointAt(int id) {
-#ifdef DEBUG
-  printf("Chart::RemovePointAt\n");
-#endif
   if (id < p.size()) {
     delete p[id];
     p.remove(id);
+    m_indexDirty = true;
   }
 }
 
 void Chart::RemovePoint(DataPoint *dp) {
-#ifdef DEBUG
-  printf("Chart::RemovePoint\n");
-#endif
   auto indx = p.indexOf(dp);
   if (indx > -1) {
     delete p[indx];
     p.remove(indx);
+    m_indexDirty = true;
   }
 }
 
 void Chart::RemoveAllPoints() {
-#ifdef DEBUG
-  printf("Chart::RemoveAllPoints\n");
-#endif
   for (int i = 0; i < p.size(); i++) {
     delete p[i];
   }
   p.clear();
+  m_indexDirty = true;
 }
 
 QVector<DataCurve> Chart::getCurves() {
-#ifdef DEBUG
-  printf("Chart::getCurves\n");
-#endif
   return curveMap;
 }
 
-/*
-void Chart::clearCurve(int id)
-{
-    curveMap.remove(id);
-    refreshPixmap();
-}
-*/
-
 QSize Chart::minimumSizeHint() const {
-#ifdef DEBUG
-  printf("Chart::minimumSizeHint\n");
-#endif
   return QSize(6 * Margin, 4 * Margin);
 }
 
 QSize Chart::sizeHint() const {
-#ifdef DEBUG
-  printf("Chart::sizeHint\n");
-#endif
   return QSize(12 * Margin, 8 * Margin);
 }
 
 void Chart::SaveAsImage(QString imgname) {
-#ifdef DEBUG
-  printf("Chart::SaveAsImage\n");
-#endif
-  /*
-  QByteArray bytes;
-  QBuffer buffer(&bytes);
-  buffer.open(QIODevice::WriteOnly);
-  pixmap.save(&buffer, "PNG"); // writes pixmap into bytes in PNG format
-  */
   if (imgname.contains(".png", Qt::CaseInsensitive) == true) {
     pixmap.save(imgname, "PNG", 100);
   } else if (imgname.contains(".jpg", Qt::CaseInsensitive) == true ||
@@ -516,20 +439,20 @@ void Chart::SaveAsImage(QString imgname) {
 }
 
 void Chart::paintEvent(QPaintEvent *event) {
-#ifdef DEBUG
-  printf("Chart::paintEvent\n");
-#endif
   Q_UNUSED(event);
-
   QStylePainter painter(this);
   painter.drawPixmap(0, 0, pixmap);
-
-  //   painter.eraseRect(rect());
 
   if (rubberBandIsShown) {
     QPen rubberbandpen = QPen(QColor(255, 0, 0, 125));
     painter.setPen(rubberbandpen);
     painter.drawRect(rubberBandRect.normalized().adjusted(0, 0, -1, -1));
+  }
+  
+  if (m_isLassoActive && !m_lassoPolygon.isEmpty()) {
+      painter.setPen(QPen(QColor(255, 0, 0, 125), 1, Qt::DashLine));
+      painter.setBrush(QColor(255, 0, 0, 30));
+      painter.drawPolygon(m_lassoPolygon);
   }
 
   if (hasFocus()) {
@@ -541,25 +464,22 @@ void Chart::paintEvent(QPaintEvent *event) {
 }
 
 void Chart::resizeEvent(QResizeEvent *event) {
-#ifdef DEBUG
-  printf("Chart::resizeEvent\n");
-#endif
   Q_UNUSED(event);
-  int x = width() - (zoomInButton->width() + zoomOutButton->width() + 10);
+  int spacing = 5;
+  int x = width() - (zoomInButton->width() + zoomOutButton->width() + recentreButton->width() + spacing * 2 + 10);
   zoomInButton->move(x, 5);
-  zoomOutButton->move(x + zoomInButton->width() + 5, 5);
+  x += zoomInButton->width() + spacing;
+  zoomOutButton->move(x, 5);
+  x += zoomOutButton->width() + spacing;
+  recentreButton->move(x, 5);
   refreshPixmap();
 }
 
 void Chart::mousePressEvent(QMouseEvent *event) {
-#ifdef DEBUG
-  printf("Chart::mousePressEvent\n");
-#endif
   QRect rect(Margin, Margin, width() - 2 * Margin, height() - 2 * Margin);
 
-  // zoom with the middle button
-  if (event->button() == Qt::MiddleButton ||
-      event->button() == Qt::LeftButton) {
+  if (event->button() == Qt::MiddleButton) {
+    // Zoom Logic
     if (rect.contains(event->pos())) {
       rubberBandIsShown = true;
       rubberBandRect.setTopLeft(event->pos());
@@ -567,27 +487,114 @@ void Chart::mousePressEvent(QMouseEvent *event) {
       updateRubberBandRegion();
       setCursor(Qt::CrossCursor);
     }
+  } else if (event->button() == Qt::LeftButton) {
+    // Lasso Selection Logic
+    if (rect.contains(event->pos())) {
+        m_isLassoActive = true;
+        m_lassoPolygon.clear();
+        m_lassoPolygon << event->pos();
+        setCursor(Qt::CrossCursor);
+    }
   } else if ((event->button() == Qt::RightButton)) {
     rubberBandIsShown = false;
-    // show qcontext menu event
+    m_isLassoActive = false;
+    m_lassoPolygon.clear();
+    update();
   }
 }
 
 void Chart::mouseMoveEvent(QMouseEvent *event) {
-#ifdef DEBUG
-  printf("Chart::mouseMoveEvent\n");
-#endif
   if (rubberBandIsShown == true) {
     updateRubberBandRegion();
     rubberBandRect.setBottomRight(event->pos());
     updateRubberBandRegion();
+  } else if (m_isLassoActive) {
+      m_lassoPolygon << event->pos();
+      update();
+  } else {
+      // Hover Logic
+      if (p.isEmpty() || zoomStack.isEmpty()) return;
+      if (m_indexDirty) {
+          // Should have been built in Refresh, but if modified after...
+          // Don't build here to avoid lag. 
+          return; 
+      }
+      
+      QRect rect(Margin, Margin, width() - 2 * Margin, height() - 2 * Margin);
+      if (!rect.contains(event->pos())) {
+          QToolTip::hideText();
+          return;
+      }
+
+      PlotSettings settings = zoomStack[curZoom];
+      double spanX = settings.spanX();
+      double spanY = settings.spanY();
+      
+      // Prevent division by zero
+      if (std::abs(spanX) < 1e-9 || std::abs(spanY) < 1e-9) return; 
+      
+      // Calculate data coordinates of mouse
+      double dx = (event->pos().x() - rect.left()) * spanX / (rect.width() - 1);
+      double mouseDataX = settings.minX + dx;
+      
+      // Search tolerance in pixels
+      const double tolPx = 10.0;
+      const double tolSq = tolPx * tolPx;
+      
+      // Convert tolerance to data units for searching
+      double tolDataX = tolPx * spanX / (rect.width() - 1);
+      
+      // Binary search for range of X values
+      auto itLow = std::lower_bound(m_searchIndex.begin(), m_searchIndex.end(), mouseDataX - tolDataX);
+      auto itHigh = std::lower_bound(m_searchIndex.begin(), m_searchIndex.end(), mouseDataX + tolDataX);
+      
+      const DataPoint* nearest = nullptr;
+      double minDistSq = tolSq + 1.0; // Start with max allowed
+      
+      for(auto it = itLow; it != itHigh; ++it) {
+          int idx = it->index;
+          const DataPoint* dp = p[idx];
+          if (!dp->isVisible()) continue;
+          
+          // Calculate screen position of point
+          double ptDx = dp->x() - settings.minX;
+          double ptDy = dp->y() - settings.minY;
+          double screenX = rect.left() + (ptDx * (rect.width() - 1) / spanX);
+          double screenY = rect.bottom() - (ptDy * (rect.height() - 1) / spanY);
+          
+          double distSq = std::pow(screenX - event->pos().x(), 2) + std::pow(screenY - event->pos().y(), 2);
+          
+          if (distSq < minDistSq) {
+              minDistSq = distSq;
+              nearest = dp;
+          }
+      }
+      
+      if (nearest) {
+          QString text = QString("<b>%1</b><br>x: %2<br>y: %3").arg(nearest->name()).arg(nearest->x()).arg(nearest->y());
+
+          if (m_images.contains(nearest->name())) {
+              QByteArray bArray;
+              QBuffer buffer(&bArray);
+              if (buffer.open(QIODevice::WriteOnly)) {
+                  QPixmap pm = m_images[nearest->name()];
+                  if (pm.width() > 200) {
+                     pm = pm.scaledToWidth(200, Qt::SmoothTransformation);
+                  }
+                  pm.save(&buffer, "PNG");
+                  QString imgBase64 = QString::fromLatin1(bArray.toBase64().data());
+                  text = QString("<img src='data:image/png;base64,%1'><br>").arg(imgBase64) + text;
+              }
+          }
+
+          QToolTip::showText(event->globalPosition().toPoint(), text, this);
+      } else {
+          QToolTip::hideText(); // Or let it timeout
+      }
   }
 }
 
 void Chart::mouseReleaseEvent(QMouseEvent *event) {
-#ifdef DEBUG
-  printf("Chart::mouseReleaseEvent\n");
-#endif
   if ((event->button() == Qt::MiddleButton) && rubberBandIsShown == true) {
     rubberBandIsShown = false;
     updateRubberBandRegion();
@@ -611,54 +618,74 @@ void Chart::mouseReleaseEvent(QMouseEvent *event) {
     zoomStack.resize(curZoom + 1);
     zoomStack.append(settings);
     zoomIn();
-  } else if ((event->button() == Qt::LeftButton) && rubberBandIsShown == true) {
-    rubberBandIsShown = false;
-    updateRubberBandRegion();
+  } else if ((event->button() == Qt::LeftButton) && m_isLassoActive) {
+    m_isLassoActive = false;
     unsetCursor();
-
-    QRect rect = rubberBandRect.normalized();
-    if (rect.width() < 4 || rect.height() < 4)
-      return;
-    rect.translate(-Margin, -Margin);
-
+    
+    // Perform Selection
+    QRect rect = m_lassoPolygon.boundingRect(); // Screen space bounding box
+    QRect plotRect(Margin, Margin, width() - 2 * Margin, height() - 2 * Margin);
+    
     PlotSettings settings = zoomStack[curZoom];
-    double dx = settings.spanX() / (width() - 2 * Margin);
-    double dy = settings.spanY() / (height() - 2 * Margin);
-    qreal minX = settings.minX + dx * rect.left();
-    qreal maxX = settings.minX + dx * rect.right();
-    qreal minY = settings.maxY - dy * rect.bottom();
-    qreal maxY = settings.maxY - dy * rect.top();
-
-    /*qDebug() << "Select Objects..";
-    qDebug() << minX << maxX << minY << maxY;*/
-    for (int i = 0; i < p.size(); i++) {
-      if (p[i]->x() > minX && p[i]->x() < maxX && p[i]->y() > minY &&
-          p[i]->y() < maxY) {
+    double spanX = settings.spanX();
+    double spanY = settings.spanY();
+    
+    // Optimization: Filter by X-range using sorted index
+    double minScreenX = rect.left();
+    double maxScreenX = rect.right();
+    
+    double minDataX = settings.minX + (minScreenX - plotRect.left()) * spanX / (plotRect.width() - 1);
+    double maxDataX = settings.minX + (maxScreenX - plotRect.left()) * spanX / (plotRect.width() - 1);
+    
+    // Ensure bounds are correct order
+    if (minDataX > maxDataX) std::swap(minDataX, maxDataX);
+    
+    auto itLow = std::lower_bound(m_searchIndex.begin(), m_searchIndex.end(), minDataX);
+    auto itHigh = std::lower_bound(m_searchIndex.begin(), m_searchIndex.end(), maxDataX);
+    
+    // Allow toggle behavior or multi-select? Usually plain click clears, drag selects.
+    // Assuming cumulative selection or just this selection? 
+    // The previous code toggled selection state for rect. Let's keep toggle/set logic.
+    // Replicating previous logic:
+    /*
         if (p[i]->isSelected()) {
           p[i]->setSelection(false);
         } else {
           p[i]->setSelection(true);
         }
-      } else {
-        continue;
-      }
+    */
+    
+    for(auto it = itLow; it != itHigh; ++it) {
+        int idx = it->index;
+        DataPoint* dp = p[idx];
+        if (!dp->isVisible()) continue;
+        
+        // Project point to screen
+        double ptDx = dp->x() - settings.minX;
+        double ptDy = dp->y() - settings.minY;
+        double screenX = plotRect.left() + (ptDx * (plotRect.width() - 1) / spanX);
+        double screenY = plotRect.bottom() - (ptDy * (plotRect.height() - 1) / spanY);
+        QPoint pt(screenX, screenY);
+        
+        // Fast Bounding Box Check first
+        if (!rect.contains(pt)) continue;
+        
+        // Detailed Polygon Check
+        if (m_lassoPolygon.containsPoint(pt, Qt::OddEvenFill)) {
+            // Toggle selection
+             dp->setSelection(!dp->isSelected());
+        }
     }
 
+    m_lassoPolygon.clear();
     refreshPixmap();
-    // Select objects
   }
-  /*else if((event->button() == Qt::LeftButton) && rubberBandIsShown == false){
-    //Show QMenu and do operation....
-  }*/
   else {
     return;
   }
 }
 
 void Chart::keyPressEvent(QKeyEvent *event) {
-#ifdef DEBUG
-  printf("Chart::keyPressEvent\n");
-#endif
   switch (event->key()) {
   case Qt::Key_Plus:
     zoomIn();
@@ -688,35 +715,13 @@ void Chart::keyPressEvent(QKeyEvent *event) {
 }
 
 void Chart::wheelEvent(QWheelEvent *event) {
-#ifdef DEBUG
-  printf("Chart::wheelEvent\n");
-#endif
-
   QPoint numDegrees = event->angleDelta() / 8;
   int numTicks = numDegrees.y() / 15;
-
-  // For the moment only y scrolling available.
-  // to implement x scroll numTicks became like this
-  // int numTicks = numDegrees.x() / 15;
-
   zoomStack[curZoom].scroll(0, numTicks);
-  /*
-  orientation() is deprecated!!
-
-  if(event->orientation() == Qt::Horizontal){
-    zoomStack[curZoom].scroll(numTicks, 0);
-  }
-  else{
-    zoomStack[curZoom].scroll(0, numTicks);
-  }*/
-
   refreshPixmap();
 }
 
 void Chart::updateRubberBandRegion() {
-#ifdef DEBUG
-  printf("Chart::updateRubberBandRegion\n");
-#endif
   QRect rect = rubberBandRect.normalized();
   update(rect.left(), rect.top(), rect.width(), 1);
   update(rect.left(), rect.top(), 1, rect.height());
@@ -725,22 +730,13 @@ void Chart::updateRubberBandRegion() {
 }
 
 void Chart::refreshPixmap() {
-#ifdef DEBUG
-  printf("Chart::refreshPixmap\n");
-#endif
-  // fill the background with the white color!
   pixmap = QPixmap(size());
   pixmap.fill(Qt::white);
-
-  /*pixmap.fill(this, 0, 0); OBSOLETE FUNCTION in qt5 */
 
   QPainter painter(&pixmap);
   painter.setRenderHint(QPainter::Antialiasing, antialiasing);
   painter.setRenderHint(QPainter::TextAntialiasing, antialiasing);
   painter.setRenderHint(QPainter::SmoothPixmapTransform, antialiasing);
-
-  // painter.begin(painter.device());
-  // painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
   drawGrid(&painter);
 
@@ -754,9 +750,6 @@ void Chart::refreshPixmap() {
 }
 
 int getDecimals(double x) {
-#ifdef DEBUG
-  printf("Chart::getDecimals\n");
-#endif
   QString str = QString::number(x);
   QString decimals = str.split(".").last();
   int i, d = 1;
@@ -773,32 +766,7 @@ int getDecimals(double x) {
   }
 }
 
-int integer_digits(double x) {
-  int n = (int)x;
-  int i = 0;
-  while (n != 0) {
-    n /= 10.f;
-    i++;
-  }
-  return i;
-}
-
-int zeros_after_decimal_point(double x) {
-  int i = -1;
-  double n = x;
-  while (n < 1.f) {
-    // printf("%f\n", n);
-    n *= 10.f;
-    i++;
-  }
-  return i;
-}
-
 void Chart::drawGrid(QPainter *painter) {
-#ifdef DEBUG
-  printf("Chart::drawGrid\n");
-#endif
-
   painter->setRenderHint(QPainter::Antialiasing, antialiasing);
   painter->setRenderHint(QPainter::TextAntialiasing, antialiasing);
   painter->setRenderHint(QPainter::SmoothPixmapTransform, antialiasing);
@@ -807,69 +775,35 @@ void Chart::drawGrid(QPainter *painter) {
   if (!rect.isValid())
     return;
 
-  // qDebug() << "curZoom " << curZoom;
-
   PlotSettings settings = zoomStack[curZoom];
 
-  QPen gridpen = QPen(QColor(200, 200, 255, 125));
-  QPen axespen = QPen(QColor(Qt::black));
+  QPen gridpen = QPen(QColor(220, 220, 220));
+  gridpen.setStyle(Qt::DotLine);
+  QPen axespen = QPen(QColor(120, 120, 120), 1);
+
+  // Subtle background for the plot area
+  painter->fillRect(rect, QColor(252, 252, 252));
 
   qreal min, max, stepx, stepy;
 
-  /*
-  int nintegers = integer_digits(settings.spanX());
-  printf("nintegers %d\n", nintegers);
-
-  if(nintegers > 0){
-    stepx = (0.5 * (double)nintegers);
-  }
-  else{
-    int nzeros = zeros_after_decimal_point(settings.spanX())+1;
-    //printf("nzeros %d\n", nzeros);
-    stepx = 0.5/pow(10, nzeros);
-  }*/
-
-  // stepx = settings.spanX() / settings.numXTicks;
-  // stepx = 0.5;
   min = floor(settings.minX);
   max = ceil(settings.maxX);
-  // stepx = (max-min)/10.f;
   stepx = (max - min) / (double)settings.numXTicks;
-  // printf("PRE stepx: %f min: %f max: %f\n", stepx, min, max);
-  //  The problem is here... we prevent to have "step < of 0 because after we
-  //  need to deal with floating  numbers"
   if (stepx > 1.f) {
     stepx = ceil(stepx);
   }
-  /*
-  QString qdb = QString("Chart::drawGrid %1 xmin %2 xmax %3 xtick %4 stepx
-  %5").arg(curZoom).arg(min).arg(max).arg(settings.numXTicks).arg(stepx);
-  qDebug() << qdb;
-  */
-  // printf("FINAL stepx: %f min: %f max: %f\n", stepx, min, max);
-  // float factor = rect.width() / painter->fontMetrics().width("-20");
-  //  Factor to "automatically" Enlarge/reduce the text with the window...
-  //  However is preferable to manage manually this setting
-  // qreal factor = rect.width()/480.;
-  //   factor is DEPRECATED in favour of the possibility of produce custom size
 
-  QFont font("Helvetica", 10);
-  // font.setBold(true);
+  QFont font("Inter", 10);
   font.setPointSizeF(font.pointSizeF() * axisValueSize);
-  font.setStyleStrategy(QFont::PreferAntialias);
-  font.setStyleHint(QFont::SansSerif, QFont::PreferOutline);
-
-  // font.setStyleStrategy(QFont::ForceOutline);
-  // font.setStyleStrategy(QFont::PreferAntialias);
+  font.setStyleHint(QFont::SansSerif);
   painter->setFont(font);
+  painter->setPen(axespen);
 
   int xsteps = static_cast<int>((max - min) / stepx) + 1;
   for (int i = 0; i < xsteps; ++i) {
       double ix = min + i * stepx;
       double dx = ix - settings.minX;
       double x = rect.left() + (dx * (rect.width() - 1) / settings.spanX());
-      // printf("ix: %f x: %f  rect.left() %f rect.right() %f\n", ix, x,
-      // rect.left(), rect.right());
       if (x > rect.left() && x < rect.right()) {
           painter->setPen(gridpen);
           painter->drawLine(x, rect.top(), x, rect.bottom());
@@ -882,27 +816,12 @@ void Chart::drawGrid(QPainter *painter) {
               painter->drawText(x - 50, rect.bottom() + 10, 100, 15,
                                 Qt::AlignHCenter | Qt::AlignTop,
                                 QString::number(ix, 'f', getDecimals(stepx)));
-              /*
-              painter->drawText(x - 2, rect.bottom()+20, QString::number(ix, 'g',
-              getDecimals(stepx)));
-              */
           }
       }
   }
 
-  // stepy = settings.spanY() / settings.numYTicks;
-  /*nintegers = integer_digits(settings.spanY());
-  if(nintegers > 0){
-    stepy = (0.5 * (double)nintegers);
-  }
-  else{
-    int nzeros = zeros_after_decimal_point(settings.spanX())+1;
-    stepy = 0.5/pow(10, nzeros);
-  }
-  */
   min = floor(settings.minY);
   max = ceil(settings.maxY);
-  // stepy = (max-min)/10.f;
   stepy = (max - min) / (double)settings.numYTicks;
   if (stepy > 1.f) {
     stepy = ceil(stepy);
@@ -930,75 +849,46 @@ void Chart::drawGrid(QPainter *painter) {
       }
   }
 
-  // Draw origin axis in the margin limits
   painter->setPen(axespen);
 
-  qreal dx = 0 - settings.minX;
-  qreal dy = 0 - settings.minY;
-  qreal x = rect.left() + (dx * (rect.width() - 1) / settings.spanX());
-  qreal y = rect.bottom() - (dy * (rect.height() - 1) / settings.spanY());
-
-  /*
-  if(x > rect.left() && x < rect.right()){
-    painter->drawLine(x, rect.top(), x, rect.bottom());
-  }
-
-
-  if(y > rect.top() && y < rect.bottom()){
-    painter->drawLine(rect.left(), y, rect.right(), y);
-  }
-
-  // write the 0 coordinate
-  if(x > rect.left() && x < rect.right() &&
-    y > rect.top() && y < rect.bottom()){
-    painter->drawText(x - 50, y + 5, 100, 15,
-                Qt::AlignHCenter | Qt::AlignTop,
-                QString::number(0));
-  }
-  */
-
-  // Draw Axis names, titles and ticks.
-  font.setPointSize(10); // Standard size
-  font.setPointSizeF(font.pointSizeF() *
-                     xLabelSize); // Then we multiply by a factor!
+  font.setPointSize(10);
+  font.setPointSizeF(font.pointSizeF() * xLabelSize);
+  font.setBold(true);
   painter->setFont(font);
   QFontMetrics fm(font);
   qreal xmarkTextWidth = (qreal)fm.horizontalAdvance(m_xaxisname);
-  // qreal markTextHeight = fm.height();
-  x = Margin + (rect.right() - rect.left()) / 2. - xmarkTextWidth / 2.;
+  qreal x_text = Margin + (rect.right() - rect.left()) / 2. - xmarkTextWidth / 2.;
 
-  painter->drawText(x, rect.bottom() + Margin / 2., m_xaxisname);
+  painter->drawText(x_text, rect.bottom() + Margin / 2., m_xaxisname);
 
-  // draw top title.
-  font.setPointSize(10); // Standard size
+  font.setPointSize(10);
   font.setPointSizeF(font.pointSizeF() * titleSize);
+  font.setBold(true);
+  painter->setFont(font);
   xmarkTextWidth = (qreal)fm.horizontalAdvance(m_plottitle);
-  x = Margin + (rect.right() - rect.left()) / 2. - xmarkTextWidth / 2.;
-  painter->drawText(x, rect.top() - Margin / 2., m_plottitle);
+  x_text = Margin + (rect.right() - rect.left()) / 2. - xmarkTextWidth / 2.;
+  painter->drawText(x_text, rect.top() - Margin / 2., m_plottitle);
 
-  // write y axis name vertically
-  font.setPointSize(10); // Standard size
+  font.setPointSize(10);
   font.setPointSizeF(font.pointSizeF() * yLabelSize);
-  painter->save(); // ???
+  font.setBold(true);
+  painter->setFont(font);
+  painter->save();
   qreal ymarkTextWidth = (qreal)fm.horizontalAdvance(m_yaxisname);
-  y = Margin + (rect.bottom() - rect.top()) / 2. + ymarkTextWidth / 2.;
-  // painter->translate(rect.left() - (Margin+40), y + 160);
-  painter->translate(rect.left() - Margin / 1.2, y);
-  painter->rotate(270); // or 270
+  qreal y_text = Margin + (rect.bottom() - rect.top()) / 2. + ymarkTextWidth / 2.;
+  painter->translate(rect.left() - Margin / 1.2, y_text);
+  painter->rotate(270);
   painter->drawText(0, 0, m_yaxisname);
   painter->restore();
 
-  // draw limit rectangle
-  painter->drawRect(rect.adjusted(0, 0, -1, -1));
+  // Draw axis lines
+  painter->setPen(axespen);
+  painter->drawLine(rect.bottomLeft(), rect.bottomRight());
+  painter->drawLine(rect.topLeft(), rect.bottomLeft());
 }
 
 void Chart::drawCurves(QPainter *painter) {
-#ifdef DEBUG
-  printf("Chart::drawCurves\n");
-#endif
   painter->setRenderHint(QPainter::Antialiasing, antialiasing);
-  painter->setRenderHint(QPainter::TextAntialiasing, antialiasing);
-  painter->setRenderHint(QPainter::SmoothPixmapTransform, antialiasing);
 
   PlotSettings settings = zoomStack[curZoom];
   QRect rect(Margin, Margin, width() - 2 * Margin, height() - 2 * Margin);
@@ -1007,140 +897,83 @@ void Chart::drawCurves(QPainter *painter) {
 
   painter->setClipRect(rect.adjusted(+1, +1, -1, -1));
 
+  // Pre-calculate scaling factors
+  double scaleX = (rect.width() - 1) / settings.spanX();
+  double scaleY = (rect.height() - 1) / settings.spanY();
+  double offsetX = rect.left() - settings.minX * scaleX;
+  double offsetY = rect.bottom() + settings.minY * scaleY;
+
   for (int i = 0; i < curveMap.size(); i++) {
-    const DataCurve data = curveMap[i];
-    if (data.isVisible() == true) {
-      if (data.getPoints().size() > 0) {
-        QPolygonF polyline(data.getPoints().size());
-        for (int j = 0; j < data.getPoints().size(); ++j) {
-          double dx = data.getPoints()[j].x() - settings.minX;
-          double dy = data.getPoints()[j].y() - settings.minY;
-          double x = rect.left() + (dx * (rect.width() - 1) / settings.spanX());
-          double y =
-              rect.bottom() - (dy * (rect.height() - 1) / settings.spanY());
-          polyline[j] = QPointF(x, y); // -2.5 to good centering datas...
+    const DataCurve& data = curveMap[i];
+    if (data.isVisible() && !data.getPoints().isEmpty()) {
+        const QVector<QPointF>& points = data.getPoints();
+        QPainterPath path;
+        
+        // Move to the first point
+        QPointF p0 = points[0];
+        path.moveTo(offsetX + p0.x() * scaleX, offsetY - p0.y() * scaleY);
+
+        if (data.isSmooth()) {
+            for (int j = 0; j < points.size() - 1; ++j) {
+                QPointF p1 = points[j];
+                QPointF p2 = points[j+1];
+
+                // Screen coordinates
+                double x1 = offsetX + p1.x() * scaleX;
+                double y1 = offsetY - p1.y() * scaleY;
+                double x2 = offsetX + p2.x() * scaleX;
+                double y2 = offsetY - p2.y() * scaleY;
+
+                // Control points for cubic Bezier
+                QPointF c1((x1 + x2) / 2, y1);
+                QPointF c2((x1 + x2) / 2, y2);
+                
+                path.cubicTo(c1, c2, QPointF(x2, y2));
+            }
+        } else {
+            for (int j = 1; j < points.size(); ++j) {
+                QPointF pt = points[j];
+                path.lineTo(offsetX + pt.x() * scaleX, offsetY - pt.y() * scaleY);
+            }
         }
+        
         painter->setPen(QPen(data.color(), data.width(), Qt::SolidLine,
                              Qt::RoundCap, Qt::RoundJoin));
-        painter->drawPolyline(polyline);
-      } else
-        continue;
-    } else {
-      continue;
+        painter->drawPath(path);
     }
   }
 }
-
-/*
-typedef struct{
-  QVector <QRectF> point; //this will be shared from the main thread
-  QVector <DataPoint*> p; // this will be shared from the main thread
-  PlotSettings settings;
-  QRect rect;
-  QVector<int> pforward;
-  int from, to;
-} scatter_th_arg;
-
-
-void *drawScatterThread(void *arg_)
-{
-  #ifdef DEBUG
-  printf("Chart::drawScatterThread\n");
-  #endif
-  scatter_th_arg *arg = (scatter_th_arg*) arg_;
-
-  for(int i = arg->from; i < arg->to; i++){
-    if(i < arg->p.size()){
-      int indx = arg->pforward.indexOf(i);
-      if(arg->p[i]->isVisible() == true && (arg->p[i]->isSelected() == false ||
-indx == -1)){ double dx = arg->p[i]->x() - arg->settings.minX; double dy =
-arg->p[i]->y() - arg->settings.minY; double x = arg->rect.left() + (dx *
-(arg->rect.width() - 1) / arg->settings.spanX()); double y = arg->rect.bottom()
-- (dy * (arg->rect.height() - 1) / arg->settings.spanY()); qreal radius =
-arg->p[i]->radius(); arg->point.append(QRectF(x-radius/2., y-radius/2., radius,
-radius));
-      }
-      else{
-        continue;
-      }
-    }
-    else
-      break;
-  }
-}*/
 
 void Chart::PointDraw(QPainter *painter, QRect rect, PlotSettings settings,
                       DataPoint *p) {
-  double dx = p->x() - settings.minX;
-  double dy = p->y() - settings.minY;
-  double x = rect.left() + (dx * (rect.width() - 1) / settings.spanX());
-  double y = rect.bottom() - (dy * (rect.height() - 1) / settings.spanY());
-  qreal radius = p->radius();
-  QColor color = p->color();
-  painter->setPen(color);
-
-  QRectF point = QRectF(x - radius / 2., y - radius / 2., radius, radius);
-
-  if (p->marker() == CIRCLE) {
-    painter->drawEllipse(point);
-  } else if (p->marker() == SQUARE) {
-    painter->drawRect(point);
-  } else { // TRIANGLE
-    QPolygonF polygon;
-    double cx, cy, bx, by, ax, ay;
-    double dl = radius * cos(0.523599);
-    double dp = radius * sin(0.523599);
-
-    cx = x;
-    cy = y + radius;
-
-    bx = x + dl;
-    by = y - dp;
-
-    ax = x - dl;
-    ay = y - dp;
-
-    polygon << QPointF(ax, ay);
-    polygon << QPointF(bx, by);
-    polygon << QPointF(cx, cy);
-    painter->drawPolygon(polygon);
-  }
-
-  // Fill the marker
-  QPainterPath path;
-  if (p->marker() == CIRCLE) {
-    path.addEllipse(point);
-  } else if (p->marker() == SQUARE) {
-    path.addRect(point);
-  } else {
-    QPolygonF polygon;
-    double cx, cy, bx, by, ax, ay;
-    double dl = radius * cos(0.523599);
-    double dp = radius * sin(0.523599);
-
-    cx = x;
-    cy = y + radius;
-
-    bx = x + dl;
-    by = y - dp;
-
-    ax = x - dl;
-    ay = y - dp;
-
-    polygon.append(QPointF(ax, ay));
-    polygon.append(QPointF(bx, by));
-    polygon.append(QPointF(cx, cy));
-    path.addPolygon(polygon);
-  }
-  painter->fillPath(path, QBrush(color, Qt::SolidPattern));
+    // This method is now legacy/fallback or for selected points.
+    // Logic integrated into drawScatters for batching.
+    // Keeping it for single point draws if needed.
+    
+    double dx = p->x() - settings.minX;
+    double dy = p->y() - settings.minY;
+    double x = rect.left() + (dx * (rect.width() - 1) / settings.spanX());
+    double y = rect.bottom() - (dy * (rect.height() - 1) / settings.spanY());
+    
+    QString key = getMarkerKey(p->marker(), p->radius(), p->color(), p->isSelected());
+    QPixmap* pm = markerCache.object(key);
+    
+    if (pm) {
+         painter->drawPixmap(x - pm->width()/2, y - pm->height()/2, *pm);
+    } else {
+        // Fallback or generate? Better generate in drawScatters
+        qreal radius = p->radius();
+        QRectF point = QRectF(x - radius / 2., y - radius / 2., radius, radius);
+        painter->setPen(p->isSelected() ? QPen(Qt::red, 2) : QPen(p->color().darker(150), 0.5));
+        painter->setBrush(p->color());
+        if (p->marker() == CIRCLE) painter->drawEllipse(point);
+        else if (p->marker() == SQUARE) painter->drawRect(point);
+        else { /* triangle logic */ }
+    }
 }
 
 void Chart::drawScatters(QPainter *painter) {
-#ifdef DEBUG
-  printf("Chart::drawScatters\n");
-#endif
   painter->setRenderHint(QPainter::Antialiasing, antialiasing);
-  painter->setRenderHint(QPainter::TextAntialiasing, antialiasing);
   painter->setRenderHint(QPainter::SmoothPixmapTransform, antialiasing);
 
   PlotSettings settings = zoomStack[curZoom];
@@ -1150,164 +983,123 @@ void Chart::drawScatters(QPainter *painter) {
 
   painter->setClipRect(rect.adjusted(+1, +1, -1, -1));
 
-  // Draw all not selected if plotsettings changed
+  double scaleX = (rect.width() - 1) / settings.spanX();
+  double scaleY = (rect.height() - 1) / settings.spanY();
+  double offsetX = rect.left() - settings.minX * scaleX;
+  double offsetY = rect.bottom() + settings.minY * scaleY;
+
+  // Spatial Hashing Grid for Decimation
+  // We use a simple 2D bool array flattened.
+  // Resolution: 2x2 pixels. If a point is drawn there, skip others.
+  const int cellSize = 2; 
+  int gridW = rect.width() / cellSize + 1;
+  int gridH = rect.height() / cellSize + 1;
+  // Use generic vector, minimal memory allocation
+  QVector<quint8> grid;
+  // Only allocate grid if we have many points to justify overhead
+  bool useDecimation = (p.size() > 5000); 
+  if (useDecimation) {
+      grid.resize(gridW * gridH);
+      grid.fill(0);
+  }
+
+  // Helper to get cached marker
+  auto drawMarker = [&](double x, double y, const DataPoint* dp, bool selected) {
+       QString key = getMarkerKey(dp->marker(), dp->radius(), dp->color(), selected);
+       QPixmap* pm = markerCache.object(key);
+       if (!pm) {
+           // Create and cache
+           int r = dp->radius();
+           if (r < 1) r = 1;
+           // Make pixmap slightly larger for AA and thicker selection pen
+           int margin = selected ? 3 : 2;
+           int size = r + margin * 2; 
+           QPixmap* newPm = new QPixmap(size, size);
+           newPm->fill(Qt::transparent);
+           QPainter pPm(newPm);
+           pPm.setRenderHint(QPainter::Antialiasing, true);
+           if (selected) {
+               pPm.setPen(QPen(Qt::red, 2));
+           } else {
+               pPm.setPen(QPen(dp->color().darker(150), 0.5));
+           }
+           pPm.setBrush(dp->color());
+           
+           QRectF shapeRect(margin, margin, r, r); // Centered
+           if (dp->marker() == CIRCLE) {
+               pPm.drawEllipse(shapeRect);
+           } else if (dp->marker() == SQUARE) {
+               pPm.drawRect(shapeRect);
+           } else {
+               QPolygonF tri;
+               tri << QPointF(size/2.0, margin) << QPointF(size-margin, size-margin) << QPointF(margin, size-margin);
+               pPm.drawPolygon(tri);
+           }
+           markerCache.insert(key, newPm);
+           pm = newPm;
+       }
+       painter->drawPixmap(x - pm->width()/2.0, y - pm->height()/2.0, *pm);
+  };
+
+  // Draw unselected (decimated)
   for (int i = 0; i < p.size(); i++) {
-    auto indx = pforward.indexOf(i);
-    if (p[i]->isVisible() == true &&
-        (p[i]->isSelected() == false || indx == -1)) {
-      PointDraw(painter, rect, settings, p[i]);
-    } else {
-      continue;
+    const DataPoint* dp = p[i];
+    if (!dp->isVisible() || dp->isSelected()) continue; // Draw selected later
+
+    double x = offsetX + dp->x() * scaleX;
+    double y = offsetY - dp->y() * scaleY;
+
+    // Bounds check
+    if (x < rect.left() || x > rect.right() || y < rect.top() || y > rect.bottom()) continue;
+
+    if (useDecimation) {
+        int gx = (x - rect.left()) / cellSize;
+        int gy = (y - rect.top()) / cellSize;
+        if (gx >= 0 && gx < gridW && gy >= 0 && gy < gridH) {
+            if (grid[gy * gridW + gx]) continue; // Already occupied
+            grid[gy * gridW + gx] = 1;
+        }
+    }
+    drawMarker(x, y, dp, false);
+  }
+
+  // Draw selected (ALWAYS draw, no decimation, on top)
+  for (int i = 0; i < p.size(); i++) {
+    const DataPoint* dp = p[i];
+    if (dp->isVisible() && dp->isSelected()) {
+       double x = offsetX + dp->x() * scaleX;
+       double y = offsetY - dp->y() * scaleY;
+       
+       drawMarker(x, y, dp, true);
     }
   }
 
-  // Draw only selected to be in forward
+  // Draw labels (on top of everything)
+  painter->setPen(Qt::red);
+  QFont labelFont = painter->font();
+  labelFont.setPointSize(8);
+  painter->setFont(labelFont);
   for (int i = 0; i < p.size(); i++) {
-    auto indx = pforward.indexOf(i);
-    if (p[i]->isVisible() == true &&
-        (p[i]->isSelected() == true || indx > -1)) {
-      PointDraw(painter, rect, settings, p[i]);
-      // highlight point with a red circle and give them in forward...
-      if (p[i]->isSelected() == true) {
-        double dx = p[i]->x() - settings.minX;
-        double dy = p[i]->y() - settings.minY;
-        double x = rect.left() + (dx * (rect.width() - 1) / settings.spanX());
-        double y =
-            rect.bottom() - (dy * (rect.height() - 1) / settings.spanY());
-        qreal radius = p[i]->radius();
-        QRectF point = QRectF(x - radius / 2., y - radius / 2., radius, radius);
-
-        painter->setRenderHint(QPainter::Antialiasing, antialiasing);
-        painter->setRenderHint(QPainter::TextAntialiasing, antialiasing);
-        painter->setRenderHint(QPainter::SmoothPixmapTransform, antialiasing);
-
-        painter->setPen(
-            QPen(Qt::red, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-        // painter->drawEllipse(point);
-
-        if (p[i]->marker() == CIRCLE) {
-          painter->drawEllipse(point);
-        } else if (p[i]->marker() == SQUARE) {
-          painter->drawRect(point);
-        } else { // TRIANGLE
-          QPolygonF polygon;
-          double cx, cy, bx, by, ax, ay;
-          double dl = radius * cos(0.523599);
-          double dp = radius * sin(0.523599);
-
-          cx = x;
-          cy = y + radius;
-
-          bx = x + dl;
-          by = y - dp;
-
-          ax = x - dl;
-          ay = y - dp;
-          polygon.append(QPointF(ax, ay));
-          polygon.append(QPointF(bx, by));
-          polygon.append(QPointF(cx, cy));
-          painter->drawPolygon(polygon);
-        }
-
-        pforward.append(i);
-      }
-
-      if (indx > -1)
-        pforward.remove(indx);
-    } else {
-      continue;
-    }
-  }
-
-  // used to rescale fonts
-  int pxelsz = (int)ceil(8 * height() / 480.);
-
-  // Show label after selection...
-  for (int i = 0; i < p.size(); i++) {
-    if (p[i]->isVisible() == true) {
-      double dx = p[i]->x() - settings.minX;
-      double dy = p[i]->y() - settings.minY;
-      double x = rect.left() + (dx * (rect.width() - 1) / settings.spanX());
-      double y = rect.bottom() - (dy * (rect.height() - 1) / settings.spanY());
-      qreal radius = p[i]->radius();
-
-      if (p[i]->isSelected() == true) {
-        QFont font("Helvetica", 14);
-        // font.setBold(true);
-        font.setStyleStrategy(QFont::PreferAntialias);
-        font.setStyleHint(QFont::SansSerif, QFont::PreferOutline);
-
-        painter->setPen(QPen(Qt::black, 0.5, Qt::SolidLine, Qt::RoundCap));
-        // font.setStyleStrategy(QFont::ForceOutline);
-        // font.setStyleStrategy(QFont::PreferAntialias);
-        font.setPixelSize(pxelsz);
-        painter->setFont(font);
-
-        QFontMetrics fm(font);
-        qreal markTextWidth;
-        if (labeldetail == true)
-          markTextWidth = (qreal)fm.horizontalAdvance(QString("%1 (%2 ; %3)")
-                                                          .arg(p[i]->name())
-                                                          .arg(p[i]->x())
-                                                          .arg(p[i]->y()));
-        else
-          markTextWidth =
-              (qreal)fm.horizontalAdvance(QString("%1").arg(p[i]->name()));
-        qreal markTextHeight = fm.height();
-        QRectF trect;
-
-        trect.setX(x);
-        trect.setY(y + radius);
-        trect.setWidth(markTextWidth);
-        trect.setHeight(markTextHeight);
-        /*
-        if(x > rect.right() - (Margin+120)){
-          trect.setX(x-140);
-          trect.setY(y+radius);
-          trect.setWidth(markTextWidth);
-          trect.setHeight(markTextHeight);
-        }
-        else{
-          trect.setX(x);
-          trect.setY(y+radius);
-          trect.setWidth(markTextWidth);
-          trect.setHeight(markTextHeight);
-        }*/
-        painter->fillRect(trect, Qt::white);
-        if (labeldetail == true)
-          painter->drawText(trect, Qt::AlignCenter,
-                            QString("%1 (%2 ; %3)")
-                                .arg(p[i]->name())
-                                .arg(p[i]->x())
-                                .arg(p[i]->y()));
-        else
-          painter->drawText(trect, Qt::AlignCenter,
-                            QString("%1").arg(p[i]->name()));
-        painter->drawRect(trect);
-      }
-    } else {
-      continue;
+    const DataPoint* dp = p[i];
+    if (dp->isVisible() && dp->isLabelVisible()) {
+       double x = offsetX + dp->x() * scaleX;
+       double y = offsetY - dp->y() * scaleY;
+       
+       painter->drawText(x + dp->radius() / 2.0 + 2, y + 4, dp->name());
     }
   }
 }
 
 PlotSettings::PlotSettings() {
-#ifdef DEBUG
-  printf("PlotSettings::PlotSettings\n");
-#endif
   minX = 0.0;
   maxX = 10.0;
   numXTicks = 10;
-
   minY = 0.0;
   maxY = 10.0;
   numYTicks = 10;
 }
 
 void PlotSettings::scroll(int dx, int dy) {
-#ifdef DEBUG
-  printf("PlotSettings::scroll\n");
-#endif
   double stepX = spanX() / numXTicks;
   minX += dx * stepX;
   maxX += dx * stepX;
@@ -1318,43 +1110,30 @@ void PlotSettings::scroll(int dx, int dy) {
 }
 
 void PlotSettings::adjust() {
-#ifdef DEBUG
-  printf("PlotSettings::adjust\n");
-#endif
   adjustAxis(minX, maxX, numXTicks);
   adjustAxis(minY, maxY, numYTicks);
 }
 
-// void PlotSettings::adjustAxis(double &min, double &max,
-//                               int &numTicks)
-// {
-// //     const int MinTicks = 4;
-// //     double grossStep = (max - min) / MinTicks;
-// //     double step = pow(10.0, floor(log10(grossStep)));
-//
-//     double grossStep = (max - min) / numTicks;
-//     double step = pow(10.0, floor(log10(grossStep)));
-//
-//     /*
-//     if(8 * step < grossStep){
-//         step *= 8;
-//     } else if(2 * step < grossStep){
-//         step *= 2;
-//     }
-//     */
-//
-//   /*numTicks = int(ceil(max / step) - floor(min / step));
-//     if(numTicks < MinTicks)
-//         numTicks = MinTicks;
-//     */
-//     min = floor(min / step) * step;
-//     max = ceil(max / step) * step;
-// }
+void Chart::setImages(const QMap<QString, QPixmap> &images) {
+  m_images = images;
+}
 
+void Chart::LoadSettings() {
+  QSettings settings("QStudioMetrics", "PlotSettings");
+  if (settings.contains("titleSize")) {
+    setPlotTitleSize(settings.value("titleSize").toInt());
+  }
+  if (settings.contains("axisValueSize")) {
+    setAxisValueSize(settings.value("axisValueSize").toInt());
+  }
+  if (settings.contains("xLabelSize")) {
+    setXLabelSize(settings.value("xLabelSize").toInt());
+  }
+  if (settings.contains("yLabelSize")) {
+    setYLabelSize(settings.value("yLabelSize").toInt());
+  }
+}
 void PlotSettings::adjustAxis(double &min, double &max, int &numTicks) {
-#ifdef DEBUG
-  printf("PlotSettings::adjustAxis\n");
-#endif
   const int MinTicks = 4;
   double grossStep = (max - min) / MinTicks;
   double step = pow(10.0, floor(log10(grossStep)));

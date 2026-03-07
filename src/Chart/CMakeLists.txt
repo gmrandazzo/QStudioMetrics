@@ -1,5 +1,5 @@
-PROJECT(libchart)
 cmake_minimum_required(VERSION 3.22)
+PROJECT(libchart)
 set(AUTHOR "Giuseppe Marco Randazzo")
 set(VERSION "1.3.0")
 
@@ -92,19 +92,18 @@ set(CHART_H
     chart.h)
 
 
-set(QPLOTLY_TEST_SRC testqplotly.cpp)
+
 set(CHART_TEST_SRC testchart.cpp)
 set(CHARTQT_TEST_SRC testchartqt.cpp)
 
 set(icon_RCC chart.qrc)
 
 # start building interface from moc
-QT6_WRAP_CPP(CHART_MOC_H ${CHART_H})
 QT6_ADD_RESOURCES(icon_RCC_SRCS ${icon_RCC})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${QT_USE_FILE})
 
-add_library(libchart SHARED ${CHART_SRC} ${CHART_H} ${icon_RCC_SRCS} ${CHART_MOC_H})
+add_library(libchart SHARED ${CHART_SRC} ${CHART_H} ${icon_RCC_SRCS})
 #add_library(libchart SHARED ${CHART_SRC} ${CHART_H})
 
 #add_library(libchart STATIC ${CHART_SRC} ${CHART_H})

@@ -1,4 +1,6 @@
 # Directory
+_build/
+_build/*
 build/
 build/*
 .kdev4

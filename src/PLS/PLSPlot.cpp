@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Visualization component for plsplot.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "PLSPlot.h"
 #include "scientific.h"
 
@@ -23,6 +44,7 @@ void PLSPlot::TU_Plot(ScatterPlot **plot2D) {
       &projects->value(pid)->getVariableLabels(), "t", "u",
       projectname + modelname + " - PLS Plot", ScatterPlot::SCORES);
   (*plot2D)->setPID(pid);
+  (*plot2D)->setImages(projects->value(pid)->getImages());
   (*plot2D)->resize(500, 300);
 }
 
@@ -43,6 +65,7 @@ void PLSPlot::T_ScorePlot2D(ScatterPlot **plot2D) {
       QString(projectname + modelname + " - PLS T/T Score Plot"),
       ScatterPlot::SCORES);
   (*plot2D)->setPID(pid);
+  (*plot2D)->setImages(projects->value(pid)->getImages());
 }
 
 void PLSPlot::P_LoadingsPlot2D(ScatterPlot **plot2D) {
@@ -172,6 +195,7 @@ void PLSPlot::U_ScorePlot2D(ScatterPlot **plot2D) {
       QString(projectname + modelname + " - PLS U/U Score Plot"),
       ScatterPlot::SCORES);
   (*plot2D)->setPID(pid);
+  (*plot2D)->setImages(projects->value(pid)->getImages());
 }
 
 void PLSPlot::Q_LoadingsPlot2D(ScatterPlot **plot2D) {
@@ -251,6 +275,7 @@ void PLSPlot::T_ScorePlotPrediction2D(ScatterPlot **plot2D) {
       QString(projectname + modelname + " - PLS T/T Score Plot Prediction"),
       ScatterPlot::SCORES);
   (*plot2D)->setPID(pid);
+  (*plot2D)->setImages(projects->value(pid)->getImages());
 }
 
 void PLSPlot::RecalcVSExperimentalAndPrediction(ScatterPlot **plot2D) {
@@ -432,6 +457,7 @@ void PLSPlot::RecalcVSExperimentalAndPrediction(ScatterPlot **plot2D) {
               QString("  (LV: %1)").arg(QString::number(nlv)),
           ScatterPlot::SCORES);
       DelMatrix(&recalc_y);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setAxisNameExtensions(varname);
       (*plot2D)->setPID(pid);
@@ -470,15 +496,15 @@ void PLSPlot::BetaCoefficients(BarPlot **betas_bar) {
 void PLSPlot::BetaCoefficientsDurbinWatson(SimpleLine2DPlot **dw_betas_plot) {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-  uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC() +
+  uint model_nlv = projects->value(pid)->getPLSModel(mid)->getNPC() +
              1; // +1 because we start from 0
 
   dvector *dw;
-  NewDVector(&dw, nlv - 1);
+  NewDVector(&dw, model_nlv - 1);
 
   PLSMODEL *plsmod = projects->value(pid)->getPLSModel(mid)->Model();
   PrintMatrix(projects->value(pid)->getPLSModel(mid)->Model()->xweights);
-  for (uint i = 1; i < nlv; i++) {
+  for (uint i = 1; i < model_nlv; i++) {
     dvector *betas;
     initDVector(&betas);
 
@@ -500,7 +526,7 @@ void PLSPlot::BetaCoefficientsDurbinWatson(SimpleLine2DPlot **dw_betas_plot) {
   matrix *m;
 
   QStringList curvenames;
-  NewMatrix(&m, nlv, 2);
+  NewMatrix(&m, model_nlv, 2);
   curvenames << "DW";
 
   QString yname;
@@ -702,6 +728,7 @@ void PLSPlot::PredictedVSExperimentalAndPrediction(ScatterPlot **plot2D) {
           projectname + modelname + " - PLS Recalc VS Experimental Plot" +
               QString("  (LV: %1)").arg(QString::number(nlv)),
           ScatterPlot::SCORES);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setAxisNameExtensions(varname);
       (*plot2D)->setPID(pid);
@@ -802,6 +829,7 @@ void PLSPlot::RecalcVSExperimental(ScatterPlot **plot2D) {
         projectname + modelname + " - PLS Recalculated VS Experimental Plot" +
             QString("  (LV: %1)").arg(QString::number(nlv)),
         ScatterPlot::SCORES);
+    (*plot2D)->setImages(projects->value(pid)->getImages());
     (*plot2D)->BuildDiagonal();
     (*plot2D)->setAxisNameExtensions(varname);
     (*plot2D)->setPID(pid);
@@ -992,6 +1020,7 @@ void PLSPlot::RecalcResidualsVSExperimental(ScatterPlot **plot2D) {
               " - PLS Experimental VS Recalculated Residuals Y Plot" +
               QString("  (LV: %1)").arg(QString::number(nlv)),
           ScatterPlot::SCORES);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       DelMatrix(&recalc_res);
       (*plot2D)->setPID(pid);
       (*plot2D)->setAxisNameExtensions(varname);
@@ -1178,6 +1207,7 @@ void PLSPlot::PredictedVSExperimental(ScatterPlot **plot2D) {
           projectname + modelname + "- PLS Predicted VS Experimental Plot" +
               QString("  (LV: %1)").arg(QString::number(nlv)),
           ScatterPlot::SCORES);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       (*plot2D)->setAxisNameExtensions(varname);
       (*plot2D)->BuildDiagonal();
       (*plot2D)->setPID(pid);
@@ -1282,6 +1312,7 @@ void PLSPlot::PredictedResidualsVSExperimental(ScatterPlot **plot2D) {
               " - PLS Experimental VS Predicted Residuals Y Plot" +
               QString("  (LV: %1)").arg(QString::number(nlv)),
           ScatterPlot::SCORES);
+      (*plot2D)->setImages(projects->value(pid)->getImages());
       DelMatrix(&pred_res);
       (*plot2D)->setPID(pid);
       (*plot2D)->setAxisNameExtensions(varname);
@@ -1295,19 +1326,19 @@ QList<SimpleLine2DPlot *> PLSPlot::R2Q2() {
   if (projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_) {
     QString projectname = projects->value(pid)->getProjectName();
     QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-    uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC() +
+    uint model_nlv = projects->value(pid)->getPLSModel(mid)->getNPC() +
                1; // +1 because we start from 0
     uint yval =
         projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col;
     matrix *m;
 
     QStringList curvenames;
-    NewMatrix(&m, nlv, 3);
+    NewMatrix(&m, model_nlv, 3);
     curvenames << "R2"
                << "Q2";
 
     // set the X assis that is the principal component
-    for (uint i = 0; i < nlv; i++) {
+    for (uint i = 0; i < model_nlv; i++) {
       setMatrixValue(m, i, 0, i);
     }
 
@@ -1326,7 +1357,7 @@ QList<SimpleLine2DPlot *> PLSPlot::R2Q2() {
       setMatrixValue(m, 0, 1, 0); // R^2 in 0 pc is 0
       setMatrixValue(m, 0, 2, 0); // Q^2 in 0 pc is 0
 
-      for (uint i = 0; i < nlv - 1; i++) {
+      for (uint i = 0; i < model_nlv - 1; i++) {
         setMatrixValue(m, i + 1, 1,
                        getMatrixValue(projects->value(pid)
                                           ->getPLSModel(mid)
@@ -1353,7 +1384,7 @@ QList<SimpleLine2DPlot *> PLSPlot::R2Q2() {
                                             .arg(modelname)
                                             .arg(yname),
                                         "Latent Variables", "R2 / Q2"));
-      plots.last()->setXminXmaxXTick(0, nlv, nlv);
+      plots.last()->setXminXmaxXTick(0, model_nlv, model_nlv);
       plots.last()->setYminYmaxYTick(0, 1, 10);
     }
     DelMatrix(&m);
@@ -1366,18 +1397,18 @@ QList<SimpleLine2DPlot *> PLSPlot::RMSE() {
   if (projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_) {
     QString projectname = projects->value(pid)->getProjectName();
     QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-    uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC();
+    uint model_nlv = projects->value(pid)->getPLSModel(mid)->getNPC();
     uint yval =
         projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col;
     matrix *m;
 
     QStringList curvenames;
-    NewMatrix(&m, nlv, 3);
+    NewMatrix(&m, model_nlv, 3);
     curvenames << "RMSE(Training)"
                << "RMSE(Validation)";
 
     // set the X assis that is the principal component
-    for (uint i = 0; i < nlv; i++) {
+    for (uint i = 0; i < model_nlv; i++) {
       setMatrixValue(m, i, 0, i + 1);
     }
 
@@ -1396,7 +1427,7 @@ QList<SimpleLine2DPlot *> PLSPlot::RMSE() {
       setMatrixValue(m, 0, 1, 0); // SDEC in 0 pc is 0
       setMatrixValue(m, 0, 2, 0); // SDEP in 0 pc is 0
       double y_max = -9999.f;
-      for (uint i = 0; i < nlv; i++) {
+      for (uint i = 0; i < model_nlv; i++) {
         m->data[i][1] =
             projects->value(pid)->getPLSModel(mid)->Model()->sdec->data[i][l];
         m->data[i][2] =
@@ -1421,7 +1452,7 @@ QList<SimpleLine2DPlot *> PLSPlot::RMSE() {
               .arg(modelname)
               .arg(yname),
           "Latent Variables", "RMSE (Training/Validation)"));
-      plots.last()->setXminXmaxXTick(0, nlv, nlv);
+      plots.last()->setXminXmaxXTick(0, model_nlv, model_nlv);
       plots.last()->setYminYmaxYTick(0, y_max, 10);
     }
     DelMatrix(&m);
@@ -1434,7 +1465,7 @@ QList<SimpleLine2DPlot *> PLSPlot::ROCAUCs() {
   if (projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_DA_) {
     QString projectname = projects->value(pid)->getProjectName();
     QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-    uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC() +
+    uint model_nlv = projects->value(pid)->getPLSModel(mid)->getNPC() +
                1; // +1 because we start from 0
     uint yval = projects->value(pid)
                     ->getPLSModel(mid)
@@ -1443,12 +1474,12 @@ QList<SimpleLine2DPlot *> PLSPlot::ROCAUCs() {
     matrix *m;
 
     QStringList curvenames;
-    NewMatrix(&m, nlv, 3);
+    NewMatrix(&m, model_nlv, 3);
     curvenames << "AUC Recalculated"
                << "AUC Predicted";
 
     // set the X assis that is the principal component
-    for (uint i = 0; i < nlv; i++) {
+    for (uint i = 0; i < model_nlv; i++) {
       setMatrixValue(m, i, 0, i);
     }
 
@@ -1484,7 +1515,7 @@ QList<SimpleLine2DPlot *> PLSPlot::ROCAUCs() {
               .arg(modelname)
               .arg(yname),
           "Latent Variables", "ROC AUC Recalculated / AUC Predicted"));
-      plots.last()->setXminXmaxXTick(0., (float)nlv, 1);
+      plots.last()->setXminXmaxXTick(0., (float)model_nlv, 1);
       plots.last()->setYminYmaxYTick(0., 1., 10);
     }
     DelMatrix(&m);
@@ -1497,7 +1528,7 @@ QList<SimpleLine2DPlot *> PLSPlot::ROCCurves() {
   if (projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_DA_) {
     QString projectname = projects->value(pid)->getProjectName();
     QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-    uint nlv = projects->value(pid)
+    uint model_nlv = projects->value(pid)
                    ->getPLSModel(mid)
                    ->getNPC(); // == roc_recalculated->order;
     uint yval = projects->value(pid)
@@ -1516,7 +1547,7 @@ QList<SimpleLine2DPlot *> PLSPlot::ROCCurves() {
     tensor *roc_predicted =
         projects->value(pid)->getPLSModel(mid)->Model()->roc_validation;
 
-    for (uint i = 0; i < nlv; i++) {
+    for (uint i = 0; i < model_nlv; i++) {
       for (uint j = 0; j < yval; j++) {
         QString yname =
             projects->value(pid)->getPLSModel(mid)->getClasses()[j].name;
@@ -1524,13 +1555,13 @@ QList<SimpleLine2DPlot *> PLSPlot::ROCCurves() {
         NewMatrix(&mrec, roc_recalculated->m[i]->row, 2);
         NewMatrix(&mpred, roc_predicted->m[i]->row, 2);
         for (uint k = 0; k < roc_recalculated->m[i]->row; k++) {
-          mrec->data[k][0] = roc_recalculated->m[i]->data[k][j * nlv];
-          mrec->data[k][1] = roc_recalculated->m[i]->data[k][j * nlv + 1];
+          mrec->data[k][0] = roc_recalculated->m[i]->data[k][j * model_nlv];
+          mrec->data[k][1] = roc_recalculated->m[i]->data[k][j * model_nlv + 1];
         }
 
         for (uint k = 0; k < roc_predicted->m[i]->row; k++) {
-          mpred->data[k][0] = roc_predicted->m[i]->data[k][j * nlv];
-          mpred->data[k][1] = roc_predicted->m[i]->data[k][j * nlv + 1];
+          mpred->data[k][0] = roc_predicted->m[i]->data[k][j * model_nlv];
+          mpred->data[k][1] = roc_predicted->m[i]->data[k][j * model_nlv + 1];
         }
         QList<matrix *> mlst;
         mlst.append(mrec);
@@ -1547,8 +1578,8 @@ QList<SimpleLine2DPlot *> PLSPlot::ROCCurves() {
         plots.last()->setPlotTitle(QString("N. LV: %1; Class name: %2")
                                        .arg(QString::number(i + 1))
                                        .arg(yname));
-        plots.last()->setXminXmaxXTick(0, 1., nlv);
-        plots.last()->setYminYmaxYTick(0, 1., nlv);
+        plots.last()->setXminXmaxXTick(0, 1., model_nlv);
+        plots.last()->setYminYmaxYTick(0, 1., model_nlv);
         DelMatrix(&mrec);
         DelMatrix(&mpred);
         mlst.clear();
@@ -1563,7 +1594,7 @@ QList<SimpleLine2DPlot *> PLSPlot::PrecisionRecallAveragePrecision() {
   if (projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_DA_) {
     QString projectname = projects->value(pid)->getProjectName();
     QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-    uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC() +
+    uint model_nlv = projects->value(pid)->getPLSModel(mid)->getNPC() +
                1; // +1 because we start from 0
     uint yval = projects->value(pid)
                     ->getPLSModel(mid)
@@ -1572,12 +1603,12 @@ QList<SimpleLine2DPlot *> PLSPlot::PrecisionRecallAveragePrecision() {
     matrix *m;
 
     QStringList curvenames;
-    NewMatrix(&m, nlv, 3);
+    NewMatrix(&m, model_nlv, 3);
     curvenames << "Precision-Recall AUC Recalculated"
                << "Precision-Recall AUC Predicted";
 
     // set the X assis that is the principal component
-    for (uint i = 0; i < nlv; i++) {
+    for (uint i = 0; i < model_nlv; i++) {
       setMatrixValue(m, i, 0, i);
     }
 
@@ -1627,7 +1658,7 @@ QList<SimpleLine2DPlot *> PLSPlot::PrecisionRecallCurves() {
   if (projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_DA_) {
     QString projectname = projects->value(pid)->getProjectName();
     QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-    uint nlv = projects->value(pid)
+    uint model_nlv = projects->value(pid)
                    ->getPLSModel(mid)
                    ->getNPC(); // == roc_recalculated->order;
     uint yval = projects->value(pid)
@@ -1650,7 +1681,7 @@ QList<SimpleLine2DPlot *> PLSPlot::PrecisionRecallCurves() {
                                ->Model()
                                ->precision_recall_validation;
 
-    for (uint i = 0; i < nlv; i++) {
+    for (uint i = 0; i < model_nlv; i++) {
       for (uint j = 0; j < yval; j++) {
         QString yname =
             projects->value(pid)->getPLSModel(mid)->getClasses()[j].name;
@@ -1658,13 +1689,13 @@ QList<SimpleLine2DPlot *> PLSPlot::PrecisionRecallCurves() {
         NewMatrix(&mrec, pr_recalculated->m[i]->row, 2);
         NewMatrix(&mpred, pr_predicted->m[i]->row, 2);
         for (uint k = 0; k < pr_recalculated->m[i]->row; k++) {
-          mrec->data[k][0] = pr_recalculated->m[i]->data[k][j * nlv];
-          mrec->data[k][1] = pr_recalculated->m[i]->data[k][j * nlv + 1];
+          mrec->data[k][0] = pr_recalculated->m[i]->data[k][j * model_nlv];
+          mrec->data[k][1] = pr_recalculated->m[i]->data[k][j * model_nlv + 1];
         }
 
         for (uint k = 0; k < pr_predicted->m[i]->row; k++) {
-          mpred->data[k][0] = pr_predicted->m[i]->data[k][j * nlv];
-          mpred->data[k][1] = pr_predicted->m[i]->data[k][j * nlv + 1];
+          mpred->data[k][0] = pr_predicted->m[i]->data[k][j * model_nlv];
+          mpred->data[k][1] = pr_predicted->m[i]->data[k][j * model_nlv + 1];
         }
 
         QList<matrix *> mlst;
@@ -1682,8 +1713,8 @@ QList<SimpleLine2DPlot *> PLSPlot::PrecisionRecallCurves() {
         plots.last()->setPlotTitle(QString("N. LV: %1; Class name: %2")
                                        .arg(QString::number(i + 1))
                                        .arg(yname));
-        plots.last()->setXminXmaxXTick(0, 1., nlv);
-        plots.last()->setYminYmaxYTick(0, 1., nlv);
+        plots.last()->setXminXmaxXTick(0, 1., model_nlv);
+        plots.last()->setYminYmaxYTick(0, 1., model_nlv);
         DelMatrix(&mrec);
         DelMatrix(&mpred);
         mlst.clear();
@@ -1698,7 +1729,7 @@ QList<SimpleLine2DPlot *> PLSPlot::R2R2Prediction() {
   if (projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_) {
     QString projectname = projects->value(pid)->getProjectName();
     QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-    uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC() +
+    uint model_nlv = projects->value(pid)->getPLSModel(mid)->getNPC() +
                1; // +1 because we start from 0
     uint yval =
         projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col;
@@ -1713,10 +1744,10 @@ QList<SimpleLine2DPlot *> PLSPlot::R2R2Prediction() {
       getq2 = true;
     }
 
-    NewMatrix(&m, nlv, ncol);
+    NewMatrix(&m, model_nlv, ncol);
 
     // set the X assis that is the principal component
-    for (uint i = 0; i < nlv; i++) {
+    for (uint i = 0; i < model_nlv; i++) {
       setMatrixValue(m, i, 0, i);
     }
 
@@ -1753,7 +1784,7 @@ QList<SimpleLine2DPlot *> PLSPlot::R2R2Prediction() {
 
       setMatrixValue(m, 0, k, 0); // R2 Predicted
 
-      for (uint i = 0; i < nlv - 1; i++) {
+      for (uint i = 0; i < model_nlv - 1; i++) {
         k = 1;
         setMatrixValue(m, i + 1, k,
                        getMatrixValue(projects->value(pid)
@@ -1803,7 +1834,7 @@ QList<SimpleLine2DPlot *> PLSPlot::R2R2Prediction() {
                                             .arg(modelname)
                                             .arg(yname),
                                         "Latent Variables", yaxisname));
-      plots.last()->setXminXmaxXTick(0, nlv, nlv);
+      plots.last()->setXminXmaxXTick(0, model_nlv, model_nlv);
       plots.last()->setYminYmaxYTick(0, 1, 10);
     }
     DelMatrix(&m);
@@ -1816,7 +1847,7 @@ QList<SimpleLine2DPlot *> PLSPlot::RMSEPrediction() {
   if (projects->value(pid)->getPLSModel(mid)->getAlgorithm() == PLS_) {
     QString projectname = projects->value(pid)->getProjectName();
     QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-    uint nlv = projects->value(pid)->getPLSModel(mid)->getNPC();
+    uint model_nlv = projects->value(pid)->getPLSModel(mid)->getNPC();
     uint yval =
         projects->value(pid)->getPLSModel(mid)->Model()->r2y_recalculated->col;
 
@@ -1830,10 +1861,10 @@ QList<SimpleLine2DPlot *> PLSPlot::RMSEPrediction() {
       getsdep = true;
     }
 
-    NewMatrix(&m, nlv, ncol);
+    NewMatrix(&m, model_nlv, ncol);
 
     // set the X assis that is the principal component
-    for (uint i = 0; i < nlv; i++) {
+    for (uint i = 0; i < model_nlv; i++) {
       setMatrixValue(m, i, 0, i + 1);
     }
 
@@ -1857,7 +1888,7 @@ QList<SimpleLine2DPlot *> PLSPlot::RMSEPrediction() {
 
       curvenames << QString("RMSE (Prediction) Y %1").arg(yname);
       double y_max = -9999.f;
-      for (uint i = 0; i < nlv; i++) {
+      for (uint i = 0; i < model_nlv; i++) {
         int k = 1;
         m->data[i][k] =
             projects->value(pid)->getPLSModel(mid)->Model()->sdec->data[i][l];
@@ -1904,7 +1935,7 @@ QList<SimpleLine2DPlot *> PLSPlot::RMSEPrediction() {
               .arg(modelname)
               .arg(yname),
           "Latent Variables", yaxisname));
-      plots.last()->setXminXmaxXTick(0, nlv, nlv);
+      plots.last()->setXminXmaxXTick(0, model_nlv, model_nlv);
       plots.last()->setYminYmaxYTick(0, y_max, 10);
     }
     DelMatrix(&m);
@@ -1980,6 +2011,7 @@ void PLSPlot::T_ScorePlot3D(ScatterPlot **plot3D) {
       QString("%1 - %2 - PLS T Score Plot").arg(projectname).arg(modelname),
       ScatterPlot::SCORES);
   (*plot3D)->setPID(pid);
+  (*plot3D)->setImages(projects->value(pid)->getImages());
 }
 
 void PLSPlot::P_LoadingsPlot3D(ScatterPlot **plot3D) {
@@ -2110,6 +2142,7 @@ void PLSPlot::U_ScorePlot3D(ScatterPlot **plot3D) {
       QString("%1 - %2 - PLS U Score Plot").arg(projectname).arg(modelname),
       ScatterPlot::SCORES);
   (*plot3D)->setPID(pid);
+  (*plot3D)->setImages(projects->value(pid)->getImages());
 }
 
 void PLSPlot::Q_LoadingsPlot3D(ScatterPlot **plot3D) {
@@ -2167,6 +2200,7 @@ void PLSPlot::T_ScorePlotPrediction3D(ScatterPlot **plot3D) {
                           .arg(modelname),
                       ScatterPlot::SCORES);
   (*plot3D)->setPID(pid);
+  (*plot3D)->setImages(projects->value(pid)->getImages());
 }
 
 PLSPlot::PLSPlot(PROJECTS *projects_) {

@@ -1,5 +1,27 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Main window implementation for the GUI.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+
 
 #include <QMainWindow>
 #include <QMap>
@@ -13,8 +35,8 @@
 
 // Version
 #define major_ 2
-#define minor_ 4
-#define patch_ 2
+#define minor_ 5
+#define patch_ 0
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -71,6 +93,7 @@ private slots:
 
   void PCA2DScorePlot();
   void PCA2DLoadingsPlot();
+  void PCADModXPlot();
   void PCATsqContributionPlot();
   void PCA2DExpVarPlot();
   void PCA2DLoadingsMVANDPlot();
@@ -135,7 +158,7 @@ private slots:
 
   void removeProject();
   void showData();
-  void showDescrpitiveStatistics();
+  void showDescriptiveStatistics();
   void addData();
   void removeData();
   void DowngradeDataID();
@@ -194,9 +217,12 @@ private slots:
   void removePrediction();
   void DowngradePredictionID();
 
+  void exportPLSBetaInference();
+
   void StartRun();
   void WaitRun();
   void StopRun();
+  void FinalizeRun();
   void UpdateImageWindow(ImageSignal is);
   void PlotVariableVSVariableBis(vvplotSignal vvs);
 
@@ -212,6 +238,8 @@ private:
   PROJECTS *projects;
   QString lastpath;
 
+  int default_window_size_w;
+  int default_window_size_h;
   int tabcount_;
   int pid_;    // Prediction ID that is unique for each project and increment
                // always

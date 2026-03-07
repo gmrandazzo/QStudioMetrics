@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Dialog for model operations.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "ModelDialog.h"
 #include "qstudiometricstypes.h"
 #include <QMessageBox>
@@ -280,9 +301,9 @@ void ModelDialog::next() {
       adjustSize();
     } else {
       QMessageBox::warning(
-          this, tr("Warning!"),
-          tr("No Project or data selected or PCA model name specified!\nPlease "
-             "select project and data and check the PCA model name.\n"),
+          this, tr("Warning"),
+          tr("No project or data selected, or PCA model name specified! Please "
+             "select project and data and check the PCA model name."),
           QMessageBox::Close);
       return;
     }
@@ -344,25 +365,25 @@ void ModelDialog::next() {
       adjustSize();
     } else {
       if (type == PLS_) {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("No Project or data selected or PLS model name "
-                                "specified!\nPlease select project and data "
-                                "and check the PLS model name.\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("No project or data selected, or PLS model name "
+                                "specified! Please select project and data "
+                                "and check the PLS model name."),
                              QMessageBox::Close);
         return;
       }
       if (type == LDA_) {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("No Project or data selected or LDA model name "
-                                "specified!\nPlease select project and data "
-                                "and check the LDA model name.\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("No project or data selected, or LDA model name "
+                                "specified! Please select project and data "
+                                "and check the LDA model name."),
                              QMessageBox::Close);
         return;
       } else {
-        QMessageBox::warning(this, tr("Warning!"),
-                             tr("No Project or data selected or MLR model name "
-                                "specified!\nPlease select project and data "
-                                "and check the MLR model name.\n"),
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("No project or data selected, or MLR model name "
+                                "specified! Please select project and data "
+                                "and check the MLR model name."),
                              QMessageBox::Close);
         return;
       }
@@ -487,43 +508,26 @@ void ModelDialog::previous() {
 void ModelDialog::OK() {
   if (selectedproject_ == -1 || selecteddata_ == -1 ||
       ui.modelname->text().isEmpty()) {
-    QMessageBox::warning(this, tr("Warning!"),
-                         tr("No project, data selected or no model name "
-                            "setted!\nPlease check your settings.\n"),
+    QMessageBox::warning(this, tr("Warning"),
+                         tr("No project or data selected, or model name not "
+                            "set! Please check your settings."),
                          QMessageBox::Close);
     return;
   } else {
     modelname_ = ui.modelname->text();
 
     if (type == PCA_) {
-      if (type == PCA_) {
-        if (ui.NPrincipalComponent->value() >
-            (int)projects_->value(selectedproject_)
-                ->getMatrix(selecteddata_)
-                ->Matrix()
-                ->col) {
-          n_pc = projects_->value(selectedproject_)
-                     ->getMatrix(selecteddata_)
-                     ->Matrix()
-                     ->col;
-        } else {
-          n_pc = ui.NPrincipalComponent->value();
-        }
+      if (ui.NPrincipalComponent->value() >
+          (int)projects_->value(selectedproject_)
+              ->getMatrix(selecteddata_)
+              ->Matrix()
+              ->col) {
+        n_pc = projects_->value(selectedproject_)
+                   ->getMatrix(selecteddata_)
+                   ->Matrix()
+                   ->col;
       } else {
-        if (ui.NPrincipalComponent->value() >
-            (int)projects_->value(selectedproject_)
-                ->getArray(selecteddata_)
-                ->Array()
-                ->m[0]
-                ->col) {
-          n_pc = projects_->value(selectedproject_)
-                     ->getArray(selecteddata_)
-                     ->Array()
-                     ->m[0]
-                     ->col;
-        } else {
-          n_pc = ui.NPrincipalComponent->value();
-        }
+        n_pc = ui.NPrincipalComponent->value();
       }
       xscaling = ui.xscalinglist->currentIndex();
     } else if (type == PLS_) {

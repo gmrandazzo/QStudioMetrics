@@ -1,3 +1,24 @@
+/*
+ * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ *
+ * Implementation file for qstudiom-hypgridmap.
+ *
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 // QStudiom-hypergridmap
 #include <cmath>
 #include <fstream>
@@ -14,6 +35,29 @@
 using namespace std;
 
 #include "scientific.h"
+
+bool ValidateFilename(const std::string &filename) {
+  if (filename.empty())
+    return false;
+  // Prevent directory traversal and usage of absolute paths or subdirectories
+  // for outbins
+  if (filename.find("..") != std::string::npos ||
+      filename.find('/') != std::string::npos ||
+      filename.find('\\') != std::string::npos) {
+    return false;
+  }
+  return true;
+}
+
+bool ValidatePath(const std::string &path) {
+  if (path.empty())
+    return false;
+  // Prevent directory traversal and absolute paths
+  if (path.find("..") != std::string::npos || path[0] == '/') {
+    return false;
+  }
+  return true;
+}
 
 void help(char **argv) {
   std::cout << "Usage" << endl;
@@ -51,19 +95,32 @@ int main(int argc, char **argv) {
     for (int i = 0; i < argc; i++) {
       if (strcmp(argv[i], "-input") == 0 || strcmp(argv[i], "-i") == 0) {
         if (i + 1 < argc) {
+          if (!ValidatePath(argv[i + 1])) {
+            std::cerr << "Invalid input path: " << argv[i + 1] << std::endl;
+            exit(1);
+          }
           inputdata = argv[i + 1];
         }
       }
 
       if (strcmp(argv[i], "-out") == 0 || strcmp(argv[i], "-o") == 0) {
         if (i + 1 < argc) {
+          if (!ValidatePath(argv[i + 1])) {
+            std::cerr << "Invalid output path: " << argv[i + 1] << std::endl;
+            exit(1);
+          }
           outhgm = argv[i + 1];
         }
       }
 
       if (strcmp(argv[i], "-outbins") == 0 || strcmp(argv[i], "-b") == 0) {
-        if (i + 1 < argc)
+        if (i + 1 < argc) {
+          if (!ValidateFilename(argv[i + 1])) {
+            std::cerr << "Invalid outbins path: " << argv[i + 1] << std::endl;
+            exit(1);
+          }
           outbins = argv[i + 1];
+        }
       }
 
       if (strcmp(argv[i], "-grid") == 0 || strcmp(argv[i], "-g") == 0) {
@@ -74,6 +131,10 @@ int main(int argc, char **argv) {
 
       if (strcmp(argv[i], "-hgminput") == 0 || strcmp(argv[i], "-h") == 0) {
         if (i + 1 < argc) {
+          if (!ValidatePath(argv[i + 1])) {
+            std::cerr << "Invalid hgm input path: " << argv[i + 1] << std::endl;
+            exit(1);
+          }
           inhgm = argv[i + 1];
         }
       }
@@ -83,7 +144,7 @@ int main(int argc, char **argv) {
         inhgm.empty() && grid_step_size > 0) { // make a model
       matrix *data;
       initMatrix(&data);
-      DATAIO::ImportMatrix((char *)inputdata.c_str(), sep, data);
+      DATAIO::ImportMatrix(inputdata.c_str(), sep, data);
 
       // Calculate the manhattan distance from the centroid of points and the
       // mahlanobis Distance
@@ -133,21 +194,26 @@ int main(int argc, char **argv) {
       NewHyperGridMap(&hgm);
       HyperGridMap(data, grid_step_size, &bins_id, &hgm);
       printf("Total number of bins : %e %zu\n", hgm->bsize, hgm->gsize);
-      DATAIO::MakeDir((char *)outhgm.c_str());
+      DATAIO::MakeDir(outhgm.c_str());
       string gmap_dir = outhgm + "/gmap.txt";
       string colavg_dir = outhgm + "/colavg.txt";
       string colscaling_dir = outhgm + "/colscaling.txt";
       /*string centroid_dir = outhgm+"/centroid.txt";
       string invcov_dir = outhgm+"/invcov.txt";
       string dsts_dir = outhgm+"/dists.txt";*/
-      DATAIO::WriteMatrix((char *)gmap_dir.c_str(), hgm->gmap);
+      DATAIO::WriteMatrix(gmap_dir.c_str(), hgm->gmap);
       // DATAIO::WriteMatrix((char*)dsts_dir.c_str(), dsts);
-      DATAIO::WriteDvector((char *)colavg_dir.c_str(), hgm->colaverage);
-      DATAIO::WriteDvector((char *)colscaling_dir.c_str(), hgm->colscaling);
+      DATAIO::WriteDvector(colavg_dir.c_str(), hgm->colaverage);
+      DATAIO::WriteDvector(colscaling_dir.c_str(), hgm->colscaling);
       /* Store the centroid
       DATAIO::WriteMatrix((char*)centroid_dir.c_str(), centroid);*/
       /* Store the inverse covariance matrix
       DATAIO::WriteMatrix((char*)invcov_dir.c_str(), invcov);*/
+
+      if (!ValidateFilename(outbins)) {
+        std::cerr << "Invalid output bins file name: " << outbins << std::endl;
+        exit(1);
+      }
 
       ofstream fbins;
       fbins.open(outbins);
@@ -171,12 +237,12 @@ int main(int argc, char **argv) {
                outhgm.empty() && grid_step_size == 0) { // make prediction
       matrix *data;
       initMatrix(&data);
-      DATAIO::ImportMatrix((char *)inputdata.c_str(), sep, data);
+      DATAIO::ImportMatrix(inputdata.c_str(), sep, data);
       hgmbins *bins_id;
       HyperGridModel *hgm;
       NewHyperGridMap(&hgm);
       string gmap_dir = inhgm + "/gmap.txt";
-      DATAIO::ImportMatrix((char *)gmap_dir.c_str(), sep, hgm->gmap);
+      DATAIO::ImportMatrix(gmap_dir.c_str(), sep, hgm->gmap);
       grid_step_size = ceil((hgm->gmap->data[0][1] - hgm->gmap->data[0][0]) /
                             hgm->gmap->data[0][2]);
       hgm->gsize = grid_step_size;
@@ -223,6 +289,11 @@ int main(int argc, char **argv) {
       DelDVector(&mdst);
       */
       HyperGridMapObjects(data, hgm, &bins_id);
+
+      if (!ValidateFilename(outbins)) {
+        std::cerr << "Invalid output bins file name: " << outbins << std::endl;
+        exit(1);
+      }
 
       ofstream fbins;
       fbins.open(outbins);
