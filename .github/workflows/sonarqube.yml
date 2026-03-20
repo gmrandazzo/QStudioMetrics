@@ -29,23 +29,25 @@ jobs:
             liblapack-dev qt6-base-dev libqt6core5compat6-dev libqt6charts6-dev \
             libglx-dev libgl1-mesa-dev libglvnd-dev
 
-      # Uses the official action to download the correct build-wrapper from your server
-      - name: Install Build Wrapper
-        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v4
+      # FIX 1: Manually download the build-wrapper from YOUR server to ensure version match (6.77)
+      - name: Download Build Wrapper from Server
+        run: |
+          curl -sSLo build-wrapper.zip ${{ secrets.SONAR_HOST_URL }}/static/cpp/build-wrapper-linux-x86.zip
+          unzip -o build-wrapper.zip
+          echo "$(pwd)/build-wrapper-linux-x86" >> $GITHUB_PATH
 
       - name: Configure CMake
         run: cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DCMAKE_BUILD_TYPE=Debug .
 
-      # Wrap the build. This generates the data SonarQube needs for C++
       - name: Run build-wrapper
         run: |
           build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build --parallel $(nproc)
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v4
+        uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
-            -Dsonar.cfamily.build-wrapper-output=bw-output
+            -Dsonar.cfamily.compile-commands=bw-output/compile_commands.json
