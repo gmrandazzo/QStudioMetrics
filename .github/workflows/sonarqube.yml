@@ -1,0 +1,51 @@
+name: Build, Analyze, and SonarQube Integration
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    - cron: "0 7 1 * *"
+
+jobs:
+  build_and_analyze:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history is required for SonarQube "blame" features
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install \
+            cmake build-essential unzip git curl sqlite3 libsqlite3-dev \
+            liblapack-dev qt6-base-dev libqt6core5compat6-dev libqt6charts6-dev \
+            libglx-dev libgl1-mesa-dev libglvnd-dev
+
+      # Uses the official action to download the correct build-wrapper from your server
+      - name: Install Build Wrapper
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v4
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DCMAKE_BUILD_TYPE=Debug .
+
+      # Wrap the build. This generates the data SonarQube needs for C++
+      - name: Run build-wrapper
+        run: |
+          build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build --parallel $(nproc)
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.cfamily.build-wrapper-output=bw-output
