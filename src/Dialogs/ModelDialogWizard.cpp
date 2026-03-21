@@ -834,14 +834,14 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_,
 
   type = type_;
   if (type == PCA_) {
-    setWindowTitle("Compute PCA");
+    setWindowTitle("Principal Component Analysis (PCA)");
     ui.yScaling->hide();
     ui.YvariableGroupBox->hide();
     ui.YclassGroupBox->hide();
     ui.XBlockGroupBox->hide();
     ui.ELearningMethodGroupBox->hide();
   } else if (type == CPCA_) {
-    setWindowTitle("Compute CPCA");
+    setWindowTitle("Consensus Principal Component Analysis (CPCA)");
     ui.xScaling->hide();
     ui.XvariableGroupBox->hide();
     ui.yScaling->hide();
@@ -850,27 +850,27 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_,
     ui.ELearningMethodGroupBox->hide();
   } else if (type == PLS_) {
     ui.groupBox->setTitle("N. of Latent Variables");
-    setWindowTitle("Compute PLS Regression");
+    setWindowTitle("Partial Least Squares (PLS) Regression");
     ui.YclassGroupBox->hide();
     ui.YvariableGroupBox->show();
     ui.XBlockGroupBox->hide();
     ui.ELearningMethodGroupBox->hide();
   } else if (type == PLS_DA_) {
     ui.groupBox->setTitle("N. of Latent Variables");
-    setWindowTitle("Compute PLS Discriminant Analysis");
+    setWindowTitle("PLS Discriminant Analysis (PLS-DA)");
     ui.YclassGroupBox->show();
     ui.YvariableGroupBox->hide();
     ui.XBlockGroupBox->hide();
     ui.ELearningMethodGroupBox->hide();
     ui.yScaling->hide();
   }else if (type == MLR_) {
-    setWindowTitle("Compute MLR");
+    setWindowTitle("Multiple Linear Regression (MLR)");
     ui.groupBox->hide();
     ui.YclassGroupBox->hide();
     ui.ELearningMethodGroupBox->hide();
     ui.XBlockGroupBox->hide();
   } else if (type == LDA_) {
-    setWindowTitle("Compute LDA");
+    setWindowTitle("Linear Discriminant Analysis (LDA)");
     ui.groupBox->hide();
     ui.YclassGroupBox->show();
     ui.yvarSelectAllButton->hide();

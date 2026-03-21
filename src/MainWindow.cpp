@@ -1854,7 +1854,7 @@ void MainWindow::showLDACovarianceGroupMatrix() {
       QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
 
       QString tabname =
-          projectname + " - " + modelname + " - LDA Covariance Group Matrix";
+          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("LDA Covariance Group Matrix");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname,
@@ -1885,7 +1885,7 @@ void MainWindow::showLDAPriorProbabilities() {
       QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
 
       QString tabname =
-          projectname + " - " + modelname + " - LDA Covariance Group Matrix";
+          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("LDA Prior Probabilities");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       matrix *pprob;
@@ -1928,8 +1928,7 @@ void MainWindow::showLDAFeatures() {
            k < projects->value(pid)->getLDAModel(mid)->Model()->features->order;
            k++) { /* for each class */
         QString tabname =
-            projectname + " - " + modelname +
-            QString(" - LDA Features Class %1").arg(QString::number(k + 1));
+            QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg(QString("LDA Features Class %1").arg(k + 1));
         MDIChild *child = createMdiChild();
         child->setWindowID(tabid);
         QStringList headername, objname;
@@ -1979,10 +1978,11 @@ void MainWindow::showLDAMVNormDistrib() {
       for (size_t k = 0;
            k < projects->value(pid)->getLDAModel(mid)->Model()->mnpdf->order;
            k++) { /* for each class */
-        QString tabname = projectname + " - " + modelname +
-                          QString(" -  LDA Multivariate Normal Distribution of "
-                                  "Probabilities Class %1")
-                              .arg(QString::number(k + 1));
+        QString tabname = QString("%1 | %2 | %3")
+                              .arg(projectname)
+                              .arg(modelname)
+                              .arg(QString("LDA Multivariate Normal Distribution of Probabilities Class %1")
+                                       .arg(k + 1));
         MDIChild *child = createMdiChild();
         child->setWindowID(tabid);
         QStringList headername, objname;
@@ -2025,7 +2025,8 @@ void MainWindow::showLDAValidation() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
 
-      QString tabname = projectname + " - " + modelname + " - LDA Validation";
+      QString tabname =
+          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("LDA Validation");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       matrix *valid;
@@ -2088,9 +2089,11 @@ void MainWindow::showLDAPrediction() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
       int predid = getCurrentPredictionID();
-      QString tabname = projectname + " - " + modelname +
-                        " - LDa Predicted Class" + " - " +
-                        ui.treeWidget->currentItem()->text(0);
+      QString tabname = QString("%1 | %2 | %3")
+                            .arg(projectname)
+                            .arg(modelname)
+                            .arg("LDA Predicted Class - " +
+                                 ui.treeWidget->currentItem()->text(0));
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname, projects->value(pid)
@@ -2122,8 +2125,8 @@ void MainWindow::showLDAPredictionFeatures() {
       QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
       int predid = getCurrentPredictionID();
 
-      QString tabname = projectname + " - " + modelname +
-                        QString(" -  LDA Predicted Feature");
+      QString tabname =
+          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("LDA Predicted Feature");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       QStringList headername, objname;
@@ -2197,7 +2200,7 @@ void MainWindow::showMLRCoeff() {
       QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
       QString tabname =
-          projectname + " - " + modelname + " - MLR Regression Coefficients";
+          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("MLR Regression Coefficients");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname,
@@ -2242,7 +2245,7 @@ void MainWindow::showMLRValidation() {
       QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
       QString tabname =
-          projectname + " - " + modelname + " - MLR Correlation Coefficient";
+          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("MLR Correlation Coefficient");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname);
@@ -2294,7 +2297,7 @@ void MainWindow::showMLRRecalcY() {
       QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
       QString tabname =
-          projectname + " - " + modelname + " - MLR Recalculated Y";
+          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("MLR Recalculated Y");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(
@@ -2329,7 +2332,7 @@ void MainWindow::showMLRValidatedPrediction() {
       QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
       QString tabname =
-          projectname + " - " + modelname + " - MLR Validated Predicted Y";
+          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("MLR Validated Predicted Y");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(
@@ -2362,9 +2365,12 @@ void MainWindow::showMLRPrediction() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
       int predid = getCurrentPredictionID();
-      QString tabname = projectname + " - " + modelname +
-                        " - MLR Predicted Dipendent Value" + " - " +
-                        ui.treeWidget->currentItem()->text(0);
+      QString tabname =
+          QString("%1 | %2 | %3")
+              .arg(projectname)
+              .arg(modelname)
+              .arg("MLR Predicted Dependent Value - " +
+                   ui.treeWidget->currentItem()->text(0));
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname,
@@ -2410,7 +2416,7 @@ void MainWindow::showMLRPredictionRSquared() {
       QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
       QString tabname =
-          projectname + " - " + modelname + " - MLR Prediction Error";
+          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("MLR Prediction Error");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname);
@@ -2651,7 +2657,7 @@ void MainWindow::showPLSValidatedPrediction() {
       QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
       QString tabname =
-          projectname + " - " + modelname + " - PLS Model Prediction";
+          QString("%1 | %2 | PLS Model Prediction").arg(projectname).arg(modelname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(
@@ -2693,7 +2699,8 @@ void MainWindow::showPLSValidation() {
     if (pid > -1 && mid > -1 && tabid > -1) {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
-      QString tabname = projectname + " - " + modelname + " - PLS Validation";
+      QString tabname =
+          QString("%1 | %2 | PLS Validation").arg(projectname).arg(modelname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname);
@@ -2995,7 +3002,8 @@ void MainWindow::showPLSRegCoeff() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-      QString tabname = projectname + "-PLS Rergression Coefficient";
+      QString tabname =
+          QString("%1 | PLS Regression Coefficients").arg(projectname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname);
@@ -3033,7 +3041,8 @@ void MainWindow::showPLSWWeights() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-      QString tabname = projectname + " - " + modelname + " - PLS W Weights";
+      QString tabname =
+          QString("%1 | %2 | PLS W-Weights").arg(projectname).arg(modelname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(
@@ -3066,7 +3075,8 @@ void MainWindow::showPLSQLoadings() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-      QString tabname = projectname + " - " + modelname + " - PLS Q Loadings";
+      QString tabname =
+          QString("%1 | %2 | PLS Q-Loadings").arg(projectname).arg(modelname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(
@@ -3099,7 +3109,8 @@ void MainWindow::showPLSPLoadings() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-      QString tabname = projectname + " - " + modelname + " - PLS P Loadings";
+      QString tabname =
+          QString("%1 | %2 | PLS P-Loadings").arg(projectname).arg(modelname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(
@@ -3133,7 +3144,8 @@ void MainWindow::showPLSUSCores() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-      QString tabname = projectname + " - " + modelname + " - PLS U Scores";
+      QString tabname =
+          QString("%1 | %2 | PLS U-Scores").arg(projectname).arg(modelname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname,
@@ -3167,7 +3179,8 @@ void MainWindow::showPLSTScores() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-      QString tabname = projectname + " - " + modelname + " - PLS T Scores";
+      QString tabname =
+          QString("%1 | %2 | PLS T-Scores").arg(projectname).arg(modelname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname,
@@ -3646,7 +3659,8 @@ void MainWindow::showPCALoadings() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
 
-      QString tabname = projectname + " - " + modelname + " - PCA Loadings";
+      QString tabname =
+          QString("%1 | %2 | PCA Loadings").arg(projectname).arg(modelname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(
@@ -3679,7 +3693,8 @@ void MainWindow::showPCAScore() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getPCAModel(mid)->getName();
 
-      QString tabname = projectname + " - " + modelname + " - PCA Scores";
+      QString tabname =
+          QString("%1 | %2 | PCA Scores").arg(projectname).arg(modelname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname,
@@ -4141,7 +4156,7 @@ void MainWindow::showData() {
       QString projectname = projects->value(pid)->getProjectName();
       if (getCurrentDataType().compare("Matrix") == 0) {
 
-        QString tabname = projectname + "-Matrix-" + getCurrentDataName();
+        QString tabname = QString("%1 | Data | %2").arg(projectname).arg(getCurrentDataName());
 
         MDIChild *child = createMdiChild();
 
@@ -4166,8 +4181,10 @@ void MainWindow::showData() {
       } else { // ui.treeWidget->currentItem()->text(1).compare("Array") == 0){
         for (size_t i = 0;
              i < projects->value(pid)->getArray(did)->Array()->order; i++) {
-          QString tabname = projectname + "-Array-Matrix-" +
-                            getCurrentDataName() + "-" + QString::number(i + 1);
+          QString tabname = QString("%1 | Data | %2 (Layer %3)")
+                                .arg(projectname)
+                                .arg(getCurrentDataName())
+                                .arg(QString::number(i + 1));
           MDIChild *child = createMdiChild();
 
           child->setWindowID(tabid);
@@ -4204,8 +4221,9 @@ void MainWindow::showDescriptiveStatistics() {
         initMatrix(&stats);
         MatrixColDescStat(projects->value(pid)->getMatrix(did)->Matrix(),
                           stats);
-        QString tabname = projectname + "-Matrix-" + getCurrentDataName() +
-                          " Descriptive statistics";
+        QString tabname = QString("%1 | Data | %2 (Descriptive Statistics)")
+                              .arg(projectname)
+                              .arg(getCurrentDataName());
         MDIChild *child = createMdiChild();
         child->setWindowID(tabid);
         QStringList colname;

@@ -55,7 +55,10 @@ void LDAPlot::FeaturePlot2D(ScatterPlot **plot2D) {
         mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
         &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(), "LD", "LD",
-        QString(projectname + modelname + " - LDA Feature Plot "),
+        QString("%1 | %2 | %3")
+            .arg(projectname)
+            .arg(modelname)
+            .arg("LDA Feature Plot"),
         ScatterPlot::SCORES);
     (*plot2D)->setPID(pid);
     (*plot2D)->setImages(projects->value(pid)->getImages());
@@ -233,8 +236,10 @@ void LDAPlot::ProbabilityDistribution(ScatterPlot **plot2D) {
         mx, my, objnamelst, &projects->value(pid)->getMATRIXList(), xhash,
         yhash, &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(), "Y", "Prob Y",
-        projectname + modelname +
-            " - LDA Multivariate Normal Distribution of Probabilities",
+        QString("%1 | %2 | %3")
+            .arg(projectname)
+            .arg(modelname)
+            .arg("LDA Multivariate Normal Distribution of Probabilities"),
         ScatterPlot::SCORES);
 
     (*plot2D)->addCurve(mnpdf, mnpdfname, colors, true);
@@ -379,7 +384,10 @@ void LDAPlot::FeaturePlotAndPrediction2D(ScatterPlot **plot2D) {
         mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
         &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(), "LD", "LD",
-        QString(projectname + modelname + " - LDA Feature Plot "),
+        QString("%1 | %2 | %3")
+            .arg(projectname)
+            .arg(modelname)
+            .arg("LDA Feature Plot"),
         ScatterPlot::SCORES);
     (*plot2D)->setPID(pid);
     (*plot2D)->setImages(projects->value(pid)->getImages());
@@ -591,8 +599,10 @@ void LDAPlot::ProbabilityDistributionWithPredictions(ScatterPlot **plot2D) {
         mx, my, objnamelst, &projects->value(pid)->getMATRIXList(), xhash,
         yhash, &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(), "Y", "Prob Y",
-        projectname + modelname +
-            " - LDA Multivariate Normal Distribution of Probabilities",
+        QString("%1 | %2 | %3")
+            .arg(projectname)
+            .arg(modelname)
+            .arg("LDA Multivariate Normal Distribution of Probabilities"),
         ScatterPlot::SCORES);
 
     (*plot2D)->addCurve(mnpdf, mnpdfname, colors, true);

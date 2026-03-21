@@ -26,7 +26,7 @@
 #include <QStringListModel>
 
 void MDIChild::newModelInfo() {
-  setWindowTitle("Model Info");
+  setWindowTitle("Model Properties & Information");
   modinfo = new ModelInfo(this);
   setWidget(modinfo);
   modinfo->Adjust();

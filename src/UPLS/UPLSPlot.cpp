@@ -41,7 +41,7 @@ void UPLSPlot::TU_Plot(ScatterPlot2D **plot2D) {
       mx, my, b, objname, &projects->value(pid)->getARRAYList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), QString("T"), QString("U"),
-      QString("%1 - %2 - UPLS T/U Plot").arg(projectname).arg(modelname),
+      QString("%1 | %2 | UPLS Score Plot (T/U)").arg(projectname).arg(modelname),
       ScatterPlot2D::SCORES);
   (*plot2D)->setPID(pid);
 }
@@ -60,7 +60,7 @@ void UPLSPlot::T_ScorePlot2D(ScatterPlot2D **plot2D) {
   */
   (*plot2D) = new ScatterPlot2D(
       mxlst, objnamelst, "T", "T",
-      QString("%1 - %2 - UPLS T/T Score Plot").arg(projectname).arg(modelname));
+      QString("%1 | %2 | UPLS Score Plot (T/T)").arg(projectname).arg(modelname));
   (*plot2D)->setPID(pid);
 }
 
@@ -109,7 +109,7 @@ void UPLSPlot::P_LoadingsPlot2D(QList<ScatterPlot2D *> *plot2D) {
     yhash.append(projects->value(pid)->getUPLSModel(mid)->getYHash());
     (*plot2D).append(
         new ScatterPlot2D(mxlst, objnamelst, "P", "P",
-                          QString("%1 - %2 -  UPLS P Loadings Plot Layer: %1")
+                          QString("%1 | %2 | UPLS Loadings Plot (P) | Layer %3")
                               .arg(projectname)
                               .arg(modelname)
                               .arg(QString::number(k + 1))));
@@ -165,7 +165,7 @@ void UPLSPlot::WeightsPlot2D(QList<ScatterPlot2D *> *plot2D) {
     */
     (*plot2D).append(
         new ScatterPlot2D(mxlst, objnamelst, "W", "W",
-                          QString("%1 - %2 -  UPLS W Weights Plot Layer: %3")
+                          QString("%1 | %2 | UPLS Weights Plot (W) | Layer %3")
                               .arg(projectname)
                               .arg(modelname)
                               .arg(QString::number(k + 1))));
@@ -188,7 +188,7 @@ void UPLSPlot::U_ScorePlot2D(ScatterPlot2D **plot2D) {
   */
   (*plot2D) = new ScatterPlot2D(
       mxlst, objnamelst, "U", "U",
-      QString("%1 - %2 - UPLS U/U Score Plot").arg(projectname).arg(modelname));
+      QString("%1 | %2 | UPLS Score Plot (U/U)").arg(projectname).arg(modelname));
   (*plot2D)->setPID(pid);
 }
 
@@ -237,7 +237,7 @@ void UPLSPlot::Q_LoadingsPlot2D(QList<ScatterPlot2D *> *plot2D) {
     */
     (*plot2D).append(
         new ScatterPlot2D(mxlst, objnamelst, "Q", "Q",
-                          QString("%1 - %2 -  UPLS Q Loadings Plot Layer: %1")
+                          QString("%1 | %2 | UPLS Loadings Plot (Q) | Layer %3")
                               .arg(projectname)
                               .arg(modelname)
                               .arg(QString::number(k + 1))));
@@ -269,7 +269,7 @@ void UPLSPlot::T_ScorePlotPrediction2D(ScatterPlot2D **plot2D) {
   */
   (*plot2D) =
       new ScatterPlot2D(mxlst, objnamelst, "T", "T",
-                        QString("%1 - %2 - UPLS T/T Score Plot Prediction")
+                        QString("%1 | %2 | UPLS Score Plot (T/T) | Prediction")
                             .arg(projectname)
                             .arg(modelname));
   (*plot2D)->setPID(pid);
@@ -300,17 +300,6 @@ void UPLSPlot::RecalcVSExperimentalAndPrediction(
        k++) {
     matrix *model_recalc_y;
     NewMatrix(&model_recalc_y, nobjects, nvars);
-
-    /*
-    Prediction for example are organized as this example
-    y = 2
-    number_of_pc = 4
-
-        pc1    pc2     pc3       pc4
-      |  |   |   |   |   |    |    |
-      y1 y2  y1  y2  y1  y2   y1   y2
-  pos 0 1    2   3   4   5    6    7
-    */
 
     for (uint i = 0; i < nobjects; i++) {
       for (uint j = 0; j < nvars; j++) {
@@ -361,17 +350,6 @@ void UPLSPlot::RecalcVSExperimentalAndPrediction(
     matrix *pred_predicted_y;
     NewMatrix(&pred_predicted_y, pred_nobjects, nvars);
 
-    /*
-    Prediction for example are organized as this example
-    y = 2
-    number_of_pc = 4
-
-        pc1    pc2     pc3       pc4
-      |  |   |   |   |   |    |    |
-      y1 y2  y1  y2  y1  y2   y1   y2
-  pos 0 1    2   3   4   5    6    7
-    */
-
     for (uint i = 0; i < pred_nobjects; i++) {
       for (uint j = 0; j < nvars; j++) {
         setMatrixValue(pred_predicted_y, i, j,
@@ -388,7 +366,6 @@ void UPLSPlot::RecalcVSExperimentalAndPrediction(
                                              ->getUPLSModel(mid)
                                              ->getUPLSPrediction(predid)
                                              ->getYHash());
-    /*bug... not did ma HASH!!*/
     matrix *pred_exp_y;
     NewMatrix(&pred_exp_y, pred_nobjects, nvars);
     ii = 0;
@@ -451,8 +428,7 @@ void UPLSPlot::RecalcVSExperimentalAndPrediction(
         QString("Layer %1 Experimental Y").arg(QString::number(k + 1)),
         QString("Layer %1 Recalculated and Predicted Y")
             .arg(QString::number(k + 1)),
-        projectname + modelname +
-            " - UPLS Recalculated and Predicted VS Experimental Plot",
+        QString("%1 | %2 | UPLS Recalculated and Predicted VS Experimental Plot").arg(projectname).arg(modelname),
         ScatterPlot2D::SCORES));
     (*plot2D).last()->BuildDiagonal();
     (*plot2D).last()->setPID(pid);
@@ -489,19 +465,6 @@ void UPLSPlot::PredictedVSExperimentalAndPrediction(
     matrix *model_predicted_y;
     NewMatrix(&model_predicted_y, nobjects, nvars);
 
-/*
-Prediction for example are organized as this example
-y = 2
-number_of_pc = 4
-
-    pc1    pc2     pc3       pc4
-  |  |   |   |   |   |    |    |
-  y1 y2  y1  y2  y1  y2   y1   y2
-pos 0 1    2   3   4   5    6    7
-*/
-#ifdef DEBUG
-    qDebug() << QString("%1 %2").arg(nvars).arg(npc);
-#endif
     for (uint i = 0; i < nobjects; i++) {
       for (uint j = 0; j < nvars; j++) {
         setMatrixValue(
@@ -550,16 +513,6 @@ pos 0 1    2   3   4   5    6    7
     matrix *pred_predicted_y;
     NewMatrix(&pred_predicted_y, pred_nobjects, nvars);
 
-    /*
-    Prediction for example are organized as this example
-    y = 2
-    number_of_pc = 4
-
-        pc1    pc2     pc3       pc4
-      |  |   |   |   |   |    |    |
-      y1 y2  y1  y2  y1  y2   y1   y2
-  pos 0 1    2   3   4   5    6    7
-    */
     for (uint i = 0; i < pred_nobjects; i++) {
       for (uint j = 0; j < nvars; j++) {
         setMatrixValue(pred_predicted_y, i, j,
@@ -576,7 +529,6 @@ pos 0 1    2   3   4   5    6    7
                                              ->getUPLSModel(mid)
                                              ->getUPLSPrediction(predid)
                                              ->getYHash());
-    /*bug... not did ma HASH!!*/
     matrix *pred_exp_y;
     NewMatrix(&pred_exp_y, pred_nobjects, nvars);
     ii = 0;
@@ -607,14 +559,6 @@ pos 0 1    2   3   4   5    6    7
         continue;
       }
     }
-#ifdef DEBUG
-    qDebug() << "WARNING! CODE TO BE TESTED!!";
-    PrintMatrix(model_exp_y);
-    PrintMatrix(pred_exp_y);
-    PrintMatrix(model_predicted_y);
-    PrintMatrix(pred_predicted_y);
-    puts("XXXXXXXXXX");
-#endif
 
     QList<matrix *> mx, my;
     mx.append(model_exp_y);
@@ -644,7 +588,7 @@ pos 0 1    2   3   4   5    6    7
         &projects->value(pid)->getVariableLabels(),
         QString("Layer %1 Experimental Y").arg(QString::number(k + 1)),
         QString("Layer %1 Predicted Y").arg(QString::number(k + 1)),
-        projectname + modelname + " - UPLS Predicted VS Experimental Plot",
+        QString("%1 | %2 | UPLS Predicted VS Experimental Plot").arg(projectname).arg(modelname),
         ScatterPlot2D::SCORES));
     (*plot2D).last()->BuildDiagonal();
     (*plot2D).last()->setPID(pid);
@@ -679,17 +623,6 @@ void UPLSPlot::RecalcVSExperimental(QList<ScatterPlot2D *> *plot2D) {
     matrix *model_recalc_y;
     NewMatrix(&model_recalc_y, nobjects, nvars);
 
-    /*
-    Prediction for example are organized as this example
-    y = 2
-    number_of_pc = 4
-
-        pc1    pc2     pc3       pc4
-      |  |   |   |   |   |    |    |
-      y1 y2  y1  y2  y1  y2   y1   y2
-  pos 0 1    2   3   4   5    6    7
-    */
-
     for (uint i = 0; i < nobjects; i++) {
       for (uint j = 0; j < nvars; j++) {
         setMatrixValue(model_recalc_y, i, j,
@@ -701,7 +634,6 @@ void UPLSPlot::RecalcVSExperimental(QList<ScatterPlot2D *> *plot2D) {
       }
     }
 
-    /*bug... not did ma HASH!!*/
     matrix *model_exp_y;
     NewMatrix(&model_exp_y, nobjects, nvars);
     int ii = 0;
@@ -745,7 +677,7 @@ void UPLSPlot::RecalcVSExperimental(QList<ScatterPlot2D *> *plot2D) {
         &projects->value(pid)->getVariableLabels(),
         QString("Layer %1 Experimental Y").arg(QString::number(k + 1)),
         QString("Layer %1 Recalculated Y").arg(QString::number(k + 1)),
-        QString("- %1 - %2 - UPLS Recalculated VS Experimental Plot Layer %3 ")
+        QString("%1 | %2 | UPLS Recalculated VS Experimental Plot | Layer %3")
             .arg(projectname)
             .arg(modelname)
             .arg(QString::number(k + 1)),
@@ -781,17 +713,6 @@ void UPLSPlot::RecalcResidualsVSExperimental(QList<ScatterPlot2D *> *plot2D) {
     matrix *model_recalc_res;
     NewMatrix(&model_recalc_res, nobjects, nvars);
 
-    /*
-    Prediction for example are organized as this example
-    y = 2
-    number_of_pc = 4
-
-        pc1    pc2     pc3       pc4
-      |  |   |   |   |   |    |    |
-      y1 y2  y1  y2  y1  y2   y1   y2
-  pos 0 1    2   3   4   5    6    7
-    */
-
     for (uint i = 0; i < nobjects; i++) {
       for (uint j = 0; j < nvars; j++) {
         setMatrixValue(model_recalc_res, i, j,
@@ -803,7 +724,6 @@ void UPLSPlot::RecalcResidualsVSExperimental(QList<ScatterPlot2D *> *plot2D) {
       }
     }
 
-    /*bug... not did ma HASH!!*/
     matrix *model_exp_y;
     NewMatrix(&model_exp_y, nobjects, nvars);
     int ii = 0;
@@ -847,8 +767,7 @@ void UPLSPlot::RecalcResidualsVSExperimental(QList<ScatterPlot2D *> *plot2D) {
         &projects->value(pid)->getVariableLabels(),
         QString("Layer %1 Experimental Y").arg(QString::number(k + 1)),
         QString("Layer %1 Recalculated Y").arg(QString::number(k + 1)),
-        QString("- %1 - %2 - UPLS Recalculated Residuals VS Experimental Plot "
-                "Layer %3 ")
+        QString("%1 | %2 | UPLS Recalculated Residuals VS Experimental Plot | Layer %3")
             .arg(projectname)
             .arg(modelname)
             .arg(QString::number(k + 1)),
@@ -883,17 +802,6 @@ void UPLSPlot::PredictedVSExperimental(QList<ScatterPlot2D *> *plot2D) {
     matrix *model_pred_y;
     NewMatrix(&model_pred_y, nobjects, nvars);
 
-    /*
-    Prediction for example are organized as this example
-    y = 2
-    number_of_pc = 4
-
-        pc1    pc2     pc3       pc4
-      |  |   |   |   |   |    |    |
-      y1 y2  y1  y2  y1  y2   y1   y2
-  pos 0 1    2   3   4   5    6    7
-    */
-
     for (uint i = 0; i < nobjects; i++) {
       for (uint j = 0; j < nvars; j++) {
         setMatrixValue(
@@ -904,7 +812,6 @@ void UPLSPlot::PredictedVSExperimental(QList<ScatterPlot2D *> *plot2D) {
       }
     }
 
-    /*bug... not did ma HASH!!*/
     matrix *model_exp_y;
     NewMatrix(&model_exp_y, nobjects, nvars);
     int ii = 0;
@@ -948,7 +855,7 @@ void UPLSPlot::PredictedVSExperimental(QList<ScatterPlot2D *> *plot2D) {
         &projects->value(pid)->getVariableLabels(),
         QString("Layer %1 Experimental Y").arg(QString::number(k + 1)),
         QString("Layer %1 Predicted Y").arg(QString::number(k + 1)),
-        QString("- %1 - %2 - UPLS Predicted VS Experimental Plot Layer %3 ")
+        QString("%1 | %2 | UPLS Predicted VS Experimental Plot | Layer %3")
             .arg(projectname)
             .arg(modelname)
             .arg(QString::number(k + 1)),
@@ -985,17 +892,6 @@ void UPLSPlot::PredictedResidualsVSExperimental(
     matrix *model_pred_res;
     NewMatrix(&model_pred_res, nobjects, nvars);
 
-    /*
-    Prediction for example are organized as this example
-    y = 2
-    number_of_pc = 4
-
-        pc1    pc2     pc3       pc4
-      |  |   |   |   |   |    |    |
-      y1 y2  y1  y2  y1  y2   y1   y2
-  pos 0 1    2   3   4   5    6    7
-    */
-
     for (uint i = 0; i < nobjects; i++) {
       for (uint j = 0; j < nvars; j++) {
         setMatrixValue(model_pred_res, i, j,
@@ -1007,7 +903,6 @@ void UPLSPlot::PredictedResidualsVSExperimental(
       }
     }
 
-    /*bug... not did ma HASH!!*/
     matrix *model_exp_y;
     NewMatrix(&model_exp_y, nobjects, nvars);
     int ii = 0;
@@ -1051,8 +946,7 @@ void UPLSPlot::PredictedResidualsVSExperimental(
         &projects->value(pid)->getVariableLabels(),
         QString("Layer %1 Experimental Y").arg(QString::number(k + 1)),
         QString("Layer %1 Predicted Residuals Y").arg(QString::number(k + 1)),
-        QString("- %1 - %2 - UPLS Predicted Residuals VS Experimental Plot "
-                "Layer %3 ")
+        QString("%1 | %2 | UPLS Predicted Residuals VS Experimental Plot | Layer %3")
             .arg(projectname)
             .arg(modelname)
             .arg(QString::number(k + 1)),
@@ -1064,11 +958,6 @@ void UPLSPlot::PredictedResidualsVSExperimental(
 }
 
 void UPLSPlot::R2Q2(QList<SimpleLine2DPlot *> *plot2D) {
-  /*
-  array *r2y_validation   && array *q2y   each order correspond to a principal
-  component; each row correspond to an y dependent variable and each col to an
-  order
-  */
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
   uint model_npc = projects->value(pid)->getUPLSModel(mid)->getNPC();
@@ -1076,45 +965,33 @@ void UPLSPlot::R2Q2(QList<SimpleLine2DPlot *> *plot2D) {
                   ->getUPLSModel(mid)
                   ->Model()
                   ->r2y_model->m[0]
-                  ->row; // each row is an y dependent value
+                  ->row;
   uint layers = projects->value(pid)
                     ->getUPLSModel(mid)
                     ->Model()
                     ->r2y_model->m[0]
-                    ->col; // each col is a layer for the y
+                    ->col;
   matrix *m;
 
   QStringList curvenames;
   if (projects->value(pid)->getUPLSModel(mid)->Model()->q2y_yscrambling->order >
       0) {
-    NewMatrix(&m, model_npc + 1, 4); // +1 because we start from 0
+    NewMatrix(&m, model_npc + 1, 4);
     curvenames << "R2"
                << "Q2"
                << "Y Scrambling";
   } else {
-    NewMatrix(&m, model_npc + 1, 3); // +1 because we start from 0
+    NewMatrix(&m, model_npc + 1, 3);
     curvenames << "R2"
                << "Q2";
   }
 
-  // set the X assis that is the principal component
   for (uint i = 0; i < model_npc + 1; i++) {
     setMatrixValue(m, i, 0, i);
   }
 
-  // Set the r2 values into the matrix and set the q2 values into the matrix
-
-  for (uint j = 0; j < yval; j++) {     // per ogni y
-    for (uint k = 0; k < layers; k++) { // per ogni layer
-
-#ifdef DEBUG
-      qDebug() << "r2";
-      PrintMatrix(
-          projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[k]);
-      qDebug() << "q2";
-      PrintMatrix(projects->value(pid)->getUPLSModel(mid)->Model()->q2y->m[k]);
-#endif
-
+  for (uint j = 0; j < yval; j++) {
+    for (uint k = 0; k < layers; k++) {
       QStringList columntitle;
       if (projects->value(pid)
               ->getUPLSModel(mid)
@@ -1140,8 +1017,8 @@ void UPLSPlot::R2Q2(QList<SimpleLine2DPlot *> *plot2D) {
                            .arg(QString::number(k + 1));
       }
 
-      setMatrixValue(m, 0, 1, 0); // R^2 in 0 pc is 0
-      setMatrixValue(m, 0, 2, 0); // Q^2 in 0 pc is 0
+      setMatrixValue(m, 0, 1, 0);
+      setMatrixValue(m, 0, 2, 0);
 
       for (uint i = 0; i < model_npc; i++) {
         setMatrixValue(
@@ -1166,40 +1043,18 @@ void UPLSPlot::R2Q2(QList<SimpleLine2DPlot *> *plot2D) {
                                            ->Model()
                                            ->q2y_yscrambling,
                                        i, j, k));
-        } else {
-          continue;
         }
       }
 
-#ifdef DEBUG
-      qDebug() << "Final Matrix";
-      PrintMatrix(m);
-#endif
-
-      if (projects->value(pid)
-              ->getUPLSModel(mid)
-              ->Model()
-              ->q2y_yscrambling->order > 0) {
-        (*plot2D).append(new SimpleLine2DPlot(
-            m, curvenames,
-            projectname + modelname +
-                QString(
-                    " - R^2 Q^2 and Q^2 Model Consistency Plot Y %1  Layer %2")
-                    .arg(j + 1)
-                    .arg(QString::number(k + 1)),
-            columntitle, "Principal Components",
-            "R^2 / Q^2 / Q^2 Model Consistency"));
-      } else {
-        (*plot2D).append(new SimpleLine2DPlot(
-            m, curvenames,
-            projectname + modelname +
-                QString(
-                    " - R^2 Q^2 and Q^2 Model Consistency Plot Y %1  Layer %2")
-                    .arg(j + 1)
-                    .arg(QString::number(k + 1)),
-            columntitle, "Principal Components",
-            "R^2 / Q^2 / Q^2 Model Consistency"));
-      }
+      (*plot2D).append(new SimpleLine2DPlot(
+          m, curvenames,
+          QString("%1 | %2 | R^2, Q^2 and Consistency Plot | Y %3 | Layer %4")
+              .arg(projectname)
+              .arg(modelname)
+              .arg(j + 1)
+              .arg(QString::number(k + 1)),
+          columntitle, "Principal Components",
+          "R^2 / Q^2 / Consistency"));
       (*plot2D).last()->setLabelDetail(true);
     }
   }
@@ -1214,12 +1069,12 @@ void UPLSPlot::R2R2Prediction(QList<SimpleLine2DPlot *> *plot2D) {
                   ->getUPLSModel(mid)
                   ->Model()
                   ->r2y_model->m[0]
-                  ->row; // each row is an y dependent value
+                  ->row;
   uint layers = projects->value(pid)
                     ->getUPLSModel(mid)
                     ->Model()
                     ->r2y_model->m[0]
-                    ->col; // each col is a layer for the y
+                    ->col;
   matrix *m;
 
   bool getq2 = false, getq2consistency = false;
@@ -1238,23 +1093,12 @@ void UPLSPlot::R2R2Prediction(QList<SimpleLine2DPlot *> *plot2D) {
 
   NewMatrix(&m, npc + 1, ncol);
 
-  // set the X assis that is the principal component
   for (uint i = 0; i < (uint)npc + 1; i++) {
     setMatrixValue(m, i, 0, i);
   }
 
-  // Set the r2 values into the matrix and set the q2 values into the matrix
-
-  for (uint j = 0; j < yval; j++) {     // per ogni y
-    for (uint k = 0; k < layers; k++) { // per ogni layer
-#ifdef DEBUG
-      qDebug() << "r2";
-      PrintMatrix(
-          projects->value(pid)->getUPLSModel(mid)->Model()->r2y_model->m[k]);
-      qDebug() << "q2";
-      PrintMatrix(projects->value(pid)->getUPLSModel(mid)->Model()->q2y->m[k]);
-#endif
-
+  for (uint j = 0; j < yval; j++) {
+    for (uint k = 0; k < layers; k++) {
       QStringList columntitle;
       QStringList curvenames;
       curvenames << "R2";
@@ -1289,20 +1133,20 @@ void UPLSPlot::R2R2Prediction(QList<SimpleLine2DPlot *> *plot2D) {
                         .arg(QString::number(k + 1));
 
       int l = 1;
-      setMatrixValue(m, 0, l, 0); // R^2 in 0 pc is 0
+      setMatrixValue(m, 0, l, 0);
       l++;
 
       if (getq2 == true) {
-        setMatrixValue(m, 0, l, 0); // Q^2 in 0 pc is 0
+        setMatrixValue(m, 0, l, 0);
         l++;
       }
 
       if (getq2consistency == true) {
-        setMatrixValue(m, 0, l, 0); // Q2 Consistency
+        setMatrixValue(m, 0, l, 0);
         l++;
       }
 
-      setMatrixValue(m, 0, l, 0); // R2 Predicted
+      setMatrixValue(m, 0, l, 0);
 
       for (uint i = 0; i < (uint)npc; i++) {
         l = 1;
@@ -1347,18 +1191,13 @@ void UPLSPlot::R2R2Prediction(QList<SimpleLine2DPlot *> *plot2D) {
       }
 
       QString yaxisname = "R^2";
-
-      if (getq2 == true)
-        yaxisname += " / Q2";
-
-      if (getq2consistency == true)
-        yaxisname += " / Q^2 Model Consistency";
-
-      yaxisname += " / R2 Predicted";
+      if (getq2) yaxisname += " / Q^2";
+      if (getq2consistency) yaxisname += " / Consistency";
+      yaxisname += " / R^2 Predicted";
 
       (*plot2D).append(
           new SimpleLine2DPlot(m, curvenames,
-                               QString("%1 - %2 - Y %3 R2 /R2 Predicted Plot")
+                               QString("%1 | %2 | Y %3 | R^2 / Predicted Plot")
                                    .arg(projectname)
                                    .arg(modelname)
                                    .arg(QString::number(j + 1)),
@@ -1383,7 +1222,7 @@ void UPLSPlot::T_ScorePlot3D(ScatterPlot3D **plot3D) {
       mxlst, objname, &projects->value(pid)->getARRAYList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(),
-      QString("%1 - %2 - UPLS T Score Plot").arg(projectname).arg(modelname),
+      QString("%1 | %2 | UPLS Score Plot (T) (3D)").arg(projectname).arg(modelname),
       "PC", "PC", "PC", ScatterPlot3D::SCORES);
   (*plot3D)->setPID(pid);
 }
@@ -1391,33 +1230,18 @@ void UPLSPlot::T_ScorePlot3D(ScatterPlot3D **plot3D) {
 void UPLSPlot::P_LoadingsPlot3D(QList<ScatterPlot3D *> *plot3D) {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
   QStringList varname = projects->value(pid)->getUPLSModel(mid)->getXVarName();
-
-  /* xloadings->order represent the number of pc computed.
-   * xloadings->m[i]->row represent the number of descriptor that is equal to
-   * X_->m[i]->col xloadings->m[i]->col represent the number of order present in
-   * the array X_ and is equal to X_->order
-   */
-
   matrix *m;
-
-  // the size is the number of variable x the number of components and we
-  // generate a plot for each layer and the number of layer is  m[i]->col
   uint row =
       projects->value(pid)->getUPLSModel(mid)->Model()->xloadings->m[0]->row;
   uint col = projects->value(pid)->getUPLSModel(mid)->Model()->xloadings->order;
   uint layer =
       projects->value(pid)->getUPLSModel(mid)->Model()->xloadings->m[0]->col;
-
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getUPLSModel(mid)->getXHash());
   yhash.append(projects->value(pid)->getUPLSModel(mid)->getYHash());
-
   for (uint k = 0; k < layer; k++) {
     NewMatrix(&m, row, col);
-
-    // copy the data on matrix to plot
     for (uint i = 0; i < row; i++) {
       for (uint j = 0; j < col; j++) {
         setMatrixValue(
@@ -1427,7 +1251,6 @@ void UPLSPlot::P_LoadingsPlot3D(QList<ScatterPlot3D *> *plot3D) {
                 i, k));
       }
     }
-
     QList<matrix *> mxlst;
     mxlst.append(m);
     QList<QStringList> objname;
@@ -1436,7 +1259,7 @@ void UPLSPlot::P_LoadingsPlot3D(QList<ScatterPlot3D *> *plot3D) {
         mxlst, objname, &projects->value(pid)->getARRAYList(), xhash, yhash,
         &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(),
-        QString("%1 - %2 - UPLS P Loadings Plot Layer: %3")
+        QString("%1 | %2 | UPLS Loadings Plot (P) (3D) | Layer %3")
             .arg(projectname)
             .arg(modelname)
             .arg(QString::number(k + 1)),
@@ -1449,18 +1272,8 @@ void UPLSPlot::P_LoadingsPlot3D(QList<ScatterPlot3D *> *plot3D) {
 void UPLSPlot::WeightsPlot3D(QList<ScatterPlot3D *> *plot3D) {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
   QStringList varname = projects->value(pid)->getUPLSModel(mid)->getXVarName();
-  /* xloadings->order represent the number of pc computed.
-   * xloadings->m[i]->row represent the number of descriptor that is equal to
-   * X_->m[i]->col xloadings->m[i]->col represent the number of order present in
-   * the array X_ and is equal to X_->order
-   */
-
   matrix *m;
-
-  // the size is the number of variable x the number of components and we
-  // generate a plot for each layer and the number of layer is  m[i]->col
   uint row =
       projects->value(pid)->getUPLSModel(mid)->Model()->xweights->m[0]->row;
   uint col = projects->value(pid)->getUPLSModel(mid)->Model()->xweights->order;
@@ -1469,11 +1282,8 @@ void UPLSPlot::WeightsPlot3D(QList<ScatterPlot3D *> *plot3D) {
   QStringList xhash, yhash;
   xhash.append(projects->value(pid)->getUPLSModel(mid)->getXHash());
   yhash.append(projects->value(pid)->getUPLSModel(mid)->getYHash());
-
   for (uint k = 0; k < layer; k++) {
     NewMatrix(&m, row, col);
-
-    // copy the data on matrix to plot
     for (uint i = 0; i < row; i++) {
       for (uint j = 0; j < col; j++) {
         setMatrixValue(
@@ -1483,7 +1293,6 @@ void UPLSPlot::WeightsPlot3D(QList<ScatterPlot3D *> *plot3D) {
                 i, k));
       }
     }
-
     QList<matrix *> mxlst;
     mxlst.append(m);
     QList<QStringList> objname;
@@ -1492,7 +1301,7 @@ void UPLSPlot::WeightsPlot3D(QList<ScatterPlot3D *> *plot3D) {
         mxlst, objname, &projects->value(pid)->getARRAYList(), xhash, yhash,
         &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(),
-        QString("%1 - %2 - UPLS W Weights Plot Layer: %3")
+        QString("%1 | %2 | UPLS Weights Plot (W) (3D) | Layer %3")
             .arg(projectname)
             .arg(modelname)
             .arg(QString::number(k + 1)),
@@ -1516,7 +1325,7 @@ void UPLSPlot::U_ScorePlot3D(ScatterPlot3D **plot3D) {
       mxlst, objname, &projects->value(pid)->getARRAYList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(),
-      QString("%1 - %2 - UPLS U Score Plot").arg(projectname).arg(modelname),
+      QString("%1 | %2 | UPLS Score Plot (U) (3D)").arg(projectname).arg(modelname),
       "PC", "PC", "PC", ScatterPlot3D::SCORES);
   (*plot3D)->setPID(pid);
 }
@@ -1524,19 +1333,8 @@ void UPLSPlot::U_ScorePlot3D(ScatterPlot3D **plot3D) {
 void UPLSPlot::Q_LoadingsPlot3D(QList<ScatterPlot3D *> *plot3D) {
   QString projectname = projects->value(pid)->getProjectName();
   QString modelname = projects->value(pid)->getUPLSModel(mid)->getName();
-
   QStringList varname = projects->value(pid)->getUPLSModel(mid)->getYVarName();
-
-  /* xloadings->order represent the number of pc computed.
-   * xloadings->m[i]->row represent the number of descriptor that is equal to
-   * X_->m[i]->col xloadings->m[i]->col represent the number of order present in
-   * the array X_ and is equal to X_->order
-   */
-
   matrix *m;
-
-  // the size is the number of variable x the number of components and we
-  // generate a plot for each layer and the number of layer is  m[i]->col
   uint row =
       projects->value(pid)->getUPLSModel(mid)->Model()->yloadings->m[0]->row;
   uint col = projects->value(pid)->getUPLSModel(mid)->Model()->yloadings->order;
@@ -1547,8 +1345,6 @@ void UPLSPlot::Q_LoadingsPlot3D(QList<ScatterPlot3D *> *plot3D) {
   yhash.append(projects->value(pid)->getUPLSModel(mid)->getYHash());
   for (uint k = 0; k < layer; k++) {
     NewMatrix(&m, row, col);
-
-    // copy the data on matrix to plot
     for (uint i = 0; i < row; i++) {
       for (uint j = 0; j < col; j++) {
         setMatrixValue(
@@ -1558,7 +1354,6 @@ void UPLSPlot::Q_LoadingsPlot3D(QList<ScatterPlot3D *> *plot3D) {
                 i, k));
       }
     }
-
     QList<matrix *> mxlst;
     mxlst.append(m);
     QList<QStringList> objname;
@@ -1567,7 +1362,7 @@ void UPLSPlot::Q_LoadingsPlot3D(QList<ScatterPlot3D *> *plot3D) {
         mxlst, objname, &projects->value(pid)->getARRAYList(), xhash, yhash,
         &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(),
-        QString("%1 - %2 - UPLS Q Loadings Plot Layer: %3")
+        QString("%1 | %2 | UPLS Loadings Plot (Q) (3D) | Layer %3")
             .arg(projectname)
             .arg(modelname)
             .arg(QString::number(k + 1)),
@@ -1603,7 +1398,7 @@ void UPLSPlot::T_ScorePlotPrediction3D(ScatterPlot3D **plot3D) {
       new ScatterPlot3D(mxlst, objname, &projects->value(pid)->getARRAYList(),
                         xhash, yhash, &projects->value(pid)->getObjectLabels(),
                         &projects->value(pid)->getVariableLabels(),
-                        QString("%1 - %2 - UPLS T Score Plot Predictions")
+                        QString("%1 | %2 | UPLS Score Plot Predictions (3D)")
                             .arg(projectname)
                             .arg(modelname),
                         "PC", "PC", "PC", ScatterPlot3D::SCORES);

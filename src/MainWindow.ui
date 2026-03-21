@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>QStudioMetrics</string>
+   <string>QStudioMetrics - Multivariate Data Analysis &amp; Chemometrics</string>
   </property>
   <property name="windowIcon">
    <iconset resource="icons/icons.qrc">

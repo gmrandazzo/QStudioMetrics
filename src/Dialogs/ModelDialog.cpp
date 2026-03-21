@@ -597,16 +597,16 @@ ModelDialog::ModelDialog(PROJECTS *projects, int type_) {
   state = 0;
   type = type_;
   if (type == PCA_) {
-    setWindowTitle("Compute PCA");
+    setWindowTitle("Principal Component Analysis (PCA)");
     ui.yScalingFrame->hide();
   } else if (type == PLS_) {
     ui.OptGroupBox->setTitle("N. of Latent Variables");
-    setWindowTitle("Compute PLS");
+    setWindowTitle("Partial Least Squares (PLS)");
   } else if (type == MLR_) {
-    setWindowTitle("Compute MLR");
+    setWindowTitle("Multiple Linear Regression (MLR)");
     ui.OptGroupBox->hide();
   } else if (type == LDA_) {
-    setWindowTitle("Compute LDA");
+    setWindowTitle("Linear Discriminant Analysis (LDA)");
     ui.OptGroupBox->hide();
     ui.listView_5->setSelectionMode(QAbstractItemView::SingleSelection);
   }

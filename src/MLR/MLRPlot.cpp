@@ -156,7 +156,10 @@ void MLRPlot::RecalcVSExperimentalAndPrediction(ScatterPlot **plot2D) {
           &projects->value(pid)->getObjectLabels(),
           &projects->value(pid)->getVariableLabels(), QString("Experimental Y"),
           QString("Recalculated and Predicted Y"),
-          projectname + modelname + " - MLR Recalc VS Experimental Plot",
+          QString("%1 | %2 | %3")
+              .arg(projectname)
+              .arg(modelname)
+              .arg("MLR Recalc VS Experimental Plot"),
           ScatterPlot::SCORES);
       DelMatrix(&recalc_y);
       (*plot2D)->setImages(projects->value(pid)->getImages());
@@ -303,8 +306,10 @@ void MLRPlot::PredictedVSExperimentalAndPrediction(ScatterPlot **plot2D) {
           &projects->value(pid)->getObjectLabels(),
           &projects->value(pid)->getVariableLabels(), QString("Experimental"),
           QString("Predicted"),
-          QString(projectname + modelname +
-                  " - MLR Recalc VS Experimental Plot"),
+          QString("%1 | %2 | %3")
+              .arg(projectname)
+              .arg(modelname)
+              .arg("MLR Recalc VS Experimental Plot"),
           ScatterPlot::SCORES);
       (*plot2D)->setImages(projects->value(pid)->getImages());
       (*plot2D)->setAxisNameExtensions(varname);
@@ -396,7 +401,10 @@ void MLRPlot::RecalcVSExperimental(ScatterPlot **plot2D) {
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), QString("Experimental"),
       QString("Recalculated"),
-      projectname + modelname + " - MLR Recalculated VS Experimental Plot",
+      QString("%1 | %2 | %3")
+          .arg(projectname)
+          .arg(modelname)
+          .arg("MLR Recalculated VS Experimental Plot"),
       ScatterPlot::SCORES);
   (*plot2D)->setImages(projects->value(pid)->getImages());
   (*plot2D)->BuildDiagonal();
@@ -468,8 +476,10 @@ void MLRPlot::RecalcResidualsVSExperimental(ScatterPlot **plot2D) {
         &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(), QString("Experimental"),
         QString("Recalculated Residuals"),
-        projectname + modelname +
-            " - MLR Experimental VS Recalculated Residuals Y Plot",
+        QString("%1 | %2 | %3")
+            .arg(projectname)
+            .arg(modelname)
+            .arg("MLR Experimental VS Recalculated Residuals Y Plot"),
         ScatterPlot::SCORES);
     (*plot2D)->setImages(projects->value(pid)->getImages());
     DelMatrix(&recalc_res);
@@ -539,7 +549,10 @@ void MLRPlot::PredictedVSExperimental(ScatterPlot **plot2D) {
         &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(), QString("Experimental"),
         QString("Predicted"),
-        projectname + modelname + " - MLR Predicted VS Experimental Plot",
+        QString("%1 | %2 | %3")
+            .arg(projectname)
+            .arg(modelname)
+            .arg("MLR Predicted VS Experimental Plot"),
         ScatterPlot::SCORES);
     (*plot2D)->setImages(projects->value(pid)->getImages());
     (*plot2D)->BuildDiagonal();
@@ -611,8 +624,10 @@ void MLRPlot::PredictedResidualsVSExperimental(ScatterPlot **plot2D) {
                         xhash, yhash, &projects->value(pid)->getObjectLabels(),
                         &projects->value(pid)->getVariableLabels(),
                         QString("Experimental"), QString("Predicted Residuals"),
-                        projectname + modelname +
-                            " - MLR Experimental VS Predicted Residuals Y Plot",
+                        QString("%1 | %2 | %3")
+                            .arg(projectname)
+                            .arg(modelname)
+                            .arg("MLR Experimental VS Predicted Residuals Y Plot"),
                         ScatterPlot::SCORES);
     (*plot2D)->setImages(projects->value(pid)->getImages());
     DelMatrix(&pred_res);

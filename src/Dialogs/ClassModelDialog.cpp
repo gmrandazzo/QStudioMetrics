@@ -390,7 +390,7 @@ ClassModelDialog::ClassModelDialog(PROJECTS *projects) {
 
   state = 0;
 
-  setWindowTitle("Compute LDA");
+  setWindowTitle("Linear Discriminant Analysis (LDA)");
   //   ui.okButton->setEnabled(false);
   //   ui.prevButton->setEnabled(false);
   ui.objectGroupBox->hide();

@@ -482,15 +482,15 @@ DoPredictionDialog::DoPredictionDialog(PROJECTS *projects, int type_) {
   ui.okButton->setEnabled(false);
 
   if (type == PCA_) {
-    setWindowTitle("Compute PCA Prediction");
+    setWindowTitle("Model Prediction - PCA");
   } else if (type == CPCA_) {
-    setWindowTitle("Compute CPCA Prediction");
+    setWindowTitle("Model Prediction - CPCA");
   } else if (type == PLS_ || type == PLS_DA_) {
-    setWindowTitle("Compute PLS Prediction");
+    setWindowTitle("Model Prediction - PLS");
   } else if (type == MLR_) {
-    setWindowTitle("Compute MLR Prediction");
+    setWindowTitle("Model Prediction - MLR");
   } else if (type == LDA_) {
-    setWindowTitle("Compute LDA Prediction");
+    setWindowTitle("Model Prediction - LDA");
     ui.listView_5->setSelectionMode(QAbstractItemView::SingleSelection);
     ui.yvarInvertSelectionButton->hide();
     ui.yvarSelectAllButton->hide();

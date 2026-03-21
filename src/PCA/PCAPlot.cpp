@@ -36,7 +36,7 @@ void PCAPlot::ScorePlot2D(ScatterPlot **plot2D) {
       mxlst, objnamelst, &projects->value(pid)->getMATRIXList(),
       xhash, yhash, &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC",
-      QString(projectname + modelname + " - PCA Score Plot"),
+      QString("%1 | %2 | PCA Score Plot").arg(projectname).arg(modelname),
       ScatterPlot::SCORES);
   
   temp_plot->setHotellingConfidenceEllipse(true);
@@ -70,7 +70,7 @@ void PCAPlot::ScorePlotPrediction2D(ScatterPlot **plot2D) {
       mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC",
-      QString(projectname + modelname + " - PCA Score Plot Prediction"),
+      QString("%1 | %2 | PCA Score Plot Prediction").arg(projectname).arg(modelname),
       ScatterPlot::SCORES);
   temp_plot->setHotellingConfidenceEllipse(true);
   temp_plot->setPID(pid);
@@ -95,7 +95,8 @@ void PCAPlot::LoadingsPlot2D(ScatterPlot **plot2D) {
       mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC",
-      projectname + modelname + " - PCA Loadings Plot", ScatterPlot::LOADINGS);
+      QString("%1 | %2 | PCA Loadings Plot").arg(projectname).arg(modelname),
+      ScatterPlot::LOADINGS);
   temp_plot->setHotellingConfidenceEllipse(true);
   temp_plot->setPID(pid);
   temp_plot->setMID(mid);
@@ -115,7 +116,8 @@ void PCAPlot::DModXPlot(BarPlot **bar_plot) {
   dmodx = getMatrixColumn(projects->value(pid)->getPCAModel(mid)->Model()->dmodx, nlv-1);
   (*bar_plot) =
       new BarPlot(dmodx, objnames,
-                  QString("DModX Model - %1 PC %2")
+                  QString("%1 | %2 | DModX PC %3")
+                      .arg(projectname)
                       .arg(modelname)
                       .arg(QString::number(nlv)));
   (*bar_plot)->setImages(projects->value(pid)->getImages());
@@ -189,7 +191,7 @@ void PCAPlot::TsqContributionPlot(BarPlot **bar_plots) {
   */
   QStringList windowtitles;
   for (size_t i = 0; i < orig_x->row; i++){
-    windowtitles.append(QString("%1 - Sample %2 -  Total SPE = %3").arg(projectname).arg(objnames[i]).arg(QString::number(spe[i], 'f', 4)));
+    windowtitles.append(QString("%1 | %2 | Sample %3 | Total SPE = %4").arg(projectname).arg(modelname).arg(objnames[i]).arg(QString::number(spe[i], 'f', 4)));
     // spe_contributions.append(getMatrixRow(contributions, i)); READY FOR MIGRATION TO NEW libscientific release
   }
 
@@ -249,7 +251,7 @@ void PCAPlot::ExpVarPlot(SimpleLine2DPlot **plot2D) {
   auto temp_plot = std::make_unique<SimpleLine2DPlot>(
     m,
     curvenames,
-    QString(" %1 - %2 - Explained Variance Plot").arg(projectname).arg(modelname),
+    QString("%1 | %2 | Explained Variance Plot").arg(projectname).arg(modelname),
     "PC", "Exp. Var.");
   temp_plot->setImages(projects->value(pid)->getImages());
   DelMatrix(&m);
@@ -377,8 +379,9 @@ void PCAPlot::LoadingsMVANormDistrib(ScatterPlot **plot2D) {
         yhash, &projects->value(pid)->getVariableTabLabels(),
         &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(), "PC", "Prob PC",
-        projectname + modelname +
-            " - PCA Loadings Multivariate Normal Distribution",
+        QString("%1 | %2 | PCA Loadings Multivariate Normal Distribution")
+            .arg(projectname)
+            .arg(modelname),
         ScatterPlot::LOADINGS);
     temp_plot->setPID(pid);
     DelTensor(&classvar);
@@ -399,7 +402,7 @@ void PCAPlot::ScorePlot3D(ScatterPlot **plot3D) {
       mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC", "PC",
-      QString("%1 - %2 - PCA Score Plot").arg(projectname).arg(modelname),
+      QString("%1 | %2 | PCA Score Plot").arg(projectname).arg(modelname),
       ScatterPlot::SCORES);
   temp_plot->setPID(pid);
   temp_plot->setImages(projects->value(pid)->getImages());
@@ -421,7 +424,7 @@ void PCAPlot::LoadingsPlot3D(ScatterPlot **plot3D) {
       mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC", "PC",
-      QString("%1 - %2 - PCA Loadings Plot").arg(projectname).arg(modelname),
+      QString("%1 | %2 | PCA Loadings Plot").arg(projectname).arg(modelname),
       ScatterPlot::LOADINGS);
   temp_plot->setPID(pid);
   *plot3D = temp_plot.release();
@@ -452,7 +455,7 @@ void PCAPlot::ScorePlotPrediction3D(ScatterPlot **plot3D) {
       mxlst, objname, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC", "PC",
-      QString("%1 - %2 - PCA Score Plot Prediction")
+      QString("%1 | %2 | PCA Score Plot Prediction")
           .arg(projectname)
           .arg(modelname),
       ScatterPlot::SCORES);

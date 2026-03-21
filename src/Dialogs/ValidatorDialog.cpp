@@ -193,13 +193,13 @@ ValidatorDialog::ValidatorDialog(PROJECTS *projects, int type_) {
   projects_ = projects;
 
   if (type == PLSValidation) {
-    setWindowTitle("Compute PLS Validation");
+    setWindowTitle("Model Validation - PLS");
     ui.groupBox->hide();
   } else if (type == MLRValidation) {
-    setWindowTitle("Compute MLR Validation");
+    setWindowTitle("Model Validation - MLR");
     ui.groupBox->hide();
   } else if (type == LDAValidation) {
-    setWindowTitle("Compute LDA Validation");
+    setWindowTitle("Model Validation - LDA");
     ui.groupBox->hide();
     ui.YScramblingGroupBox->hide();
     ui.label->hide();

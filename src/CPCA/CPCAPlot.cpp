@@ -36,7 +36,7 @@ void CPCAPlot::SuperScorePlot2D(ScatterPlot **plot2D) const {
       mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC",
-      QString(projectname + modelname + " - CPCA Super Score Plot"),
+      QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("CPCA Super Score Plot"),
       ScatterPlot::SCORES);
   temp_plot->setHotellingConfidenceEllipse(true);
   temp_plot->setPID(pid);
@@ -60,7 +60,7 @@ void CPCAPlot::SuperWeightsPlot2D(ScatterPlot **plot2D) const {
 
   (*plot2D) = new ScatterPlot(
       mxlst, objnamelst, "PC", "PC",
-      QString(projectname + modelname + " - CPCA Super Score Plot"));
+      QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("CPCA Super Score Plot"));
   (*plot2D)->setPID(pid);
 }
 
@@ -90,7 +90,7 @@ void CPCAPlot::SuperScorePlotPrediction2D(ScatterPlot **plot2D) const {
       mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
       &projects->value(pid)->getObjectLabels(),
       &projects->value(pid)->getVariableLabels(), "PC", "PC",
-      QString(projectname + modelname + " - CPCA Score Plot Prediction"),
+      QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("CPCA Score Plot Prediction"),
       ScatterPlot::SCORES);
   (*plot2D)->setHotellingConfidenceEllipse(true);
   (*plot2D)->setPID(pid);
@@ -154,7 +154,9 @@ QList<ScatterPlot *> CPCAPlot::BlockScorePlotPrediction2D() {
         mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
         &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(), "PC", "PC",
-        QString(projectname + modelname + " - CPCA Block %1 Scores Plot")
+        QString("%1 | %2 | CPCA Block %3 Scores Plot")
+            .arg(projectname)
+            .arg(modelname)
             .arg(k + 1),
         ScatterPlot::SCORES));
     plots.last()->setPID(pid);
@@ -190,7 +192,9 @@ QList<ScatterPlot *> CPCAPlot::BlockLoadingsPlot2D() {
         mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
         &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(), "PC", "PC",
-        QString(projectname + modelname + " - CPCA Block %1 Loadings Plot")
+        QString("%1 | %2 | CPCA Block %3 Loadings Plot")
+            .arg(projectname)
+            .arg(modelname)
             .arg(i + 1),
         ScatterPlot::LOADINGS));
     plots.last()->setPID(pid);
@@ -232,7 +236,9 @@ QList<ScatterPlot *> CPCAPlot::BlockScoresPlot2D() {
         mxlst, objnamelst, &projects->value(pid)->getMATRIXList(), xhash, yhash,
         &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(), "PC", "PC",
-        QString(projectname + modelname + " - CPCA Block %1 Scores Plot")
+        QString("%1 | %2 | CPCA Block %3 Scores Plot")
+            .arg(projectname)
+            .arg(modelname)
             .arg(k + 1),
         ScatterPlot::SCORES));
     plots.last()->setPID(pid);
@@ -282,9 +288,10 @@ void CPCAPlot::ExpVarPlot(SimpleLine2DPlot **plot2D) {
   PrintMatrix(m);
 #endif
   (*plot2D) = new SimpleLine2DPlot(m, curvenames,
-                                   QString(" %1 - %2 - Explained Variance Plot")
+                                   QString("%1 | %2 | %3")
                                        .arg(projectname)
-                                       .arg(modelname),
+                                       .arg(modelname)
+                                       .arg("Explained Variance Plot"),
                                    "PC", "Exp. Var.");
   DelMatrix(&m);
 }
