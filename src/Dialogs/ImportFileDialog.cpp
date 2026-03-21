@@ -390,6 +390,7 @@ void ImportFileDialog::BuildMatrix() {
 }
 
 void ImportFileDialog::Preview() {
+  Clean_rnames();
   QList<QStringList> fpreview;
 
   QFile f(ui.file->text());

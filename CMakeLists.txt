@@ -125,6 +125,8 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 
 add_definitions(${QT6_DEFINITIONS})
 
+enable_testing()
+
 include_directories(
   ${PROJECT_BINARY_DIR}
   ${PROJECT_SOURCE_DIR}/src

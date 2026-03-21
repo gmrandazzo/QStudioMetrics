@@ -38,6 +38,8 @@
 #include <QDebug>
 #endif
 
+class GenericProgressDialog;
+
 #include "CPCA/cpcamodel.h"
 #include "DATAIO.h"
 #include "LDA/ldamodel.h"
@@ -245,8 +247,8 @@ public:
   static bool isSQLDatabase(QString sqlfile);
   void OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
                    int *mid_, QStringList *log);
-  QString SaveSQLData(QString dbName);
-  bool AutoSave(); // To work first SaveData.
+  QString SaveSQLData(QString dbName, GenericProgressDialog *pbdialog = nullptr);
+  bool AutoSave(GenericProgressDialog *pbdialog = nullptr); // To work first SaveData.
   void addMatrix();
   void addMatrix(MATRIX *mx);
   void addArray();
@@ -342,6 +344,8 @@ public:
 private:
   static void saveMatrixToSQL(QSqlQuery *query, MATRIX *m);
   static void saveArrayToSQL(QSqlQuery *query, ARRAY *a);
+  void savePCAModelToSQL(QSqlQuery *query, PCAModel *mod);
+  void loadPCAModelsFromSQL(QSqlQuery *query, int *mid_, int *tabcount_, QTreeWidget *treeWidget, QStringList *log);
 
   QString projectpath;
   QString projectname;

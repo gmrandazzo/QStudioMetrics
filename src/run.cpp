@@ -64,14 +64,19 @@ void RUN::DoClustering() {
   }
 }
 
+#include <random>
+
 void RUN::DoRandomSelection() {
-  srand(time(0));
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(0, maxnobjects - 1);
+
   int i = 0;
   while (i < nobjects) {
     if (scientifisignal == SIGSCIENTIFICSTOP) {
       break;
     } else {
-      int id = rand() % maxnobjects;
+      int id = dis(gen);
       if (id < maxnobjects) {
         bool getid = true;
         for (uint j = 0; j < uiv->size; j++) {

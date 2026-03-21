@@ -52,21 +52,7 @@
 
 #include "scientific.h"
 
-#define MAXCHARS 2048
-
-inline char *Trim(char *s) {
-  char *ptr;
-  if (!s)
-    return NULL; // handle NULL string
-  if (!*s)
-    return s; // handle empty string
-  for (ptr = s + strlen(s) - 1; (ptr >= s) && isspace(*ptr); --ptr)
-    ;
-  ptr[1] = '\0';
-  return s;
-}
-
-inline std::string STrim(const std::string &s) {
+std::string DATAIO::STrim(const std::string &s) {
   if (s.empty()) return "";
   size_t end = s.find_last_not_of(" \t\n\r\f\v");
   return (end == std::string::npos) ? "" : s.substr(0, end + 1);
@@ -120,7 +106,7 @@ void DATAIO::MakeDir(const char *dir_) {
 #ifdef WIN32
   mkdir(dir_);
 #else
-  mkdir(dir_, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+  mkdir(dir_, S_IRWXU | S_IRWXG);
 #endif
 }
 
@@ -135,21 +121,18 @@ void DATAIO::RemoveFiles(const char *dir_) {
     struct stat *buf = new struct stat;
     const struct dirent *entry;
     while ((entry = readdir(dp))) {
-      char p[MAXCHARS];
-      strcpy(p, dir_);
-      strcat(p, "/");
-      strcat(p, entry->d_name);
+      std::string p = std::string(dir_) + "/" + entry->d_name;
 
-      if (!stat(p, buf)) {
+      if (!stat(p.c_str(), buf)) {
         if (S_ISREG(buf->st_mode)) {
-          RemoveFile(p);
+          RemoveFile(p.c_str());
         }
         if (S_ISDIR(buf->st_mode) &&
             // the following is to ensure we do not dive into directories "."
             // and ".."
             strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")) {
-          RemoveFiles(p);
-          rmdir(p);
+          RemoveFiles(p.c_str());
+          rmdir(p.c_str());
         }
       } else {
         std::cout << "ERROR in stat\n";
@@ -174,12 +157,9 @@ void DATAIO::FileList(const char *dir_, std::vector<std::string> &list) {
     struct stat *buf = new struct stat;
     const struct dirent *entry;
     while ((entry = readdir(dp))) {
-      char p[MAXCHARS];
-      strcpy(p, dir_);
-      strcat(p, "/");
-      strcat(p, entry->d_name);
+      std::string p = std::string(dir_) + "/" + entry->d_name;
 
-      if (!stat(p, buf)) {
+      if (!stat(p.c_str(), buf)) {
         if (S_ISREG(buf->st_mode)) {
           list.push_back(p);
         }
@@ -187,7 +167,7 @@ void DATAIO::FileList(const char *dir_, std::vector<std::string> &list) {
             // the following is to ensure we do not dive into directories "."
             // and ".."
             strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")) {
-          FileList(p, list);
+          FileList(p.c_str(), list);
         }
       } else
         std::cout << "ERROR in stat" << std::endl;
@@ -482,363 +462,255 @@ void DATAIO::ImportDvectorList(const char *file_, dvectorlist *lst) {
 }
 
 void DATAIO::ImportPCAModel(const char *path_, PCAMODEL *m) {
-  char tscore[MAXCHARS], ploadings[MAXCHARS], expvar[MAXCHARS],
-      columnscaling[MAXCHARS], columnaverage[MAXCHARS];
-
-  strcpy(tscore, path_);
-  strcat(tscore, "/T-Scores.txt");
-  strcpy(ploadings, path_);
-  strcat(ploadings, "/P-Loadings.txt");
-  strcpy(expvar, path_);
-  strcat(expvar, "/ExpVar.txt");
-  strcpy(columnscaling, path_);
-  strcat(columnscaling, "/ColumnScaling.txt");
-  strcpy(columnaverage, path_);
-  strcat(columnaverage, "/ColumnAverage.txt");
+  if (!path_) return;
+  std::string base(path_);
+  std::string tscore = base + "/T-Scores.txt";
+  std::string ploadings = base + "/P-Loadings.txt";
+  std::string expvar = base + "/ExpVar.txt";
+  std::string columnscaling = base + "/ColumnScaling.txt";
+  std::string columnaverage = base + "/ColumnAverage.txt";
 
   std::string sep = " \t";
-  ImportMatrix(tscore, sep, m->scores);
-  ImportMatrix(ploadings, sep, m->loadings);
-  ImportDvector(expvar, m->varexp);
-  ImportDvector(columnscaling, m->colscaling);
-  ImportDvector(columnaverage, m->colaverage);
+  ImportMatrix(tscore.c_str(), sep, m->scores);
+  ImportMatrix(ploadings.c_str(), sep, m->loadings);
+  ImportDvector(expvar.c_str(), m->varexp);
+  ImportDvector(columnscaling.c_str(), m->colscaling);
+  ImportDvector(columnaverage.c_str(), m->colaverage);
 }
 
 void DATAIO::ImportPLSModel(const char *path_, PLSMODEL *m) {
-  char tscore[MAXCHARS], ploadings[MAXCHARS], weights[MAXCHARS],
-      xexpvar[MAXCHARS], xcolumnscaling[MAXCHARS], xcolumnaverage[MAXCHARS],
-      uscore[MAXCHARS], qloadings[MAXCHARS], ycolumnscaling[MAXCHARS],
-      ycolumnaverage[MAXCHARS], bcoeff[MAXCHARS], r2y[MAXCHARS], sdec[MAXCHARS],
-      validatedypred[MAXCHARS], validatedq2y[MAXCHARS], validatedsdep[MAXCHARS],
-      validatedbias[MAXCHARS], yscrambling[MAXCHARS], recalc_y[MAXCHARS],
-      recalc_residuals[MAXCHARS], validatedypred_residuals[MAXCHARS];
+  if (!path_) return;
+  std::string base(path_);
+  std::string tscore = base + "/X-T-Scores.txt";
+  std::string ploadings = base + "/X-P-Loadings.txt";
+  std::string weights = base + "/X-W-Weights.txt";
+  std::string xexpvar = base + "/X-ExpVar.txt";
+  std::string xcolumnaverage = base + "/X-ColumnAverage.txt";
+  std::string xcolumnscaling = base + "/X-ColumnScaling.txt";
 
-  strcpy(tscore, path_);
-  strcat(tscore, "/X-T-Scores.txt");
-  strcpy(ploadings, path_);
-  strcat(ploadings, "/X-P-Loadings.txt");
-  strcpy(weights, path_);
-  strcat(weights, "/X-W-Weights.txt");
-  strcpy(xexpvar, path_);
-  strcat(xexpvar, "/X-ExpVar.txt");
-  strcpy(xcolumnaverage, path_);
-  strcat(xcolumnaverage, "/X-ColumnAverage.txt");
-  strcpy(xcolumnscaling, path_);
-  strcat(xcolumnscaling, "/X-ColumnScaling.txt");
+  std::string uscore = base + "/Y-U-Scores.txt";
+  std::string qloadings = base + "/Y-Q-Loadings.txt";
+  std::string ycolumnaverage = base + "/Y-ColumnAverage.txt";
+  std::string ycolumnscaling = base + "/Y-ColumnScaling.txt";
 
-  strcpy(uscore, path_);
-  strcat(uscore, "/Y-U-Scores.txt");
-  strcpy(qloadings, path_);
-  strcat(qloadings, "/Y-Q-Loadings.txt");
-  strcpy(ycolumnaverage, path_);
-  strcat(ycolumnaverage, "/Y-ColumnAverage.txt");
-  strcpy(ycolumnscaling, path_);
-  strcat(ycolumnscaling, "/Y-ColumnScaling.txt");
+  std::string bcoeff = base + "/b-Coefficients.txt";
+  std::string r2y = base + "/r2y.txt";
+  std::string sdec = base + "/sdec.txt";
+  std::string recalc_y = base + "/Recalculated_y.txt";
+  std::string recalc_residuals = base + "/Recalculated_Residuals.txt";
 
-  strcpy(bcoeff, path_);
-  strcat(bcoeff, "/b-Coefficients.txt");
-  strcpy(r2y, path_);
-  strcat(r2y, "/r2y.txt");
-  strcpy(sdec, path_);
-  strcat(sdec, "/sdec.txt");
-  strcpy(recalc_y, path_);
-  strcat(recalc_y, "/Recalculated_y.txt");
-  strcpy(recalc_residuals, path_);
-  strcat(recalc_residuals, "/Recalculated_Residuals.txt");
+  std::string validatedq2y = base + "/Validated_q2y.txt";
+  std::string validatedsdep = base + "/Validated_sdep.txt";
+  std::string validatedbias = base + "/Validated_bias.txt";
+  std::string validatedypred = base + "/Validated_Predicted_Y.txt";
+  std::string validatedypred_residuals = base + "/Validated_Predicted_Residuals.txt";
 
-  strcpy(validatedq2y, path_);
-  strcat(validatedq2y, "/Validated_q2y.txt");
-  strcpy(validatedsdep, path_);
-  strcat(validatedsdep, "/Validated_sdep.txt");
-  strcpy(validatedbias, path_);
-  strcat(validatedbias, "/Validated_bias.txt");
-  strcpy(validatedypred, path_);
-  strcat(validatedypred, "/Validated_Predicted_Y.txt");
-  strcpy(validatedypred_residuals, path_);
-  strcat(validatedypred_residuals, "/Validated_Predicted_Residuals.txt");
-
-  strcpy(yscrambling, path_);
-  strcat(yscrambling, "/YScrambling_r2q2y.txt");
+  std::string yscrambling = base + "/YScrambling_r2q2y.txt";
 
   std::string sep = " \t";
-  ImportMatrix(tscore, sep, m->xscores);
-  ImportMatrix(ploadings, sep, m->xloadings);
-  ImportMatrix(weights, sep, m->xweights);
-  ImportDvector(xexpvar, m->xvarexp);
-  ImportDvector(xcolumnaverage, m->xcolaverage);
-  ImportDvector(xcolumnscaling, m->xcolscaling);
+  ImportMatrix(tscore.c_str(), sep, m->xscores);
+  ImportMatrix(ploadings.c_str(), sep, m->xloadings);
+  ImportMatrix(weights.c_str(), sep, m->xweights);
+  ImportDvector(xexpvar.c_str(), m->xvarexp);
+  ImportDvector(xcolumnaverage.c_str(), m->xcolaverage);
+  ImportDvector(xcolumnscaling.c_str(), m->xcolscaling);
 
   //   ImportDvector(path_, "/Y-ExpVar.txt", m->yvarexp);
-  ImportMatrix(uscore, sep, m->yscores);
-  ImportMatrix(qloadings, sep, m->yloadings);
-  ImportDvector(ycolumnaverage, m->ycolaverage);
-  ImportDvector(ycolumnscaling, m->ycolscaling);
+  ImportMatrix(uscore.c_str(), sep, m->yscores);
+  ImportMatrix(qloadings.c_str(), sep, m->yloadings);
+  ImportDvector(ycolumnaverage.c_str(), m->ycolaverage);
+  ImportDvector(ycolumnscaling.c_str(), m->ycolscaling);
 
-  ImportDvector(bcoeff, m->b);
+  ImportDvector(bcoeff.c_str(), m->b);
 
-  ImportMatrix(r2y, sep, m->r2y_recalculated);
-  ImportMatrix(sdec, sep, m->sdec);
-  ImportMatrix(recalc_y, sep, m->recalculated_y);
-  ImportMatrix(recalc_residuals, sep, m->recalc_residuals);
+  ImportMatrix(r2y.c_str(), sep, m->r2y_recalculated);
+  ImportMatrix(sdec.c_str(), sep, m->sdec);
+  ImportMatrix(recalc_y.c_str(), sep, m->recalculated_y);
+  ImportMatrix(recalc_residuals.c_str(), sep, m->recalc_residuals);
 
-  ImportMatrix(validatedq2y, sep, m->q2y);
-  ImportMatrix(validatedsdep, sep, m->sdep);
-  ImportMatrix(validatedbias, sep, m->bias);
-  ImportMatrix(validatedypred, sep, m->predicted_y);
-  ImportMatrix(validatedypred_residuals, sep, m->pred_residuals);
+  ImportMatrix(validatedq2y.c_str(), sep, m->q2y);
+  ImportMatrix(validatedsdep.c_str(), sep, m->sdep);
+  ImportMatrix(validatedbias.c_str(), sep, m->bias);
+  ImportMatrix(validatedypred.c_str(), sep, m->predicted_y);
+  ImportMatrix(validatedypred_residuals.c_str(), sep, m->pred_residuals);
 
-  ImportMatrix(yscrambling, sep, m->yscrambling);
+  ImportMatrix(yscrambling.c_str(), sep, m->yscrambling);
 }
 
 void DATAIO::ImportUPCAModel(const char *path_, UPCAMODEL *m) {
-  char tscore[MAXCHARS], ploadings[MAXCHARS], expvar[MAXCHARS],
-      columnscaling[MAXCHARS], columnaverage[MAXCHARS];
-
-  strcpy(tscore, path_);
-  strcat(tscore, "/T-Scores.txt");
-  strcpy(ploadings, path_);
-  strcat(ploadings, "/P-Loadings.txt");
-  strcpy(expvar, path_);
-  strcat(expvar, "/ExpVar.txt");
-  strcpy(columnscaling, path_);
-  strcat(columnscaling, "/ColumnScaling.txt");
-  strcpy(columnaverage, path_);
-  strcat(columnaverage, "/ColumnAverage.txt");
+  if (!path_) return;
+  std::string base(path_);
+  std::string tscore = base + "/T-Scores.txt";
+  std::string ploadings = base + "/P-Loadings.txt";
+  std::string expvar = base + "/ExpVar.txt";
+  std::string columnscaling = base + "/ColumnScaling.txt";
+  std::string columnaverage = base + "/ColumnAverage.txt";
 
   std::string sep = " \t";
   std::cout << "Import PCA " << path_ << std::endl;
-  ImportMatrix(tscore, sep, m->scores);
-  ImportTensor(ploadings, sep, m->loadings);
-  ImportDvector(expvar, m->varexp);
+  ImportMatrix(tscore.c_str(), sep, m->scores);
+  ImportTensor(ploadings.c_str(), sep, m->loadings);
+  ImportDvector(expvar.c_str(), m->varexp);
 
-  ImportDvectorList(columnscaling, m->colscaling);
-  ImportDvectorList(columnaverage, m->colaverage);
+  ImportDvectorList(columnscaling.c_str(), m->colscaling);
+  ImportDvectorList(columnaverage.c_str(), m->colaverage);
 }
 
 void DATAIO::ImportUPLSModel(const char *path_, UPLSMODEL *m) {
-  char tscore[MAXCHARS], ploadings[MAXCHARS], weights[MAXCHARS],
-      xexpvar[MAXCHARS], xcolumnscaling[MAXCHARS], xcolumnaverage[MAXCHARS],
-      uscore[MAXCHARS], qloadings[MAXCHARS], ycolumnscaling[MAXCHARS],
-      ycolumnaverage[MAXCHARS], bcoeff[MAXCHARS], r2x[MAXCHARS], r2y[MAXCHARS],
-      sdec[MAXCHARS], validatedypred[MAXCHARS], validatedr2x[MAXCHARS],
-      validatedq2y[MAXCHARS], validatedsdep[MAXCHARS], yscramblingq2y[MAXCHARS],
-      yscramblingsdep[MAXCHARS], recalc_y[MAXCHARS], recalc_residuals[MAXCHARS],
-      validatedypred_residuals[MAXCHARS];
+  if (!path_) return;
+  std::string base(path_);
+  std::string tscore = base + "/X-T-Scores.txt";
+  std::string ploadings = base + "/X-P-Loadings.txt";
+  std::string weights = base + "/X-W-Weights.txt";
+  std::string xexpvar = base + "/X-ExpVar.txt";
+  std::string xcolumnaverage = base + "/X-ColumnAverage.txt";
+  std::string xcolumnscaling = base + "/X-ColumnScaling.txt";
 
-  strcpy(tscore, path_);
-  strcat(tscore, "/X-T-Scores.txt");
-  strcpy(ploadings, path_);
-  strcat(ploadings, "/X-P-Loadings.txt");
-  strcpy(weights, path_);
-  strcat(weights, "/X-W-Weights.txt");
-  strcpy(xexpvar, path_);
-  strcat(xexpvar, "/X-ExpVar.txt");
-  strcpy(xcolumnaverage, path_);
-  strcat(xcolumnaverage, "/X-ColumnAverage.txt");
-  strcpy(xcolumnscaling, path_);
-  strcat(xcolumnscaling, "/X-ColumnScaling.txt");
+  std::string uscore = base + "/Y-U-Scores.txt";
+  std::string qloadings = base + "/Y-Q-Loadings.txt";
+  std::string ycolumnaverage = base + "/Y-ColumnAverage.txt";
+  std::string ycolumnscaling = base + "/Y-ColumnScaling.txt";
 
-  strcpy(uscore, path_);
-  strcat(uscore, "/Y-U-Scores.txt");
-  strcpy(qloadings, path_);
-  strcat(qloadings, "/Y-Q-Loadings.txt");
-  strcpy(ycolumnaverage, path_);
-  strcat(ycolumnaverage, "/Y-ColumnAverage.txt");
-  strcpy(ycolumnscaling, path_);
-  strcat(ycolumnscaling, "/Y-ColumnScaling.txt");
+  std::string bcoeff = base + "/b-Coefficients.txt";
+  std::string r2x = base + "/r2x.txt";
+  std::string r2y = base + "/r2y.txt";
+  std::string sdec = base + "/sdec.txt";
+  std::string recalc_y = base + "/Recalculated_y.txt";
+  std::string recalc_residuals = base + "/Recalculated_Residuals.txt";
 
-  strcpy(bcoeff, path_);
-  strcat(bcoeff, "/b-Coefficients.txt");
-  strcpy(r2x, path_);
-  strcat(r2x, "/r2x.txt");
-  strcpy(r2y, path_);
-  strcat(r2y, "/r2y.txt");
-  strcpy(sdec, path_);
-  strcat(sdec, "/sdec.txt");
-  strcpy(recalc_y, path_);
-  strcat(recalc_y, "/Recalculated_y.txt");
-  strcpy(recalc_residuals, path_);
-  strcat(recalc_residuals, "/Recalculated_Residuals.txt");
+  std::string validatedr2x = base + "/Validated_r2x.txt";
+  std::string validatedq2y = base + "/Validated_q2y.txt";
+  std::string validatedsdep = base + "/Validated_sdep.txt";
+  std::string validatedypred = base + "/Validated_Predicted_Y.txt";
+  std::string validatedypred_residuals = base + "/Validated_Predicted_Residuals.txt";
 
-  strcpy(validatedr2x, path_);
-  strcat(validatedr2x, "/Validated_r2x.txt");
-  strcpy(validatedq2y, path_);
-  strcat(validatedq2y, "/Validated_q2y.txt");
-  strcpy(validatedsdep, path_);
-  strcat(validatedsdep, "/Validated_sdep.txt");
-  strcpy(validatedypred, path_);
-  strcat(validatedypred, "/Validated_Predicted_Y.txt");
-  strcpy(validatedypred_residuals, path_);
-  strcat(validatedypred_residuals, "/Validated_Predicted_Residuals.txt");
-
-  strcpy(yscramblingq2y, path_);
-  strcat(yscramblingq2y, "/YScrambling_q2y.txt");
-  strcpy(yscramblingsdep, path_);
-  strcat(yscramblingsdep, "/YScrambling_sdep.txt");
+  std::string yscramblingq2y = base + "/YScrambling_q2y.txt";
+  std::string yscramblingsdep = base + "/YScrambling_sdep.txt";
 
   std::string sep = " \t";
-  ImportMatrix(tscore, sep, m->xscores);
-  ImportTensor(ploadings, sep, m->xloadings);
-  ImportTensor(weights, sep, m->xweights);
-  ImportDvector(xexpvar, m->xvarexp);
-  ImportDvectorList(xcolumnaverage, m->xcolaverage);
-  ImportDvectorList(xcolumnscaling, m->xcolscaling);
+  ImportMatrix(tscore.c_str(), sep, m->xscores);
+  ImportTensor(ploadings.c_str(), sep, m->xloadings);
+  ImportTensor(weights.c_str(), sep, m->xweights);
+  ImportDvector(xexpvar.c_str(), m->xvarexp);
+  ImportDvectorList(xcolumnaverage.c_str(), m->xcolaverage);
+  ImportDvectorList(xcolumnscaling.c_str(), m->xcolscaling);
 
   //   ImportDvector(path_, "/Y-ExpVar.txt", m->yvarexp);
-  ImportMatrix(uscore, sep, m->yscores);
-  ImportTensor(qloadings, sep, m->yloadings);
-  ImportDvectorList(ycolumnaverage, m->ycolaverage);
-  ImportDvectorList(ycolumnscaling, m->ycolscaling);
+  ImportMatrix(uscore.c_str(), sep, m->yscores);
+  ImportTensor(qloadings.c_str(), sep, m->yloadings);
+  ImportDvectorList(ycolumnaverage.c_str(), m->ycolaverage);
+  ImportDvectorList(ycolumnscaling.c_str(), m->ycolscaling);
 
-  ImportDvector(bcoeff, m->b);
+  ImportDvector(bcoeff.c_str(), m->b);
 
-  ImportDvector(r2x, m->r2x_model);
-  ImportTensor(r2y, sep, m->r2y_model);
-  ImportTensor(sdec, sep, m->sdec);
-  ImportTensor(recalc_y, sep, m->recalculated_y);
-  ImportTensor(recalc_residuals, sep, m->recalc_residuals);
+  ImportDvector(r2x.c_str(), m->r2x_model);
+  ImportTensor(r2y.c_str(), sep, m->r2y_model);
+  ImportTensor(sdec.c_str(), sep, m->sdec);
+  ImportTensor(recalc_y.c_str(), sep, m->recalculated_y);
+  ImportTensor(recalc_residuals.c_str(), sep, m->recalc_residuals);
 
-  ImportDvector(validatedr2x, m->r2x_validation);
-  ImportTensor(validatedq2y, sep, m->q2y);
-  ImportTensor(validatedsdep, sep, m->sdep);
-  ImportTensor(validatedypred, sep, m->predicted_y);
-  ImportTensor(validatedypred_residuals, sep, m->pred_residuals);
+  ImportDvector(validatedr2x.c_str(), m->r2x_validation);
+  ImportTensor(validatedq2y.c_str(), sep, m->q2y);
+  ImportTensor(validatedsdep.c_str(), sep, m->sdep);
+  ImportTensor(validatedypred.c_str(), sep, m->predicted_y);
+  ImportTensor(validatedypred_residuals.c_str(), sep, m->pred_residuals);
 
-  ImportTensor(yscramblingq2y, sep, m->q2y_yscrambling);
-  ImportTensor(yscramblingsdep, sep, m->sdep_yscrambling);
+  ImportTensor(yscramblingq2y.c_str(), sep, m->q2y_yscrambling);
+  ImportTensor(yscramblingsdep.c_str(), sep, m->sdep_yscrambling);
 }
 
 void DATAIO::ImportMLRModel(const char *path_, MLRMODEL *m) {
-  char bcoeff[MAXCHARS], r2y[MAXCHARS], sdec[MAXCHARS], ymean[MAXCHARS],
-      validatedypred[MAXCHARS], validatedq2y[MAXCHARS], validatedsdep[MAXCHARS],
-      validatedbias[MAXCHARS], r2q2scrambling[MAXCHARS], recalc_y[MAXCHARS],
-      recalc_residuals[MAXCHARS], validatedypred_residuals[MAXCHARS];
+  if (!path_) return;
+  std::string base(path_);
+  std::string bcoeff = base + "/b-Coefficients.txt";
+  std::string r2y = base + "/r2y.txt";
+  std::string sdec = base + "/sdec.txt";
+  std::string recalc_y = base + "/Recalculated_y.txt";
+  std::string recalc_residuals = base + "/Recalculated_Residuals.txt";
+  std::string ymean = base + "/Y_Mean.txt";
 
-  strcpy(bcoeff, path_);
-  strcat(bcoeff, "/b-Coefficients.txt");
-  strcpy(r2y, path_);
-  strcat(r2y, "/r2y.txt");
-  strcpy(sdec, path_);
-  strcat(sdec, "/sdec.txt");
-  strcpy(recalc_y, path_);
-  strcat(recalc_y, "/Recalculated_y.txt");
-  strcpy(recalc_residuals, path_);
-  strcat(recalc_residuals, "/Recalculated_Residuals.txt");
-  strcpy(ymean, path_);
-  strcat(ymean, "/Y_Mean.txt");
+  std::string validatedq2y = base + "/Validated_q2y.txt";
+  std::string validatedsdep = base + "/Validated_sdep.txt";
+  std::string validatedbias = base + "/Validated_bias.txt";
+  std::string validatedypred = base + "/Validated_Predicted_Y.txt";
+  std::string validatedypred_residuals = base + "/Validated_Predicted_Residuals.txt";
 
-  strcpy(validatedq2y, path_);
-  strcat(validatedq2y, "/Validated_q2y.txt");
-  strcpy(validatedsdep, path_);
-  strcat(validatedsdep, "/Validated_sdep.txt");
-  strcpy(validatedbias, path_);
-  strcat(validatedbias, "/Validated_bias.txt");
-  strcpy(validatedypred, path_);
-  strcat(validatedypred, "/Validated_Predicted_Y.txt");
-  strcpy(validatedypred_residuals, path_);
-  strcat(validatedypred_residuals, "/Validated_Predicted_Residuals.txt");
-
-  strcpy(r2q2scrambling, path_);
-  strcat(r2q2scrambling, "/YScrambling_r2q2y.txt");
+  std::string r2q2scrambling = base + "/YScrambling_r2q2y.txt";
 
   std::string sep = " \t";
 
-  ImportMatrix(bcoeff, sep, m->b);
+  ImportMatrix(bcoeff.c_str(), sep, m->b);
 
-  ImportDvector(r2y, m->r2y_model);
-  ImportDvector(sdec, m->sdec);
-  ImportMatrix(recalc_y, sep, m->recalculated_y);
-  ImportMatrix(recalc_residuals, sep, m->recalc_residuals);
-  ImportDvector(ymean, m->ymean);
+  ImportDvector(r2y.c_str(), m->r2y_model);
+  ImportDvector(sdec.c_str(), m->sdec);
+  ImportMatrix(recalc_y.c_str(), sep, m->recalculated_y);
+  ImportMatrix(recalc_residuals.c_str(), sep, m->recalc_residuals);
+  ImportDvector(ymean.c_str(), m->ymean);
 
-  ImportDvector(validatedq2y, m->q2y);
-  ImportDvector(validatedsdep, m->sdep);
-  ImportMatrix(validatedypred, sep, m->predicted_y);
-  ImportMatrix(validatedypred_residuals, sep, m->pred_residuals);
-  ImportDvector(validatedbias, m->bias);
+  ImportDvector(validatedq2y.c_str(), m->q2y);
+  ImportDvector(validatedsdep.c_str(), m->sdep);
+  ImportMatrix(validatedypred.c_str(), sep, m->predicted_y);
+  ImportMatrix(validatedypred_residuals.c_str(), sep, m->pred_residuals);
+  ImportDvector(validatedbias.c_str(), m->bias);
 
-  ImportMatrix(r2q2scrambling, sep, m->r2q2scrambling);
+  ImportMatrix(r2q2scrambling.c_str(), sep, m->r2q2scrambling);
 }
 
 void DATAIO::ImportLDAModel(const char *path_, LDAMODEL *m) {
+  if (!path_) return;
   uivector *otherinfo;
-  char roc[MAXCHARS], roc_aucs[MAXCHARS], pr[MAXCHARS], pr_aucs[MAXCHARS],
-      pprob[MAXCHARS], eval[MAXCHARS], mu[MAXCHARS], evect[MAXCHARS],
-      mnpdf[MAXCHARS], features[MAXCHARS], inv_cov[MAXCHARS], others[MAXCHARS],
-      classid[MAXCHARS], fmean[MAXCHARS], fsdev[MAXCHARS],
-      recalculated_y[MAXCHARS], recalculated_residuals[MAXCHARS],
-      predicted_y[MAXCHARS], predicted_residuals[MAXCHARS];
+  std::string base(path_);
+  std::string roc = base + "/ROC.txt";
+  std::string roc_aucs = base + "/ROCAUCS.txt";
+  std::string pr = base + "/PRECISIONRECALL.txt";
+  std::string pr_aucs = base + "/PRECISIONRECALLAUCS.txt";
+  std::string pprob = base + "/PPROB.txt";
 
-  strcpy(roc, path_);
-  strcat(roc, "/ROC.txt");
-  strcpy(roc_aucs, path_);
-  strcat(roc_aucs, "/ROCAUCS.txt");
-  strcpy(pr, path_);
-  strcat(pr, "/PRECISIONRECALL.txt");
-  strcpy(pr_aucs, path_);
-  strcat(pr_aucs, "/PRECISIONRECALLAUCS.txt");
-  strcpy(pprob, path_);
-  strcat(pprob, "/PPROB.txt");
+  std::string recalculated_y = base + "/RECALCULATEDY.txt";
+  std::string recalculated_residuals = base + "/RECALCULATED_RESIDUALS.txt";
+  std::string predicted_y = base + "/PRECISIONRECALLAUCS.txt";
+  std::string predicted_residuals = base + "/PREDICTED_RESIDUALS.txt";
 
-  strcpy(recalculated_y, path_);
-  strcat(recalculated_y, "/RECALCULATEDY.txt");
-  strcpy(recalculated_residuals, path_);
-  strcat(recalculated_residuals, "/RECALCULATED_RESIDUALS.txt");
-  strcpy(predicted_y, path_);
-  strcat(predicted_y, "/PRECISIONRECALLAUCS.txt");
-  strcpy(predicted_residuals, path_);
-  strcat(predicted_residuals, "/PREDICTED_RESIDUALS.txt");
+  std::string eval = base + "/EVAL.txt";
+  std::string mu = base + "/MU.txt";
+  std::string evect = base + "/EVECT.txt";
+  std::string mnpdf = base + "/MNPDF.txt";
+  std::string features = base + "/FEATURES.txt";
+  std::string fmean = base + "/FEATUREMEAN.txt";
+  std::string fsdev = base + "/FEATURESDEV.txt";
 
-  strcpy(eval, path_);
-  strcat(eval, "/EVAL.txt");
-  strcpy(mu, path_);
-  strcat(mu, "/MU.txt");
-  strcpy(evect, path_);
-  strcat(evect, "/EVECT.txt");
-  strcpy(mnpdf, path_);
-  strcat(mnpdf, "/MNPDF.txt");
-  strcpy(features, path_);
-  strcat(features, "/FEATURES.txt");
-  strcpy(fmean, path_);
-  strcat(fmean, "/FEATUREMEAN.txt");
-  strcpy(fsdev, path_);
-  strcat(fsdev, "/FEATURESDEV.txt");
-
-  strcpy(inv_cov, path_);
-  strcat(inv_cov, "/INVCOV.txt");
-  strcpy(others, path_);
-  strcat(others, "/MODINFO.txt");
-  strcpy(classid, path_);
-  strcat(classid, "/CLASSID.txt");
+  std::string inv_cov = base + "/INVCOV.txt";
+  std::string others = base + "/MODINFO.txt";
+  std::string classid = base + "/CLASSID.txt";
 
   std::string sep = " \t";
 
-  ImportTensor(roc, sep, m->roc);
-  ImportDvector(roc_aucs, m->roc_aucs);
-  ImportTensor(pr, sep, m->pr);
-  ImportDvector(pr_aucs, m->pr_aucs);
+  ImportTensor(roc.c_str(), sep, m->roc);
+  ImportDvector(roc_aucs.c_str(), m->roc_aucs);
+  ImportTensor(pr.c_str(), sep, m->pr);
+  ImportDvector(pr_aucs.c_str(), m->pr_aucs);
 
-  ImportMatrix(recalculated_y, sep, m->recalculated_y);
-  ImportMatrix(recalculated_residuals, sep, m->recalculated_residuals);
-  ImportMatrix(recalculated_y, sep, m->predicted_y);
-  ImportMatrix(recalculated_residuals, sep, m->predicted_residuals);
+  ImportMatrix(recalculated_y.c_str(), sep, m->recalculated_y);
+  ImportMatrix(recalculated_residuals.c_str(), sep, m->recalculated_residuals);
+  ImportMatrix(recalculated_y.c_str(), sep, m->predicted_y);
+  ImportMatrix(recalculated_residuals.c_str(), sep, m->predicted_residuals);
 
-  ImportDvector(eval, m->eval);
-  ImportMatrix(mu, sep, m->mu);
-  ImportMatrix(evect, sep, m->evect);
-  ImportTensor(mnpdf, sep, m->mnpdf);
+  ImportDvector(eval.c_str(), m->eval);
+  ImportMatrix(mu.c_str(), sep, m->mu);
+  ImportMatrix(evect.c_str(), sep, m->evect);
+  ImportTensor(mnpdf.c_str(), sep, m->mnpdf);
 
-  ImportTensor(features, sep, m->features);
-  ImportMatrix(fmean, sep, m->fmean);
-  ImportMatrix(fmean, sep, m->fsdev);
-  ImportMatrix(inv_cov, sep, m->inv_cov);
+  ImportTensor(features.c_str(), sep, m->features);
+  ImportMatrix(fmean.c_str(), sep, m->fmean);
+  ImportMatrix(fmean.c_str(), sep, m->fsdev);
+  ImportMatrix(inv_cov.c_str(), sep, m->inv_cov);
 
   initUIVector(&otherinfo);
-  ImportUIvector(others, otherinfo);
+  ImportUIvector(others.c_str(), otherinfo);
   m->nclass = otherinfo->data[0];
   m->class_start = otherinfo->data[1];
   DelUIVector(&otherinfo);
-  ImportUIvector(classid, m->classid);
+  ImportUIvector(classid.c_str(), m->classid);
 }
 
 void DATAIO::WriteStringList(const char *file_, const std::vector<std::string> &strlst) {
@@ -941,19 +813,13 @@ void DATAIO::WriteTensor(const char *file_, tensor *a) {
 }
 
 void DATAIO::WritePCAModel(const char *path_, PCAMODEL *m) {
-  char tscore[MAXCHARS], ploadings[MAXCHARS], expvar[MAXCHARS],
-      columnscaling[MAXCHARS], columnaverage[MAXCHARS];
-
-  strcpy(tscore, path_);
-  strcat(tscore, "/T-Scores.txt");
-  strcpy(ploadings, path_);
-  strcat(ploadings, "/P-Loadings.txt");
-  strcpy(expvar, path_);
-  strcat(expvar, "/ExpVar.txt");
-  strcpy(columnscaling, path_);
-  strcat(columnscaling, "/ColumnScaling.txt");
-  strcpy(columnaverage, path_);
-  strcat(columnaverage, "/ColumnAverage.txt");
+  if (!path_) return;
+  std::string base(path_);
+  std::string tscore = base + "/T-Scores.txt";
+  std::string ploadings = base + "/P-Loadings.txt";
+  std::string expvar = base + "/ExpVar.txt";
+  std::string columnscaling = base + "/ColumnScaling.txt";
+  std::string columnaverage = base + "/ColumnAverage.txt";
 
   if (DirExists(path_) == true) {
     RemoveDir(path_);
@@ -961,68 +827,41 @@ void DATAIO::WritePCAModel(const char *path_, PCAMODEL *m) {
 
   MakeDir(path_);
 
-  WriteMatrix(tscore, m->scores);
-  WriteMatrix(ploadings, m->loadings);
-  WriteDvector(expvar, m->varexp);
-  WriteDvector(columnscaling, m->colscaling);
-  WriteDvector(columnaverage, m->colaverage);
+  WriteMatrix(tscore.c_str(), m->scores);
+  WriteMatrix(ploadings.c_str(), m->loadings);
+  WriteDvector(expvar.c_str(), m->varexp);
+  WriteDvector(columnscaling.c_str(), m->colscaling);
+  WriteDvector(columnaverage.c_str(), m->colaverage);
 }
 
 void DATAIO::WritePLSModel(const char *path_, PLSMODEL *m) {
-  char tscore[MAXCHARS], ploadings[MAXCHARS], weights[MAXCHARS],
-      xexpvar[MAXCHARS], xcolumnscaling[MAXCHARS], xcolumnaverage[MAXCHARS],
-      uscore[MAXCHARS], qloadings[MAXCHARS], ycolumnscaling[MAXCHARS],
-      ycolumnaverage[MAXCHARS], bcoeff[MAXCHARS], r2y[MAXCHARS], sdec[MAXCHARS],
-      validatedypred[MAXCHARS], validatedq2y[MAXCHARS], validatedsdep[MAXCHARS],
-      validatedbias[MAXCHARS], yscrambling[MAXCHARS], recalc_y[MAXCHARS],
-      recalc_residuals[MAXCHARS], validatedypred_residuals[MAXCHARS];
+  if (!path_) return;
+  std::string base(path_);
+  std::string tscore = base + "/X-T-Scores.txt";
+  std::string ploadings = base + "/X-P-Loadings.txt";
+  std::string weights = base + "/X-W-Weights.txt";
+  std::string xexpvar = base + "/X-ExpVar.txt";
+  std::string xcolumnaverage = base + "/X-ColumnAverage.txt";
+  std::string xcolumnscaling = base + "/X-ColumnScaling.txt";
 
-  strcpy(tscore, path_);
-  strcat(tscore, "/X-T-Scores.txt");
-  strcpy(ploadings, path_);
-  strcat(ploadings, "/X-P-Loadings.txt");
-  strcpy(weights, path_);
-  strcat(weights, "/X-W-Weights.txt");
-  strcpy(xexpvar, path_);
-  strcat(xexpvar, "/X-ExpVar.txt");
-  strcpy(xcolumnaverage, path_);
-  strcat(xcolumnaverage, "/X-ColumnAverage.txt");
-  strcpy(xcolumnscaling, path_);
-  strcat(xcolumnscaling, "/X-ColumnScaling.txt");
+  std::string uscore = base + "/Y-U-Scores.txt";
+  std::string qloadings = base + "/Y-Q-Loadings.txt";
+  std::string ycolumnaverage = base + "/Y-ColumnAverage.txt";
+  std::string ycolumnscaling = base + "/Y-ColumnScaling.txt";
 
-  strcpy(uscore, path_);
-  strcat(uscore, "/Y-U-Scores.txt");
-  strcpy(qloadings, path_);
-  strcat(qloadings, "/Y-Q-Loadings.txt");
-  strcpy(ycolumnaverage, path_);
-  strcat(ycolumnaverage, "/Y-ColumnAverage.txt");
-  strcpy(ycolumnscaling, path_);
-  strcat(ycolumnscaling, "/Y-ColumnScaling.txt");
+  std::string bcoeff = base + "/b-Coefficients.txt";
+  std::string r2y = base + "/r2y.txt";
+  std::string sdec = base + "/sdec.txt";
+  std::string recalc_y = base + "/Recalculated_y.txt";
+  std::string recalc_residuals = base + "/Recalculated_Residuals.txt";
 
-  strcpy(bcoeff, path_);
-  strcat(bcoeff, "/b-Coefficients.txt");
-  strcpy(r2y, path_);
-  strcat(r2y, "/r2y.txt");
-  strcpy(sdec, path_);
-  strcat(sdec, "/sdec.txt");
-  strcpy(recalc_y, path_);
-  strcat(recalc_y, "/Recalculated_y.txt");
-  strcpy(recalc_residuals, path_);
-  strcat(recalc_residuals, "/Recalculated_Residuals.txt");
+  std::string validatedq2y = base + "/Validated_q2y.txt";
+  std::string validatedsdep = base + "/Validated_sdep.txt";
+  std::string validatedbias = base + "/Validated_bias.txt";
+  std::string validatedypred = base + "/Validated_Predicted_Y.txt";
+  std::string validatedypred_residuals = base + "/Validated_Predicted_Residuals.txt";
 
-  strcpy(validatedq2y, path_);
-  strcat(validatedq2y, "/Validated_q2y.txt");
-  strcpy(validatedsdep, path_);
-  strcat(validatedsdep, "/Validated_sdep.txt");
-  strcpy(validatedbias, path_);
-  strcat(validatedbias, "/Validated_bias.txt");
-  strcpy(validatedypred, path_);
-  strcat(validatedypred, "/Validated_Predicted_Y.txt");
-  strcpy(validatedypred_residuals, path_);
-  strcat(validatedypred_residuals, "/Validated_Predicted_Residuals.txt");
-
-  strcpy(yscrambling, path_);
-  strcat(yscrambling, "/YScrambling_r2q2y.txt");
+  std::string yscrambling = base + "/YScrambling_r2q2y.txt";
 
   if (DirExists(path_) == true) {
     RemoveDir(path_);
@@ -1030,49 +869,43 @@ void DATAIO::WritePLSModel(const char *path_, PLSMODEL *m) {
 
   MakeDir(path_);
 
-  WriteMatrix(tscore, m->xscores);
-  WriteMatrix(ploadings, m->xloadings);
-  WriteMatrix(weights, m->xweights);
-  WriteDvector(xexpvar, m->xvarexp);
-  WriteDvector(xcolumnaverage, m->xcolaverage);
-  WriteDvector(xcolumnscaling, m->xcolscaling);
+  WriteMatrix(tscore.c_str(), m->xscores);
+  WriteMatrix(ploadings.c_str(), m->xloadings);
+  WriteMatrix(weights.c_str(), m->xweights);
+  WriteDvector(xexpvar.c_str(), m->xvarexp);
+  WriteDvector(xcolumnaverage.c_str(), m->xcolaverage);
+  WriteDvector(xcolumnscaling.c_str(), m->xcolscaling);
 
   //   WriteDvector(path_, "/Y-ExpVar.txt", m->yvarexp);
-  WriteMatrix(uscore, m->yscores);
-  WriteMatrix(qloadings, m->yloadings);
-  WriteDvector(ycolumnaverage, m->ycolaverage);
-  WriteDvector(ycolumnscaling, m->ycolscaling);
+  WriteMatrix(uscore.c_str(), m->yscores);
+  WriteMatrix(qloadings.c_str(), m->yloadings);
+  WriteDvector(ycolumnaverage.c_str(), m->ycolaverage);
+  WriteDvector(ycolumnscaling.c_str(), m->ycolscaling);
 
-  WriteDvector(bcoeff, m->b);
+  WriteDvector(bcoeff.c_str(), m->b);
 
-  WriteMatrix(r2y, m->r2y_recalculated);
-  WriteMatrix(sdec, m->sdec);
-  WriteMatrix(recalc_y, m->recalculated_y);
-  WriteMatrix(recalc_residuals, m->recalc_residuals);
+  WriteMatrix(r2y.c_str(), m->r2y_recalculated);
+  WriteMatrix(sdec.c_str(), m->sdec);
+  WriteMatrix(recalc_y.c_str(), m->recalculated_y);
+  WriteMatrix(recalc_residuals.c_str(), m->recalc_residuals);
 
-  WriteMatrix(validatedq2y, m->q2y);
-  WriteMatrix(validatedsdep, m->sdep);
-  WriteMatrix(validatedbias, m->bias);
-  WriteMatrix(validatedypred, m->predicted_y);
-  WriteMatrix(validatedypred_residuals, m->pred_residuals);
+  WriteMatrix(validatedq2y.c_str(), m->q2y);
+  WriteMatrix(validatedsdep.c_str(), m->sdep);
+  WriteMatrix(validatedbias.c_str(), m->bias);
+  WriteMatrix(validatedypred.c_str(), m->predicted_y);
+  WriteMatrix(validatedypred_residuals.c_str(), m->pred_residuals);
 
-  WriteMatrix(yscrambling, m->yscrambling);
+  WriteMatrix(yscrambling.c_str(), m->yscrambling);
 }
 
 void DATAIO::WriteUPCAModel(const char *path_, UPCAMODEL *m) {
-  char tscore[MAXCHARS], ploadings[MAXCHARS], expvar[MAXCHARS],
-      columnscaling[MAXCHARS], columnaverage[MAXCHARS];
-
-  strcpy(tscore, path_);
-  strcat(tscore, "/T-Scores.txt");
-  strcpy(ploadings, path_);
-  strcat(ploadings, "/P-Loadings.txt");
-  strcpy(expvar, path_);
-  strcat(expvar, "/ExpVar.txt");
-  strcpy(columnscaling, path_);
-  strcat(columnscaling, "/ColumnScaling.txt");
-  strcpy(columnaverage, path_);
-  strcat(columnaverage, "/ColumnAverage.txt");
+  if (!path_) return;
+  std::string base(path_);
+  std::string tscore = base + "/T-Scores.txt";
+  std::string ploadings = base + "/P-Loadings.txt";
+  std::string expvar = base + "/ExpVar.txt";
+  std::string columnscaling = base + "/ColumnScaling.txt";
+  std::string columnaverage = base + "/ColumnAverage.txt";
 
   if (DirExists(path_) == true) {
     RemoveDir(path_);
@@ -1080,72 +913,42 @@ void DATAIO::WriteUPCAModel(const char *path_, UPCAMODEL *m) {
 
   MakeDir(path_);
 
-  WriteMatrix(tscore, m->scores);
-  WriteTensor(ploadings, m->loadings);
-  WriteDvector(expvar, m->varexp);
-  WriteDVectorList(columnscaling, m->colscaling);
-  WriteDVectorList(columnaverage, m->colaverage);
+  WriteMatrix(tscore.c_str(), m->scores);
+  WriteTensor(ploadings.c_str(), m->loadings);
+  WriteDvector(expvar.c_str(), m->varexp);
+  WriteDVectorList(columnscaling.c_str(), m->colscaling);
+  WriteDVectorList(columnaverage.c_str(), m->colaverage);
 }
 
 void DATAIO::WriteUPLSModel(const char *path_, UPLSMODEL *m) {
-  char tscore[MAXCHARS], ploadings[MAXCHARS], weights[MAXCHARS],
-      xexpvar[MAXCHARS], xcolumnscaling[MAXCHARS], xcolumnaverage[MAXCHARS],
-      uscore[MAXCHARS], qloadings[MAXCHARS], ycolumnscaling[MAXCHARS],
-      ycolumnaverage[MAXCHARS], bcoeff[MAXCHARS], r2x[MAXCHARS], r2y[MAXCHARS],
-      sdec[MAXCHARS], validatedypred[MAXCHARS], validatedr2x[MAXCHARS],
-      validatedq2y[MAXCHARS], validatedsdep[MAXCHARS], yscramblingq2y[MAXCHARS],
-      yscramblingsdep[MAXCHARS], recalc_y[MAXCHARS], recalc_residuals[MAXCHARS],
-      validatedypred_residuals[MAXCHARS];
+  if (!path_) return;
+  std::string base(path_);
+  std::string tscore = base + "/X-T-Scores.txt";
+  std::string ploadings = base + "/X-P-Loadings.txt";
+  std::string weights = base + "/X-W-Weights.txt";
+  std::string xexpvar = base + "/X-ExpVar.txt";
+  std::string xcolumnaverage = base + "/X-ColumnAverage.txt";
+  std::string xcolumnscaling = base + "/X-ColumnScaling.txt";
 
-  strcpy(tscore, path_);
-  strcat(tscore, "/X-T-Scores.txt");
-  strcpy(ploadings, path_);
-  strcat(ploadings, "/X-P-Loadings.txt");
-  strcpy(weights, path_);
-  strcat(weights, "/X-W-Weights.txt");
-  strcpy(xexpvar, path_);
-  strcat(xexpvar, "/X-ExpVar.txt");
-  strcpy(xcolumnaverage, path_);
-  strcat(xcolumnaverage, "/X-ColumnAverage.txt");
-  strcpy(xcolumnscaling, path_);
-  strcat(xcolumnscaling, "/X-ColumnScaling.txt");
+  std::string uscore = base + "/Y-U-Scores.txt";
+  std::string qloadings = base + "/Y-Q-Loadings.txt";
+  std::string ycolumnaverage = base + "/Y-ColumnAverage.txt";
+  std::string ycolumnscaling = base + "/Y-ColumnScaling.txt";
 
-  strcpy(uscore, path_);
-  strcat(uscore, "/Y-U-Scores.txt");
-  strcpy(qloadings, path_);
-  strcat(qloadings, "/Y-Q-Loadings.txt");
-  strcpy(ycolumnaverage, path_);
-  strcat(ycolumnaverage, "/Y-ColumnAverage.txt");
-  strcpy(ycolumnscaling, path_);
-  strcat(ycolumnscaling, "/Y-ColumnScaling.txt");
+  std::string bcoeff = base + "/b-Coefficients.txt";
+  std::string r2x = base + "/r2x.txt";
+  std::string r2y = base + "/r2y.txt";
+  std::string sdec = base + "/sdec.txt";
+  std::string recalc_y = base + "/Recalculated_y.txt";
+  std::string recalc_residuals = base + "/Recalculated_Residuals.txt";
 
-  strcpy(bcoeff, path_);
-  strcat(bcoeff, "/b-Coefficients.txt");
-  strcpy(r2x, path_);
-  strcat(r2x, "/r2x.txt");
-  strcpy(r2y, path_);
-  strcat(r2y, "/r2y.txt");
-  strcpy(sdec, path_);
-  strcat(sdec, "/sdec.txt");
-  strcpy(recalc_y, path_);
-  strcat(recalc_y, "/Recalculated_y.txt");
-  strcpy(recalc_residuals, path_);
-  strcat(recalc_residuals, "/Recalculated_Residuals.txt");
-
-  strcpy(validatedypred, path_);
-  strcat(validatedypred, "/Validated_Predicted_Y.txt");
-  strcpy(validatedypred_residuals, path_);
-  strcat(validatedypred_residuals, "/Validated_Predicted_Residuals.txt");
-  strcpy(validatedr2x, path_);
-  strcat(validatedr2x, "/Validated_r2x.txt");
-  strcpy(validatedq2y, path_);
-  strcat(validatedq2y, "/Validated_q2y.txt");
-  strcpy(validatedsdep, path_);
-  strcat(validatedsdep, "/Validated_sdep.txt");
-  strcpy(yscramblingq2y, path_);
-  strcat(yscramblingq2y, "/YScrambling_q2y.txt");
-  strcpy(yscramblingsdep, path_);
-  strcat(yscramblingsdep, "/YScrambling_sdep.txt");
+  std::string validatedypred = base + "/Validated_Predicted_Y.txt";
+  std::string validatedypred_residuals = base + "/Validated_Predicted_Residuals.txt";
+  std::string validatedr2x = base + "/Validated_r2x.txt";
+  std::string validatedq2y = base + "/Validated_q2y.txt";
+  std::string validatedsdep = base + "/Validated_sdep.txt";
+  std::string yscramblingq2y = base + "/YScrambling_q2y.txt";
+  std::string yscramblingsdep = base + "/YScrambling_sdep.txt";
 
   if (DirExists(path_) == true) {
     RemoveDir(path_);
@@ -1153,68 +956,53 @@ void DATAIO::WriteUPLSModel(const char *path_, UPLSMODEL *m) {
 
   MakeDir(path_);
 
-  WriteMatrix(tscore, m->xscores);
-  WriteTensor(ploadings, m->xloadings);
-  WriteTensor(weights, m->xweights);
-  WriteDvector(xexpvar, m->xvarexp);
-  WriteDVectorList(xcolumnaverage, m->xcolaverage);
-  WriteDVectorList(xcolumnscaling, m->xcolscaling);
+  WriteMatrix(tscore.c_str(), m->xscores);
+  WriteTensor(ploadings.c_str(), m->xloadings);
+  WriteTensor(weights.c_str(), m->xweights);
+  WriteDvector(xexpvar.c_str(), m->xvarexp);
+  WriteDVectorList(xcolumnaverage.c_str(), m->xcolaverage);
+  WriteDVectorList(xcolumnscaling.c_str(), m->xcolscaling);
 
   //   WriteDvector(path_, "/Y-ExpVar.txt", m->yvarexp);
-  WriteMatrix(uscore, m->yscores);
-  WriteTensor(qloadings, m->yloadings);
-  WriteDVectorList(ycolumnaverage, m->ycolaverage);
-  WriteDVectorList(ycolumnscaling, m->ycolscaling);
+  WriteMatrix(uscore.c_str(), m->yscores);
+  WriteTensor(qloadings.c_str(), m->yloadings);
+  WriteDVectorList(ycolumnaverage.c_str(), m->ycolaverage);
+  WriteDVectorList(ycolumnscaling.c_str(), m->ycolscaling);
 
-  WriteDvector(bcoeff, m->b);
+  WriteDvector(bcoeff.c_str(), m->b);
 
-  WriteDvector(r2x, m->r2x_model);
-  WriteTensor(r2y, m->r2y_model);
-  WriteTensor(sdec, m->sdec);
-  WriteTensor(recalc_y, m->recalculated_y);
-  WriteTensor(recalc_residuals, m->recalc_residuals);
+  WriteDvector(r2x.c_str(), m->r2x_model);
+  WriteTensor(r2y.c_str(), m->r2y_model);
+  WriteTensor(sdec.c_str(), m->sdec);
+  WriteTensor(recalc_y.c_str(), m->recalculated_y);
+  WriteTensor(recalc_residuals.c_str(), m->recalc_residuals);
 
-  WriteDvector(validatedr2x, m->r2x_validation);
-  WriteTensor(validatedq2y, m->q2y);
-  WriteTensor(validatedsdep, m->sdep);
-  WriteTensor(validatedypred, m->predicted_y);
-  WriteTensor(validatedypred_residuals, m->pred_residuals);
+  WriteDvector(validatedr2x.c_str(), m->r2x_validation);
+  WriteTensor(validatedq2y.c_str(), m->q2y);
+  WriteTensor(validatedsdep.c_str(), m->sdep);
+  WriteTensor(validatedypred.c_str(), m->predicted_y);
+  WriteTensor(validatedypred_residuals.c_str(), m->pred_residuals);
 
-  WriteTensor(yscramblingq2y, m->q2y_yscrambling);
-  WriteTensor(yscramblingsdep, m->sdep_yscrambling);
+  WriteTensor(yscramblingq2y.c_str(), m->q2y_yscrambling);
+  WriteTensor(yscramblingsdep.c_str(), m->sdep_yscrambling);
 }
 
 void DATAIO::WriteMLRModel(const char *path_, MLRMODEL *m) {
-  char bcoeff[MAXCHARS], r2y[MAXCHARS], sdec[MAXCHARS], ymean[MAXCHARS],
-      validatedypred[MAXCHARS], validatedq2y[MAXCHARS], validatedsdep[MAXCHARS],
-      validatedbias[MAXCHARS], r2q2scrambling[MAXCHARS], recalc_y[MAXCHARS],
-      recalc_residuals[MAXCHARS], validatedypred_residuals[MAXCHARS];
+  if (!path_) return;
+  std::string base(path_);
+  std::string bcoeff = base + "/b-Coefficients.txt";
+  std::string r2y = base + "/r2y.txt";
+  std::string sdec = base + "/sdec.txt";
+  std::string recalc_y = base + "/Recalculated_y.txt";
+  std::string recalc_residuals = base + "/Recalculated_Residuals.txt";
+  std::string ymean = base + "/Y_Mean.txt";
 
-  strcpy(bcoeff, path_);
-  strcat(bcoeff, "/b-Coefficients.txt");
-  strcpy(r2y, path_);
-  strcat(r2y, "/r2y.txt");
-  strcpy(sdec, path_);
-  strcat(sdec, "/sdec.txt");
-  strcpy(recalc_y, path_);
-  strcat(recalc_y, "/Recalculated_y.txt");
-  strcpy(recalc_residuals, path_);
-  strcat(recalc_residuals, "/Recalculated_Residuals.txt");
-  strcpy(ymean, path_);
-  strcat(ymean, "/Y_Mean.txt");
-
-  strcpy(validatedypred, path_);
-  strcat(validatedypred, "/Validated_Predicted_Y.txt");
-  strcpy(validatedypred_residuals, path_);
-  strcat(validatedypred_residuals, "/Validated_Predicted_Residuals.txt");
-  strcpy(validatedq2y, path_);
-  strcat(validatedq2y, "/Validated_q2y.txt");
-  strcpy(validatedsdep, path_);
-  strcat(validatedsdep, "/Validated_sdep.txt");
-  strcpy(validatedbias, path_);
-  strcat(validatedbias, "/Validated_bias.txt");
-  strcpy(r2q2scrambling, path_);
-  strcat(r2q2scrambling, "/YScrambling_r2q2y.txt");
+  std::string validatedypred = base + "/Validated_Predicted_Y.txt";
+  std::string validatedypred_residuals = base + "/Validated_Predicted_Residuals.txt";
+  std::string validatedq2y = base + "/Validated_q2y.txt";
+  std::string validatedsdep = base + "/Validated_sdep.txt";
+  std::string validatedbias = base + "/Validated_bias.txt";
+  std::string r2q2scrambling = base + "/YScrambling_r2q2y.txt";
 
   if (DirExists(path_) == true) {
     RemoveDir(path_);
@@ -1222,69 +1010,45 @@ void DATAIO::WriteMLRModel(const char *path_, MLRMODEL *m) {
 
   MakeDir(path_);
 
-  WriteMatrix(bcoeff, m->b);
-  WriteDvector(r2y, m->r2y_model);
-  WriteDvector(sdec, m->sdec);
-  WriteMatrix(recalc_y, m->recalculated_y);
-  WriteMatrix(recalc_residuals, m->recalc_residuals);
-  WriteDvector(ymean, m->ymean);
+  WriteMatrix(bcoeff.c_str(), m->b);
+  WriteDvector(r2y.c_str(), m->r2y_model);
+  WriteDvector(sdec.c_str(), m->sdec);
+  WriteMatrix(recalc_y.c_str(), m->recalculated_y);
+  WriteMatrix(recalc_residuals.c_str(), m->recalc_residuals);
+  WriteDvector(ymean.c_str(), m->ymean);
 
-  WriteDvector(validatedq2y, m->q2y);
-  WriteDvector(validatedsdep, m->sdep);
-  WriteMatrix(validatedypred, m->predicted_y);
-  WriteMatrix(validatedypred_residuals, m->pred_residuals);
-  WriteDvector(validatedbias, m->bias);
+  WriteDvector(validatedq2y.c_str(), m->q2y);
+  WriteDvector(validatedsdep.c_str(), m->sdep);
+  WriteMatrix(validatedypred.c_str(), m->predicted_y);
+  WriteMatrix(validatedypred_residuals.c_str(), m->pred_residuals);
+  WriteDvector(validatedbias.c_str(), m->bias);
 
-  WriteMatrix(r2q2scrambling, m->r2q2scrambling);
+  WriteMatrix(r2q2scrambling.c_str(), m->r2q2scrambling);
 }
 
 void DATAIO::WriteLDAModel(const char *path_, LDAMODEL *m) {
+  if (!path_) return;
   uivector *otherinfo;
-  char roc[MAXCHARS], roc_aucs[MAXCHARS], pr[MAXCHARS], pr_aucs[MAXCHARS],
-      pprob[MAXCHARS], eval[MAXCHARS], mu[MAXCHARS], evect[MAXCHARS],
-      mnpdf[MAXCHARS], features[MAXCHARS], inv_cov[MAXCHARS], others[MAXCHARS],
-      classid[MAXCHARS], fmean[MAXCHARS], fsdev[MAXCHARS],
-      recalculated_y[MAXCHARS], recalculated_residuals[MAXCHARS],
-      predicted_y[MAXCHARS], predicted_residuals[MAXCHARS];
-
-  strcpy(roc, path_);
-  strcat(roc, "/ROC.txt");
-  strcpy(roc_aucs, path_);
-  strcat(roc_aucs, "/ROCAUCS.txt");
-  strcpy(pr, path_);
-  strcat(pr, "/PRECISIONRECALL.txt");
-  strcpy(pr_aucs, path_);
-  strcat(pr_aucs, "/PRECISIONRECALLAUCS.txt");
-  strcpy(recalculated_y, path_);
-  strcat(recalculated_y, "/RECALCULATEDY.txt");
-  strcpy(recalculated_residuals, path_);
-  strcat(recalculated_residuals, "/RECALCULATED_RESIDUALS.txt");
-  strcpy(predicted_y, path_);
-  strcat(predicted_y, "/PRECISIONRECALLAUCS.txt");
-  strcpy(predicted_residuals, path_);
-  strcat(predicted_residuals, "/PREDICTED_RESIDUALS.txt");
-  strcpy(pprob, path_);
-  strcat(pprob, "/PPROB.txt");
-  strcpy(eval, path_);
-  strcat(eval, "/EVAL.txt");
-  strcpy(mu, path_);
-  strcat(mu, "/MU.txt");
-  strcpy(evect, path_);
-  strcat(evect, "/EVECT.txt");
-  strcpy(mnpdf, path_);
-  strcat(mnpdf, "/MNPDF.txt");
-  strcpy(features, path_);
-  strcat(features, "/FEATURES.txt");
-  strcpy(fmean, path_);
-  strcat(fmean, "/FEATUREMEAN.txt");
-  strcpy(fsdev, path_);
-  strcat(fsdev, "/FEATURESDEV.txt");
-  strcpy(inv_cov, path_);
-  strcat(inv_cov, "/INVCOV.txt");
-  strcpy(others, path_);
-  strcat(others, "/MODINFO.txt");
-  strcpy(classid, path_);
-  strcat(classid, "/CLASSID.txt");
+  std::string base(path_);
+  std::string roc = base + "/ROC.txt";
+  std::string roc_aucs = base + "/ROCAUCS.txt";
+  std::string pr = base + "/PRECISIONRECALL.txt";
+  std::string pr_aucs = base + "/PRECISIONRECALLAUCS.txt";
+  std::string recalculated_y = base + "/RECALCULATEDY.txt";
+  std::string recalculated_residuals = base + "/RECALCULATED_RESIDUALS.txt";
+  std::string predicted_y = base + "/PRECISIONRECALLAUCS.txt";
+  std::string predicted_residuals = base + "/PREDICTED_RESIDUALS.txt";
+  std::string pprob = base + "/PPROB.txt";
+  std::string eval = base + "/EVAL.txt";
+  std::string mu = base + "/MU.txt";
+  std::string evect = base + "/EVECT.txt";
+  std::string mnpdf = base + "/MNPDF.txt";
+  std::string features = base + "/FEATURES.txt";
+  std::string fmean = base + "/FEATUREMEAN.txt";
+  std::string fsdev = base + "/FEATURESDEV.txt";
+  std::string inv_cov = base + "/INVCOV.txt";
+  std::string others = base + "/MODINFO.txt";
+  std::string classid = base + "/CLASSID.txt";
 
   if (DirExists(path_) == true) {
     RemoveDir(path_);
@@ -1292,30 +1056,30 @@ void DATAIO::WriteLDAModel(const char *path_, LDAMODEL *m) {
 
   MakeDir(path_);
 
-  WriteTensor(roc, m->roc);
-  WriteDvector(roc_aucs, m->roc_aucs);
-  WriteTensor(pr, m->pr);
-  WriteDvector(pr_aucs, m->pr_aucs);
+  WriteTensor(roc.c_str(), m->roc);
+  WriteDvector(roc_aucs.c_str(), m->roc_aucs);
+  WriteTensor(pr.c_str(), m->pr);
+  WriteDvector(pr_aucs.c_str(), m->pr_aucs);
 
-  WriteMatrix(recalculated_y, m->recalculated_y);
-  WriteMatrix(recalculated_residuals, m->recalculated_residuals);
-  WriteMatrix(predicted_y, m->predicted_y);
-  WriteMatrix(predicted_residuals, m->predicted_residuals);
+  WriteMatrix(recalculated_y.c_str(), m->recalculated_y);
+  WriteMatrix(recalculated_residuals.c_str(), m->recalculated_residuals);
+  WriteMatrix(predicted_y.c_str(), m->predicted_y);
+  WriteMatrix(predicted_residuals.c_str(), m->predicted_residuals);
 
-  WriteDvector(eval, m->eval);
-  WriteMatrix(mu, m->mu);
-  WriteMatrix(evect, m->evect);
-  WriteTensor(mnpdf, m->mnpdf);
+  WriteDvector(eval.c_str(), m->eval);
+  WriteMatrix(mu.c_str(), m->mu);
+  WriteMatrix(evect.c_str(), m->evect);
+  WriteTensor(mnpdf.c_str(), m->mnpdf);
 
-  WriteTensor(features, m->features);
-  WriteMatrix(fmean, m->fmean);
-  WriteMatrix(fmean, m->fsdev);
-  WriteMatrix(inv_cov, m->inv_cov);
+  WriteTensor(features.c_str(), m->features);
+  WriteMatrix(fmean.c_str(), m->fmean);
+  WriteMatrix(fmean.c_str(), m->fsdev);
+  WriteMatrix(inv_cov.c_str(), m->inv_cov);
 
   NewUIVector(&otherinfo, 2);
   otherinfo->data[0] = m->nclass;
   otherinfo->data[1] = m->class_start;
-  WriteUIvector(others, otherinfo);
+  WriteUIvector(others.c_str(), otherinfo);
   DelUIVector(&otherinfo);
-  WriteUIvector(classid, m->classid);
+  WriteUIvector(classid.c_str(), m->classid);
 }

@@ -1006,8 +1006,9 @@ void Chart::drawScatters(QPainter *painter) {
   // Helper to get cached marker
   auto drawMarker = [&](double x, double y, const DataPoint* dp, bool selected) {
        QString key = getMarkerKey(dp->marker(), dp->radius(), dp->color(), selected);
-       QPixmap* pm = markerCache.object(key);
-       if (!pm) {
+       QPixmap pm;
+       QPixmap* cachedPm = markerCache.object(key);
+       if (!cachedPm) {
            // Create and cache
            int r = dp->radius();
            if (r < 1) r = 1;
@@ -1035,10 +1036,12 @@ void Chart::drawScatters(QPainter *painter) {
                tri << QPointF(size/2.0, margin) << QPointF(size-margin, size-margin) << QPointF(margin, size-margin);
                pPm.drawPolygon(tri);
            }
+           pm = *newPm; // Shallow copy, keeps ref count alive
            markerCache.insert(key, newPm);
-           pm = newPm;
+       } else {
+           pm = *cachedPm;
        }
-       painter->drawPixmap(x - pm->width()/2.0, y - pm->height()/2.0, *pm);
+       painter->drawPixmap(x - pm.width()/2.0, y - pm.height()/2.0, pm);
   };
 
   // Draw unselected (decimated)

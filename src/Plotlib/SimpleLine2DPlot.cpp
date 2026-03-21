@@ -26,14 +26,15 @@
 #include <QPushButton>
 #include <QSpinBox>
 
-#include <cstdio>
-#include <ctime>
-#include <iostream>
+#include <random>
 
 void SimpleLine2DPlot::slotExit() { qApp->exit(); }
 
 int SimpleLine2DPlot::random_(int low, int high) {
-  return rand() % (high - low + 1) + low;
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(low, high);
+  return dis(gen);
 }
 
 void SimpleLine2DPlot::SavePlotImage() {
@@ -114,7 +115,6 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames,
          << Qt::cyan;
 
   if (m->col > (uint)colors.size()) {
-    srand(time(0));
     for (uint i = 0; i < m->col - colors.size(); i++) {
       colors.append(QColor(random_(0, 256), random_(0, 256), random_(0, 256)));
     }
@@ -159,7 +159,6 @@ SimpleLine2DPlot::SimpleLine2DPlot(QList<matrix *> mlst, QStringList curvenames,
          << Qt::cyan;
   // Generate some colors
   if (mlst.size() > colors.size()) {
-    srand(time(0));
     for (int i = 0; i < mlst.size() - colors.size(); i++) {
       colors.append(QColor(random_(0, 256), random_(0, 256), random_(0, 256)));
     }

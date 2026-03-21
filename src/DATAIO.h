@@ -31,6 +31,7 @@
 namespace DATAIO {
 std::vector<std::string> split(const std::string &s, const std::string &delim,
                                const bool keep_empty);
+std::string STrim(const std::string &s);
 
 bool FileExists(const char *file_);
 bool DirExists(const char *dir_);

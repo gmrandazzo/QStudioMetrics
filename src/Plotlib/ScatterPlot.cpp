@@ -121,14 +121,14 @@ QColor ScatterPlot::makeColor(double val, double min, double max,
   return ncolor;
 }
 
-int ScatterPlot::random(int min, int max) // range : [min, max)
+#include <random>
+
+int ScatterPlot::random(int min, int max) // range : [min, max]
 {
-  static bool first = true;
-  if (first) {
-    srand(time(NULL)); // seeding for the first time only!
-    first = false;
-  }
-  return min + rand() % ((max + 1) - min);
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(min, max);
+  return dis(gen);
 }
 
 QList<QColor> ScatterPlot::GenColorList(int size) {
@@ -139,9 +139,8 @@ QList<QColor> ScatterPlot::GenColorList(int size) {
 
   int toAdd = size - colors.size();
   if (toAdd > 0) {
-    srand(time(0));
     for (int i = 0; i < toAdd; i++) {
-      colors.append(QColor(random(0, 256), random(0, 256), random(0, 256)));
+      colors.append(QColor(random(0, 255), random(0, 255), random(0, 255)));
     }
   }
 

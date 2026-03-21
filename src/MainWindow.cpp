@@ -72,7 +72,6 @@
 #include "Plotlib/ScatterPlot.h"
 #include "Plotlib/SimpleLine2DPlot.h"
 #include "Plotlib/VariablePlot.h"
-#include "dircompressor.h"
 
 void MainWindow::CheckProjects() {
 
@@ -4836,8 +4835,9 @@ void MainWindow::SaveAs() {
     SaveDialog savedialog(projects);
     savedialog.setPath(lastpath);
     if (savedialog.exec() == QDialog::Accepted) {
+      GenericProgressDialog pbdialog;
       QString fproject = projects->value(savedialog.getProjectID())
-                             ->SaveSQLData(savedialog.getPathToSave());
+                             ->SaveSQLData(savedialog.getPathToSave(), &pbdialog);
       if (fproject.isEmpty()) {
         QMessageBox::warning(this, tr("Warning"),
                              tr("Unable to save the project."),
@@ -5030,7 +5030,8 @@ void MainWindow::AddRemoveObjLabel() {
 void MainWindow::SaveAllProjects() {
   int i = 0;
   while (i < projects->size()) {
-    if (projects->value(i)->AutoSave() == true) {
+    GenericProgressDialog pbdialog;
+    if (projects->value(i)->AutoSave(&pbdialog) == true) {
       i++;
     } else {
       QMessageBox msgBox;
@@ -6837,7 +6838,8 @@ void MainWindow::DoCPCAPrediction() {
         CalculationMenuEnable();
         FinalizeRun();
         DelTensor(&x);
-        projects->value(pid)->AutoSave();
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
       }
     }
   }
@@ -6941,7 +6943,8 @@ void MainWindow::DoCPCA() {
         CalculationMenuEnable();
         FinalizeRun();
         DelTensor(&x);
-        projects->value(pid)->AutoSave();
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
       }
     }
   }
@@ -7072,7 +7075,8 @@ void MainWindow::DoPCAPrediction() {
         CalculationMenuEnable();
         FinalizeRun();
         DelMatrix(&x);
-        projects->value(pid)->AutoSave();
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
       }
     }
   }
@@ -7185,7 +7189,8 @@ void MainWindow::DoPCA() {
         CalculationMenuEnable();
         FinalizeRun();
         DelMatrix(&x);
-        projects->value(pid)->AutoSave();
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
       }
     }
   }
@@ -7347,7 +7352,8 @@ void MainWindow::DoPLSPrediction() {
         FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
-        projects->value(pid)->AutoSave();
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
       }
     }
   }
@@ -7454,7 +7460,8 @@ void MainWindow::DoPLSValidation() {
         DelMatrix(&x);
         DelMatrix(&y);
         DelUIVector(&kfc);
-        projects->value(pid)->AutoSave();
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
       } else {
         QMessageBox::critical(
             this, tr("PLS Validation Error"),
@@ -7791,7 +7798,8 @@ void MainWindow::DoLDAPrediction() {
       CalculationMenuEnable();
       FinalizeRun();
       DelMatrix(&x);
-      projects->value(pid)->AutoSave();
+      GenericProgressDialog pbdialog;
+      projects->value(pid)->AutoSave(&pbdialog);
     }
   }
 }
@@ -7904,7 +7912,8 @@ void MainWindow::DoLDAValidation() {
         FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
-        projects->value(pid)->AutoSave();
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
       } else {
         QMessageBox::critical(
             this, tr("LDA Validation Error"),
@@ -8038,7 +8047,8 @@ void MainWindow::DoLDA() {
         TopMenuEnableDisable();
         CalculationMenuEnable();
         FinalizeRun();
-        projects->value(pid)->AutoSave();
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
       }
     }
   }
@@ -8235,7 +8245,8 @@ void MainWindow::DoMLRPrediction() {
         FinalizeRun();
         DelMatrix(&x);
         DelMatrix(&y);
-        projects->value(pid)->AutoSave();
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
       }
     }
   }
@@ -8339,7 +8350,8 @@ void MainWindow::DoMLRValidation() {
         DelMatrix(&x);
         DelMatrix(&y);
         DelUIVector(&kfc);
-        projects->value(pid)->AutoSave();
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
       } else {
         QMessageBox::critical(
             this, tr("MLR Validation Error"),
@@ -8447,7 +8459,8 @@ void MainWindow::DoMLR() {
         TopMenuEnableDisable();
         CalculationMenuEnable();
         FinalizeRun();
-        projects->value(pid)->AutoSave();
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
       }
     }
   }

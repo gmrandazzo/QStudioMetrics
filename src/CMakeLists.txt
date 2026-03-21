@@ -1,5 +1,4 @@
 set(QSTUDIOMETRICS_SRC
-    dircompressor.cpp
     PCA/pcamodel.cpp
     CPCA/cpcamodel.cpp
     PLS/plsmodel.cpp
@@ -265,19 +264,43 @@ if(cmake_build_type_tolower STREQUAL "debug")
   add_executable(testimportmatrix testimportmatrix.cpp DATAIO.cpp)
   add_executable(testimportarray testimportarray.cpp DATAIO.cpp)
   add_executable(testimportpcamodel testimportpcamodel.cpp DATAIO.cpp)
-  add_executable(qsmprojectcompressor qsmprojectcompressor.cpp dircompressor.cpp)
+  add_executable(testdataioutils test_dataio_utils.cpp DATAIO.cpp)
 
   target_link_libraries(testimportdvector ${LIBSCIENTIFIC_LIBRARY})
   target_link_libraries(testimportmatrix ${LIBSCIENTIFIC_LIBRARY})
   target_link_libraries(testimportarray ${LIBSCIENTIFIC_LIBRARY})
   target_link_libraries(testimportpcamodel ${LIBSCIENTIFIC_LIBRARY})
-  target_link_libraries(qsmprojectcompressor ${QT6_LIBRARIES})
+  target_link_libraries(testdataioutils PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBRARIES})
+
+  add_test(NAME TestImportDVector COMMAND testimportdvector)
+  add_test(NAME TestImportMatrix COMMAND testimportmatrix)
+  add_test(NAME TestImportArray COMMAND testimportarray)
+  add_test(NAME TestImportPCAModel COMMAND testimportpcamodel)
+  add_test(NAME TestDataIOUtils COMMAND testdataioutils)
+
+  qt6_wrap_cpp(TEST_QSM_MOC Dialogs/GenericProgressDialog.h)
+  add_executable(testqsmprojectio 
+      test_qsm_project_io.cpp 
+      qsmdata.cpp 
+      DATAIO.cpp 
+      qstudiometricsdataoperations.cpp
+      PCA/pcamodel.cpp
+      PLS/plsmodel.cpp
+      MLR/mlrmodel.cpp
+      LDA/ldamodel.cpp
+      CPCA/cpcamodel.cpp
+      Dialogs/GenericProgressDialog.cpp
+      ${TEST_QSM_MOC}
+      ${QSTUDIOMETRICS_UIS_H}
+  )
+  target_link_libraries(testqsmprojectio PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBRARIES} Qt6::Sql Qt6::Widgets)
+  add_test(NAME TestQSMProjectIO COMMAND testqsmprojectio)
 endif()
 
 if(LIBSCIENTIFIC_DEPENDENCY)
   set(_qsm_targets QStudioMetrics qsm-pca qsm-pls qsm-mlr qsm-mdc qsm-kmeans qsm-hgm)
   if(cmake_build_type_tolower STREQUAL "debug")
-    list(APPEND _qsm_targets testimportdvector testimportmatrix testimportarray testimportpcamodel)
+    list(APPEND _qsm_targets testimportdvector testimportmatrix testimportarray testimportpcamodel testdataioutils testqsmprojectio)
   endif()
   foreach(_target ${_qsm_targets})
     if(TARGET ${_target})
