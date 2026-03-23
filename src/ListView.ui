@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>List View</string>
+   <string>Data Overview List</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">

@@ -359,6 +359,7 @@ void AddFileDialog::Preview() {
 
 AddFileDialog::AddFileDialog() {
   ui.setupUi(this);
+  setWindowTitle("Add File to Project");
 
   model = new QStandardItemModel();
 

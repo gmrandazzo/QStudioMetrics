@@ -399,6 +399,7 @@ SelectByDialog::SelectByDialog(QStringList objname_, matrix *coordinate_,
                                LABELS *objlabel_, LABELS *varlabel_)
     : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Select by Criteria");
 
   abort = false;
   objname = objname_;

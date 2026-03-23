@@ -664,11 +664,10 @@ void DATAIO::ImportLDAModel(const char *path_, LDAMODEL *m) {
   std::string roc_aucs = base + "/ROCAUCS.txt";
   std::string pr = base + "/PRECISIONRECALL.txt";
   std::string pr_aucs = base + "/PRECISIONRECALLAUCS.txt";
-  std::string pprob = base + "/PPROB.txt";
 
   std::string recalculated_y = base + "/RECALCULATEDY.txt";
   std::string recalculated_residuals = base + "/RECALCULATED_RESIDUALS.txt";
-  std::string predicted_y = base + "/PRECISIONRECALLAUCS.txt";
+  std::string predicted_y = base + "/PREDICTEDY.txt";
   std::string predicted_residuals = base + "/PREDICTED_RESIDUALS.txt";
 
   std::string eval = base + "/EVAL.txt";
@@ -692,8 +691,8 @@ void DATAIO::ImportLDAModel(const char *path_, LDAMODEL *m) {
 
   ImportMatrix(recalculated_y.c_str(), sep, m->recalculated_y);
   ImportMatrix(recalculated_residuals.c_str(), sep, m->recalculated_residuals);
-  ImportMatrix(recalculated_y.c_str(), sep, m->predicted_y);
-  ImportMatrix(recalculated_residuals.c_str(), sep, m->predicted_residuals);
+  ImportMatrix(predicted_y.c_str(), sep, m->predicted_y);
+  ImportMatrix(predicted_residuals.c_str(), sep, m->predicted_residuals);
 
   ImportDvector(eval.c_str(), m->eval);
   ImportMatrix(mu.c_str(), sep, m->mu);
@@ -702,7 +701,7 @@ void DATAIO::ImportLDAModel(const char *path_, LDAMODEL *m) {
 
   ImportTensor(features.c_str(), sep, m->features);
   ImportMatrix(fmean.c_str(), sep, m->fmean);
-  ImportMatrix(fmean.c_str(), sep, m->fsdev);
+  ImportMatrix(fsdev.c_str(), sep, m->fsdev);
   ImportMatrix(inv_cov.c_str(), sep, m->inv_cov);
 
   initUIVector(&otherinfo);
@@ -1036,9 +1035,8 @@ void DATAIO::WriteLDAModel(const char *path_, LDAMODEL *m) {
   std::string pr_aucs = base + "/PRECISIONRECALLAUCS.txt";
   std::string recalculated_y = base + "/RECALCULATEDY.txt";
   std::string recalculated_residuals = base + "/RECALCULATED_RESIDUALS.txt";
-  std::string predicted_y = base + "/PRECISIONRECALLAUCS.txt";
+  std::string predicted_y = base + "/PREDICTEDY.txt";
   std::string predicted_residuals = base + "/PREDICTED_RESIDUALS.txt";
-  std::string pprob = base + "/PPROB.txt";
   std::string eval = base + "/EVAL.txt";
   std::string mu = base + "/MU.txt";
   std::string evect = base + "/EVECT.txt";
@@ -1073,7 +1071,7 @@ void DATAIO::WriteLDAModel(const char *path_, LDAMODEL *m) {
 
   WriteTensor(features.c_str(), m->features);
   WriteMatrix(fmean.c_str(), m->fmean);
-  WriteMatrix(fmean.c_str(), m->fsdev);
+  WriteMatrix(fsdev.c_str(), m->fsdev);
   WriteMatrix(inv_cov.c_str(), m->inv_cov);
 
   NewUIVector(&otherinfo, 2);

@@ -187,6 +187,7 @@ void ValidatorDialog::OK() {
 
 ValidatorDialog::ValidatorDialog(PROJECTS *projects, int type_) {
   ui.setupUi(this);
+  setWindowTitle("Model Validation Parameters");
 
   type = type_;
 

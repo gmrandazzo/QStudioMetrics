@@ -66,7 +66,7 @@ bool LabelDialog::ObjlabelContains(QString name) {
 }
 
 void LabelDialog::AddLabel() {
-  addLabelDialog add("Insert Label");
+  addLabelDialog add("Add New Label");
   if (add.exec() == QDialog::Accepted) {
     if (ObjlabelContains(add.getLabel()) == false) {
       QList<QStandardItem *> label;
@@ -259,6 +259,7 @@ void LabelDialog::setLabelId(QModelIndex current) {
 
 LabelDialog::LabelDialog(PROJECTS *projects_, int windowtype_) : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Label Management");
 
   windowtype = windowtype_;
 
@@ -303,6 +304,7 @@ LabelDialog::LabelDialog(LABELS *labels_, const QStringList &selectedobject_,
                          int windowtype_)
     : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Label Management");
   ui.importlistButton->hide();
   ui.projectgroupBox->hide();
   ui.showButton->hide();

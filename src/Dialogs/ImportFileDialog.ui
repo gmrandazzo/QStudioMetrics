@@ -20,7 +20,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Import File...</string>
+   <string>Import Dataset</string>
   </property>
   <property name="modal">
    <bool>true</bool>

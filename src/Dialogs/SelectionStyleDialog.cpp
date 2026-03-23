@@ -177,6 +177,7 @@ void SelectionStyleDialog::setSymbolNames(QStringList snames) {
 
 SelectionStyleDialog::SelectionStyleDialog() : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Configure Visualization Styles");
 
   ui.solidcolor->setChecked(true);
   color1 = QColor(Qt::black);
@@ -216,6 +217,7 @@ SelectionStyleDialog::SelectionStyleDialog(const QStringList &varnames_)
     : QDialog() {
 
   ui.setupUi(this);
+  setWindowTitle("Configure Visualization Styles");
 
   ui.solidcolor->setChecked(true);
   color1 = QColor(Qt::black);

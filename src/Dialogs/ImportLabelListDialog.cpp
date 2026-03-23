@@ -77,6 +77,7 @@ void ImportLabelListDialog::Open() {
 
 ImportLabelListDialog::ImportLabelListDialog(QString path_) {
   ui.setupUi(this);
+  setWindowTitle("Import Label Metadata");
   path = path_;
   connect(ui.openButton, SIGNAL(clicked(bool)), this, SLOT(Open()));
   connect(ui.okButton, SIGNAL(clicked(bool)), SLOT(accept()));

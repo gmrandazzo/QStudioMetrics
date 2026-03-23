@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Advanced Pretreatment</string>
+   <string>Advanced Data Pretreatment</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_10">
    <item row="0" column="0" colspan="2">

@@ -230,6 +230,7 @@ ObjectSelectorDialog::ObjectSelectorDialog(QList<MATRIX *> *mxlst,
                                            int windowtype_)
     : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Object Selection & Filtering");
 
   windowtype = windowtype_;
 
@@ -286,6 +287,7 @@ ObjectSelectorDialog::ObjectSelectorDialog(QStringList &currentvariables,
                                            LABELS *objlabels, LABELS *varlabels)
     : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Object Selection & Filtering");
 
   windowtype = MenuSelection;
   ui.plotcoordinatesButton->setChecked(false);

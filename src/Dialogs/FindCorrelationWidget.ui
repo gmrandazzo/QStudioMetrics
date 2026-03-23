@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Find Correlations</string>
+   <string>Statistical Correlation Analysis</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_5">
    <item row="0" column="0" colspan="3">

@@ -354,6 +354,7 @@ void VariablePlotDialog::OK() {
 VariablePlotDialog::VariablePlotDialog(PROJECTS *projects_, int windowtype_)
     : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Variable Visualization");
 
   projects = projects_;
 

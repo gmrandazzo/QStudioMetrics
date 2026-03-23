@@ -156,7 +156,7 @@ void DeserializeMatrix(QString serialized_mx, matrix *mx) {
 }
 
 QString SerializeMatrix(const matrix *mx) {
-  if (mx->row > 0 && mx->col > 0) {
+  if (mx != nullptr && mx->row > 0 && mx->col > 0) {
     std::string serialized_mx;
     for (size_t i = 0; i < mx->row - 1; i++) {
       // start a row and concatenate values
@@ -208,7 +208,7 @@ void DeserializeTensor(QString serialized_ar, tensor *ar) {
 }
 
 QString SerializeTensor(const tensor *ar) {
-  if (ar->order > 0) {
+  if (ar != nullptr && ar->order > 0) {
     if (ar->m[0]->row > 0 && ar->m[0]->col > 0) {
       std::string serialized_ar;
       for (size_t k = 0; k < ar->order; k++) {

@@ -593,6 +593,7 @@ void ModelDialog::OK() {
 
 ModelDialog::ModelDialog(PROJECTS *projects, int type_) {
   ui.setupUi(this);
+  setWindowTitle("Configure Analysis Parameters");
 
   state = 0;
   type = type_;

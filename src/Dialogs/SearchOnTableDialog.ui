@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Search by...</string>
+   <string>Search Data Table</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">

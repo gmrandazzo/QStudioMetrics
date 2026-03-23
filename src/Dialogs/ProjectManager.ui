@@ -26,7 +26,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>CreateNew  Project</string>
+   <string>Project Management &amp; Creation</string>
   </property>
   <property name="modal">
    <bool>true</bool>

@@ -219,6 +219,7 @@ void MergeDataDialog::EnableOKButton() {
 
 MergeDataDialog::MergeDataDialog(PROJECTS *projects_) : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Merge Datasets");
   projects = projects_;
   mx = new MATRIX();
   pid = -1;

@@ -665,6 +665,7 @@ void ImportFileDialog::Clean_rnames() {
 
 ImportFileDialog::ImportFileDialog() : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Import Dataset");
 
   m = new MATRIX;
   a = new ARRAY;

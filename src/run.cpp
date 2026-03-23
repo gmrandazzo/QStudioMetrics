@@ -235,7 +235,7 @@ void RUN::DoPLSPrediction() {
                      plsmod->getLastPLSPrediction()->getXPredScores(),
                      plsmod->getLastPLSPrediction()->getYDipVar());
 
-  if (y != 0 && y->col > 0) { // calculate the R2 for the prediction
+  if (y != nullptr && y->row == x->row && y->col > 0) { // calculate the R2 for the prediction
     PLSRegressionStatistics(y, plsmod->getLastPLSPrediction()->getYDipVar(),
                             plsmod->getLastPLSPrediction()->getR2Y(),
                             plsmod->getLastPLSPrediction()->getSDEC(), NULL);

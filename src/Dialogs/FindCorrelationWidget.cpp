@@ -306,6 +306,7 @@ FindCorrelationWidget::FindCorrelationWidget(matrix *cmx_, matrix *derr_,
                                              LABELS *varlabels_, int pid_,
                                              int mid_, int mtype_) {
   ui.setupUi(this);
+  setWindowTitle("Statistical Correlation Analysis");
   setAttribute(Qt::WA_DeleteOnClose);
   model = new QStandardItemModel();
 

@@ -85,9 +85,31 @@ int main(int argc, char **argv) {
         NewDVector(&(pca->Model()->colscaling), 3);
         NewDVector(&(pca->Model()->colaverage), 3);
         
-        // Fill some data
         setMatrixValue(pca->Model()->scores, 0, 0, 1.23);
         setDVectorValue(pca->Model()->varexp, 0, 0.85);
+
+        // Add a validated PLS model
+        data.addPLSModel();
+        PLSModel* pls = data.getLastPLSModel();
+        pls->setName("TestPLS");
+        pls->setNPC(2);
+        pls->setDataHash(m->getHash());
+        pls->setDID(0);
+        pls->setValidation(1); // LOO_
+
+        // Initialize validation structures
+        initMatrix(&pls->Model()->xscores);
+        initMatrix(&pls->Model()->predicted_y);
+        initMatrix(&pls->Model()->q2y);
+        initMatrix(&pls->Model()->r2y_recalculated);
+        
+        ResizeMatrix(pls->Model()->xscores, 3, 2);
+        ResizeMatrix(pls->Model()->predicted_y, 3, 1);
+        ResizeMatrix(pls->Model()->q2y, 2, 1);
+        ResizeMatrix(pls->Model()->r2y_recalculated, 2, 1);
+        
+        setMatrixValue(pls->Model()->q2y, 0, 0, 0.75);
+        setMatrixValue(pls->Model()->predicted_y, 0, 0, 5.5);
 
         std::cout << "Saving project to " << fullDbPath.toStdString() << std::endl;
         // After refactoring, SaveSQLData takes an optional pbdialog
@@ -117,6 +139,13 @@ int main(int argc, char **argv) {
         assert(data.getPCAModelAt(0)->getNPC() == 2);
         assert(getMatrixValue(data.getPCAModelAt(0)->Model()->scores, 0, 0) == 1.23);
         assert(getDVectorValue(data.getPCAModelAt(0)->Model()->varexp, 0) == 0.85);
+        
+        assert(data.PLSCount() == 1);
+        assert(data.getPLSModelAt(0)->getName() == "TestPLS");
+        assert(data.getPLSModelAt(0)->getValidation() == 1);
+        assert(data.getPLSModelAt(0)->Model()->q2y != nullptr);
+        assert(getMatrixValue(data.getPLSModelAt(0)->Model()->q2y, 0, 0) == 0.75);
+        assert(getMatrixValue(data.getPLSModelAt(0)->Model()->predicted_y, 0, 0) == 5.5);
         
         std::cout << "Load successful!" << std::endl;
     }

@@ -319,6 +319,7 @@ void ExtractDataDialog::OK() {
 
 ExtractDataDialog::ExtractDataDialog(PROJECTS *projects) : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Extract Sub-dataset");
   mx = new MATRIX();
   stoprun = false;
   projects_ = projects;

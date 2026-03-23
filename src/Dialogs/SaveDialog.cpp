@@ -64,6 +64,7 @@ void SaveDialog::OK() {
 
 SaveDialog::SaveDialog(PROJECTS *projects) {
   ui.setupUi(this);
+  setWindowTitle("Save Configuration");
 
   pid = -1;
 

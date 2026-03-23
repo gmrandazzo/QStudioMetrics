@@ -35,6 +35,7 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QVariant>
+#include <memory>
 
 #ifdef DEBUG
 #include <QDebug>
@@ -259,7 +260,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
 
       // Add matrix to the treeview
       if (treeWidget) {
-        QTreeWidgetItem *subitem = new QTreeWidgetItem;
+        auto subitem = std::make_unique<QTreeWidgetItem>();
         subitem->setText(0, name); /*set the data name from the file*/
         subitem->setText(1, QString("Matrix")); // Define the type of the data
         subitem->setText(
@@ -276,7 +277,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
                 getProjectID())); // pid for get the tensor with Value
         MainWindow::getProjectItem(getProjectID(), treeWidget)
             ->child(0)
-            ->addChild(subitem);
+            ->addChild(subitem.release());
       }
       (*tabcount_)++;
       (*log).append(QString("Matrix %1 imported.\n").arg(name));
@@ -300,7 +301,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
 
       // Add matrix to the treeview
       if (treeWidget) {
-        QTreeWidgetItem *subitem = new QTreeWidgetItem;
+        auto subitem = std::make_unique<QTreeWidgetItem>();
         subitem->setText(0, name); /*set the data name from the file*/
         subitem->setText(1, QString("Array")); // Define the type of the data
         subitem->setText(
@@ -317,7 +318,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
                 getProjectID())); // pid for get the tensor with Value
         MainWindow::getProjectItem(getProjectID(), treeWidget)
             ->child(0)
-            ->addChild(subitem);
+            ->addChild(subitem.release());
       }
       (*tabcount_)++;
       (*log).append(QString("Array %1 imported.\n").arg(name));
@@ -425,6 +426,9 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       getLastPCAModel()->setDataHash(hashinputmx);
       getLastPCAModel()->getObjName() = DeserializeQStringList(s_objname);
       getLastPCAModel()->getVarName() = DeserializeQStringList(s_varname);
+      if (!getLastPCAModel()->Model()->scores) initMatrix(&getLastPCAModel()->Model()->scores);
+      if (!getLastPCAModel()->Model()->loadings) initMatrix(&getLastPCAModel()->Model()->loadings);
+      if (!getLastPCAModel()->Model()->dmodx) initMatrix(&getLastPCAModel()->Model()->dmodx);
       DeserializeMatrix(s_scores, getLastPCAModel()->Model()->scores);
       DeserializeMatrix(s_loadings, getLastPCAModel()->Model()->loadings);
       DeserializeMatrix(s_dmodx, getLastPCAModel()->Model()->dmodx);
@@ -450,7 +454,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       getLastPCAModel()->setDID(xid);
 
       if (treeWidget) {
-        QTreeWidgetItem *subitem = new QTreeWidgetItem;
+        auto subitem = std::make_unique<QTreeWidgetItem>();
         subitem->setText(0, getLastPCAModel()->getName());
         subitem->setText(1, QString::number((*tabcount_)));
         subitem->setText(2, QString::number(getProjectID()));
@@ -463,7 +467,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         subitem->setText(9, QString::number((*mid_)));
         MainWindow::getProjectItem(getProjectID(), treeWidget)
             ->child(1)
-            ->addChild(subitem);
+            ->addChild(subitem.release());
         (*tabcount_)++;
       }
       (*log).append(QString("PCA model %1 imported.\n").arg(name));
@@ -507,7 +511,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
           //         id - ydata id - Data Position - Data Type (PCA Prediction,
           //         UPCA Prediction, ...) (8)
           if (treeWidget) {
-            QTreeWidgetItem *preditem = new QTreeWidgetItem;
+            auto preditem = std::make_unique<QTreeWidgetItem>();
             preditem->setText(
                 0, getPCAModel((*mid_))->getLastPCAPrediction()->getName());
             preditem->setText(1, QString::number((*tabcount_)));
@@ -522,7 +526,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
                     getPCAModel((*mid_))->getLastPCAPrediction()->getPredID()));
             preditem->setText(7, QString("PCA Prediction"));
             MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)
-                ->addChild(preditem);
+                ->addChild(preditem.release());
             (*tabcount_)++;
           }
         } else {
@@ -657,6 +661,37 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       getLastPLSModel()->setXVarName(DeserializeQStringList(s_xvarname));
       getLastPLSModel()->setYVarName(DeserializeQStringList(s_yvarname));
       getLastPLSModel()->setClasses(DeserializeLABELS(s_classes));
+
+      if (!getLastPLSModel()->Model()->xscores) initMatrix(&getLastPLSModel()->Model()->xscores);
+      if (!getLastPLSModel()->Model()->xloadings) initMatrix(&getLastPLSModel()->Model()->xloadings);
+      if (!getLastPLSModel()->Model()->xweights) initMatrix(&getLastPLSModel()->Model()->xweights);
+      if (!getLastPLSModel()->Model()->xvarexp) initDVector(&getLastPLSModel()->Model()->xvarexp);
+      if (!getLastPLSModel()->Model()->xcolaverage) initDVector(&getLastPLSModel()->Model()->xcolaverage);
+      if (!getLastPLSModel()->Model()->xcolscaling) initDVector(&getLastPLSModel()->Model()->xcolscaling);
+      if (!getLastPLSModel()->Model()->yscores) initMatrix(&getLastPLSModel()->Model()->yscores);
+      if (!getLastPLSModel()->Model()->yloadings) initMatrix(&getLastPLSModel()->Model()->yloadings);
+      if (!getLastPLSModel()->Model()->ycolaverage) initDVector(&getLastPLSModel()->Model()->ycolaverage);
+      if (!getLastPLSModel()->Model()->ycolscaling) initDVector(&getLastPLSModel()->Model()->ycolscaling);
+      if (!getLastPLSModel()->Model()->b) initDVector(&getLastPLSModel()->Model()->b);
+      if (!getLastPLSModel()->Model()->r2y_recalculated) initMatrix(&getLastPLSModel()->Model()->r2y_recalculated);
+      if (!getLastPLSModel()->Model()->sdec) initMatrix(&getLastPLSModel()->Model()->sdec);
+      if (!getLastPLSModel()->Model()->recalculated_y) initMatrix(&getLastPLSModel()->Model()->recalculated_y);
+      if (!getLastPLSModel()->Model()->recalc_residuals) initMatrix(&getLastPLSModel()->Model()->recalc_residuals);
+      if (!getLastPLSModel()->Model()->q2y) initMatrix(&getLastPLSModel()->Model()->q2y);
+      if (!getLastPLSModel()->Model()->sdep) initMatrix(&getLastPLSModel()->Model()->sdep);
+      if (!getLastPLSModel()->Model()->bias) initMatrix(&getLastPLSModel()->Model()->bias);
+      if (!getLastPLSModel()->Model()->predicted_y) initMatrix(&getLastPLSModel()->Model()->predicted_y);
+      if (!getLastPLSModel()->Model()->pred_residuals) initMatrix(&getLastPLSModel()->Model()->pred_residuals);
+      if (!getLastPLSModel()->Model()->roc_recalculated) initTensor(&getLastPLSModel()->Model()->roc_recalculated);
+      if (!getLastPLSModel()->Model()->roc_validation) initTensor(&getLastPLSModel()->Model()->roc_validation);
+      if (!getLastPLSModel()->Model()->roc_auc_recalculated) initMatrix(&getLastPLSModel()->Model()->roc_auc_recalculated);
+      if (!getLastPLSModel()->Model()->roc_auc_validation) initMatrix(&getLastPLSModel()->Model()->roc_auc_validation);
+      if (!getLastPLSModel()->Model()->precision_recall_recalculated) initTensor(&getLastPLSModel()->Model()->precision_recall_recalculated);
+      if (!getLastPLSModel()->Model()->precision_recall_validation) initTensor(&getLastPLSModel()->Model()->precision_recall_validation);
+      if (!getLastPLSModel()->Model()->precision_recall_ap_recalculated) initMatrix(&getLastPLSModel()->Model()->precision_recall_ap_recalculated);
+      if (!getLastPLSModel()->Model()->precision_recall_ap_validation) initMatrix(&getLastPLSModel()->Model()->precision_recall_ap_validation);
+      if (!getLastPLSModel()->Model()->yscrambling) initMatrix(&getLastPLSModel()->Model()->yscrambling);
+
       DeserializeMatrix(s_tscores, getLastPLSModel()->Model()->xscores);
       DeserializeMatrix(s_ploadings, getLastPLSModel()->Model()->xloadings);
       DeserializeMatrix(s_weights, getLastPLSModel()->Model()->xweights);
@@ -723,7 +758,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
 
       getLastPLSModel()->setDID(xid);
       if (treeWidget) {
-        QTreeWidgetItem *subitem = new QTreeWidgetItem;
+        auto subitem = std::make_unique<QTreeWidgetItem>();
         subitem->setText(0, getLastPLSModel()->getName());
         subitem->setText(1, QString::number((*tabcount_)));
         subitem->setText(2, QString::number(getProjectID()));
@@ -736,7 +771,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         subitem->setText(9, QString::number((*mid_)));
         MainWindow::getProjectItem(getProjectID(), treeWidget)
             ->child(1)
-            ->addChild(subitem);
+            ->addChild(subitem.release());
         (*tabcount_)++;
       }
       (*log).append(QString("PLS model %1 imported.\n").arg(name));
@@ -801,9 +836,9 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
 
           getLastPLSModel()->getLastPLSPrediction()->setDID(predid);
           if (treeWidget) {
-            QTreeWidgetItem *preditem = new QTreeWidgetItem;
+            auto preditem = std::make_unique<QTreeWidgetItem>();
             preditem->setText(
-                0, getPLSModel((*mid_))->getLastPLSPrediction()->getName());
+                0, getLastPLSModel()->getLastPLSPrediction()->getName());
             preditem->setText(1, QString::number((*tabcount_)));
             preditem->setText(2, QString::number(getProjectID()));
             preditem->setText(3, QString::number((*mid_)));
@@ -814,16 +849,19 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
             preditem->setText(
                 6,
                 QString::number(
-                    getPLSModel((*mid_))->getLastPLSPrediction()->getPredID()));
+                    getLastPLSModel()->getLastPLSPrediction()->getPredID()));
             preditem->setText(7, QString("PLS Prediction"));
             MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)
-                ->addChild(preditem);
-            (*tabcount_)++;
+                ->addChild(preditem.release());
           }
+          if (tabcount_)
+            (*tabcount_)++;
         } else {
           continue;
         }
       }
+      if (tabcount_)
+        (*tabcount_)++;
       (*mid_)++;
     }
 
@@ -862,7 +900,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       QString serialized_bias = query.value(14).toString();
       QString serialized_predicted_y = query.value(15).toString();
       QString serialized_predicted_residuals = query.value(16).toString();
-      QString serialized_r2q2scrambling = query.value(167).toString();
+      QString serialized_r2q2scrambling = query.value(17).toString();
 
       addMLRModel();
       getLastMLRModel()->setModelID((*mid_));
@@ -883,7 +921,6 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       DeserializeDVector(serialized_ymean, getLastMLRModel()->Model()->ymean);
       DeserializeDVector(serialized_q2y, getLastMLRModel()->Model()->q2y);
       DeserializeDVector(serialized_sdep, getLastMLRModel()->Model()->sdep);
-      DeserializeDVector(serialized_bias, getLastMLRModel()->Model()->bias);
       DeserializeDVector(serialized_bias, getLastMLRModel()->Model()->bias);
       DeserializeMatrix(serialized_predicted_y,
                         getLastMLRModel()->Model()->predicted_y);
@@ -910,7 +947,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
 
       getLastMLRModel()->setDID(did);
       if (treeWidget) {
-        QTreeWidgetItem *subitem = new QTreeWidgetItem;
+        auto subitem = std::make_unique<QTreeWidgetItem>();
         subitem->setText(0, name);
         subitem->setText(1, QString::number((*tabcount_)));
         subitem->setText(2, QString::number(getProjectID()));
@@ -923,9 +960,10 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         subitem->setText(9, QString::number((*mid_)));
         MainWindow::getProjectItem(getProjectID(), treeWidget)
             ->child(1)
-            ->addChild(subitem);
-        (*tabcount_)++;
+            ->addChild(subitem.release());
       }
+      if (tabcount_)
+        (*tabcount_)++;
 
       QString mlrhash = getLastMLRModel()->getHash();
       for (int i = 0; i < mlrpredlist.size(); i++) {
@@ -972,7 +1010,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
 
           getLastMLRModel()->getLastMLRPrediction()->setDID(preddid);
           if (treeWidget) {
-            QTreeWidgetItem *preditem = new QTreeWidgetItem;
+            auto preditem = std::make_unique<QTreeWidgetItem>();
             preditem->setText(
                 0, getLastMLRModel()->getLastMLRPrediction()->getName());
             preditem->setText(1, QString::number((*tabcount_)));
@@ -987,11 +1025,10 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
                        getLastMLRModel()->getLastMLRPrediction()->getPredID()));
             preditem->setText(7, QString("MLR Prediction"));
             MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)
-                ->addChild(preditem);
-            (*tabcount_)++;
+                ->addChild(preditem.release());
           }
-        } else {
-          i++;
+          if (tabcount_)
+            (*tabcount_)++;
         }
       }
       (*mid_)++;
@@ -1057,6 +1094,26 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
           DeserializeQStringList(serialized_objname);
       getLastLDAModel()->getVarName() =
           DeserializeQStringList(serialized_varname);
+
+      if (!getLastLDAModel()->Model()->roc) initTensor(&getLastLDAModel()->Model()->roc);
+      if (!getLastLDAModel()->Model()->roc_aucs) initDVector(&getLastLDAModel()->Model()->roc_aucs);
+      if (!getLastLDAModel()->Model()->pr) initTensor(&getLastLDAModel()->Model()->pr);
+      if (!getLastLDAModel()->Model()->pr_aucs) initDVector(&getLastLDAModel()->Model()->pr_aucs);
+      if (!getLastLDAModel()->Model()->recalculated_y) initMatrix(&getLastLDAModel()->Model()->recalculated_y);
+      if (!getLastLDAModel()->Model()->recalculated_residuals) initMatrix(&getLastLDAModel()->Model()->recalculated_residuals);
+      if (!getLastLDAModel()->Model()->predicted_y) initMatrix(&getLastLDAModel()->Model()->predicted_y);
+      if (!getLastLDAModel()->Model()->predicted_residuals) initMatrix(&getLastLDAModel()->Model()->predicted_residuals);
+      if (!getLastLDAModel()->Model()->pprob) initDVector(&getLastLDAModel()->Model()->pprob);
+      if (!getLastLDAModel()->Model()->eval) initDVector(&getLastLDAModel()->Model()->eval);
+      if (!getLastLDAModel()->Model()->evect) initMatrix(&getLastLDAModel()->Model()->evect);
+      if (!getLastLDAModel()->Model()->mu) initMatrix(&getLastLDAModel()->Model()->mu);
+      if (!getLastLDAModel()->Model()->mnpdf) initTensor(&getLastLDAModel()->Model()->mnpdf);
+      if (!getLastLDAModel()->Model()->features) initTensor(&getLastLDAModel()->Model()->features);
+      if (!getLastLDAModel()->Model()->fmean) initMatrix(&getLastLDAModel()->Model()->fmean);
+      if (!getLastLDAModel()->Model()->fsdev) initMatrix(&getLastLDAModel()->Model()->fsdev);
+      if (!getLastLDAModel()->Model()->inv_cov) initMatrix(&getLastLDAModel()->Model()->inv_cov);
+      if (!getLastLDAModel()->Model()->classid) initUIVector(&getLastLDAModel()->Model()->classid);
+
       DeserializeTensor(serialized_roc, getLastLDAModel()->Model()->roc);
       DeserializeDVector(serialized_roc_aucs,
                          getLastLDAModel()->Model()->roc_aucs);
@@ -1111,7 +1168,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
 
       getLastLDAModel()->setDID(did);
       if (treeWidget) {
-        QTreeWidgetItem *subitem = new QTreeWidgetItem;
+        auto subitem = std::make_unique<QTreeWidgetItem>();
         subitem->setText(0, getLastLDAModel()->getName());
         subitem->setText(1, QString::number((*tabcount_)));
         subitem->setText(2, QString::number(getProjectID()));
@@ -1124,7 +1181,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         subitem->setText(9, QString::number((*mid_)));
         MainWindow::getProjectItem(getProjectID(), treeWidget)
             ->child(1)
-            ->addChild(subitem);
+            ->addChild(subitem.release());
         (*tabcount_)++;
       }
 
@@ -1164,7 +1221,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
               DeserializeQStringList(ldapredlist[j][9]);
           DeserializeMatrix(
               ldapredlist[j][10],
-              getLastLDAModel()->getLastLDAPrediction()->getProbPred());
+              getLastLDAModel()->getLastLDAPrediction()->getMVNProbDistrib());
 
           int preddid = -1;
           for (int k = 0; k < MatrixCount(); k++) {
@@ -1189,7 +1246,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
           //         id - ydata id - Data Position - Data Type (LDA Prediction,
           //         ULDA Prediction, ...) (8)
           if (treeWidget) {
-            QTreeWidgetItem *preditem = new QTreeWidgetItem;
+            auto preditem = std::make_unique<QTreeWidgetItem>();
             preditem->setText(
                 0, getLDAModel((*mid_))->getLastLDAPrediction()->getName());
             preditem->setText(1, QString::number((*tabcount_)));
@@ -1204,7 +1261,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
                     getLDAModel((*mid_))->getLastLDAPrediction()->getPredID()));
             preditem->setText(7, QString("LDA Prediction"));
             MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)
-                ->addChild(preditem);
+                ->addChild(preditem.release());
             (*tabcount_)++;
           }
         }
@@ -2153,13 +2210,13 @@ void DATA::loadPCAModelsFromSQL(QSqlQuery *query, int *mid_, int *tabcount_,
     getLastPCAModel()->setDID(xid);
 
     if (treeWidget) {
-      QTreeWidgetItem *subitem = new QTreeWidgetItem;
+      auto subitem = std::make_unique<QTreeWidgetItem>();
       subitem->setText(0, getLastPCAModel()->getName());
       subitem->setText(8, QString("PCA Model"));
       subitem->setText(9, QString::number((*mid_)));
       MainWindow::getProjectItem(getProjectID(), treeWidget)
           ->child(1)
-          ->addChild(subitem);
+          ->addChild(subitem.release());
     }
     if (tabcount_)
       (*tabcount_)++;

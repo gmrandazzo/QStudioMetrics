@@ -157,7 +157,7 @@
    </widget>
    <widget class="QMenu" name="menuModels">
     <property name="title">
-     <string>&amp;Statistical models</string>
+     <string>&amp;Analysis</string>
     </property>
     <addaction name="actionPCA"/>
     <addaction name="actionPCA_Prediction"/>
@@ -180,11 +180,11 @@
    </widget>
    <widget class="QMenu" name="menuGraphs">
     <property name="title">
-     <string>&amp;Plots</string>
+     <string>&amp;Visualization</string>
     </property>
     <widget class="QMenu" name="menuVariable">
      <property name="title">
-      <string>Variable plots</string>
+      <string>Variable-Based Plots</string>
      </property>
      <property name="icon">
       <iconset resource="icons/icons.qrc">
@@ -195,7 +195,7 @@
     </widget>
     <widget class="QMenu" name="menuPlot_MLR">
      <property name="title">
-      <string>MLR plots</string>
+      <string>MLR Analysis Plots</string>
      </property>
      <property name="icon">
       <iconset resource="icons/icons.qrc">
@@ -214,7 +214,7 @@
     </widget>
     <widget class="QMenu" name="menuPlot_PLS_Model">
      <property name="title">
-      <string>PLS plots</string>
+      <string>PLS Analysis Plots</string>
      </property>
      <property name="icon">
       <iconset resource="icons/icons.qrc">
@@ -255,7 +255,7 @@
     </widget>
     <widget class="QMenu" name="menuPlot_LDA">
      <property name="title">
-      <string>LDA plots</string>
+      <string>LDA Analysis Plots</string>
      </property>
      <property name="icon">
       <iconset resource="icons/icons.qrc">
@@ -271,7 +271,7 @@
     </widget>
     <widget class="QMenu" name="menuPlot_PCA_Model">
      <property name="title">
-      <string>PCA plots</string>
+      <string>PCA Analysis Plots</string>
      </property>
      <property name="icon">
       <iconset resource="icons/icons.qrc">
@@ -288,7 +288,7 @@
     </widget>
     <widget class="QMenu" name="menuPlot_CPCA_Model">
      <property name="title">
-      <string>CPCA plots</string>
+      <string>CPCA Analysis Plots</string>
      </property>
      <property name="icon">
       <iconset resource="icons/icons.qrc">
@@ -312,7 +312,7 @@
    </widget>
    <widget class="QMenu" name="menuData">
     <property name="title">
-     <string>&amp;Data operations</string>
+     <string>&amp;Data</string>
     </property>
     <addaction name="actionAdd_Remove_Object_Labels"/>
     <addaction name="actionAdd_Remove_Variable_Labels"/>
@@ -549,7 +549,7 @@
      <normaloff>:/scatter.png</normaloff>:/scatter.png</iconset>
    </property>
    <property name="text">
-    <string>PCA</string>
+    <string>Principal Component Analysis (PCA)</string>
    </property>
   </action>
   <action name="actionPLS_Regression">
@@ -558,7 +558,7 @@
      <normaloff>:/regression.png</normaloff>:/regression.png</iconset>
    </property>
    <property name="text">
-    <string>PLS Regression</string>
+    <string>Partial Least Squares (PLS) Regression</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -637,42 +637,42 @@
   </action>
   <action name="actionPCA2DScore_Plot">
    <property name="text">
-    <string>t/t Score Plot</string>
+    <string>Score Plot (t/t)</string>
    </property>
   </action>
   <action name="actionPCA2DLoadings_Plot">
    <property name="text">
-    <string>p/p Loadings Plot</string>
+    <string>Loadings Plot (p/p)</string>
    </property>
   </action>
   <action name="actionPCA3DScore_Plot">
    <property name="text">
-    <string>t/t/t Score Plot</string>
+    <string>Score Plot (t/t/t)</string>
    </property>
   </action>
   <action name="actionPCA3DLoadings_Plot">
    <property name="text">
-    <string>p/p/p Loadings Plot</string>
+    <string>Loadings Plot (p/p/p)</string>
    </property>
   </action>
   <action name="actionUPCA2DScore_Plot">
    <property name="text">
-    <string>t/t Score Plot</string>
+    <string>Score Plot (t/t)</string>
    </property>
   </action>
   <action name="actionUPCA2DLoadings_Plot">
    <property name="text">
-    <string>p/p Loadings Plot</string>
+    <string>Loadings Plot (p/p)</string>
    </property>
   </action>
   <action name="actionUPCA3DScore_Plot">
    <property name="text">
-    <string>t/t/t Score Plot</string>
+    <string>Score Plot (t/t/t)</string>
    </property>
   </action>
   <action name="actionUPCA3DLoadings_Plot">
    <property name="text">
-    <string>p/p/p Loadings Plot</string>
+    <string>Loadings Plot (p/p/p)</string>
    </property>
   </action>
   <action name="actionPLS_Plot">
@@ -682,22 +682,22 @@
   </action>
   <action name="actionPLS2D_tt_Score_Plot">
    <property name="text">
-    <string>t/t Score Plot</string>
+    <string>Score Plot (t/t)</string>
    </property>
   </action>
   <action name="actionPLS2D_pp_Loadings_Plot">
    <property name="text">
-    <string>p/p Loadings Plot</string>
+    <string>Loadings Plot (p/p)</string>
    </property>
   </action>
   <action name="actionPLS2D_ww_Weights_Plot">
    <property name="text">
-    <string>w/w Weights Plot</string>
+    <string>Weights Plot (w/w)</string>
    </property>
   </action>
   <action name="actionPLSPred_vs_Exp">
    <property name="text">
-    <string>Pred vs Exp</string>
+    <string>Predicted vs Experimental</string>
    </property>
   </action>
   <action name="actionPLSR2_Q2">
@@ -707,17 +707,17 @@
   </action>
   <action name="actionPLS3D_ttt_Score_Plot">
    <property name="text">
-    <string>t/t/t Score Plot</string>
+    <string>Score Plot (t/t/t)</string>
    </property>
   </action>
   <action name="actionPLS3D_ppp_Loadings_Plot">
    <property name="text">
-    <string>p/p/p Loadings Plot</string>
+    <string>Loadings Plot (p/p/p)</string>
    </property>
   </action>
   <action name="actionPLS3D_www_Weights_Plot">
    <property name="text">
-    <string>w/w/w Weights Plot</string>
+    <string>Weights Plot (w/w/w)</string>
    </property>
   </action>
   <action name="actionUPLS_Plot">
@@ -727,22 +727,22 @@
   </action>
   <action name="actionUPLS2D_tt_Score_Plot">
    <property name="text">
-    <string>t/t Score Plot</string>
+    <string>Score Plot (t/t)</string>
    </property>
   </action>
   <action name="actionUPLS2D_pp_Loadings_Plot">
    <property name="text">
-    <string>p/p Loadings Plot</string>
+    <string>Loadings Plot (p/p)</string>
    </property>
   </action>
   <action name="actionUPLS2D_ww_Weights_Plot">
    <property name="text">
-    <string>w/w Weights Plot</string>
+    <string>Weights Plot (w/w)</string>
    </property>
   </action>
   <action name="actionUPLSPred_vs_Exp">
    <property name="text">
-    <string>Pred vs Exp</string>
+    <string>Predicted vs Experimental</string>
    </property>
   </action>
   <action name="actionUPLSR2_Q2">
@@ -752,17 +752,17 @@
   </action>
   <action name="actionUPLS3D_ttt_Score_Plot">
    <property name="text">
-    <string>t/t/t Score Plot</string>
+    <string>Score Plot (t/t/t)</string>
    </property>
   </action>
   <action name="actionUPLS3D_ppp_Loadings_Plot">
    <property name="text">
-    <string>p/p/p Loadings Plot</string>
+    <string>Loadings Plot (p/p/p)</string>
    </property>
   </action>
   <action name="actionUPLS3D_www_Weights_Plot">
    <property name="text">
-    <string>w/w/w Weights Plot</string>
+    <string>Weights Plot (w/w/w)</string>
    </property>
   </action>
   <action name="actionPLS_Validator">
@@ -771,7 +771,7 @@
      <normaloff>:/validation.png</normaloff>:/validation.png</iconset>
    </property>
    <property name="text">
-    <string>PLS Validator</string>
+    <string>Model Validation (PLS)</string>
    </property>
   </action>
   <action name="actionUPLS_Validator">
@@ -785,7 +785,7 @@
      <normaloff>:/prediction.png</normaloff>:/prediction.png</iconset>
    </property>
    <property name="text">
-    <string>PLS Prediction</string>
+    <string>Model Prediction (PLS)</string>
    </property>
   </action>
   <action name="actionUPLS_Prediction">
@@ -799,7 +799,7 @@
      <normaloff>:/prediction.png</normaloff>:/prediction.png</iconset>
    </property>
    <property name="text">
-    <string>PCA Prediction</string>
+    <string>Model Prediction (PCA)</string>
    </property>
   </action>
   <action name="actionUPCA_Prediction">
@@ -809,42 +809,42 @@
   </action>
   <action name="actionPLS2D_uu_Score_Plot">
    <property name="text">
-    <string>u/u Score Plot</string>
+    <string>Score Plot (u/u)</string>
    </property>
   </action>
   <action name="actionPLS2D_qq_Loadings_Plot">
    <property name="text">
-    <string>q/q Loadings Plot</string>
+    <string>Loadings Plot (q/q)</string>
    </property>
   </action>
   <action name="actionPLS3D_uuu_Score_Plot">
    <property name="text">
-    <string>u/u/u Score Plot</string>
+    <string>Score Plot (u/u/u)</string>
    </property>
   </action>
   <action name="actionPLS3D_qqq_Loadings_Plot">
    <property name="text">
-    <string>q/q/q Loadings Plot</string>
+    <string>Loadings Plot (q/q/q)</string>
    </property>
   </action>
   <action name="actionUPLS2D_uu_Score_Plot">
    <property name="text">
-    <string>u/u Score Plot</string>
+    <string>Score Plot (u/u)</string>
    </property>
   </action>
   <action name="actionUPLS2D_qq_Loadings_Plot">
    <property name="text">
-    <string>q/q Loadings Plot</string>
+    <string>Loadings Plot (q/q)</string>
    </property>
   </action>
   <action name="actionUPLS3D_uuu_Score_Plot">
    <property name="text">
-    <string>u/u/u Score Plot</string>
+    <string>Score Plot (u/u/u)</string>
    </property>
   </action>
   <action name="actionUPLS3D_qqq_Loadings_Plot">
    <property name="text">
-    <string>q/q/q Loadings Plot</string>
+    <string>Loadings Plot (q/q/q)</string>
    </property>
   </action>
   <action name="action_Test">
@@ -879,7 +879,7 @@
   </action>
   <action name="actionPLSRecalc_vs_Exp">
    <property name="text">
-    <string>Recalc vs Exp</string>
+    <string>Recalculated vs Experimental</string>
    </property>
   </action>
   <action name="actionPLS3D_ttt_Score_Plot_Prediction">
@@ -909,7 +909,7 @@
   </action>
   <action name="actionUPLSRecalc_vs_Exp">
    <property name="text">
-    <string>Recalc vs Exp</string>
+    <string>Recalculated vs Experimental</string>
    </property>
   </action>
   <action name="actionUPLSRecalc_vs_Exp_with_Prediction">
@@ -1064,7 +1064,7 @@
      <normaloff>:/regression.png</normaloff>:/regression.png</iconset>
    </property>
    <property name="text">
-    <string>MLR</string>
+    <string>Multiple Linear Regression (MLR)</string>
    </property>
   </action>
   <action name="actionMLR_Validator">
@@ -1073,7 +1073,7 @@
      <normaloff>:/validation.png</normaloff>:/validation.png</iconset>
    </property>
    <property name="text">
-    <string>MLR Validator</string>
+    <string>Model Validation (MLR)</string>
    </property>
   </action>
   <action name="actionMLR_Prediction">
@@ -1082,12 +1082,12 @@
      <normaloff>:/prediction.png</normaloff>:/prediction.png</iconset>
    </property>
    <property name="text">
-    <string>MLR Prediction</string>
+    <string>Model Prediction (MLR)</string>
    </property>
   </action>
   <action name="actionMLR_Recalc_vs_Exp">
    <property name="text">
-    <string>Recalc vs Exp</string>
+    <string>Recalculated vs Experimental</string>
    </property>
   </action>
   <action name="actionMLR_Recalc_Residuals_vs_Exp">
@@ -1161,7 +1161,7 @@
      <normaloff>:/discriminant_analysis.png</normaloff>:/discriminant_analysis.png</iconset>
    </property>
    <property name="text">
-    <string>LDA</string>
+    <string>Linear Discriminant Analysis (LDA)</string>
    </property>
   </action>
   <action name="actionLDA_Validator">
@@ -1170,7 +1170,7 @@
      <normaloff>:/validation.png</normaloff>:/validation.png</iconset>
    </property>
    <property name="text">
-    <string>LDA Validator</string>
+    <string>Model Validation (LDA)</string>
    </property>
   </action>
   <action name="actionLDA_Prediction">
@@ -1179,7 +1179,7 @@
      <normaloff>:/prediction.png</normaloff>:/prediction.png</iconset>
    </property>
    <property name="text">
-    <string>LDA Prediction</string>
+    <string>Model Prediction (LDA)</string>
    </property>
   </action>
   <action name="actionLDA2D_Feature_Plot">
@@ -1322,7 +1322,7 @@
   </action>
   <action name="actionPLS2D_p_q_p_q_Loadings_Plot">
    <property name="text">
-    <string>p-q/p-q Loadings Plot</string>
+    <string>Loadings Plot (p-q/p-q)</string>
    </property>
   </action>
   <action name="actionOpenProject_OLD_VERSION">
@@ -1345,7 +1345,7 @@
      <normaloff>:/discriminant_analysis.png</normaloff>:/discriminant_analysis.png</iconset>
    </property>
    <property name="text">
-    <string>PLS Discriminant Analysis</string>
+    <string>PLS Discriminant Analysis (PLS-DA)</string>
    </property>
   </action>
   <action name="actionEPLS_Discriminant_Analysis">
@@ -1462,7 +1462,7 @@
   </action>
   <action name="actionPLSRMSE">
    <property name="text">
-    <string>RMSE (Training/Validation)</string>
+    <string>Root Mean Square Error (RMSE) (Training/Validation)</string>
    </property>
   </action>
   <action name="actionPLSMAE">
@@ -1487,7 +1487,7 @@
   </action>
   <action name="actionPLSRMSEModel_and_External_Prediction">
    <property name="text">
-    <string>RMSE (Training/Validation/External prediction)</string>
+    <string>Root Mean Square Error (RMSE) (Training/Validation/External prediction)</string>
    </property>
   </action>
   <action name="actionPLSMAEModel_and_External_Prediction">
@@ -1501,7 +1501,7 @@
      <normaloff>:/scatter.png</normaloff>:/scatter.png</iconset>
    </property>
    <property name="text">
-    <string>CPCA</string>
+    <string>Consensus PCA (CPCA)</string>
    </property>
   </action>
   <action name="actionCPCA_Prediction">
@@ -1510,7 +1510,7 @@
      <normaloff>:/prediction.png</normaloff>:/prediction.png</iconset>
    </property>
    <property name="text">
-    <string>CPCA Prediction</string>
+    <string>Model Prediction (CPCA)</string>
    </property>
   </action>
   <action name="actionCPCA2DSuperScores_Plot">
@@ -1535,7 +1535,7 @@
   </action>
   <action name="actionCPCA2DExplained_variance_Plot">
    <property name="text">
-    <string>Explained variance</string>
+    <string>Explained Variance</string>
    </property>
   </action>
   <action name="actionCPCA2DSuperScores_Plot_Prediction">

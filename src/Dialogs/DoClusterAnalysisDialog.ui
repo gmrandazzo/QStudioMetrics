@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Cluster Analysis Configuration</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_16">
    <item row="0" column="2" rowspan="2">

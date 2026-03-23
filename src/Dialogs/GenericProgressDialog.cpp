@@ -42,6 +42,7 @@ void GenericProgressDialog::Cancel() { emit runCancelled(); }
 
 GenericProgressDialog::GenericProgressDialog() : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Operation in Progress...");
   setWindowFlags(
       ((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowCloseButtonHint));
   setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);

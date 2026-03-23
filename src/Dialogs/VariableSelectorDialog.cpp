@@ -288,6 +288,7 @@ VariableSelectorDialog::VariableSelectorDialog(QStringList &objnames,
                                                QList<int> id_,
                                                LABELS *varlabels_) {
   ui.setupUi(this);
+  setWindowTitle("Variable Selection & Filtering");
 
   objlabels = 0;
   varlabels = varlabels_;
@@ -335,6 +336,7 @@ VariableSelectorDialog::VariableSelectorDialog(QStringList &objnames,
 VariableSelectorDialog::VariableSelectorDialog(QStringList &variablenames,
                                                LABELS *varlabels_) {
   ui.setupUi(this);
+  setWindowTitle("Variable Selection & Filtering");
 
   objlabels = 0;
   varlabels = varlabels_;

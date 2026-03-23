@@ -73,6 +73,15 @@ endif()
 # Disable some warnings
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-extra-semi")
 
+option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
+if(ENABLE_COVERAGE)
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+    message(STATUS "Coverage reporting enabled")
+  endif()
+endif()
+
 # IF RELEASE
 if(cmake_build_type_tolower STREQUAL "release")
   set(CMAKE_CXX_FLAGS_COVERAGE "${CMAKE_CXX_FLAGS_RELEASE} -fprofile-arcs -ftest-coverage")

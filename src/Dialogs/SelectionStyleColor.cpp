@@ -136,6 +136,7 @@ int SelectionStyleColor::ChangeColorType() {
 
 SelectionStyleColor::SelectionStyleColor() : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Configure Selection Colors");
 
   xlevels = ylevels = 0;
 
@@ -168,6 +169,7 @@ SelectionStyleColor::SelectionStyleColor(const QStringList &xvarname_,
                                          const QStringList &yvarname_)
     : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Configure Selection Colors");
 
   ui.solidcolor->setChecked(true);
   color1 = QColor(Qt::white);
@@ -238,6 +240,7 @@ SelectionStyleColor::SelectionStyleColor(const QStringList &xvarname_,
                                          const int &ylevels_)
     : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Configure Selection Colors");
 
   ui.solidcolor->setChecked(true);
   color1 = QColor(Qt::white);

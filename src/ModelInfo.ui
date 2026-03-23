@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Model Info</string>
+   <string>Model Properties &amp; Information</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">

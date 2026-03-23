@@ -831,6 +831,7 @@ void ModelDialogWizard::OK() {
 ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_,
                                      QWidget *parent) {
   ui.setupUi(this);
+  setWindowTitle("Analysis Setup Wizard");
 
   type = type_;
   if (type == PCA_) {

@@ -1508,7 +1508,7 @@ QList<SimpleLine2DPlot *> PLSPlot::ROCAUCs() {
       setMatrixValue(m, 0, 1, 0); // AUC Recalc in 0 pc is 0
       setMatrixValue(m, 0, 2, 0); // AUC Predicted in 0 pc is 0
 
-      for (uint i = 0; i < nlv - 1; i++) {
+      for (uint i = 0; i < model_nlv - 1; i++) {
         setMatrixValue(m, i + 1, 1,
                        getMatrixValue(projects->value(pid)
                                           ->getPLSModel(mid)
@@ -1637,7 +1637,7 @@ QList<SimpleLine2DPlot *> PLSPlot::PrecisionRecallAveragePrecision() {
       setMatrixValue(m, 0, 1, 0); // AUC Recalc in 0 pc is 0
       setMatrixValue(m, 0, 2, 0); // AUC Predicted in 0 pc is 0
 
-      for (uint i = 0; i < nlv - 1; i++) {
+      for (uint i = 0; i < model_nlv - 1; i++) {
         setMatrixValue(m, i + 1, 1,
                        getMatrixValue(projects->value(pid)
                                           ->getPLSModel(mid)

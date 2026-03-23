@@ -52,6 +52,7 @@ void HighlightTableVarDialog::SetVariable() {
 HighlightTableVarDialog::HighlightTableVarDialog(QStringList varname)
     : QDialog() {
   ui.setupUi(this);
+  setWindowTitle("Highlight Table Variable");
 
   var = 0;
 

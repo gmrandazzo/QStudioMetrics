@@ -53,6 +53,7 @@ int SearchOnTableDialog::getSelectionType() {
 
 SearchOnTableDialog::SearchOnTableDialog(QStringList optlist) {
   ui.setupUi(this);
+  setWindowTitle("Search Data Table");
 
   for (int i = 0; i < optlist.size(); i++) {
     ui.selectionlist->addItem(optlist[i]);

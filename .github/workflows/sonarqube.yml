@@ -27,7 +27,7 @@ jobs:
           sudo apt-get -y install \
             cmake build-essential unzip git curl sqlite3 libsqlite3-dev \
             liblapack-dev qt6-base-dev libqt6core5compat6-dev libqt6charts6-dev \
-            libglx-dev libgl1-mesa-dev libglvnd-dev
+            libglx-dev libgl1-mesa-dev libglvnd-dev gcovr
 
       # FIX 1: Manually download the build-wrapper from YOUR server to ensure version match (6.77)
       - name: Download Build Wrapper from Server
@@ -37,11 +37,19 @@ jobs:
           echo "$(pwd)/build-wrapper-linux-x86" >> $GITHUB_PATH
 
       - name: Configure CMake
-        run: cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DCMAKE_BUILD_TYPE=Debug .
+        run: cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON .
 
       - name: Run build-wrapper
         run: |
           build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build --parallel $(nproc)
+
+      - name: Run Tests
+        run: |
+          cd build && ctest --output-on-failure
+
+      - name: Generate Coverage Report
+        run: |
+          gcovr -r . --sonarqube coverage.xml
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
@@ -51,3 +59,4 @@ jobs:
         with:
           args: >
             -Dsonar.cfamily.compile-commands=bw-output/compile_commands.json
+            -Dsonar.coverageReportPaths=coverage.xml

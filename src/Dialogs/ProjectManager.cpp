@@ -364,6 +364,7 @@ void ProjectManager::setWindowName(QString name_) { setWindowTitle(name_); }
 
 ProjectManager::ProjectManager(DATA *data_) {
   ui.setupUi(this);
+  setWindowTitle("Project Management & Creation");
 
   data = data_;
   appendstate = false;

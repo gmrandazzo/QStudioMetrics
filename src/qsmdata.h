@@ -87,10 +87,9 @@ public:
   }
 
   void SortByName() {
+    if (!v || v->size == 0 || objname.isEmpty())
+      return;
     QList<QPair<QString, uint>> array_;
-    for (uint i = 0; i < v->size; i++) {
-      array_.append(qMakePair(objname[i], i));
-    }
     // Ordering ascending
     std::sort(array_.begin(), array_.end(), QPairComparerAscending());
 
@@ -137,6 +136,8 @@ public:
   }
 
   void SortByName() {
+    if (!m || m->row == 0 || objname.isEmpty())
+      return;
     QList<QPair<QString, uint>> array_;
     for (uint i = 0; i < m->row; i++) {
       array_.append(qMakePair(objname[i], i));
@@ -191,6 +192,8 @@ public:
   }
 
   void SortByName() {
+    if (!a || a->order == 0 || a->m[0]->row == 0 || objname.isEmpty())
+      return;
     tensor *atmp;
     QList<QPair<QString, uint>> array_;
     for (uint i = 0; i < a->m[0]->row; i++) {

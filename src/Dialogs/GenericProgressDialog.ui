@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Running progres..</string>
+   <string>Operation in Progress...</string>
   </property>
   <property name="modal">
    <bool>true</bool>

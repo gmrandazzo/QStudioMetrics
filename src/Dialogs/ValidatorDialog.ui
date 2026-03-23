@@ -32,7 +32,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Compute...</string>
+   <string>Model Validation Parameters</string>
   </property>
   <property name="modal">
    <bool>true</bool>

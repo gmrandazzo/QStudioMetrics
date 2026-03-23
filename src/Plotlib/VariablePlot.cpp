@@ -107,11 +107,15 @@ ScatterPlot *VariablePlot::VariableVSVariable() {
     QString vname2 =
         projects->value(pid)->getMatrix(xhash[0])->getVarName()[varid2 + 1];
 
+    QString projectname = projects->value(pid)->getProjectName();
     ScatterPlot *plt2D = new ScatterPlot(
         mxlst, selobjects, &projects->value(pid)->getMATRIXList(), xhash, yhash,
         &projects->value(pid)->getObjectLabels(),
         &projects->value(pid)->getVariableLabels(), vname1, vname2,
-        QString("Variable %1 VS Variable %2").arg(vname1).arg(vname2),
+        QString("%1 | Bivariate Analysis | %2 vs %3")
+            .arg(projectname)
+            .arg(vname1)
+            .arg(vname2),
         ScatterPlot::SCORES);
 
     plt2D->SetAutoNameAxes(false);
@@ -172,9 +176,13 @@ ScatterPlot *VariablePlot::VariableVSVariable() {
     QString vname2 =
         projects->value(pid)->getArray(xhash[0])->getVarName()[varid2 + 1];
 
+    QString projectname = projects->value(pid)->getProjectName();
     ScatterPlot *plt2D = new ScatterPlot(
         mxlst, selobjects, vname1, vname2,
-        QString("Variable %1 VS Variable %2").arg(vname1).arg(vname2));
+        QString("%1 | Bivariate Analysis | %2 vs %3")
+            .arg(projectname)
+            .arg(vname1)
+            .arg(vname2));
 
     plt2D->SetAutoNameAxes(false);
     plt2D->setPID(pid);
@@ -236,9 +244,13 @@ BarPlot *VariablePlot::VariableDistribution() {
     QString vname1 =
         projects->value(pid)->getMatrix(xhash[0])->getVarName()[varid1 + 1];
 
-    BarPlot *bplot =
-        new BarPlot(v, QString("Distribution Plot for %1").arg(vname1), vname1,
-                    "Number of Objects", selobjlabels);
+    QString projectname = projects->value(pid)->getProjectName();
+    BarPlot *bplot = new BarPlot(
+        v,
+        QString("%1 | Statistical Distribution | %2")
+            .arg(projectname)
+            .arg(vname1),
+        vname1, "Number of Objects", selobjlabels);
 
     for (int i = 0; i < v.size(); i++) {
       DelDVector(&v[i]);
@@ -278,9 +290,13 @@ BarPlot *VariablePlot::VariableDistribution() {
     QString vname1 =
         projects->value(pid)->getArray(xhash[0])->getVarName()[varid1 + 1];
 
-    BarPlot *bplot =
-        new BarPlot(v, QString("Distribution Plot for %1").arg(vname1), vname1,
-                    "Number of Objects", selobjlabels);
+    QString projectname = projects->value(pid)->getProjectName();
+    BarPlot *bplot = new BarPlot(
+        v,
+        QString("%1 | Statistical Distribution | %2")
+            .arg(projectname)
+            .arg(vname1),
+        vname1, "Number of Objects", selobjlabels);
 
     for (int i = 0; i < v.size(); i++) {
       DelDVector(&v[i]);

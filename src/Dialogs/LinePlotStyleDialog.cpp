@@ -69,6 +69,7 @@ void LinePlotStyleDialog::SetLineSize() {
 
 LinePlotStyleDialog::LinePlotStyleDialog() : QDialog(0) {
   ui.setupUi(this);
+  setWindowTitle("Line Plot Visualization Styles");
 
   color = QColor(Qt::red);
   ui.colorLabel->setStyleSheet(QString("background-color: rgb(%1, %2, %3);")

@@ -60,6 +60,7 @@ void ValidationClusterPlot::SavePlotImage() {
 ValidationClusterPlot::ValidationClusterPlot(dvector *toplot,
                                              QString yaxestitle) {
   ui.setupUi(this);
+  setWindowTitle("Cluster Validation Results");
   chart = new Chart();
   plotLayout = new QVBoxLayout();
   plotLayout->addWidget(chart);

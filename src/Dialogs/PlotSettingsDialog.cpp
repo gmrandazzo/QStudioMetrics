@@ -51,6 +51,7 @@ PlotSettingsDialog::PlotSettingsDialog(double xmin, double xmax, int xtick,
                                        int xlabelsize, int ylabelsize)
     : QDialog(0) {
   ui.setupUi(this);
+  setWindowTitle("Visualization Configuration");
   ui.xMin->setValue(xmin);
   ui.xMax->setValue(xmax);
   ui.xTick->setValue(xtick);
