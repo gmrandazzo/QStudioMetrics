@@ -269,12 +269,39 @@ if(cmake_build_type_tolower STREQUAL "debug")
   add_test(NAME TestQSMDataOps COMMAND testqsmdataops)
 
   qt6_wrap_cpp(TEST_DATA_MOC qsmdata.h Dialogs/GenericProgressDialog.h)
-  add_executable(testqsmdata test_qsm_data.cpp qsmdata.cpp DATAIO.cpp qstudiometricsdataoperations.cpp PCA/pcamodel.cpp PLS/plsmodel.cpp MLR/mlrmodel.cpp LDA/ldamodel.cpp CPCA/cpcamodel.cpp Dialogs/GenericProgressDialog.cpp ${TEST_DATA_MOC})
+  add_executable(testqsmdata 
+      test_qsm_data.cpp 
+      qsmdata.cpp 
+      DATAIO.cpp 
+      qstudiometricsdataoperations.cpp 
+      PCA/pcamodel.cpp 
+      PLS/plsmodel.cpp 
+      MLR/mlrmodel.cpp 
+      LDA/ldamodel.cpp 
+      CPCA/cpcamodel.cpp 
+      Dialogs/GenericProgressDialog.cpp 
+      ${TEST_DATA_MOC}
+      ${QSTUDIOMETRICS_UIS_H}
+  )
   set_target_properties(testqsmdata PROPERTIES AUTOMOC OFF)
   target_link_libraries(testqsmdata PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBRARIES} Qt6::Sql Qt6::Widgets)
   add_test(NAME TestQSMData COMMAND testqsmdata)
 
-  add_executable(testrun test_run.cpp run.cpp qsmdata.cpp DATAIO.cpp qstudiometricsdataoperations.cpp PCA/pcamodel.cpp PLS/plsmodel.cpp MLR/mlrmodel.cpp LDA/ldamodel.cpp CPCA/cpcamodel.cpp Dialogs/GenericProgressDialog.cpp ${TEST_DATA_MOC})
+  add_executable(testrun 
+      test_run.cpp 
+      run.cpp 
+      qsmdata.cpp 
+      DATAIO.cpp 
+      qstudiometricsdataoperations.cpp 
+      PCA/pcamodel.cpp 
+      PLS/plsmodel.cpp 
+      MLR/mlrmodel.cpp 
+      LDA/ldamodel.cpp 
+      CPCA/cpcamodel.cpp 
+      Dialogs/GenericProgressDialog.cpp 
+      ${TEST_DATA_MOC}
+      ${QSTUDIOMETRICS_UIS_H}
+  )
   set_target_properties(testrun PROPERTIES AUTOMOC OFF)
   target_link_libraries(testrun PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBRARIES} Qt6::Sql Qt6::Widgets)
   add_test(NAME TestRun COMMAND testrun)
