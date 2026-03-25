@@ -1,3 +1,6 @@
+option(ENABLE_PLUGINS "Enable plugin support" OFF)
+set(PLUGINS_PATH "" CACHE PATH "Path to the QStudioMetrics-Plugins directory")
+
 set(QSTUDIOMETRICS_SRC
     PCA/pcamodel.cpp
     CPCA/cpcamodel.cpp
@@ -117,6 +120,17 @@ set(QSTUDIOMETRICS_H
     MainWindow.h
     run.h)
 
+if(ENABLE_PLUGINS)
+    add_definitions(-DENABLE_PLUGINS)
+    list(APPEND QSTUDIOMETRICS_SRC PluginManager.cpp)
+    if(PLUGINS_PATH)
+        include_directories(${PLUGINS_PATH})
+        list(APPEND QSTUDIOMETRICS_H PluginManager.h)
+    else()
+        list(APPEND QSTUDIOMETRICS_H PluginManager.h)
+    endif()
+endif()
+
 set(QSTUDIOMETRICS_UIS
     Dialogs/ImportLabelListDialog.ui
     Dialogs/addLabelDialog.ui
@@ -201,7 +215,7 @@ if(WIN32)
   ADD_CUSTOM_COMMAND(OUTPUT ${WIN32_ICON_O} COMMAND windres.exe ARGS -I${CMAKE_CURRENT_SOURCE_DIR} -o${WIN32_ICON_O} -i${APP_ICON_RC} DEPENDS ${APP_ICON_RC})
 endif()
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src)
 
 
 if(WIN32)
@@ -215,6 +229,29 @@ add_executable(QStudioMetrics ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QS
 endif()
 
 target_link_libraries(QStudioMetrics PRIVATE ${LIBSCIENTIFIC_LIBRARY} libchart ${QT6_LIBRARIES})
+set_target_properties(QStudioMetrics PROPERTIES ENABLE_EXPORTS ON)
+
+# --- Plugin Discovery Mechanism ---
+if(ENABLE_PLUGINS)
+    set(DISCOVERY_BASE "")
+    if(PLUGINS_PATH)
+        set(DISCOVERY_BASE "${PLUGINS_PATH}/plugins")
+    else()
+        set(DISCOVERY_BASE "${CMAKE_CURRENT_SOURCE_DIR}/plugins")
+    endif()
+
+    if(EXISTS ${DISCOVERY_BASE})
+        file(GLOB PLUGINS_DIRS RELATIVE ${DISCOVERY_BASE} ${DISCOVERY_BASE}/*)
+        foreach(PLUGIN_DIR ${PLUGINS_DIRS})
+            if(IS_DIRECTORY ${DISCOVERY_BASE}/${PLUGIN_DIR} AND EXISTS ${DISCOVERY_BASE}/${PLUGIN_DIR}/CMakeLists.txt)
+                message(STATUS "Discovered plugin: ${PLUGIN_DIR}")
+                # Use absolute paths and specific binary dir for external plugins
+                add_subdirectory(${DISCOVERY_BASE}/${PLUGIN_DIR} ${CMAKE_CURRENT_BINARY_DIR}/plugins/${PLUGIN_DIR})
+            endif()
+        endforeach()
+    endif()
+endif()
+# ----------------------------------
 
 add_executable(qsm-pca ${QSTUDIOMETRICS_CMDPCA_SRC})
 target_link_libraries(qsm-pca PRIVATE ${LIBSCIENTIFIC_LIBRARY})

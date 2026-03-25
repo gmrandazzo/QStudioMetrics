@@ -33,6 +33,10 @@
 #include "MDIChild.h"
 #include "qsmdata.h"
 
+#ifdef ENABLE_PLUGINS
+#include "PluginManager.h"
+#endif
+
 // Version
 #define major_ 2
 #define minor_ 5
@@ -54,6 +58,9 @@ protected:
   void changeEvent(QEvent *e);
 
 private slots:
+#ifdef ENABLE_PLUGINS
+  void setupPlugins();
+#endif
   void Test();
   void NewProject();
   void OpenProject();
@@ -216,8 +223,6 @@ private slots:
   void DowngradeModelID();
   void removePrediction();
   void DowngradePredictionID();
-
-  void exportPLSBetaInference();
 
   void StartRun();
   void WaitRun();

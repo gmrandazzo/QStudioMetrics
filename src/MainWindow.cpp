@@ -922,6 +922,8 @@ QTreeWidgetItem *MainWindow::getPredictionItem(int pid, int mid, int preid) {
 }
 
 bool MainWindow::CurrentIsModel() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return false;
   if (ui.treeWidget->currentItem()->columnCount() == 10)
     return true;
   else
@@ -929,6 +931,8 @@ bool MainWindow::CurrentIsModel() {
 }
 
 int MainWindow::getCurrentModelID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 10) {
     return ui.treeWidget->currentItem()->text(9).toInt();
   } else {
@@ -937,6 +941,8 @@ int MainWindow::getCurrentModelID() {
 }
 
 QString MainWindow::getCurrentModelType() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return QString("None");
   if (ui.treeWidget->currentItem()->columnCount() == 10) {
     return ui.treeWidget->currentItem()->text(8);
   } else {
@@ -945,6 +951,8 @@ QString MainWindow::getCurrentModelType() {
 }
 
 int MainWindow::getCurrentModelNComponents() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 10) {
     return ui.treeWidget->currentItem()->text(7).toInt();
   } else {
@@ -1347,6 +1355,8 @@ bool MainWindow::CurrentIsProject() {
 }
 
 int MainWindow::getCurrentProjectID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 2) {
     return ui.treeWidget->currentItem()->text(1).toInt();
   } else {
@@ -1355,6 +1365,8 @@ int MainWindow::getCurrentProjectID() {
 }
 
 QString MainWindow::getCurrentProjectName() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return QString("None");
   if (ui.treeWidget->currentItem()->columnCount() == 2) {
     return ui.treeWidget->currentItem()->text(0);
   } else {
@@ -1392,87 +1404,6 @@ QTreeWidgetItem *MainWindow::getProjectItem(int pid) {
     ++it;
   }
   return 0;
-}
-
-void MainWindow::exportPLSBetaInference() {
-  int pid = getCurrentModelProjectID();
-  int mid = getCurrentModelID();
-  PLSModel *plsmod = projects->value(pid)->getPLSModel(mid);
-  if (!plsmod)
-    return;
-
-  bool ok;
-  int nlv = QInputDialog::getInt(this, tr("Export PLS Inference"),
-                                 tr("Number of Latent Variables:"),
-                                 plsmod->getNPC(), 1, plsmod->getNPC(), 1, &ok);
-  if (!ok)
-    return;
-
-  dvector *betas;
-  initDVector(&betas);
-  PLSBetasCoeff(plsmod->Model(), nlv, betas);
-
-  QString x_avg_str, x_scal_str, y_avg_str, y_scal_str, beta_str;
-  auto vecToString = [](dvector *v, int size) {
-    QStringList lst;
-    for (int i = 0; i < size; ++i) {
-      lst << QString::number(v->data[i], 'g', 17);
-    }
-    return lst.join(", ");
-  };
-
-  x_avg_str = vecToString(plsmod->Model()->xcolaverage, plsmod->Model()->xcolaverage->size);
-  x_scal_str = vecToString(plsmod->Model()->xcolscaling, plsmod->Model()->xcolscaling->size);
-  y_avg_str = vecToString(plsmod->Model()->ycolaverage, plsmod->Model()->ycolaverage->size);
-  y_scal_str = vecToString(plsmod->Model()->ycolscaling, plsmod->Model()->ycolscaling->size);
-  beta_str = vecToString(betas, betas->size);
-
-  QString pythonCode = QString(
-      "def pls_predict(x_input):\n"
-      "    # x_input is a list of features\n"
-      "    x_avg = [%1]\n"
-      "    x_scal = [%2]\n"
-      "    y_avg = [%3]\n"
-      "    y_scal = [%4]\n"
-      "    beta = [%5]\n\n"
-      "    # Apply X scaling\n"
-      "    x_scaled = [(x_input[i] - x_avg[i]) / x_scal[i] for i in range(len(x_input))]\n\n"
-      "    # Dot product with Beta\n"
-      "    y_pred_scaled = sum(x_scaled[i] * beta[i] for i in range(len(x_scaled)))\n\n"
-      "    # Revert Y scaling\n"
-      "    y_pred = (y_pred_scaled * y_scal[0]) + y_avg[0]\n"
-      "    return y_pred\n").arg(x_avg_str, x_scal_str, y_avg_str, y_scal_str, beta_str);
-
-  QString cCode = QString(
-      "double pls_predict(const double* x_input) {\n"
-      "    const double x_avg[] = {%1};\n"
-      "    const double x_scal[] = {%2};\n"
-      "    const double y_avg[] = {%3};\n"
-      "    const double y_scal[] = {%4};\n"
-      "    const double beta[] = {%5};\n"
-      "    const int n_features = %6;\n\n"
-      "    double y_pred_scaled = 0.0;\n"
-      "    for (int i = 0; i < n_features; ++i) {\n"
-      "        double x_scaled = (x_input[i] - x_avg[i]) / x_scal[i];\n"
-      "        y_pred_scaled += x_scaled * beta[i];\n"
-      "    }\n\n"
-      "    return (y_pred_scaled * y_scal[0]) + y_avg[0];\n"
-      "}\n").arg(x_avg_str, x_scal_str, y_avg_str, y_scal_str, beta_str).arg(betas->size);
-
-  QDialog *exportDlg = new QDialog(this);
-  exportDlg->setWindowTitle("PLS Export for Inference");
-  QVBoxLayout *layout = new QVBoxLayout(exportDlg);
-  QTextEdit *textEdit = new QTextEdit(exportDlg);
-  textEdit->setReadOnly(true);
-  textEdit->setPlainText("### PYTHON CODE ###\n\n" + pythonCode + "\n\n### C CODE ###\n\n" + cCode);
-  layout->addWidget(textEdit);
-  QPushButton *closeBtn = new QPushButton("Close", exportDlg);
-  connect(closeBtn, &QPushButton::clicked, exportDlg, &QDialog::accept);
-  layout->addWidget(closeBtn);
-  exportDlg->resize(800, 600);
-  exportDlg->show();
-
-  DelDVector(&betas);
 }
 
 void MainWindow::StartRun() {
@@ -3954,7 +3885,14 @@ void MainWindow::ShowContextMenu(const QPoint &pos) {
         menu.addAction("&Show Predicted Y", this, SLOT(showPLSValidatedPrediction()));
         menu.addAction("&Show Validation", this, SLOT(showPLSValidation()));
       }
-      menu.addAction("&Export Model for external Inference (Py/C)", this, SLOT(exportPLSBetaInference()));
+
+#ifdef ENABLE_PLUGINS
+      foreach (IContextMenuPlugin* plugin, PluginManager::instance().contextMenuPlugins()) {
+          if (plugin->supportedForModel(modeltype)) {
+              menu.addAction(plugin->getAction(pid, mid, this));
+          }
+      }
+#endif
 
     } else if (modeltype == "MLR Model") {
       menu.addAction("&Show Regression Coefficient", this, SLOT(showMLRCoeff()));
@@ -8822,6 +8760,10 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0) {
   //     connect(ui.action_Test, SIGNAL(triggered(bool)), SLOT(Test()));
 
   TopMenuEnableDisable();
+
+#ifdef ENABLE_PLUGINS
+  setupPlugins();
+#endif
 }
 
 MainWindow::~MainWindow() {
@@ -8837,3 +8779,42 @@ MainWindow::~MainWindow() {
   qDebug() << "Closing MainWindow";
 #endif
 }
+
+#ifdef ENABLE_PLUGINS
+void MainWindow::setupPlugins() {
+  PluginManager::instance().loadPlugins(projects, this);
+  
+  QList<IReportGenerator*> reports = PluginManager::instance().reportGenerators();
+  if (!reports.isEmpty()) {
+    QMenu *pluginsMenu = nullptr;
+    foreach (QAction *action, ui.menubar->actions()) {
+      if (action->text().contains("Plugins")) {
+        pluginsMenu = action->menu();
+        break;
+      }
+    }
+    
+    if (!pluginsMenu) {
+      pluginsMenu = ui.menubar->addMenu(tr("&Plugins"));
+    }
+
+    QMenu *reportsMenu = pluginsMenu->addMenu(tr("&Reports"));
+    
+    foreach (IReportGenerator* reportGen, reports) {
+      QAction* action = reportGen->getAction(this);
+      reportsMenu->addAction(action);
+      
+      connect(action, &QAction::triggered, [this, reportGen]() {
+        int pid = getCurrentProjectID();
+        int mid = getCurrentModelID();
+        if (pid != -1 && mid != -1) {
+          reportGen->generateReport(pid, mid);
+        } else {
+          QMessageBox::warning(this, tr("No Selection"), 
+            tr("Please select a model in the project tree to generate a report."));
+        }
+      });
+    }
+  }
+}
+#endif
