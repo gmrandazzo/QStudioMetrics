@@ -22,6 +22,7 @@
 #include "qstudiometricsdataoperations.h"
 #include "qstudiometricstypes.h"
 #include <QCryptographicHash>
+#include <QLocale>
 #include <QString>
 #include <QStringList>
 #include <cmath>
@@ -32,20 +33,18 @@
 #include <iomanip>
 
 static std::string doubleToString(double val) {
-    std::ostringstream oss;
-    oss << std::setprecision(17) << val;
-    return oss.str();
+    return QLocale::c().toString(val, 'g', 17).toStdString();
 }
 
 LABELS DeserializeLABELS(QString serialized_l) {
   LABELS l;
   if (serialized_l.compare("NULL", Qt::CaseInsensitive) != 0) {
-    QStringList r = serialized_l.split("/#");
+    QStringList r = serialized_l.split(QSM_SQL_SERIALIZATION::SEP_LABEL);
     for (int i = 0; i < r.size(); i++) {
       l.append(LABEL());
-      QStringList lb = r[i].split(";");
+      QStringList lb = r[i].split(QSM_SQL_SERIALIZATION::SEP_VALUE);
       l.last().name = lb[0];
-      l.last().objects = lb[1].split("//");
+      l.last().objects = lb[1].split(QSM_SQL_SERIALIZATION::SEP_ROW);
     }
   }
   return l;
@@ -56,10 +55,10 @@ QString SerializeLABELS(LABELS l) {
     QString serialized_l;
     for (int i = 0; i < l.size() - 1; i++) {
       serialized_l +=
-          l[i].name + ";" + SerializeQStringList(l[i].objects) + "/#";
+          l[i].name + QSM_SQL_SERIALIZATION::SEP_VALUE + SerializeQStringList(l[i].objects) + QSM_SQL_SERIALIZATION::SEP_LABEL;
     }
     serialized_l +=
-        l.last().name + ";" + SerializeQStringList(l.last().objects);
+        l.last().name + QSM_SQL_SERIALIZATION::SEP_VALUE + SerializeQStringList(l.last().objects);
     return serialized_l.toUtf8();
   } else {
     return QString("NULL");
@@ -68,7 +67,7 @@ QString SerializeLABELS(LABELS l) {
 
 QStringList DeserializeQStringList(QString serialized_lst) {
   if (serialized_lst.compare("NULL", Qt::CaseInsensitive) != 0)
-    return serialized_lst.split("//");
+    return serialized_lst.split(QSM_SQL_SERIALIZATION::SEP_ROW);
   else
     return QStringList();
 }
@@ -77,7 +76,7 @@ QString SerializeQStringList(QStringList lst) {
   if (lst.size() > 0) {
     QString serialized_lst;
     for (int i = 0; i < lst.size() - 1; i++)
-      serialized_lst += lst[i] + "//";
+      serialized_lst += lst[i] + QSM_SQL_SERIALIZATION::SEP_ROW;
     serialized_lst += lst.last();
     return serialized_lst.toUtf8();
   } else {
@@ -90,10 +89,10 @@ void DeserializeDVector(QString serialized_dvector, dvector *v) {
       serialized_dvector.size() == 0) {
     return;
   } else {
-    QStringList strvct = serialized_dvector.split(";");
+    QStringList strvct = serialized_dvector.split(QSM_SQL_SERIALIZATION::SEP_VALUE);
     DVectorResize(v, strvct.size());
     for (int i = 0; i < strvct.size(); i++) {
-      v->data[i] = std::stod(strvct[i].toStdString());
+      v->data[i] = QLocale::c().toDouble(strvct[i]);
     }
   }
 }
@@ -102,7 +101,7 @@ QString SerializeDVector(const dvector *v) {
   if (v->size > 0) {
     std::string serialized_dvector;
     for (size_t i = 0; i < v->size - 1; i++)
-      serialized_dvector += doubleToString(v->data[i]) + ";";
+      serialized_dvector += doubleToString(v->data[i]) + QSM_SQL_SERIALIZATION::SEP_VALUE.toStdString();
     serialized_dvector += doubleToString(v->data[v->size - 1]);
     return QString(serialized_dvector.c_str()).toUtf8();
   } else {
@@ -115,7 +114,7 @@ void DeserializeUIVector(QString serialized_uivector, uivector *v) {
       serialized_uivector.size() == 0) {
     return;
   } else {
-    QStringList strvct = serialized_uivector.split(";");
+    QStringList strvct = serialized_uivector.split(QSM_SQL_SERIALIZATION::SEP_VALUE);
     UIVectorResize(v, strvct.size());
     for (int i = 0; i < strvct.size(); i++) {
       v->data[i] = std::stoi(strvct[i].toStdString());
@@ -127,7 +126,7 @@ QString SerializeUIVector(const uivector *v) {
   if (v->size > 0) {
     std::string serialized_uivector;
     for (size_t i = 0; i < v->size - 1; i++)
-      serialized_uivector += std::to_string(v->data[i]) + ";";
+      serialized_uivector += std::to_string(v->data[i]) + QSM_SQL_SERIALIZATION::SEP_VALUE.toStdString();
     serialized_uivector += std::to_string(v->data[v->size - 1]);
     return QString(serialized_uivector.c_str()).toUtf8();
   } else {
@@ -141,15 +140,15 @@ void DeserializeMatrix(QString serialized_mx, matrix *mx) {
     return;
   } else {
     QList<QList<QString>> _mx_;
-    QStringList row = serialized_mx.split("//");
+    QStringList row = serialized_mx.split(QSM_SQL_SERIALIZATION::SEP_ROW);
     for (int i = 0; i < row.size(); i++) {
-      _mx_.append(row[i].trimmed().split(";"));
+      _mx_.append(row[i].trimmed().split(QSM_SQL_SERIALIZATION::SEP_VALUE));
     }
 
     ResizeMatrix(mx, _mx_.size(), _mx_[0].size());
     for (int i = 0; i < _mx_.size(); i++) {
       for (int j = 0; j < _mx_[i].size(); j++) {
-        mx->data[i][j] = std::stod(_mx_[i][j].toStdString());
+        mx->data[i][j] = QLocale::c().toDouble(_mx_[i][j]);
       }
     }
   }
@@ -161,15 +160,15 @@ QString SerializeMatrix(const matrix *mx) {
     for (size_t i = 0; i < mx->row - 1; i++) {
       // start a row and concatenate values
       for (size_t j = 0; j < mx->col - 1; j++) {
-        serialized_mx += doubleToString(mx->data[i][j]) + ";";
+        serialized_mx += doubleToString(mx->data[i][j]) + QSM_SQL_SERIALIZATION::SEP_VALUE.toStdString();
       }
       serialized_mx +=
-          doubleToString(mx->data[i][mx->col - 1]) + "//"; // end row
+          doubleToString(mx->data[i][mx->col - 1]) + QSM_SQL_SERIALIZATION::SEP_ROW.toStdString(); // end row
     }
 
     int lrow = mx->row - 1;
     for (size_t j = 0; j < mx->col - 1; j++) {
-      serialized_mx += doubleToString(mx->data[lrow][j]) + ";";
+      serialized_mx += doubleToString(mx->data[lrow][j]) + QSM_SQL_SERIALIZATION::SEP_VALUE.toStdString();
     }
     serialized_mx += doubleToString(mx->data[lrow][mx->col - 1]); // end row
 
@@ -185,12 +184,12 @@ void DeserializeTensor(QString serialized_ar, tensor *ar) {
     return;
   } else {
     QList<QList<QStringList>> _ar_;
-    QStringList orders = serialized_ar.split("o");
+    QStringList orders = serialized_ar.split(QSM_SQL_SERIALIZATION::SEP_ORDER);
     for (int k = 0; k < orders.size(); k++) {
       QList<QStringList> tmp;
-      QStringList row = orders[k].split("//");
+      QStringList row = orders[k].split(QSM_SQL_SERIALIZATION::SEP_ROW);
       for (int i = 0; i < row.size(); i++) {
-        tmp.append(row[i].split(";"));
+        tmp.append(row[i].split(QSM_SQL_SERIALIZATION::SEP_VALUE));
       }
       _ar_.append(tmp);
     }
@@ -200,7 +199,7 @@ void DeserializeTensor(QString serialized_ar, tensor *ar) {
       AddTensorMatrix(ar, _ar_[k].size(), _ar_[k][0].size());
       for (int i = 0; i < _ar_[k].size(); i++) {
         for (int j = 0; j < _ar_[k][i].size(); j++) {
-          ar->m[k]->data[i][j] = std::stod(_ar_[k][i][j].toStdString());
+          ar->m[k]->data[i][j] = QLocale::c().toDouble(_ar_[k][i][j]);
         }
       }
     }
@@ -215,22 +214,22 @@ QString SerializeTensor(const tensor *ar) {
         for (size_t i = 0; i < ar->m[k]->row - 1; i++) {
           // start a row and concatenate values
           for (size_t j = 0; j < ar->m[k]->col - 1; j++) {
-            serialized_ar += doubleToString(ar->m[k]->data[i][j]) + ";";
+            serialized_ar += doubleToString(ar->m[k]->data[i][j]) + QSM_SQL_SERIALIZATION::SEP_VALUE.toStdString();
           }
           serialized_ar +=
               doubleToString(ar->m[k]->data[i][ar->m[k]->col - 1]) +
-              "//"; // end row
+              QSM_SQL_SERIALIZATION::SEP_ROW.toStdString(); // end row
         }
 
         int lrow = ar->m[k]->row - 1;
         for (size_t j = 0; j < ar->m[k]->col - 1; j++) {
-          serialized_ar += doubleToString(ar->m[k]->data[lrow][j]) + ";";
+          serialized_ar += doubleToString(ar->m[k]->data[lrow][j]) + QSM_SQL_SERIALIZATION::SEP_VALUE.toStdString();
         }
         serialized_ar +=
             doubleToString(ar->m[k]->data[lrow][ar->m[k]->col - 1]);
 
         if (k < ar->order - 1)
-          serialized_ar += "o";
+          serialized_ar += QSM_SQL_SERIALIZATION::SEP_ORDER.toStdString();
       }
       return QString(serialized_ar.c_str()).toUtf8();
     } else {

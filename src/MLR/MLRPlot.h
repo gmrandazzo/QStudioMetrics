@@ -51,6 +51,12 @@ public:
 private:
   PROJECTS *projects;
   int pid, mid, predid;
+
+  QString getProjectName() const;
+  QString getModelName() const;
+  MLRModel *getMLRModel() const;
+  void extractExperimentalY(int matrix_id, const QStringList &objsel,
+                            const QStringList &yvarsel, matrix **out_y);
 };
 
 #endif

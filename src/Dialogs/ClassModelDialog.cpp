@@ -35,29 +35,25 @@ void ClassModelDialog::genListView(QModelIndex current) {
     selectedproject_ = pids[current.row()];
 
     tab2->clear();
-    if (projects_->keys().contains(selectedproject_) == true) {
-      for (int i = 0; i < projects_->value(selectedproject_)->MatrixCount();
-           i++) {
+    ui.objSelectByLabel->clear();
+    ui.varSelectByLabel->clear();
+
+    if (projects_->contains(selectedproject_)) {
+      DATA *currentProject = projects_->value(selectedproject_);
+      for (int i = 0; i < currentProject->MatrixCount(); i++) {
         QList<QStandardItem *> mname;
-        mname.append(new QStandardItem(
-            projects_->value(selectedproject_)->getMatrix(i)->getName()));
+        mname.append(new QStandardItem(currentProject->getMatrix(i)->getName()));
         tab2->appendRow(mname);
       }
 
       ui.objSelectByLabel->addItem("Select by label...");
-      for (int i = 0;
-           i < projects_->value(selectedproject_)->getObjectLabels().size();
-           i++) {
-        ui.objSelectByLabel->addItem(
-            projects_->value(selectedproject_)->getObjectLabels()[i].name);
+      for (int i = 0; i < currentProject->getObjectLabels().size(); i++) {
+        ui.objSelectByLabel->addItem(currentProject->getObjectLabels()[i].name);
       }
 
       ui.varSelectByLabel->addItem("Select by label...");
-      for (int i = 0;
-           i < projects_->value(selectedproject_)->getVariableLabels().size();
-           i++) {
-        ui.varSelectByLabel->addItem(
-            projects_->value(selectedproject_)->getVariableLabels()[i].name);
+      for (int i = 0; i < currentProject->getVariableLabels().size(); i++) {
+        ui.varSelectByLabel->addItem(currentProject->getVariableLabels()[i].name);
       }
     }
   }
@@ -175,6 +171,7 @@ void ClassModelDialog::ObjInvertSelection() {
 
 void ClassModelDialog::ObjSelectBy() {
   if (ui.objSelectByLabel->currentIndex() > 0) {
+    if (!projects_->contains(selectedproject_)) return;
     int labelindex = ui.objSelectByLabel->currentIndex() - 1;
     QItemSelection selection;
     for (int i = 0; i < ui.listView_3->model()->rowCount(); i++) {
@@ -193,9 +190,13 @@ void ClassModelDialog::ObjSelectBy() {
     }
     ui.listView_3->selectionModel()->select(selection,
                                             QItemSelectionModel::Select);
+    ui.objSelectByLabel->blockSignals(true);
     ui.objSelectByLabel->setCurrentIndex(0);
+    ui.objSelectByLabel->blockSignals(false);
   } else {
+    ui.objSelectByLabel->blockSignals(true);
     ui.objSelectByLabel->setCurrentIndex(0);
+    ui.objSelectByLabel->blockSignals(false);
     return;
   }
 }
@@ -226,6 +227,7 @@ void ClassModelDialog::VarInvertSelection() {
 
 void ClassModelDialog::VarSelectBy() {
   if (ui.varSelectByLabel->currentIndex() > 0) {
+    if (!projects_->contains(selectedproject_)) return;
     int labelindex = ui.varSelectByLabel->currentIndex() - 1;
     QItemSelection selection;
     for (int i = 0; i < ui.listView_5->model()->rowCount(); i++) {
@@ -244,9 +246,13 @@ void ClassModelDialog::VarSelectBy() {
     }
     ui.listView_5->selectionModel()->select(selection,
                                             QItemSelectionModel::Select);
+    ui.varSelectByLabel->blockSignals(true);
     ui.varSelectByLabel->setCurrentIndex(0);
+    ui.varSelectByLabel->blockSignals(false);
   } else {
+    ui.varSelectByLabel->blockSignals(true);
     ui.varSelectByLabel->setCurrentIndex(0);
+    ui.varSelectByLabel->blockSignals(false);
     return;
   }
 }

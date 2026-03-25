@@ -51,6 +51,13 @@ public:
 private:
   PROJECTS *projects;
   int pid, mid, predid;
+
+  QString getProjectName() const;
+  QString getModelName() const;
+  LDAMODEL *getModel() const;
+  void prepareFeaturesData(QList<matrix *> &mxlst, QList<QStringList> &objnamelst);
+  void prepareMNPDFData(QList<matrix *> &mnpdf, QStringList &mnpdfname, QList<QColor> &colors);
+  QList<QColor> getColorList(int size) const;
 };
 
 #endif

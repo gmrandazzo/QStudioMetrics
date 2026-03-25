@@ -378,44 +378,27 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
 
     //(name TEXT, pcahash TEXT, hashinputmx TEXT, objname TEXT, scores TEXT)
     query.exec("SELECT * from pcapredTable");
-    QList<QStringList> pcapredlist;
+    QList<QSqlRecord> pcapredlist;
 
     while (query.next()) {
-      pcapredlist.append(QStringList());
-      pcapredlist.last().append(query.value(0).toString());
-      pcapredlist.last().append(query.value(1).toString());
-      pcapredlist.last().append(query.value(2).toString());
-      pcapredlist.last().append(query.value(3).toString());
-      pcapredlist.last().append(query.value(4).toString());
+      pcapredlist.append(query.record());
     }
 
     query.exec("SELECT * from pcaTable");
     while (query.next()) {
-      // get the query values
-      // 0: name TEXT
-      // 1: numcomp INT
-      // 2: scalingtype INT
-      // 3: hashinputmx TEXT
-      // 4: objname TEXT
-      // 5: varname TEXT
-      // 6: scores TEXT
-      // 7: loadings TEXT
-      // 8: DMODX TEXT
-      // 9: varexp TEXT
-      // 10: colscaling TEXT
-      // 11: colaverage TEXT
-      QString name = query.value(0).toString();
-      int npc = query.value(1).toInt();
-      int xscaling = query.value(2).toInt();
-      QString hashinputmx = query.value(3).toString();
-      QString s_objname = query.value(4).toString();
-      QString s_varname = query.value(5).toString();
-      QString s_scores = query.value(6).toString();
-      QString s_loadings = query.value(7).toString();
-      QString s_dmodx = query.value(8).toString();
-      QString s_varexp = query.value(9).toString();
-      QString s_colscaling = query.value(10).toString();
-      QString s_colaverage = query.value(11).toString();
+      // get the query values by name
+      QString name = query.value("name").toString();
+      int npc = query.value("numcomp").toInt();
+      int xscaling = query.value("scalingtype").toInt();
+      QString hashinputmx = query.value("hashinputmx").toString();
+      QString s_objname = query.value("objname").toString();
+      QString s_varname = query.value("varname").toString();
+      QString s_scores = query.value("scores").toString();
+      QString s_loadings = query.value("loadings").toString();
+      QString s_dmodx = query.value("dmodx").toString();
+      QString s_varexp = query.value("varexp").toString();
+      QString s_colscaling = query.value("colscaling").toString();
+      QString s_colaverage = query.value("colaverage").toString();
 
       // add the data matrix
       addPCAModel();
@@ -426,9 +409,12 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       getLastPCAModel()->setDataHash(hashinputmx);
       getLastPCAModel()->getObjName() = DeserializeQStringList(s_objname);
       getLastPCAModel()->getVarName() = DeserializeQStringList(s_varname);
-      if (!getLastPCAModel()->Model()->scores) initMatrix(&getLastPCAModel()->Model()->scores);
-      if (!getLastPCAModel()->Model()->loadings) initMatrix(&getLastPCAModel()->Model()->loadings);
-      if (!getLastPCAModel()->Model()->dmodx) initMatrix(&getLastPCAModel()->Model()->dmodx);
+      if (!getLastPCAModel()->Model()->scores)
+        initMatrix(&getLastPCAModel()->Model()->scores);
+      if (!getLastPCAModel()->Model()->loadings)
+        initMatrix(&getLastPCAModel()->Model()->loadings);
+      if (!getLastPCAModel()->Model()->dmodx)
+        initMatrix(&getLastPCAModel()->Model()->dmodx);
       DeserializeMatrix(s_scores, getLastPCAModel()->Model()->scores);
       DeserializeMatrix(s_loadings, getLastPCAModel()->Model()->loadings);
       DeserializeMatrix(s_dmodx, getLastPCAModel()->Model()->dmodx);
@@ -468,23 +454,26 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         MainWindow::getProjectItem(getProjectID(), treeWidget)
             ->child(1)
             ->addChild(subitem.release());
-        (*tabcount_)++;
       }
+      if (tabcount_)
+        (*tabcount_)++;
       (*log).append(QString("PCA model %1 imported.\n").arg(name));
 
       QString pcahash = getLastPCAModel()->getHash();
       for (int i = 0; i < pcapredlist.size(); i++) {
-        if (pcapredlist[i][1].compare(pcahash) == 0) {
+        if (pcapredlist[i].value("pcahash").toString().compare(pcahash) == 0) {
           getLastPCAModel()->addPCAPrediction();
           getLastPCAModel()->getLastPCAPrediction()->setPredID(
               getLastPCAModel()->PCAPredictionCount() - 1);
-          getLastPCAModel()->getLastPCAPrediction()->setName(pcapredlist[i][0]);
+          getLastPCAModel()->getLastPCAPrediction()->setName(
+              pcapredlist[i].value("name").toString());
           getLastPCAModel()->getLastPCAPrediction()->setDataHash(
-              pcapredlist[i][2]);
+              pcapredlist[i].value("hashinputmx").toString());
           getLastPCAModel()->getLastPCAPrediction()->getObjName() =
-              DeserializeQStringList(pcapredlist[i][3]);
+              DeserializeQStringList(
+                  pcapredlist[i].value("objname").toString());
           DeserializeMatrix(
-              pcapredlist[i][4],
+              pcapredlist[i].value("scores").toString(),
               getLastPCAModel()->getLastPCAPrediction()->getPredScores());
 
           int predid = -1;
@@ -494,26 +483,22 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
                 0) {
               predid = k;
               break;
-            } else {
-              continue;
             }
           }
 
           if (predid == -1) {
-            (*log).append(
-                QString(
-                    "Warning on PCA Prediction %1. Unable to find data matrix.")
-                    .arg(pcapredlist[i][0]));
+            (*log).append(QString("Warning on PCA Prediction %1. Unable to "
+                                  "find the origin data matrix.")
+                              .arg(getLastPCAModel()
+                                       ->getLastPCAPrediction()
+                                       ->getName()));
           }
 
           getLastPCAModel()->getLastPCAPrediction()->setDID(predid);
-          //         ModelPrediction Name - Tab Count - pid_ - Model ID - xdata
-          //         id - ydata id - Data Position - Data Type (PCA Prediction,
-          //         UPCA Prediction, ...) (8)
           if (treeWidget) {
             auto preditem = std::make_unique<QTreeWidgetItem>();
             preditem->setText(
-                0, getPCAModel((*mid_))->getLastPCAPrediction()->getName());
+                0, getLastPCAModel()->getLastPCAPrediction()->getName());
             preditem->setText(1, QString::number((*tabcount_)));
             preditem->setText(2, QString::number(getProjectID()));
             preditem->setText(3, QString::number((*mid_)));
@@ -523,131 +508,86 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
             preditem->setText(
                 6,
                 QString::number(
-                    getPCAModel((*mid_))->getLastPCAPrediction()->getPredID()));
+                    getLastPCAModel()->getLastPCAPrediction()->getPredID()));
             preditem->setText(7, QString("PCA Prediction"));
             MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)
                 ->addChild(preditem.release());
-            (*tabcount_)++;
           }
-        } else {
-          continue;
+          if (tabcount_)
+            (*tabcount_)++;
         }
       }
       (*mid_)++;
     }
 
     query.exec("SELECT * from plspredTable");
-    QList<QStringList> plspredlist;
-
-    /*
-     * plspredTable SQL structure
-     * 0: name TEXT
-     * 1: plshash TEXT
-     * 2: hashinputmx TEXT
-     * 3: objname TEXT
-     * 4: yvarname TEXT
-     * 5: tscores TEXT
-     * 6: predicted_y TEXT
-     * 7: r2y TEXT
-     * 8: sdec TXT
-     */
+    QList<QSqlRecord> plspredlist;
     while (query.next()) {
-      plspredlist.append(QStringList());
-      plspredlist.last().append(query.value(0).toString());
-      plspredlist.last().append(query.value(1).toString());
-      plspredlist.last().append(query.value(2).toString());
-      plspredlist.last().append(query.value(3).toString());
-      plspredlist.last().append(query.value(4).toString());
-      plspredlist.last().append(query.value(5).toString());
-      plspredlist.last().append(query.value(6).toString());
-      plspredlist.last().append(query.value(7).toString());
-      plspredlist.last().append(query.value(8).toString());
+      plspredlist.append(query.record());
     }
 
     query.exec("SELECT * from plsTable");
-    /*
-     * plsTable SQL structure
-     * 0: name TEXT
-     * 1: nlvs INT
-     * 2: xscalingtype INT
-     * 3: yscalingtype INT
-     * 4: hashinputmx TEXT
-     * 5: objname TEXT
-     * 6: xvarname TEXT
-     * 7: yvarname TEXT
-     * 8: classes TEXT
-     * 9: tscores TEXT
-     * 10: ploadings  TEXT
-     * 11: weights TEXT
-     * 12: xvarexp TEXT
-     * 13: xcolscaling TEXT
-     * 14: xcolaverage TEXT
-     * 15: uscores TEXT
-     * 16: qloadings TEXT
-     * 17: ycolscaling TEXT
-     * 18: ycolaverage TEXT
-     * 19: b TEXT
-     * 20: r2y_model TEXT
-     * 21: sdec TEXT
-     * 22: recalc_y TEXT
-     * 23: recalc_residuals TEXT
-     * 24: validationtype INT
-     * 25: q2y TEXT
-     * 26: sdep TEXT
-     * 27: bias TEXT
-     * 28: predicted_y TEXT
-     * 29: predicted_residuals TEXT
-     * 30: roc_recalculated TEXT
-     * 31: roc_validation TEXT
-     * 32: roc_auc_recalculated TEXT
-     * 33: roc_auc_validation TEXT
-     * 34: precision_recall_recalculated TEXT
-     * 35: precision_recall_validation TEXT
-     * 36: precision_recall_ap_recalculated TEXT
-     * 37: precision_recall_ap_validation TEXT
-     * 38: yscrambling TEXT
-     */
     while (query.next()) {
-      // get the query values
-      QString name = query.value(0).toString();
-      int npc = query.value(1).toInt();
-      int xscaling = query.value(2).toInt();
-      int yscaling = query.value(3).toInt();
-      QString hashinputmx = query.value(4).toString();
-      QString s_objname = query.value(5).toString();
-      QString s_xvarname = query.value(6).toString();
-      QString s_yvarname = query.value(7).toString();
-      QString s_classes = query.value(8).toString();
-      QString s_tscores = query.value(9).toString();
-      QString s_ploadings = query.value(10).toString();
-      QString s_weights = query.value(11).toString();
-      QString s_xvarexp = query.value(12).toString();
-      QString s_xcolscaling = query.value(13).toString();
-      QString s_xcolaverage = query.value(14).toString();
-      QString s_uscores = query.value(15).toString();
-      QString s_qloadings = query.value(16).toString();
-      QString s_ycolscaling = query.value(17).toString();
-      QString s_ycolaverage = query.value(18).toString();
-      QString s_b = query.value(19).toString();
-      QString s_r2y_model = query.value(20).toString();
-      QString s_sdec = query.value(21).toString();
-      QString s_recalc_y = query.value(22).toString();
-      QString s_recalc_residuals = query.value(23).toString();
-      int validationtype = query.value(24).toInt();
-      QString s_q2y = query.value(25).toString();
-      QString s_sdep = query.value(26).toString();
-      QString s_bias = query.value(27).toString();
-      QString s_predicted_y = query.value(28).toString();
-      QString s_predicted_residuals = query.value(29).toString();
-      QString s_roc_recalculated = query.value(30).toString();
-      QString s_roc_validation = query.value(31).toString();
-      QString s_roc_auc_recalculated = query.value(32).toString();
-      QString s_roc_auc_validation = query.value(33).toString();
-      QString s_precision_recall_recalculated = query.value(34).toString();
-      QString s_precision_recall_validation = query.value(35).toString();
-      QString s_precision_recall_ap_recalculated = query.value(36).toString();
-      QString s_precision_recall_ap_validation = query.value(37).toString();
-      QString s_yscrambling = query.value(38).toString();
+      // get the query values by name for robustness
+      QString name = query.value("name").toString();
+      int npc = query.value("nlvs").toInt();
+      int xscaling = query.value("xscalingtype").toInt();
+      int yscaling = query.value("yscalingtype").toInt();
+      QString hashinputmx = query.value("hashinputmx").toString();
+      QString s_objname = query.value("objname").toString();
+      QString s_xvarname = query.value("xvarname").toString();
+      QString s_yvarname = query.value("yvarname").toString();
+      QString s_classes = query.value("classes").toString();
+      QString s_tscores = query.value("tscores").toString();
+      QString s_ploadings = query.value("ploadings").toString();
+      QString s_weights = query.value("weights").toString();
+      QString s_xvarexp = query.value("xvarexp").toString();
+      QString s_xcolscaling = query.value("xcolscaling").toString();
+      QString s_xcolaverage = query.value("xcolaverage").toString();
+      QString s_uscores = query.value("uscores").toString();
+      QString s_qloadings = query.value("qloadings").toString();
+      QString s_ycolscaling = query.value("ycolscaling").toString();
+      QString s_ycolaverage = query.value("ycolaverage").toString();
+      QString s_b = query.value("b").toString();
+      QString s_r2y_model = query.value("r2y_model").toString();
+      QString s_sdec = query.value("sdec").toString();
+      QString s_recalc_y = query.value("recalc_y").toString();
+      QString s_recalc_residuals = query.value("recalc_residuals").toString();
+
+      // Handle legacy databases without algtype
+      int algtype = PLS_;
+      if (query.record().contains("algtype")) {
+        algtype = query.value("algtype").toInt();
+      } else {
+        // Heuristic: if we have ROC data, it's likely a PLS-DA model
+        if (!query.value("roc_auc_recalculated").toString().isEmpty() &&
+            query.value("roc_auc_recalculated").toString() != "NULL") {
+          algtype = PLS_DA_;
+        }
+      }
+
+      int validationtype = query.value("validationtype").toInt();
+      QString s_q2y = query.value("q2y").toString();
+      QString s_sdep = query.value("sdep").toString();
+      QString s_bias = query.value("bias").toString();
+      QString s_predicted_y = query.value("predicted_y").toString();
+      QString s_predicted_residuals =
+          query.value("predicted_residuals").toString();
+      QString s_roc_recalculated = query.value("roc_recalculated").toString();
+      QString s_roc_validation = query.value("roc_validation").toString();
+      QString s_roc_auc_recalculated =
+          query.value("roc_auc_recalculated").toString();
+      QString s_roc_auc_validation =
+          query.value("roc_auc_validation").toString();
+      QString s_precision_recall_recalculated =
+          query.value("precision_recall_recalculated").toString();
+      QString s_precision_recall_validation =
+          query.value("precision_recall_validation").toString();
+      QString s_precision_recall_ap_recalculated =
+          query.value("precision_recall_ap_recalculated").toString();
+      QString s_precision_recall_ap_validation =
+          query.value("precision_recall_ap_validation").toString();
+      QString s_yscrambling = query.value("yscrambling").toString();
 
       // add the data matrix
       addPLSModel();
@@ -661,51 +601,77 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       getLastPLSModel()->setXVarName(DeserializeQStringList(s_xvarname));
       getLastPLSModel()->setYVarName(DeserializeQStringList(s_yvarname));
       getLastPLSModel()->setClasses(DeserializeLABELS(s_classes));
+      getLastPLSModel()->setAlgorithm(algtype);
 
-      if (!getLastPLSModel()->Model()->xscores) initMatrix(&getLastPLSModel()->Model()->xscores);
-      if (!getLastPLSModel()->Model()->xloadings) initMatrix(&getLastPLSModel()->Model()->xloadings);
-      if (!getLastPLSModel()->Model()->xweights) initMatrix(&getLastPLSModel()->Model()->xweights);
-      if (!getLastPLSModel()->Model()->xvarexp) initDVector(&getLastPLSModel()->Model()->xvarexp);
-      if (!getLastPLSModel()->Model()->xcolaverage) initDVector(&getLastPLSModel()->Model()->xcolaverage);
-      if (!getLastPLSModel()->Model()->xcolscaling) initDVector(&getLastPLSModel()->Model()->xcolscaling);
-      if (!getLastPLSModel()->Model()->yscores) initMatrix(&getLastPLSModel()->Model()->yscores);
-      if (!getLastPLSModel()->Model()->yloadings) initMatrix(&getLastPLSModel()->Model()->yloadings);
-      if (!getLastPLSModel()->Model()->ycolaverage) initDVector(&getLastPLSModel()->Model()->ycolaverage);
-      if (!getLastPLSModel()->Model()->ycolscaling) initDVector(&getLastPLSModel()->Model()->ycolscaling);
-      if (!getLastPLSModel()->Model()->b) initDVector(&getLastPLSModel()->Model()->b);
-      if (!getLastPLSModel()->Model()->r2y_recalculated) initMatrix(&getLastPLSModel()->Model()->r2y_recalculated);
-      if (!getLastPLSModel()->Model()->sdec) initMatrix(&getLastPLSModel()->Model()->sdec);
-      if (!getLastPLSModel()->Model()->recalculated_y) initMatrix(&getLastPLSModel()->Model()->recalculated_y);
-      if (!getLastPLSModel()->Model()->recalc_residuals) initMatrix(&getLastPLSModel()->Model()->recalc_residuals);
-      if (!getLastPLSModel()->Model()->q2y) initMatrix(&getLastPLSModel()->Model()->q2y);
-      if (!getLastPLSModel()->Model()->sdep) initMatrix(&getLastPLSModel()->Model()->sdep);
-      if (!getLastPLSModel()->Model()->bias) initMatrix(&getLastPLSModel()->Model()->bias);
-      if (!getLastPLSModel()->Model()->predicted_y) initMatrix(&getLastPLSModel()->Model()->predicted_y);
-      if (!getLastPLSModel()->Model()->pred_residuals) initMatrix(&getLastPLSModel()->Model()->pred_residuals);
-      if (!getLastPLSModel()->Model()->roc_recalculated) initTensor(&getLastPLSModel()->Model()->roc_recalculated);
-      if (!getLastPLSModel()->Model()->roc_validation) initTensor(&getLastPLSModel()->Model()->roc_validation);
-      if (!getLastPLSModel()->Model()->roc_auc_recalculated) initMatrix(&getLastPLSModel()->Model()->roc_auc_recalculated);
-      if (!getLastPLSModel()->Model()->roc_auc_validation) initMatrix(&getLastPLSModel()->Model()->roc_auc_validation);
-      if (!getLastPLSModel()->Model()->precision_recall_recalculated) initTensor(&getLastPLSModel()->Model()->precision_recall_recalculated);
-      if (!getLastPLSModel()->Model()->precision_recall_validation) initTensor(&getLastPLSModel()->Model()->precision_recall_validation);
-      if (!getLastPLSModel()->Model()->precision_recall_ap_recalculated) initMatrix(&getLastPLSModel()->Model()->precision_recall_ap_recalculated);
-      if (!getLastPLSModel()->Model()->precision_recall_ap_validation) initMatrix(&getLastPLSModel()->Model()->precision_recall_ap_validation);
-      if (!getLastPLSModel()->Model()->yscrambling) initMatrix(&getLastPLSModel()->Model()->yscrambling);
+      if (!getLastPLSModel()->Model()->xscores)
+        initMatrix(&getLastPLSModel()->Model()->xscores);
+      if (!getLastPLSModel()->Model()->xloadings)
+        initMatrix(&getLastPLSModel()->Model()->xloadings);
+      if (!getLastPLSModel()->Model()->xweights)
+        initMatrix(&getLastPLSModel()->Model()->xweights);
+      if (!getLastPLSModel()->Model()->xvarexp)
+        initDVector(&getLastPLSModel()->Model()->xvarexp);
+      if (!getLastPLSModel()->Model()->xcolaverage)
+        initDVector(&getLastPLSModel()->Model()->xcolaverage);
+      if (!getLastPLSModel()->Model()->xcolscaling)
+        initDVector(&getLastPLSModel()->Model()->xcolscaling);
+      if (!getLastPLSModel()->Model()->yscores)
+        initMatrix(&getLastPLSModel()->Model()->yscores);
+      if (!getLastPLSModel()->Model()->yloadings)
+        initMatrix(&getLastPLSModel()->Model()->yloadings);
+      if (!getLastPLSModel()->Model()->ycolaverage)
+        initDVector(&getLastPLSModel()->Model()->ycolaverage);
+      if (!getLastPLSModel()->Model()->ycolscaling)
+        initDVector(&getLastPLSModel()->Model()->ycolscaling);
+      if (!getLastPLSModel()->Model()->b)
+        initDVector(&getLastPLSModel()->Model()->b);
+      if (!getLastPLSModel()->Model()->r2y_recalculated)
+        initMatrix(&getLastPLSModel()->Model()->r2y_recalculated);
+      if (!getLastPLSModel()->Model()->sdec)
+        initMatrix(&getLastPLSModel()->Model()->sdec);
+      if (!getLastPLSModel()->Model()->recalculated_y)
+        initMatrix(&getLastPLSModel()->Model()->recalculated_y);
+      if (!getLastPLSModel()->Model()->recalc_residuals)
+        initMatrix(&getLastPLSModel()->Model()->recalc_residuals);
+      if (!getLastPLSModel()->Model()->q2y)
+        initMatrix(&getLastPLSModel()->Model()->q2y);
+      if (!getLastPLSModel()->Model()->sdep)
+        initMatrix(&getLastPLSModel()->Model()->sdep);
+      if (!getLastPLSModel()->Model()->bias)
+        initMatrix(&getLastPLSModel()->Model()->bias);
+      if (!getLastPLSModel()->Model()->predicted_y)
+        initMatrix(&getLastPLSModel()->Model()->predicted_y);
+      if (!getLastPLSModel()->Model()->pred_residuals)
+        initMatrix(&getLastPLSModel()->Model()->pred_residuals);
+      if (!getLastPLSModel()->Model()->roc_recalculated)
+        initTensor(&getLastPLSModel()->Model()->roc_recalculated);
+      if (!getLastPLSModel()->Model()->roc_validation)
+        initTensor(&getLastPLSModel()->Model()->roc_validation);
+      if (!getLastPLSModel()->Model()->roc_auc_recalculated)
+        initMatrix(&getLastPLSModel()->Model()->roc_auc_recalculated);
+      if (!getLastPLSModel()->Model()->roc_auc_validation)
+        initMatrix(&getLastPLSModel()->Model()->roc_auc_validation);
+      if (!getLastPLSModel()->Model()->precision_recall_recalculated)
+        initTensor(&getLastPLSModel()->Model()->precision_recall_recalculated);
+      if (!getLastPLSModel()->Model()->precision_recall_validation)
+        initTensor(&getLastPLSModel()->Model()->precision_recall_validation);
+      if (!getLastPLSModel()->Model()->precision_recall_ap_recalculated)
+        initMatrix(&getLastPLSModel()->Model()->precision_recall_ap_recalculated);
+      if (!getLastPLSModel()->Model()->precision_recall_ap_validation)
+        initMatrix(&getLastPLSModel()->Model()->precision_recall_ap_validation);
+      if (!getLastPLSModel()->Model()->yscrambling)
+        initMatrix(&getLastPLSModel()->Model()->yscrambling);
 
       DeserializeMatrix(s_tscores, getLastPLSModel()->Model()->xscores);
       DeserializeMatrix(s_ploadings, getLastPLSModel()->Model()->xloadings);
       DeserializeMatrix(s_weights, getLastPLSModel()->Model()->xweights);
       DeserializeDVector(s_xvarexp, getLastPLSModel()->Model()->xvarexp);
-      DeserializeDVector(s_xcolaverage,
-                         getLastPLSModel()->Model()->xcolaverage);
-      DeserializeDVector(s_xcolscaling,
-                         getLastPLSModel()->Model()->xcolscaling);
+      DeserializeDVector(s_xcolaverage, getLastPLSModel()->Model()->xcolaverage);
+      DeserializeDVector(s_xcolscaling, getLastPLSModel()->Model()->xcolscaling);
       DeserializeMatrix(s_uscores, getLastPLSModel()->Model()->yscores);
       DeserializeMatrix(s_qloadings, getLastPLSModel()->Model()->yloadings);
-      DeserializeDVector(s_ycolaverage,
-                         getLastPLSModel()->Model()->ycolaverage);
-      DeserializeDVector(s_ycolscaling,
-                         getLastPLSModel()->Model()->ycolscaling);
+      DeserializeDVector(s_ycolaverage, getLastPLSModel()->Model()->ycolaverage);
+      DeserializeDVector(s_ycolscaling, getLastPLSModel()->Model()->ycolscaling);
       DeserializeDVector(s_b, getLastPLSModel()->Model()->b);
       DeserializeMatrix(s_r2y_model,
                         getLastPLSModel()->Model()->r2y_recalculated);
@@ -772,48 +738,38 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         MainWindow::getProjectItem(getProjectID(), treeWidget)
             ->child(1)
             ->addChild(subitem.release());
-        (*tabcount_)++;
       }
+      if (tabcount_)
+        (*tabcount_)++;
       (*log).append(QString("PLS model %1 imported.\n").arg(name));
 
       QString plshash = getLastPLSModel()->getHash();
 
       for (int i = 0; i < plspredlist.size(); i++) {
-        if (plspredlist[i][1].compare(plshash) == 0) {
-
-          /*
-           * plspredTable SQL structure
-           * 0: name TEXT
-           * 1: plshash TEXT
-           * 2: hashinputmx TEXT
-           * 3: objname TEXT
-           * 4: yvarname TEXT
-           * 5: tscores TEXT
-           * 6: predicted_y TEXT
-           * 7: r2y TEXT
-           * 8: sdec TXT
-           */
+        if (plspredlist[i].value("plshash").toString().compare(plshash) == 0) {
           getLastPLSModel()->addPLSPrediction();
           getLastPLSModel()->getLastPLSPrediction()->setPredID(
               getLastPLSModel()->PLSPredictionCount() - 1);
-          getLastPLSModel()->getLastPLSPrediction()->setName(plspredlist[i][0]);
+          getLastPLSModel()->getLastPLSPrediction()->setName(
+              plspredlist[i].value("name").toString());
           getLastPLSModel()->getLastPLSPrediction()->setDataHash(
-              plspredlist[i][2]);
+              plspredlist[i].value("hashinputmx").toString());
           getLastPLSModel()->getLastPLSPrediction()->getObjName() =
-              DeserializeQStringList(plspredlist[i][3]);
+              DeserializeQStringList(plspredlist[i].value("objname").toString());
           getLastPLSModel()->getLastPLSPrediction()->getYVarName() =
-              DeserializeQStringList(plspredlist[i][4]);
+              DeserializeQStringList(
+                  plspredlist[i].value("yvarname").toString());
           DeserializeMatrix(
-              plspredlist[i][5],
+              plspredlist[i].value("tscores").toString(),
               getLastPLSModel()->getLastPLSPrediction()->getXPredScores());
           DeserializeMatrix(
-              plspredlist[i][6],
+              plspredlist[i].value("predicted_y").toString(),
               getLastPLSModel()->getLastPLSPrediction()->getYDipVar());
           DeserializeMatrix(
-              plspredlist[i][7],
+              plspredlist[i].value("r2y").toString(),
               getLastPLSModel()->getLastPLSPrediction()->getR2Y());
           DeserializeMatrix(
-              plspredlist[i][8],
+              plspredlist[i].value("sdec").toString(),
               getLastPLSModel()->getLastPLSPrediction()->getSDEC());
 
           int predid = -1;
@@ -831,7 +787,9 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
           if (predid == -1) {
             (*log).append(QString("Warning on PLS Prediction %1. Unable to "
                                   "find the origin data matrix.")
-                              .arg(plspredlist[i][0]));
+                              .arg(getLastPLSModel()
+                                       ->getLastPLSPrediction()
+                                       ->getName()));
           }
 
           getLastPLSModel()->getLastPLSPrediction()->setDID(predid);
@@ -860,47 +818,38 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
           continue;
         }
       }
-      if (tabcount_)
-        (*tabcount_)++;
       (*mid_)++;
     }
 
     query.exec("SELECT * from mlrpredTable");
-    QList<QStringList> mlrpredlist;
-
+    QList<QSqlRecord> mlrpredlist;
     while (query.next()) {
-      mlrpredlist.append(QStringList());
-      mlrpredlist.last().append(query.value(0).toString());
-      mlrpredlist.last().append(query.value(1).toString());
-      mlrpredlist.last().append(query.value(2).toString());
-      mlrpredlist.last().append(query.value(3).toString());
-      mlrpredlist.last().append(query.value(4).toString());
-      mlrpredlist.last().append(query.value(5).toString());
-      mlrpredlist.last().append(query.value(6).toString());
-      mlrpredlist.last().append(query.value(7).toString());
+      mlrpredlist.append(query.record());
     }
 
     query.exec("SELECT * from mlrTable");
     while (query.next()) {
-      // get the query values
-      QString name = query.value(0).toString();
-      QString hashinputmx = query.value(1).toString();
-      QString serialized_objname = query.value(2).toString();
-      QString serialized_xvarname = query.value(3).toString();
-      QString serialized_yvarname = query.value(4).toString();
-      QString serialized_b = query.value(5).toString();
-      QString serialized_r2y = query.value(6).toString();
-      QString serialized_sdec = query.value(7).toString();
-      QString serialized_recalc_y = query.value(8).toString();
-      QString serialized_recalc_residuals = query.value(9).toString();
-      int validationtype = query.value(10).toInt();
-      QString serialized_ymean = query.value(11).toString();
-      QString serialized_q2y = query.value(12).toString();
-      QString serialized_sdep = query.value(13).toString();
-      QString serialized_bias = query.value(14).toString();
-      QString serialized_predicted_y = query.value(15).toString();
-      QString serialized_predicted_residuals = query.value(16).toString();
-      QString serialized_r2q2scrambling = query.value(17).toString();
+      // get the query values by name
+      QString name = query.value("name").toString();
+      QString hashinputmx = query.value("hashinputmx").toString();
+      QString serialized_objname = query.value("objname").toString();
+      QString serialized_xvarname = query.value("xvarname").toString();
+      QString serialized_yvarname = query.value("yvarname").toString();
+      QString serialized_b = query.value("b").toString();
+      QString serialized_r2y = query.value("r2y_model").toString();
+      QString serialized_sdec = query.value("sdec").toString();
+      QString serialized_recalc_y = query.value("recalc_y").toString();
+      QString serialized_recalc_residuals =
+          query.value("recalc_residuals").toString();
+      int validationtype = query.value("validationtype").toInt();
+      QString serialized_ymean = query.value("ymean").toString();
+      QString serialized_q2y = query.value("q2y").toString();
+      QString serialized_sdep = query.value("sdep").toString();
+      QString serialized_bias = query.value("bias").toString();
+      QString serialized_predicted_y = query.value("predicted_y").toString();
+      QString serialized_predicted_residuals =
+          query.value("predicted_residuals").toString();
+      QString serialized_yscrambling = query.value("yscrambling").toString();
 
       addMLRModel();
       getLastMLRModel()->setModelID((*mid_));
@@ -926,7 +875,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
                         getLastMLRModel()->Model()->predicted_y);
       DeserializeMatrix(serialized_predicted_residuals,
                         getLastMLRModel()->Model()->pred_residuals);
-      DeserializeMatrix(serialized_r2q2scrambling,
+      DeserializeMatrix(serialized_yscrambling,
                         getLastMLRModel()->Model()->r2q2scrambling);
       getLastMLRModel()->setValidation(validationtype);
 
@@ -934,8 +883,6 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       for (int j = 0; j < MatrixCount(); j++) {
         if (getMatrix(j)->getHash().compare(hashinputmx) == 0) {
           did = j;
-        } else {
-          continue;
         }
       }
 
@@ -967,28 +914,23 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
 
       QString mlrhash = getLastMLRModel()->getHash();
       for (int i = 0; i < mlrpredlist.size(); i++) {
-        if (mlrpredlist[i][1].compare(mlrhash) == 0) {
+        if (mlrpredlist[i].value("mlrhash").toString().compare(mlrhash) == 0) {
           getLastMLRModel()->addMLRPrediction();
-          // name TEXT, mlrhash TEXT, hashinputmx TEXT, objname TEXT, yvarname
-          // TEXT, predicted_y TEXT, r2y TEXT, sdec TXT
           getLastMLRModel()->getLastMLRPrediction()->setPredID(
               getLastMLRModel()->MLRPredictionCount() - 1);
-          getLastMLRModel()->getLastMLRPrediction()->setName(mlrpredlist[i][0]);
+          getLastMLRModel()->getLastMLRPrediction()->setName(
+              mlrpredlist[i].value("name").toString());
           getLastMLRModel()->getLastMLRPrediction()->setDataHash(
-              mlrpredlist[i][2]);
+              mlrpredlist[i].value("hashinputmx").toString());
           getLastMLRModel()->getLastMLRPrediction()->getObjName() =
-              DeserializeQStringList(mlrpredlist[i][3]);
+              DeserializeQStringList(
+                  mlrpredlist[i].value("objname").toString());
           getLastMLRModel()->getLastMLRPrediction()->getYVarName() =
-              DeserializeQStringList(mlrpredlist[i][4]);
+              DeserializeQStringList(
+                  mlrpredlist[i].value("yvarname").toString());
           DeserializeMatrix(
-              mlrpredlist[i][5],
+              mlrpredlist[i].value("ypred").toString(),
               getLastMLRModel()->getLastMLRPrediction()->getYDipVar());
-          DeserializeDVector(
-              mlrpredlist[i][6],
-              getLastMLRModel()->getLastMLRPrediction()->getR2Y());
-          DeserializeDVector(
-              mlrpredlist[i][7],
-              getLastMLRModel()->getLastMLRPrediction()->getSDEC());
 
           int preddid = -1;
           for (int k = 0; k < MatrixCount(); k++) {
@@ -997,15 +939,15 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
                 0) {
               preddid = k;
               break;
-            } else {
-              continue;
             }
           }
 
           if (preddid == -1) {
             (*log).append(QString("Warning on MLR Prediction %1. Unable to "
                                   "find origin data matrix.")
-                              .arg(mlrpredlist[i][0]));
+                              .arg(getLastMLRModel()
+                                       ->getLastMLRPrediction()
+                                       ->getName()));
           }
 
           getLastMLRModel()->getLastMLRPrediction()->setDID(preddid);
@@ -1035,21 +977,9 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
     }
 
     query.exec("SELECT * from ldapredTable");
-    QList<QStringList> ldapredlist;
-
+    QList<QSqlRecord> ldapredlist;
     while (query.next()) {
-      ldapredlist.append(QStringList());
-      ldapredlist.last().append(query.value(0).toString());
-      ldapredlist.last().append(query.value(1).toString());
-      ldapredlist.last().append(query.value(2).toString());
-      ldapredlist.last().append(query.value(3).toString());
-      ldapredlist.last().append(query.value(4).toString());
-      ldapredlist.last().append(query.value(5).toString());
-      ldapredlist.last().append(query.value(6).toString());
-      ldapredlist.last().append(query.value(7).toString());
-      ldapredlist.last().append(query.value(8).toString());
-      ldapredlist.last().append(query.value(9).toString());
-      ldapredlist.last().append(query.value(10).toString());
+      ldapredlist.append(query.record());
     }
 
     query.exec("SELECT * from ldaTable");
@@ -1059,33 +989,35 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       // predicted_residuals, pprob, evect, eval, mu, mnpdf, features, fmean,
       // fsdev, inv_cov, nclass, class_start, classid, classes, nameclasses
 
-      QString name = query.value(0).toString();
-      QString hashinputmx = query.value(1).toString();
-      QString serialized_objname = query.value(2).toString();
-      QString serialized_varname = query.value(3).toString();
-      int validationtype = query.value(4).toInt();
-      QString serialized_roc = query.value(5).toString();
-      QString serialized_roc_aucs = query.value(6).toString();
-      QString serialized_pr = query.value(7).toString();
-      QString serialized_pr_aucs = query.value(8).toString();
-      QString serialized_recalculated_y = query.value(9).toString();
-      QString serialized_recalculated_residuals = query.value(10).toString();
-      QString serialized_predicted_y = query.value(11).toString();
-      QString serialized_predicted_residuals = query.value(12).toString();
-      QString serialized_prob = query.value(13).toString();
-      QString serialized_evect = query.value(14).toString();
-      QString serialized_eval = query.value(15).toString();
-      QString serialized_mu = query.value(16).toString();
-      QString serialized_mnpdf = query.value(17).toString();
-      QString serialized_features = query.value(18).toString();
-      QString serialized_fmean = query.value(19).toString();
-      QString serialized_fsdev = query.value(20).toString();
-      QString serialized_inv_cov = query.value(21).toString();
-      int nclass = query.value(22).toInt();
-      int class_start = query.value(23).toInt();
-      QString serialized_classid = query.value(24).toString();
-      QString serialized_classes = query.value(25).toString();
-      QString serialized_nameclasses = query.value(26).toString();
+      QString name = query.value("name").toString();
+      QString hashinputmx = query.value("hashinputmx").toString();
+      QString serialized_objname = query.value("objname").toString();
+      QString serialized_varname = query.value("varname").toString();
+      int validationtype = query.value("validationtype").toInt();
+      QString serialized_roc = query.value("roc").toString();
+      QString serialized_roc_aucs = query.value("roc_aucs").toString();
+      QString serialized_pr = query.value("pr").toString();
+      QString serialized_pr_aucs = query.value("pr_aucs").toString();
+      QString serialized_recalculated_y = query.value("recalculated_y").toString();
+      QString serialized_recalculated_residuals =
+          query.value("recalculated_residuals").toString();
+      QString serialized_predicted_y = query.value("predicted_y").toString();
+      QString serialized_predicted_residuals =
+          query.value("predicted_residuals").toString();
+      QString serialized_prob = query.value("pprob").toString();
+      QString serialized_evect = query.value("evect").toString();
+      QString serialized_eval = query.value("eval").toString();
+      QString serialized_mu = query.value("mu").toString();
+      QString serialized_mnpdf = query.value("mnpdf").toString();
+      QString serialized_features = query.value("features").toString();
+      QString serialized_fmean = query.value("fmean").toString();
+      QString serialized_fsdev = query.value("fsdev").toString();
+      QString serialized_inv_cov = query.value("inv_cov").toString();
+      int nclass = query.value("nclass").toInt();
+      int class_start = query.value("class_start").toInt();
+      QString serialized_classid = query.value("classid").toString();
+      QString serialized_classes = query.value("classes").toString();
+      QString serialized_nameclasses = query.value("nameclasses").toString();
 
       addLDAModel();
       getLastLDAModel()->setName(name);
@@ -1095,24 +1027,42 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       getLastLDAModel()->getVarName() =
           DeserializeQStringList(serialized_varname);
 
-      if (!getLastLDAModel()->Model()->roc) initTensor(&getLastLDAModel()->Model()->roc);
-      if (!getLastLDAModel()->Model()->roc_aucs) initDVector(&getLastLDAModel()->Model()->roc_aucs);
-      if (!getLastLDAModel()->Model()->pr) initTensor(&getLastLDAModel()->Model()->pr);
-      if (!getLastLDAModel()->Model()->pr_aucs) initDVector(&getLastLDAModel()->Model()->pr_aucs);
-      if (!getLastLDAModel()->Model()->recalculated_y) initMatrix(&getLastLDAModel()->Model()->recalculated_y);
-      if (!getLastLDAModel()->Model()->recalculated_residuals) initMatrix(&getLastLDAModel()->Model()->recalculated_residuals);
-      if (!getLastLDAModel()->Model()->predicted_y) initMatrix(&getLastLDAModel()->Model()->predicted_y);
-      if (!getLastLDAModel()->Model()->predicted_residuals) initMatrix(&getLastLDAModel()->Model()->predicted_residuals);
-      if (!getLastLDAModel()->Model()->pprob) initDVector(&getLastLDAModel()->Model()->pprob);
-      if (!getLastLDAModel()->Model()->eval) initDVector(&getLastLDAModel()->Model()->eval);
-      if (!getLastLDAModel()->Model()->evect) initMatrix(&getLastLDAModel()->Model()->evect);
-      if (!getLastLDAModel()->Model()->mu) initMatrix(&getLastLDAModel()->Model()->mu);
-      if (!getLastLDAModel()->Model()->mnpdf) initTensor(&getLastLDAModel()->Model()->mnpdf);
-      if (!getLastLDAModel()->Model()->features) initTensor(&getLastLDAModel()->Model()->features);
-      if (!getLastLDAModel()->Model()->fmean) initMatrix(&getLastLDAModel()->Model()->fmean);
-      if (!getLastLDAModel()->Model()->fsdev) initMatrix(&getLastLDAModel()->Model()->fsdev);
-      if (!getLastLDAModel()->Model()->inv_cov) initMatrix(&getLastLDAModel()->Model()->inv_cov);
-      if (!getLastLDAModel()->Model()->classid) initUIVector(&getLastLDAModel()->Model()->classid);
+      if (!getLastLDAModel()->Model()->roc)
+        initTensor(&getLastLDAModel()->Model()->roc);
+      if (!getLastLDAModel()->Model()->roc_aucs)
+        initDVector(&getLastLDAModel()->Model()->roc_aucs);
+      if (!getLastLDAModel()->Model()->pr)
+        initTensor(&getLastLDAModel()->Model()->pr);
+      if (!getLastLDAModel()->Model()->pr_aucs)
+        initDVector(&getLastLDAModel()->Model()->pr_aucs);
+      if (!getLastLDAModel()->Model()->recalculated_y)
+        initMatrix(&getLastLDAModel()->Model()->recalculated_y);
+      if (!getLastLDAModel()->Model()->recalculated_residuals)
+        initMatrix(&getLastLDAModel()->Model()->recalculated_residuals);
+      if (!getLastLDAModel()->Model()->predicted_y)
+        initMatrix(&getLastLDAModel()->Model()->predicted_y);
+      if (!getLastLDAModel()->Model()->predicted_residuals)
+        initMatrix(&getLastLDAModel()->Model()->predicted_residuals);
+      if (!getLastLDAModel()->Model()->pprob)
+        initDVector(&getLastLDAModel()->Model()->pprob);
+      if (!getLastLDAModel()->Model()->eval)
+        initDVector(&getLastLDAModel()->Model()->eval);
+      if (!getLastLDAModel()->Model()->evect)
+        initMatrix(&getLastLDAModel()->Model()->evect);
+      if (!getLastLDAModel()->Model()->mu)
+        initMatrix(&getLastLDAModel()->Model()->mu);
+      if (!getLastLDAModel()->Model()->mnpdf)
+        initTensor(&getLastLDAModel()->Model()->mnpdf);
+      if (!getLastLDAModel()->Model()->features)
+        initTensor(&getLastLDAModel()->Model()->features);
+      if (!getLastLDAModel()->Model()->fmean)
+        initMatrix(&getLastLDAModel()->Model()->fmean);
+      if (!getLastLDAModel()->Model()->fsdev)
+        initMatrix(&getLastLDAModel()->Model()->fsdev);
+      if (!getLastLDAModel()->Model()->inv_cov)
+        initMatrix(&getLastLDAModel()->Model()->inv_cov);
+      if (!getLastLDAModel()->Model()->classid)
+        initUIVector(&getLastLDAModel()->Model()->classid);
 
       DeserializeTensor(serialized_roc, getLastLDAModel()->Model()->roc);
       DeserializeDVector(serialized_roc_aucs,
@@ -1182,8 +1132,9 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         MainWindow::getProjectItem(getProjectID(), treeWidget)
             ->child(1)
             ->addChild(subitem.release());
-        (*tabcount_)++;
       }
+      if (tabcount_)
+        (*tabcount_)++;
 
       //  ldapredTable (name TEXT, ldahash TEXT, hashinputmx TEXT, objname TEXT,
       //  varname TEXT, pred_class TEXT, pred_features TEXT,
@@ -1191,36 +1142,40 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
       //                TEXT)"));
       QString ldahash = getLastLDAModel()->getHash();
       for (int j = 0; j < ldapredlist.size(); j++) {
-        if (ldapredlist[j][1].compare(ldahash) == 0) {
+        if (ldapredlist[j].value("ldahash").toString().compare(ldahash) == 0) {
           (*log).append(
-              QString("Importing LDA Prediction %1").arg(ldapredlist[j][0]));
+              QString("Importing LDA Prediction %1")
+                  .arg(ldapredlist[j].value("name").toString()));
           getLastLDAModel()->addLDAPrediction();
           getLastLDAModel()->getLastLDAPrediction()->setPredID(
               getLastLDAModel()->LDAPredictionCount() - 1);
-          getLastLDAModel()->getLastLDAPrediction()->setName(ldapredlist[j][0]);
+          getLastLDAModel()->getLastLDAPrediction()->setName(
+              ldapredlist[j].value("name").toString());
           getLastLDAModel()->getLastLDAPrediction()->setDataHash(
-              ldapredlist[j][2]);
+              ldapredlist[j].value("hashinputmx").toString());
           getLastLDAModel()->getLastLDAPrediction()->getObjName() =
-              DeserializeQStringList(ldapredlist[j][3]);
+              DeserializeQStringList(ldapredlist[j].value("objname").toString());
           getLastLDAModel()->getLastLDAPrediction()->getVarName() =
-              DeserializeQStringList(ldapredlist[j][4]);
+              DeserializeQStringList(ldapredlist[j].value("varname").toString());
           DeserializeMatrix(
-              ldapredlist[j][5],
+              ldapredlist[j].value("pred_class").toString(),
               getLastLDAModel()->getLastLDAPrediction()->getPredClasses());
           DeserializeMatrix(
-              ldapredlist[j][6],
+              ldapredlist[j].value("pred_features").toString(),
               getLastLDAModel()->getLastLDAPrediction()->getPredFeatures());
           DeserializeMatrix(
-              ldapredlist[j][7],
+              ldapredlist[j].value("prob").toString(),
               getLastLDAModel()->getLastLDAPrediction()->getProbPred());
-          QStringList pred_classes = ldapredlist[j][8].split("\\");
+          QStringList pred_classes =
+              ldapredlist[j].value("classes").toString().split("\\");
           for (int k = 0; k < pred_classes.size(); k++)
             getLastLDAModel()->getLastLDAPrediction()->getClasses().append(
                 DeserializeQStringList(pred_classes[k]));
           getLastLDAModel()->getLastLDAPrediction()->getNameClasses() =
-              DeserializeQStringList(ldapredlist[j][9]);
+              DeserializeQStringList(
+                  ldapredlist[j].value("nameclasses").toString());
           DeserializeMatrix(
-              ldapredlist[j][10],
+              ldapredlist[j].value("mnpdf").toString(),
               getLastLDAModel()->getLastLDAPrediction()->getMVNProbDistrib());
 
           int preddid = -1;
@@ -1238,7 +1193,9 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
           if (preddid == -1) {
             (*log).append(QString("Warning in LDA Prediction %1. Unable to "
                                   "find the origin data matrix. ")
-                              .arg(ldapredlist[j][0]));
+                              .arg(getLastLDAModel()
+                                       ->getLastLDAPrediction()
+                                       ->getName()));
           }
 
           getLastLDAModel()->getLastLDAPrediction()->setDID(preddid);
@@ -1248,7 +1205,7 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
           if (treeWidget) {
             auto preditem = std::make_unique<QTreeWidgetItem>();
             preditem->setText(
-                0, getLDAModel((*mid_))->getLastLDAPrediction()->getName());
+                0, getLastLDAModel()->getLastLDAPrediction()->getName());
             preditem->setText(1, QString::number((*tabcount_)));
             preditem->setText(2, QString::number(getProjectID()));
             preditem->setText(3, QString::number((*mid_)));
@@ -1258,12 +1215,13 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
             preditem->setText(
                 6,
                 QString::number(
-                    getLDAModel((*mid_))->getLastLDAPrediction()->getPredID()));
+                    getLastLDAModel()->getLastLDAPrediction()->getPredID()));
             preditem->setText(7, QString("LDA Prediction"));
             MainWindow::getModelItem(getProjectID(), (*mid_), treeWidget)
                 ->addChild(preditem.release());
-            (*tabcount_)++;
           }
+          if (tabcount_)
+            (*tabcount_)++;
         }
       }
       (*mid_)++;
@@ -1516,7 +1474,7 @@ QString DATA::SaveSQLData(QString savepath, GenericProgressDialog *pbdialog) {
                "tscores TEXT, ploadings TEXT, weights TEXT, xvarexp TEXT, "
                "xcolscaling TEXT, xcolaverage TEXT, uscores TEXT, qloadings TEXT, "
                "ycolscaling TEXT, ycolaverage TEXT, b TEXT, r2y_model TEXT, "
-               "sdec TEXT, recalc_y TEXT, recalc_residuals TEXT, validationtype INT, "
+               "sdec TEXT, recalc_y TEXT, recalc_residuals TEXT, algtype INT, validationtype INT, "
                "q2y TEXT, sdep TEXT, bias TEXT, predicted_y TEXT, "
                "predicted_residuals TEXT, roc_recalculated TEXT, roc_validation TEXT, "
                "roc_auc_recalculated TEXT, roc_auc_validation TEXT, "
@@ -1534,7 +1492,7 @@ QString DATA::SaveSQLData(QString savepath, GenericProgressDialog *pbdialog) {
                     "objname, xvarname, yvarname, classes, tscores, ploadings, weights, "
                     "xvarexp, xcolscaling, xcolaverage, uscores, qloadings, ycolscaling, "
                     "ycolaverage, b, r2y_model, sdec, recalc_y, recalc_residuals, "
-                    "validationtype, q2y, sdep, bias, predicted_y, predicted_residuals, "
+                    "algtype, validationtype, q2y, sdep, bias, predicted_y, predicted_residuals, "
                     "roc_recalculated, roc_validation, roc_auc_recalculated, roc_auc_validation, "
                     "precision_recall_recalculated, precision_recall_validation, "
                     "precision_recall_ap_recalculated, precision_recall_ap_validation, "
@@ -1542,7 +1500,7 @@ QString DATA::SaveSQLData(QString savepath, GenericProgressDialog *pbdialog) {
                     ":hashinputmx, :objname, :xvarname, :yvarname, :classes, :tscores, "
                     ":ploadings, :weights, :xvarexp, :xcolscaling, :xcolaverage, :uscores, "
                     ":qloadings, :ycolscaling, :ycolaverage, :b, :r2y_model, :sdec, "
-                    ":recalc_y, :recalc_residuals, :validationtype, :q2y, :sdep, :bias, "
+                    ":recalc_y, :recalc_residuals, :algtype, :validationtype, :q2y, :sdep, :bias, "
                     ":predicted_y, :predicted_residuals, :roc_recalculated, :roc_validation, "
                     ":roc_auc_recalculated, :roc_auc_validation, :precision_recall_recalculated, "
                     ":precision_recall_validation, :precision_recall_ap_recalculated, "
@@ -1572,6 +1530,7 @@ QString DATA::SaveSQLData(QString savepath, GenericProgressDialog *pbdialog) {
       query.bindValue(":sdec", SerializeMatrix(mod->Model()->sdec));
       query.bindValue(":recalc_y", SerializeMatrix(mod->Model()->recalculated_y));
       query.bindValue(":recalc_residuals", SerializeMatrix(mod->Model()->recalc_residuals));
+      query.bindValue(":algtype", mod->getAlgorithm());
       query.bindValue(":validationtype", mod->getValidation());
       query.bindValue(":q2y", SerializeMatrix(mod->Model()->q2y));
       query.bindValue(":sdep", SerializeMatrix(mod->Model()->sdep));

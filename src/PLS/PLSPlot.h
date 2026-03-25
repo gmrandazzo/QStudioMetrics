@@ -81,5 +81,17 @@ public:
 private:
   PROJECTS *projects;
   int pid, mid, predid, nlv;
+
+  QString getProjectName() const;
+  QString getModelName() const;
+  PLSModel *getPLSModel() const;
+  int getNPC() const;
+  QString getDataHash() const;
+  bool isPLSDA() const;
+  bool isPLS() const;
+  void extractExperimentalY(int matrix_id, const QStringList &objsel,
+                            const QStringList &yvarsel, matrix **out_y);
+  void extractModelMatrix(matrix *source, uint nobjects, uint nvars,
+                          matrix **out_y);
 };
 #endif

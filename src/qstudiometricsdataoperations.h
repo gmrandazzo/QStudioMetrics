@@ -34,6 +34,14 @@
 // N.B.: To serialize vector,matrix and tensor is utilised a std::string
 // to avoid double conversion problems and truncated floating points present in
 // QString
+
+namespace QSM_SQL_SERIALIZATION {
+const QString SEP_VALUE = ";";
+const QString SEP_ROW = "//";
+const QString SEP_LABEL = "/#";
+const QString SEP_ORDER = "o";
+}
+
 LABELS DeserializeLABELS(QString serialized_l);
 QString SerializeLABELS(LABELS l);
 QStringList DeserializeQStringList(QString serialized_lst);
