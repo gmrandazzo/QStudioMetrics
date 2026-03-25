@@ -839,6 +839,8 @@ int MainWindow::getPredictionCount(int pid, int mid) {
 }
 
 bool MainWindow::CurrentIsPrediction() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return false;
   if (ui.treeWidget->currentItem()->columnCount() == 8)
     return true;
   else
@@ -846,6 +848,8 @@ bool MainWindow::CurrentIsPrediction() {
 }
 
 QString MainWindow::getCurrentPredictionType() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return QString("None");
   if (ui.treeWidget->currentItem()->columnCount() == 8) {
     return ui.treeWidget->currentItem()->text(7);
   } else {
@@ -854,6 +858,8 @@ QString MainWindow::getCurrentPredictionType() {
 }
 
 int MainWindow::getCurrentPredictionID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 8) {
     return ui.treeWidget->currentItem()->text(6).toInt();
   } else {
@@ -862,6 +868,8 @@ int MainWindow::getCurrentPredictionID() {
 }
 
 QString MainWindow::getCurrentPredictionYhash() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return QString("None");
   if (ui.treeWidget->currentItem()->columnCount() == 8) {
     return ui.treeWidget->currentItem()->text(5);
   } else {
@@ -870,6 +878,8 @@ QString MainWindow::getCurrentPredictionYhash() {
 }
 
 QString MainWindow::getCurrentPredictionXhash() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return QString("None");
   if (ui.treeWidget->currentItem()->columnCount() == 8) {
     return ui.treeWidget->currentItem()->text(4);
   } else {
@@ -878,6 +888,8 @@ QString MainWindow::getCurrentPredictionXhash() {
 }
 
 int MainWindow::getCurrentPredictionModelID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 8) {
     return ui.treeWidget->currentItem()->text(3).toInt();
   } else {
@@ -886,6 +898,8 @@ int MainWindow::getCurrentPredictionModelID() {
 }
 
 int MainWindow::getCurrentPredictionProjectID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 8) {
     return ui.treeWidget->currentItem()->text(2).toInt();
   } else {
@@ -894,6 +908,8 @@ int MainWindow::getCurrentPredictionProjectID() {
 }
 
 int MainWindow::getCurrentPredictionTableID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 8) {
     return ui.treeWidget->currentItem()->text(1).toInt();
   } else {
@@ -902,6 +918,8 @@ int MainWindow::getCurrentPredictionTableID() {
 }
 
 QString MainWindow::getCurrentPredictionName() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return QString("None");
   if (ui.treeWidget->currentItem()->columnCount() == 8) {
     return ui.treeWidget->currentItem()->text(0);
   } else {
@@ -961,6 +979,8 @@ int MainWindow::getCurrentModelNComponents() {
 }
 
 int MainWindow::getCurrentModelYScalingType() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 10) {
     return ui.treeWidget->currentItem()->text(6).toInt();
   } else {
@@ -969,6 +989,8 @@ int MainWindow::getCurrentModelYScalingType() {
 }
 
 int MainWindow::getCurrentModelXScalingType() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 10) {
     return ui.treeWidget->currentItem()->text(5).toInt();
   } else {
@@ -977,6 +999,8 @@ int MainWindow::getCurrentModelXScalingType() {
 }
 
 QString MainWindow::getCurrentModelYhash() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return QString("None");
   if (ui.treeWidget->currentItem()->columnCount() == 10) {
     if (ui.treeWidget->currentItem()->text(4).compare("-") == 0) {
       return "";
@@ -989,6 +1013,8 @@ QString MainWindow::getCurrentModelYhash() {
 }
 
 QString MainWindow::getCurrentModelXhash() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return QString("None");
   if (ui.treeWidget->currentItem()->columnCount() == 10) {
     if (ui.treeWidget->currentItem()->text(3).compare("-") == 0) {
       return "";
@@ -1001,6 +1027,8 @@ QString MainWindow::getCurrentModelXhash() {
 }
 
 int MainWindow::getCurrentModelProjectID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 10) {
     return ui.treeWidget->currentItem()->text(2).toInt();
   } else {
@@ -1009,6 +1037,8 @@ int MainWindow::getCurrentModelProjectID() {
 }
 
 int MainWindow::getCurrentModelTableID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 10) {
     return ui.treeWidget->currentItem()->text(1).toInt();
   } else {
@@ -1017,6 +1047,8 @@ int MainWindow::getCurrentModelTableID() {
 }
 
 QString MainWindow::getCurrentModelName() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return QString("None");
   if (ui.treeWidget->currentItem()->columnCount() == 10) {
     return ui.treeWidget->currentItem()->text(0);
   } else {
@@ -1245,6 +1277,8 @@ int MainWindow::getModelCount(int pid) {
  */
 
 bool MainWindow::CurrentIsData() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return false;
   if (ui.treeWidget->currentItem()->childCount() == 0 &&
       ui.treeWidget->currentItem()->columnCount() == 5)
     return true;
@@ -1253,6 +1287,8 @@ bool MainWindow::CurrentIsData() {
 }
 
 int MainWindow::getCurrentDataProjectID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
 #ifdef DEBUG
   qDebug() << "getCurrentDataProjectID() Number of Column: "
            << ui.treeWidget->currentItem()->columnCount()
@@ -1271,6 +1307,8 @@ int MainWindow::getCurrentDataProjectID() {
 }
 
 int MainWindow::getCurrentDataID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 5) {
     return ui.treeWidget->currentItem()->text(3).toInt();
   } else {
@@ -1279,6 +1317,8 @@ int MainWindow::getCurrentDataID() {
 }
 
 int MainWindow::getCurrentDataTableID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return -1;
   if (ui.treeWidget->currentItem()->columnCount() == 5) {
     return ui.treeWidget->currentItem()->text(2).toInt();
   } else {
@@ -1287,6 +1327,8 @@ int MainWindow::getCurrentDataTableID() {
 }
 
 QString MainWindow::getCurrentDataType() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return QString("None");
   if (ui.treeWidget->currentItem()->columnCount() == 5) {
     return ui.treeWidget->currentItem()->text(1);
   } else {
@@ -1295,6 +1337,8 @@ QString MainWindow::getCurrentDataType() {
 }
 
 QString MainWindow::getCurrentDataName() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return QString("None");
   if (ui.treeWidget->currentItem()->columnCount() == 5) {
     return ui.treeWidget->currentItem()->text(0);
   } else {
@@ -1339,6 +1383,8 @@ int MainWindow::getDataCount(int pid) {
 }
 
 bool MainWindow::CurrentIsProject() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return false;
   if (ui.treeWidget->model()->rowCount() > 0) {
     if (ui.treeWidget->selectionModel()->selectedIndexes().size() > 0) {
       if (ui.treeWidget->currentItem()->columnCount() == 2) {
@@ -1545,6 +1591,8 @@ void MainWindow::UpdateImageWindow(ImageSignal is) {
  */
 
 void MainWindow::DowngradePredictionID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return;
   if (CurrentIsPrediction() == true) {
     int predid = getCurrentPredictionID();
     int pid = getCurrentPredictionProjectID();
@@ -1675,6 +1723,8 @@ void MainWindow::removePrediction() {
  */
 
 void MainWindow::DowngradeModelID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return;
   if (CurrentIsModel() == true) {
 
     int pid = getCurrentModelProjectID();
@@ -2012,6 +2062,8 @@ void MainWindow::showLDAValidation() {
 }
 
 void MainWindow::showLDAPrediction() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return;
   if (CurrentIsPrediction() == true) {
     int pid = getCurrentPredictionProjectID();
     int mid = getCurrentPredictionModelID();
@@ -2288,6 +2340,8 @@ void MainWindow::showMLRValidatedPrediction() {
 }
 
 void MainWindow::showMLRPrediction() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return;
   if (CurrentIsPrediction() == true) {
     int pid = getCurrentPredictionProjectID();
     int mid = getCurrentPredictionModelID();
@@ -2486,6 +2540,8 @@ void MainWindow::showPLSPredictionRSquared() {
 }
 
 void MainWindow::showPLSPrediction() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return;
   if (CurrentIsPrediction() == true) {
     int pid = getCurrentPredictionProjectID();
     int mid = getCurrentPredictionModelID();
@@ -2535,6 +2591,8 @@ void MainWindow::showPLSPrediction() {
 }
 
 void MainWindow::showPLSPredScore() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return;
   if (CurrentIsPrediction() == true) {
     int pid = getCurrentPredictionProjectID();
     int mid = getCurrentPredictionModelID();
@@ -2790,6 +2848,8 @@ void MainWindow::showPLSValidation() {
 }
 
 void MainWindow::showPLSRecalcY() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return;
   if (CurrentIsModel() == true) {
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
@@ -3491,6 +3551,8 @@ void MainWindow::showCPCASuperScore() {
 }
 
 void MainWindow::showPCAPredScore() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return;
   if (CurrentIsPrediction() == true) {
     int pid = getCurrentPredictionProjectID();
     int mid = getCurrentPredictionModelID();
@@ -3964,6 +4026,8 @@ void MainWindow::ShowContextMenu(const QPoint &pos) {
 }
 
 void MainWindow::DowngradeDataID() {
+  if (ui.treeWidget->currentItem() == nullptr)
+    return;
   if (CurrentIsData() == true) {
     int pid = getCurrentDataProjectID();
     int did = getCurrentDataID();
