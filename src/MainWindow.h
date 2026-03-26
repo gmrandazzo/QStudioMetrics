@@ -231,9 +231,10 @@ private slots:
   void UpdateImageWindow(ImageSignal is);
   void PlotVariableVSVariableBis(vvplotSignal vvs);
 
+public:
+  MDIChild *createMdiChild();
 private:
   Ui::MainWindow ui;
-  MDIChild *createMdiChild();
   void closeMDI(const int &id);
   void closeEvent(QCloseEvent *bar);
 
@@ -243,8 +244,10 @@ private:
   PROJECTS *projects;
   QString lastpath;
 
+public:
   int default_window_size_w;
   int default_window_size_h;
+private:
   int tabcount_;
   int pid_;    // Prediction ID that is unique for each project and increment
                // always
@@ -361,7 +364,9 @@ private:
   int getModelCount(int pid);
   QTreeWidgetItem *getModelItem(int pid, int mid);
   QString getModelName(int pid, int mid);
+public:
   int getModelTableID(int pid, int mid);
+private:
   int getModelProjectID(int pid, int mid);
   QString getModelXhash(int pid, int mid);
   QString getModelYhash(int pid, int mid);

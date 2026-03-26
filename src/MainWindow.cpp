@@ -3977,6 +3977,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos) {
     } else {
       return;
     }
+
     menu.addAction("&Remove Model", this, SLOT(removeModel()));
 
   } else if (CurrentIsProject()) {
@@ -8878,6 +8879,43 @@ void MainWindow::setupPlugins() {
             tr("Please select a model in the project tree to generate a report."));
         }
       });
+    }
+  }
+
+  // Handle generic plugins and context menu plugins that want to be in the main menu
+  QList<QSMPluginInterface*> genericPlugins = PluginManager::instance().genericPlugins();
+  if (!genericPlugins.isEmpty()) {
+    QMenu *pluginsMenu = nullptr;
+    foreach (QAction *action, ui.menubar->actions()) {
+      if (action->text().contains("Plugins")) {
+        pluginsMenu = action->menu();
+        break;
+      }
+    }
+    if (!pluginsMenu) {
+      pluginsMenu = ui.menubar->addMenu(tr("&Plugins"));
+    }
+
+    QMap<QString, QMenu*> categoryMenus;
+    foreach (QSMPluginInterface* plugin, genericPlugins) {
+      if (qobject_cast<IReportGenerator*>(dynamic_cast<QObject*>(plugin))) continue;
+
+      QString cat = plugin->category();
+      if (cat.isEmpty()) continue; // Skip if no category (keep menu clean)
+
+      if (!categoryMenus.contains(cat)) {
+        categoryMenus[cat] = pluginsMenu->addMenu(cat);
+      }
+
+      auto* contextPlugin = qobject_cast<IContextMenuPlugin*>(dynamic_cast<QObject*>(plugin));
+      if (contextPlugin) {
+         // Pass -1, -1 to indicate this is the generic main menu action
+         QAction* action = contextPlugin->getAction(-1, -1, this);
+         if (action) {
+           action->setText(plugin->pluginName());
+           categoryMenus[cat]->addAction(action);
+         }
+      }
     }
   }
 }
