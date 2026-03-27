@@ -5248,6 +5248,7 @@ void MainWindow::PCADModXPlot() {
     ProjectTree pjtree;
     GetPCAProjects(&pjtree);
     DialogPlots dp(pjtree, DialogPlots::TwoColumns);
+    dp.setComponentLabel("Number of Principal Components");
     if (dp.exec() == QDialog::Accepted) {
       PCAPlot pcaplot(projects);
       pcaplot.setPID(dp.getProjectID());
@@ -5298,6 +5299,7 @@ void MainWindow::PCATsqContributionPlot() {
     ProjectTree pjtree;
     GetPCAProjects(&pjtree);
     DialogPlots dp(pjtree, DialogPlots::TwoColumns);
+    dp.setComponentLabel("Number of Principal Components");
     if (dp.exec() == QDialog::Accepted) {
       PCAPlot pcaplot(projects);
       pcaplot.setPID(dp.getProjectID());

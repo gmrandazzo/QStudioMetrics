@@ -37,6 +37,7 @@ public:
   DialogPlots(ProjectTree pjtree_, int dtype_);
   ~DialogPlots();
   void hideOptions(bool);
+  void setComponentLabel(const QString& label);
   int getProjectID();
   int getModelID();
   int getPredictionID();

@@ -118,6 +118,8 @@ public:
   void setPID(int pid_) { pid = pid_; }
   void setMID(int mid_) { mid = mid_; }
   void setModelType(int mtype_) { mtype = mtype_; }
+  
+  Graphs* getChart() { return chart; }
 
 public slots:
   void slotExit();
@@ -156,13 +158,6 @@ private:
   Ui::ScatterPlot ui;
   enum class PEngine { Qtchart, QPlotly };
 
-  // QPlotlyWindow *chart;
-  //  or...
-  // Chart *chart;
-  //  or...
-  //  WARNING: Plotly give problems on windows with WEBKIT and is extremelly
-  //  slow With this workaround i choose between the old plotter and the new
-  //  qplotly
   Graphs *NewGraph(PEngine peng);
   Graphs *chart;
 

@@ -121,6 +121,10 @@ void DialogPlots::hideOptions(bool opt) {
   }
 }
 
+void DialogPlots::setComponentLabel(const QString& label) {
+  ui.label_4->setText(label);
+}
+
 DialogPlots::DialogPlots(ProjectTree pjtree_, int dtype_) {
   int i;
   ui.setupUi(this);
