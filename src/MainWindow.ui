@@ -127,7 +127,7 @@
      <x>0</x>
      <y>0</y>
      <width>916</width>
-     <height>37</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -280,8 +280,6 @@
      <addaction name="actionPCA2DScore_Plot"/>
      <addaction name="actionPCA2DLoadings_Plot"/>
      <addaction name="actionPCA2DDModX_Plot"/>
-     <addaction name="actionPCA2DTsq_Contribution_Plot"/>
-     <addaction name="actionPCA2DRelative_Tsq_Contribution_Plot"/>
      <addaction name="actionPCA2DExpVarPlot"/>
      <addaction name="separator"/>
      <addaction name="actionPCA2DScore_Plot_Prediction"/>
@@ -1548,9 +1546,9 @@
     <string>t/t/ Block Scores with Prediction</string>
    </property>
   </action>
-  <action name="actionPCA2DTsq_Contribution_Plot">
+  <action name="actionPCA2DSPE_Contribution_Plot">
    <property name="text">
-    <string>T² Contribution Plot</string>
+    <string>SPE Contribution Plot</string>
    </property>
   </action>
   <action name="actionPCA2DDModX_Plot">

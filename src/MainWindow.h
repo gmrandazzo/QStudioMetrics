@@ -101,7 +101,6 @@ private slots:
   void PCA2DScorePlot();
   void PCA2DLoadingsPlot();
   void PCADModXPlot();
-  void PCATsqContributionPlot();
   void PCA2DExpVarPlot();
   void PCA2DLoadingsMVANDPlot();
   void PCA2DScorePlotPrediction();
@@ -247,6 +246,18 @@ private:
 public:
   int default_window_size_w;
   int default_window_size_h;
+
+  bool PrepareTensor(MATRIX *indata, QStringList objnames, LABELS block_varsel,
+                     tensor *x);
+
+  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel,
+                     LABELS classes, matrix *x, matrix *y);
+
+  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel,
+                     QStringList yvarsel, matrix *x, matrix *y);
+
+  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel,
+                     matrix *x);
 private:
   int tabcount_;
   int pid_;    // Prediction ID that is unique for each project and increment
@@ -278,17 +289,6 @@ private:
   void CalculationMenuEnable();
   void CalculationMenuDisable(int calcpid_);
 
-  bool PrepareTensor(MATRIX *indata, QStringList objnames, LABELS block_varsel,
-                     tensor *x);
-
-  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel,
-                     LABELS classes, matrix *x, matrix *y);
-
-  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList xvarsel,
-                     QStringList yvarsel, matrix *x, matrix *y);
-
-  bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel,
-                     matrix *x);
 
   void PrepareKFoldClasses(QStringList objects, LABELS kfclasses,
                            uivector *classes);

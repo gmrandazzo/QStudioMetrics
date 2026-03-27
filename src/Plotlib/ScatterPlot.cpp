@@ -47,11 +47,10 @@
 #include "run.h"
 
 Graphs *ScatterPlot::NewGraph(PEngine peng) {
-  if (peng == PEngine::Qtchart) {
-    return new Chart();
-    // return new ChartQt(); // Low performance
+  if (peng == PEngine::QSMChart) {
+      return new Chart();
   } else {
-    return new ChartQt();
+      return new ChartQt();
   }
 }
 
@@ -1832,11 +1831,10 @@ ScatterPlot::ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &ob
   //     PlotFromfile(&chart, argv[1]);
 
   // chart = new Chart();
-  ////chart = new QPlotlyWindow(this);
 
   axistype = DOUBLEAXIS;
 
-  chart = NewGraph(PEngine::Qtchart);
+  chart = NewGraph(PEngine::QSMChart);
   chart->setPlotTitle(windowtitle);
   ui.plotlayout->addWidget(chart->weview());
 
@@ -1913,9 +1911,8 @@ ScatterPlot::ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &ob
                << "Triangle";
 
   // chart = new Chart();
-  // chart = new QPlotlyWindow(this);
   axistype = DOUBLEAXIS;
-  chart = NewGraph(PEngine::Qtchart);
+  chart = NewGraph(PEngine::QSMChart);
   chart->setPlotTitle(windowtitle);
   ui.plotlayout->addWidget(chart->weview());
 
@@ -1992,9 +1989,8 @@ ScatterPlot::ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &ob
                << "Square"
                << "Cross";
   // chart = new Chart();
-  // chart = new QPlotlyWindow(this);
   axistype = TRIPLEAXIS;
-  chart = NewGraph(PEngine::QPlotly);
+  chart = NewGraph(PEngine::QSMChart);
   chart->setPlotTitle(windowtitle);
   ui.plotlayout->addWidget(chart->weview());
 
@@ -2072,9 +2068,8 @@ ScatterPlot::ScatterPlot(const QList<matrix *> &m_, const QList<QStringList> &ob
                << "Square"
                << "Triangle";
   // chart = new Chart();
-  // chart = new QPlotlyWindow(this);
   axistype = DOUBLEAXIS;
-  chart = NewGraph(PEngine::Qtchart);
+  chart = NewGraph(PEngine::QSMChart);
   chart->setPlotTitle(windowtitle);
   ui.plotlayout->addWidget(chart->weview());
 
@@ -2144,9 +2139,8 @@ ScatterPlot::ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
                << "Square"
                << "Triangle";
   // chart = new Chart();
-  // chart = new QPlotlyWindow(this);
   axistype = SINGLEAXIS;
-  chart = NewGraph(PEngine::Qtchart);
+  chart = NewGraph(PEngine::QSMChart);
   ui.plotlayout->addWidget(chart->weview());
 
   ui.axis1->hide();
@@ -2223,9 +2217,8 @@ ScatterPlot::ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
                << "Square"
                << "Triangle";
   // chart = new Chart();
-  // chart = new QPlotlyWindow(this);
   axistype = SINGLEAXIS;
-  chart = NewGraph(PEngine::Qtchart);
+  chart = NewGraph(PEngine::QSMChart);
   chart->setPlotTitle(windowtitle);
   ui.plotlayout->addWidget(chart->weview());
 
@@ -2318,9 +2311,8 @@ ScatterPlot::ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
                << "Square"
                << "Triangle";
   // chart = new Chart();
-  // chart = new QPlotlyWindow(this);
   axistype = SINGLEAXIS;
-  chart = NewGraph(PEngine::Qtchart);
+  chart = NewGraph(PEngine::QSMChart);
   chart->setPlotTitle(windowtitle);
   ui.plotlayout->addWidget(chart->weview());
 
@@ -2406,9 +2398,8 @@ ScatterPlot::ScatterPlot(const QList<matrix *> &mx_, const QList<matrix *> &my_,
                << "Square"
                << "Triangle";
   // chart = new Chart();
-  // chart = new QPlotlyWindow(this);
   axistype = SINGLEAXIS;
-  chart = NewGraph(PEngine::Qtchart);
+  chart = NewGraph(PEngine::QSMChart);
   chart->setPlotTitle(windowtitle);
   ui.plotlayout->addWidget(chart->weview());
 

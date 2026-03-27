@@ -47,7 +47,7 @@
       <string>Object ID</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignCenter</set>
+      <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
     </widget>
    </item>
@@ -68,12 +68,18 @@
      <property name="minimum">
       <number>1</number>
      </property>
+     <property name="maximum">
+      <number>999999999</number>
+     </property>
+     <property name="displayIntegerBase">
+      <number>10</number>
+     </property>
     </widget>
    </item>
    <item row="1" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>

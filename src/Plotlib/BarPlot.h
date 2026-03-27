@@ -66,7 +66,6 @@ private slots:
 
 private:
   Ui::BarPlot ui;
-  // QPlotlyWindow *chart;
   QStringList windowtitles;
   QStringList labelnames;
   QString xaxestitle;

@@ -247,6 +247,8 @@ BarPlot::BarPlot(QList<dvector *> bar_lists_, QStringList windowtitles_,
   for (size_t i = 0; i < bars[0]->size; ++i) {
       y.append(bars[0]->data[i]);
   }
+  ui.bar_list_id->setRange(1, bars.size());
+  qDebug() << "Label names:" << bars.size() << labelnames.size() << labelnames;
   chart->addBars(labelnames, y, labelnames, Qt::black);
   auto plotLayout = std::make_unique<QVBoxLayout>();
   plotLayout->addWidget(chart);

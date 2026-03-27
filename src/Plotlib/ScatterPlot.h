@@ -156,7 +156,7 @@ signals:
 
 private:
   Ui::ScatterPlot ui;
-  enum class PEngine { Qtchart, QPlotly };
+  enum class PEngine { Qtchart, QSMChart };
 
   Graphs *NewGraph(PEngine peng);
   Graphs *chart;
