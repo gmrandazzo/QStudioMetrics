@@ -8675,8 +8675,7 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0) {
           SLOT(PCA2DLoadingsPlot()));
   connect(ui.actionPCA2DDModX_Plot, SIGNAL(triggered(bool)),
         SLOT(PCADModXPlot()));
-  connect(ui.actionPCA2DSPE_Contribution_Plot, SIGNAL(triggered(bool)),
-        SLOT(PCASPEContributionPlot()));
+
   connect(ui.actionPCA2DExpVarPlot, SIGNAL(triggered(bool)),
           SLOT(PCA2DExpVarPlot()));
   // connect(ui.actionPCA2DLoadingsMVAND_Plot, SIGNAL(triggered(bool)),
