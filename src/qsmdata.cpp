@@ -1,3 +1,5 @@
+#include <QDateTime>
+#include <QHostInfo>
 /*
  * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
  *
@@ -518,6 +520,17 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         }
       }
       (*mid_)++;
+    
+    query.exec("SELECT * from auditTable");
+    while (query.next()) {
+      AUDIT_ENTRY entry;
+      entry.timestamp = query.value(0).toString();
+      entry.action = query.value(1).toString();
+      entry.details = query.value(2).toString();
+      entry.user = query.value(3).toString();
+      audit_trail.append(entry);
+    }
+
     }
 
     query.exec("SELECT * from plspredTable");
@@ -819,6 +832,17 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         }
       }
       (*mid_)++;
+    
+    query.exec("SELECT * from auditTable");
+    while (query.next()) {
+      AUDIT_ENTRY entry;
+      entry.timestamp = query.value(0).toString();
+      entry.action = query.value(1).toString();
+      entry.details = query.value(2).toString();
+      entry.user = query.value(3).toString();
+      audit_trail.append(entry);
+    }
+
     }
 
     query.exec("SELECT * from mlrpredTable");
@@ -974,6 +998,17 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         }
       }
       (*mid_)++;
+    
+    query.exec("SELECT * from auditTable");
+    while (query.next()) {
+      AUDIT_ENTRY entry;
+      entry.timestamp = query.value(0).toString();
+      entry.action = query.value(1).toString();
+      entry.details = query.value(2).toString();
+      entry.user = query.value(3).toString();
+      audit_trail.append(entry);
+    }
+
     }
 
     query.exec("SELECT * from ldapredTable");
@@ -1225,6 +1260,17 @@ void DATA::OpenSQLData(QString sqlfile, QTreeWidget *treeWidget, int *tabcount_,
         }
       }
       (*mid_)++;
+    
+    query.exec("SELECT * from auditTable");
+    while (query.next()) {
+      AUDIT_ENTRY entry;
+      entry.timestamp = query.value(0).toString();
+      entry.action = query.value(1).toString();
+      entry.details = query.value(2).toString();
+      entry.user = query.value(3).toString();
+      audit_trail.append(entry);
+    }
+
     }
   } else {
     // In this case check first if the plugins and the dll are
@@ -1707,6 +1753,16 @@ QString DATA::SaveSQLData(QString savepath, GenericProgressDialog *pbdialog) {
       }
     }
 
+    query.exec(QString("CREATE TABLE IF NOT EXISTS auditTable (timestamp TEXT, action TEXT, details TEXT, user TEXT)"));
+    for (const auto &entry : audit_trail) {
+      query.prepare("INSERT INTO auditTable (timestamp, action, details, user) VALUES (:timestamp, :action, :details, :user)");
+      query.bindValue(":timestamp", entry.timestamp);
+      query.bindValue(":action", entry.action);
+      query.bindValue(":details", entry.details);
+      query.bindValue(":user", entry.user);
+      query.exec();
+    }
+
     db.commit();
     db.close();
     QSqlDatabase::removeDatabase(connectionName);
@@ -1716,15 +1772,20 @@ QString DATA::SaveSQLData(QString savepath, GenericProgressDialog *pbdialog) {
   }
 }
 
-void DATA::addMatrix() { matrix_.append(new MATRIX()); }
+void DATA::addMatrix() { 
+  matrix_.append(new MATRIX()); 
+  addAuditEntry("Add Matrix", "Added new empty matrix");
+}
 
 void DATA::addMatrix(MATRIX *mx) {
   matrix_.append(new MATRIX());
+  addAuditEntry("Add Matrix", "Added new empty matrix");
   matrix *m = matrix_.last()->Matrix();
   MatrixCopy(mx->Matrix(), &m);
   matrix_.last()->getObjName().append(mx->getObjName());
   matrix_.last()->getVarName().append(mx->getVarName());
   matrix_.last()->setName(mx->getName());
+  addAuditEntry("Add Matrix", QString("Added matrix: %1").arg(mx->getName()));
 }
 
 void DATA::addArray() { array_.append(new ARRAY()); }
@@ -1745,6 +1806,7 @@ void DATA::addArray(ARRAY *ar) {
 void DATA::delMatrixAt(int i) {
   if (i < matrix_.size()) {
     delete matrix_[i];
+    addAuditEntry("Delete Matrix", QString("Deleted matrix at index: %1").arg(i));
     matrix_.removeAt(i);
   }
 }
@@ -1770,7 +1832,10 @@ void DATA::delArray() {
   array_.clear();
 }
 
-void DATA::addPCAModel() { pcamodel.append(new PCAModel()); }
+void DATA::addPCAModel() { 
+  pcamodel.append(new PCAModel()); 
+  addAuditEntry("Add PCA Model", "Added new PCA model");
+}
 
 void DATA::delPCAModel(int mid) {
   for (int i = 0; i < pcamodel.size(); i++) {
@@ -1789,6 +1854,7 @@ void DATA::delPCAModelAt(int id) {
   if (id < pcamodel.size()) {
     pcamodel[id]->delPCAPredictions();
     delete pcamodel[id];
+    addAuditEntry("Delete PCA Model", QString("Deleted PCA model at index: %1").arg(id));
     pcamodel.removeAt(id);
   }
 }
@@ -1801,7 +1867,10 @@ void DATA::delPCAModels() {
   pcamodel.clear();
 }
 
-void DATA::addCPCAModel() { cpcamodel.append(new CPCAModel()); }
+void DATA::addCPCAModel() { 
+  cpcamodel.append(new CPCAModel()); 
+  addAuditEntry("Add CPCA Model", "Added new CPCA model");
+}
 
 void DATA::delCPCAModel(int mid) {
   for (int i = 0; i < cpcamodel.size(); i++) {
@@ -1820,6 +1889,8 @@ void DATA::delCPCAModelAt(int id) {
   if (id < cpcamodel.size()) {
     cpcamodel[id]->delCPCAPredictions();
     delete cpcamodel[id];
+    addAuditEntry("Delete PCA Model", QString("Deleted PCA model at index: %1").arg(id));
+    addAuditEntry("Delete CPCA Model", QString("Deleted CPCA model at index: %1").arg(id));
     cpcamodel.removeAt(id);
   }
 }
@@ -1832,7 +1903,10 @@ void DATA::delCPCAModels() {
   cpcamodel.clear();
 }
 
-void DATA::addPLSModel() { plsmodel.append(new PLSModel()); }
+void DATA::addPLSModel() { 
+  plsmodel.append(new PLSModel()); 
+  addAuditEntry("Add PLS Model", "Added new PLS model");
+}
 
 void DATA::delPLSModel(int mid) {
   for (int i = 0; i < plsmodel.size(); i++) {
@@ -1851,6 +1925,7 @@ void DATA::delPLSModelAt(int id) {
   if (id < plsmodel.size()) {
     plsmodel[id]->delPLSPredictions();
     delete plsmodel[id];
+    addAuditEntry("Delete PLS Model", QString("Deleted PLS model at index: %1").arg(id));
     plsmodel.removeAt(id);
   }
 }
@@ -1863,7 +1938,10 @@ void DATA::delPLSModels() {
   plsmodel.clear();
 }
 
-void DATA::addMLRModel() { mlrmodel.append(new MLRModel()); }
+void DATA::addMLRModel() { 
+  mlrmodel.append(new MLRModel()); 
+  addAuditEntry("Add MLR Model", "Added new MLR model");
+}
 
 void DATA::delMLRModel(int mid) {
   for (int i = 0; i < mlrmodel.size(); i++) {
@@ -1880,6 +1958,7 @@ void DATA::delMLRModel(int mid) {
 void DATA::delMLRModelAt(int id) {
   if (id < mlrmodel.size()) {
     delete mlrmodel[id];
+    addAuditEntry("Delete MLR Model", QString("Deleted MLR model at index: %1").arg(id));
     mlrmodel.removeAt(id);
   }
 }
@@ -1891,7 +1970,10 @@ void DATA::delMLRModels() {
   mlrmodel.clear();
 }
 
-void DATA::addLDAModel() { ldamodel.append(new LDAModel()); }
+void DATA::addLDAModel() { 
+  ldamodel.append(new LDAModel()); 
+  addAuditEntry("Add LDA Model", "Added new LDA model");
+}
 
 void DATA::delLDAModel(int mid) {
   for (int i = 0; i < ldamodel.size(); i++) {
@@ -1908,6 +1990,7 @@ void DATA::delLDAModel(int mid) {
 void DATA::delLDAModelAt(int id) {
   if (id < ldamodel.size()) {
     delete ldamodel[id];
+    addAuditEntry("Delete LDA Model", QString("Deleted LDA model at index: %1").arg(id));
     ldamodel.removeAt(id);
   }
 }
@@ -2182,5 +2265,26 @@ void DATA::loadPCAModelsFromSQL(QSqlQuery *query, int *mid_, int *tabcount_,
     if (log)
       (*log).append(QString("PCA model %1 imported.\n").arg(name));
     (*mid_)++;
+    
+    query->exec("SELECT * from auditTable");
+    while (query->next()) {
+      AUDIT_ENTRY entry;
+      entry.timestamp = query->value(0).toString();
+      entry.action = query->value(1).toString();
+      entry.details = query->value(2).toString();
+      entry.user = query->value(3).toString();
+      audit_trail.append(entry);
+    }
+
   }
+}
+
+void DATA::addAuditEntry(QString action, QString details) {
+  AUDIT_ENTRY entry;
+  entry.timestamp = QDateTime::currentDateTime().toString(Qt::ISODate);
+  entry.action = action;
+  entry.details = details;
+  entry.user = QHostInfo::localHostName() + "/" + qgetenv("USER");
+  if (entry.user.isEmpty()) entry.user = qgetenv("USERNAME");
+  audit_trail.append(entry);
 }

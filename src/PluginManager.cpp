@@ -29,54 +29,82 @@ PluginManager& PluginManager::instance() {
 
 void PluginManager::loadPlugins(PROJECTS* projects, QWidget* parent) {
     QDir pluginsDir(QCoreApplication::applicationDirPath());
+#ifdef DEBUG
+    qDebug() << "PluginManager: Searching for plugins starting from" << pluginsDir.absolutePath();
+#endif
 
-    // Search for the plugins directory
 #if defined(Q_OS_WIN)
     if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
         pluginsDir.cdUp();
-#elif defined(Q_OS_MAC)
-    if (pluginsDir.dirName() == "MacOS") {
-        pluginsDir.cdUp();
-        pluginsDir.cdUp();
-        pluginsDir.cdUp();
-    }
-#endif
-
     if (!pluginsDir.cd("plugins")) {
 #ifdef DEBUG
-        qDebug() << "Plugin directory 'plugins' not found relative to app path.";
+        qDebug() << "PluginManager: Could not find 'plugins' directory.";
 #endif
         return;
     }
+#elif defined(Q_OS_MAC)
+    if (pluginsDir.dirName() == "MacOS") {
+        QDir bundleDir = pluginsDir;
+        bundleDir.cdUp(); // Contents
+        if (bundleDir.cd("PlugIns")) {
+            pluginsDir = bundleDir;
+#ifdef DEBUG
+            qDebug() << "PluginManager: Using bundle PlugIns directory:" << pluginsDir.absolutePath();
+#endif
+        } else {
+            // Fallback to older behavior (plugins folder next to bundle)
+            pluginsDir.cdUp();
+            pluginsDir.cdUp();
+            pluginsDir.cdUp();
+            if (!pluginsDir.cd("plugins")) {
+#ifdef DEBUG
+                qDebug() << "PluginManager: Could not find 'plugins' directory in bundle or fallback.";
+#endif
+                return;
+            }
+        }
+    } else {
+        if (!pluginsDir.cd("plugins")) return;
+    }
+#else
+    if (!pluginsDir.cd("plugins")) return;
+#endif
+
+#ifdef DEBUG
+    qDebug() << "PluginManager: Final plugins directory:" << pluginsDir.absolutePath();
+    qDebug() << "PluginManager: Files found:" << pluginsDir.entryList(QDir::Files);
+#endif
 
     foreach (QString fileName, pluginsDir.entryList(QDir::Files)) {
-        QPluginLoader loader(pluginsDir.absoluteFilePath(fileName));
-        QObject *pluginObject = loader.instance();
-        if (pluginObject) {
-            auto *basePlugin = qobject_cast<QSMPluginInterface*>(pluginObject);
-            if (basePlugin) {
-                basePlugin->initialize(projects, parent);
-                m_genericPlugins.append(basePlugin);
+        if (fileName.endsWith(".dylib") || fileName.endsWith(".so") || fileName.endsWith(".dll")) {
+            QPluginLoader loader(pluginsDir.absoluteFilePath(fileName));
+            QObject *pluginObject = loader.instance();
+            if (pluginObject) {
+                auto *basePlugin = qobject_cast<QSMPluginInterface*>(pluginObject);
+                if (basePlugin) {
+                    basePlugin->initialize(projects, parent);
+                    m_genericPlugins.append(basePlugin);
 
-                // Check for report generator interface
-                auto *reportGen = qobject_cast<IReportGenerator*>(pluginObject);
-                if (reportGen) {
-                    m_reportGenerators.append(reportGen);
-                }
+                    // Check for report generator interface
+                    auto *reportGen = qobject_cast<IReportGenerator*>(pluginObject);
+                    if (reportGen) {
+                        m_reportGenerators.append(reportGen);
+                    }
 
-                // Check for context menu interface
-                auto *contextMenuPlugin = qobject_cast<IContextMenuPlugin*>(pluginObject);
-                if (contextMenuPlugin) {
-                    m_contextMenuPlugins.append(contextMenuPlugin);
-                }
+                    // Check for context menu interface
+                    auto *contextMenuPlugin = qobject_cast<IContextMenuPlugin*>(pluginObject);
+                    if (contextMenuPlugin) {
+                        m_contextMenuPlugins.append(contextMenuPlugin);
+                    }
 #ifdef DEBUG
-                qDebug() << "Successfully loaded plugin:" << basePlugin->pluginName();
+                    qDebug() << "PluginManager: Successfully loaded plugin:" << basePlugin->pluginName();
+#endif
+                }
+            } else {
+#ifdef DEBUG
+                qDebug() << "PluginManager: Failed to load plugin:" << fileName << "Error:" << loader.errorString();
 #endif
             }
-        } else {
-#ifdef DEBUG
-            qDebug() << "Failed to load plugin:" << fileName << loader.errorString();
-#endif
         }
     }
 }

@@ -22,6 +22,16 @@
 #ifndef QSMDATA_H
 #define QSMDATA_H
 
+#include <QString>
+
+// Moved from below to avoid circular dependency issues
+struct AUDIT_ENTRY {
+  QString timestamp;
+  QString action;
+  QString details;
+  QString user;
+};
+
 #include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
@@ -29,7 +39,6 @@
 #include <QList>
 #include <QPixmap>
 #include <QSqlQuery>
-#include <QString>
 #include <QStringList>
 #include <QTreeWidget>
 #include <cmath>
@@ -327,6 +336,8 @@ public:
   LABELS &getVariableLabels() { return varlabels; }
   TABLABELS &getVariableTabLabels() { return vartablabels; }
   QList<IMAGE> &getImages() { return images; }
+  QList<AUDIT_ENTRY> &getAuditTrail() { return audit_trail; }
+  void addAuditEntry(QString action, QString details);
 
   int MatrixCount();
   int ArrayCount();
@@ -362,6 +373,7 @@ private:
   LABELS objlabels, varlabels;
   TABLABELS vartablabels;
   QList<IMAGE> images;
+  QList<AUDIT_ENTRY> audit_trail;
   int uniqueid;
 };
 

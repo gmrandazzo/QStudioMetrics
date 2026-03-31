@@ -224,11 +224,13 @@ if(WIN32)
   else()
     add_executable(QStudioMetrics ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS} ${WIN32_ICON_O})
   endif()
-else(WIN32)
-add_executable(QStudioMetrics ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS})
+elseif(APPLE)
+  add_executable(QStudioMetrics MACOSX_BUNDLE ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS})
+else()
+  add_executable(QStudioMetrics ${QSTUDIOMETRICS_SRC} ${QSTUDIOMETRICS_MOC_H} ${QSTUDIOMETRICS_UIS_H} ${icon_RCC_SRCS})
 endif()
 
-target_link_libraries(QStudioMetrics PRIVATE ${LIBSCIENTIFIC_LIBRARY} libchart ${QT6_LIBRARIES})
+target_link_libraries(QStudioMetrics PRIVATE ${LIBSCIENTIFIC_LIBRARY} libchart ${QT6_LIBS})
 set_target_properties(QStudioMetrics PROPERTIES ENABLE_EXPORTS ON)
 
 # --- Plugin Discovery Mechanism ---
@@ -242,13 +244,27 @@ if(ENABLE_PLUGINS)
 
     if(EXISTS ${DISCOVERY_BASE})
         file(GLOB PLUGINS_DIRS RELATIVE ${DISCOVERY_BASE} ${DISCOVERY_BASE}/*)
+        set(ALL_PLUGIN_TARGETS "")
         foreach(PLUGIN_DIR ${PLUGINS_DIRS})
             if(IS_DIRECTORY ${DISCOVERY_BASE}/${PLUGIN_DIR} AND EXISTS ${DISCOVERY_BASE}/${PLUGIN_DIR}/CMakeLists.txt)
                 message(STATUS "Discovered plugin: ${PLUGIN_DIR}")
                 # Use absolute paths and specific binary dir for external plugins
                 add_subdirectory(${DISCOVERY_BASE}/${PLUGIN_DIR} ${CMAKE_CURRENT_BINARY_DIR}/plugins/${PLUGIN_DIR})
+                file(READ ${DISCOVERY_BASE}/${PLUGIN_DIR}/CMakeLists.txt PLUGIN_CMAKE_CONTENT)
+                string(REGEX MATCH "add_library\\s*\\(\\s*([a-zA-Z0-9_]+)" MATCH_VAR "${PLUGIN_CMAKE_CONTENT}")
+                if(CMAKE_MATCH_1)
+                    list(APPEND ALL_PLUGIN_TARGETS ${CMAKE_MATCH_1})
+                endif()
             endif()
         endforeach()
+        if(APPLE AND ALL_PLUGIN_TARGETS)
+            add_custom_target(DeployPlugins ALL
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/src/QStudioMetrics.app/Contents/PlugIns/
+                COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/bin/plugins/ ${CMAKE_BINARY_DIR}/src/QStudioMetrics.app/Contents/PlugIns/
+                COMMENT "Deploying all plugins for macOS..."
+            )
+            add_dependencies(DeployPlugins ${ALL_PLUGIN_TARGETS} QStudioMetrics)
+        endif()
     endif()
 endif()
 # ----------------------------------
@@ -302,7 +318,7 @@ if(cmake_build_type_tolower STREQUAL "debug")
   add_executable(testimportarray testimportarray.cpp DATAIO.cpp)
   add_executable(testimportpcamodel testimportpcamodel.cpp DATAIO.cpp)
   add_executable(testqsmdataops test_qsm_data_ops.cpp qstudiometricsdataoperations.cpp)
-  target_link_libraries(testqsmdataops PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBRARIES})
+  target_link_libraries(testqsmdataops PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBS})
   add_test(NAME TestQSMDataOps COMMAND testqsmdataops)
 
   qt6_wrap_cpp(TEST_DATA_MOC qsmdata.h Dialogs/GenericProgressDialog.h)
@@ -321,7 +337,7 @@ if(cmake_build_type_tolower STREQUAL "debug")
       ${QSTUDIOMETRICS_UIS_H}
   )
   set_target_properties(testqsmdata PROPERTIES AUTOMOC OFF)
-  target_link_libraries(testqsmdata PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBRARIES} Qt6::Sql Qt6::Widgets)
+  target_link_libraries(testqsmdata PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBS} Qt6::Sql Qt6::Widgets)
   add_test(NAME TestQSMData COMMAND testqsmdata)
 
   add_executable(testrun 
@@ -340,7 +356,7 @@ if(cmake_build_type_tolower STREQUAL "debug")
       ${QSTUDIOMETRICS_UIS_H}
   )
   set_target_properties(testrun PROPERTIES AUTOMOC OFF)
-  target_link_libraries(testrun PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBRARIES} Qt6::Sql Qt6::Widgets)
+  target_link_libraries(testrun PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBS} Qt6::Sql Qt6::Widgets)
   add_test(NAME TestRun COMMAND testrun)
 
   add_executable(testdataioutils test_dataio_utils.cpp DATAIO.cpp)
@@ -349,7 +365,7 @@ if(cmake_build_type_tolower STREQUAL "debug")
   target_link_libraries(testimportmatrix ${LIBSCIENTIFIC_LIBRARY})
   target_link_libraries(testimportarray ${LIBSCIENTIFIC_LIBRARY})
   target_link_libraries(testimportpcamodel ${LIBSCIENTIFIC_LIBRARY})
-  target_link_libraries(testdataioutils PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBRARIES})
+  target_link_libraries(testdataioutils PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBS})
 
   add_test(NAME TestImportDVector COMMAND testimportdvector)
   add_test(NAME TestImportMatrix COMMAND testimportmatrix)
@@ -372,7 +388,7 @@ if(cmake_build_type_tolower STREQUAL "debug")
       ${TEST_QSM_MOC}
       ${QSTUDIOMETRICS_UIS_H}
   )
-  target_link_libraries(testqsmprojectio PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBRARIES} Qt6::Sql Qt6::Widgets)
+  target_link_libraries(testqsmprojectio PRIVATE ${LIBSCIENTIFIC_LIBRARY} ${QT6_LIBS} Qt6::Sql Qt6::Widgets)
   add_test(NAME TestQSMProjectIO COMMAND testqsmprojectio)
 endif()
 
@@ -386,4 +402,24 @@ if(LIBSCIENTIFIC_DEPENDENCY)
       add_dependencies(${_target} ${LIBSCIENTIFIC_DEPENDENCY})
     endif()
   endforeach()
+endif()
+
+if(APPLE)
+    find_package(Qt6 COMPONENTS Core REQUIRED)
+    get_target_property(_qmake_path Qt6::qmake IMPORTED_LOCATION)
+    get_filename_component(_qt_bin_dir "${_qmake_path}" DIRECTORY)
+    
+    add_custom_command(TARGET QStudioMetrics POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/src/QStudioMetrics.app/Contents/Frameworks/
+        COMMAND ${CMAKE_COMMAND} -E copy ${LIBSCIENTIFIC_LIBRARY} ${CMAKE_BINARY_DIR}/src/QStudioMetrics.app/Contents/Frameworks/
+        COMMENT "Deploying libraries for macOS..."
+    )
+    add_custom_target(RunMacDeployQt ALL
+        COMMAND ${_qt_bin_dir}/macdeployqt ${CMAKE_BINARY_DIR}/src/QStudioMetrics.app -always-overwrite
+        COMMENT "Deploying Qt for macOS (including plugins)..."
+    )
+    add_dependencies(RunMacDeployQt QStudioMetrics)
+    if(TARGET DeployPlugins)
+        add_dependencies(RunMacDeployQt DeployPlugins)
+    endif()
 endif()

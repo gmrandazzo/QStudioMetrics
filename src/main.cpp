@@ -31,29 +31,9 @@
 #include "MainWindow.h"
 
 int main(int argc, char *argv[]) {
-#ifdef BUILDEXEC
-  QFileInfo finfo(argv[0]);
-#ifdef OSX
-  QStringList paths;
-  paths << finfo.absolutePath() + "/../Frameworks";
-  paths << finfo.absolutePath() + "/../PlugIns";
-  QCoreApplication::setLibraryPaths(paths);
-#endif
-
-#ifdef WIN32
-  QStringList paths;
-  paths << finfo.path();
-  paths << finfo.path() + "/plugins";
-  QCoreApplication::setLibraryPaths(paths);
-#endif
-#endif
-
-  // qDebug() << QCoreApplication::libraryPaths();
-
   QApplication app(argc, argv);
-#ifdef BUILDEXEC
-  QApplication::setStyle(QStyleFactory::create("Fusion"));
-#endif
+  app.setStyle(QStyleFactory::create("Universal"));
+  app.setAttribute(Qt::AA_DontUseNativeMenuBar);
 
   QString path;
   QString k;
