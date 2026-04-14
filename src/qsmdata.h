@@ -50,6 +50,7 @@ struct AUDIT_ENTRY {
 class GenericProgressDialog;
 
 #include "CPCA/cpcamodel.h"
+#include "ICA/icamodel.h"
 #include "DATAIO.h"
 #include "LDA/ldamodel.h"
 #include "MLR/mlrmodel.h"
@@ -275,6 +276,11 @@ public:
   void delPCAModelAt(int id);
   void delPCAModels();
 
+  void addICAModel();
+  void delICAModel(int mid);
+  void delICAModelAt(int id);
+  void delICAModels();
+
   void addCPCAModel();
   void delCPCAModel(int mid);
   void delCPCAModelAt(int id);
@@ -310,6 +316,7 @@ public:
 
   // return the last model
   PCAModel *getLastPCAModel();
+  ICAModel *getLastICAModel();
   CPCAModel *getLastCPCAModel();
   PLSModel *getLastPLSModel();
   MLRModel *getLastMLRModel();
@@ -317,6 +324,7 @@ public:
 
   // return the model at given position id in list
   PCAModel *getPCAModelAt(int id);
+  ICAModel *getICAModelAt(int id);
   CPCAModel *getCPCAModelAt(int id);
   PLSModel *getPLSModelAt(int id);
   MLRModel *getMLRModelAt(int id);
@@ -324,6 +332,7 @@ public:
 
   // return the model with a special ModelID
   PCAModel *getPCAModel(int mid);
+  ICAModel *getICAModel(int mid);
   CPCAModel *getCPCAModel(int mid);
   PLSModel *getPLSModel(int mid);
   PLSModel *getPLSModel(QString hash);
@@ -342,6 +351,7 @@ public:
   int MatrixCount();
   int ArrayCount();
   int PCACount();
+  int ICACount();
   int CPCACount();
   int PLSCount();
   int MLRCount();
@@ -366,6 +376,7 @@ private:
   QList<MATRIX *> matrix_;
   QList<ARRAY *> array_;
   QList<PCAModel *> pcamodel;
+  QList<ICAModel *> icamodel;
   QList<CPCAModel *> cpcamodel;
   QList<PLSModel *> plsmodel;
   QList<MLRModel *> mlrmodel;

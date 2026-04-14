@@ -1867,6 +1867,42 @@ void DATA::delPCAModels() {
   pcamodel.clear();
 }
 
+void DATA::addICAModel() {
+  icamodel.append(new ICAModel());
+  addAuditEntry("Add ICA Model", "Added new ICA model");
+}
+
+void DATA::delICAModel(int mid) {
+  for (int i = 0; i < icamodel.size(); i++) {
+    if (mid == icamodel[i]->getModelID()) {
+      icamodel[i]->delICAPredictions();
+      delete icamodel[i];
+      icamodel.removeAt(i);
+      break;
+    } else {
+      continue;
+    }
+  }
+}
+
+void DATA::delICAModelAt(int id) {
+  if (id < icamodel.size()) {
+    icamodel[id]->delICAPredictions();
+    delete icamodel[id];
+    addAuditEntry("Delete ICA Model",
+                  QString("Deleted ICA model at index: %1").arg(id));
+    icamodel.removeAt(id);
+  }
+}
+
+void DATA::delICAModels() {
+  for (int i = 0; i < icamodel.size(); i++) {
+    icamodel[i]->delICAPredictions();
+    delete icamodel[i];
+  }
+  icamodel.clear();
+}
+
 void DATA::addCPCAModel() { 
   cpcamodel.append(new CPCAModel()); 
   addAuditEntry("Add CPCA Model", "Added new CPCA model");
@@ -2062,6 +2098,8 @@ ARRAY *DATA::getArray(QString hash) {
 
 PCAModel *DATA::getLastPCAModel() { return pcamodel.last(); }
 
+ICAModel *DATA::getLastICAModel() { return icamodel.last(); }
+
 CPCAModel *DATA::getLastCPCAModel() { return cpcamodel.last(); }
 
 PLSModel *DATA::getLastPLSModel() { return plsmodel.last(); }
@@ -2073,6 +2111,11 @@ MLRModel *DATA::getLastMLRModel() { return mlrmodel.last(); }
 PCAModel *DATA::getPCAModelAt(int id) {
   Q_ASSERT(id < pcamodel.size());
   return pcamodel[id];
+}
+
+ICAModel *DATA::getICAModelAt(int id) {
+  Q_ASSERT(id < icamodel.size());
+  return icamodel[id];
 }
 
 CPCAModel *DATA::getCPCAModelAt(int id) {
@@ -2099,6 +2142,17 @@ PCAModel *DATA::getPCAModel(int mid) {
   for (int i = 0; i < pcamodel.size(); i++) {
     if (mid == pcamodel[i]->getModelID()) {
       return pcamodel[i];
+    } else {
+      continue;
+    }
+  }
+  return 0;
+}
+
+ICAModel *DATA::getICAModel(int mid) {
+  for (int i = 0; i < icamodel.size(); i++) {
+    if (mid == icamodel[i]->getModelID()) {
+      return icamodel[i];
     } else {
       continue;
     }
@@ -2167,6 +2221,8 @@ int DATA::ArrayCount() { return array_.size(); }
 
 int DATA::PCACount() { return pcamodel.size(); }
 
+int DATA::ICACount() { return icamodel.size(); }
+
 int DATA::CPCACount() { return cpcamodel.size(); }
 
 int DATA::PLSCount() { return plsmodel.size(); }
@@ -2184,6 +2240,7 @@ DATA::~DATA() {
   delMatrix();
   delArray();
   delPCAModels();
+  delICAModels();
   delPLSModels();
   delMLRModels();
 }

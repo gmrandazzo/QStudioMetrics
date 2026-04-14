@@ -77,6 +77,8 @@ void MainWindow::CheckProjects() {
 
   havepca = false;
   havepcapred = false;
+  haveica = false;
+  haveicapred = false;
   havecpca = false;
   havecpcapred = false;
   havepls = false;
@@ -98,6 +100,15 @@ void MainWindow::CheckProjects() {
       for (int j = 0; j < i.value()->PCACount(); j++) {
         if (i.value()->getPCAModelAt(j)->PCAPredictionCount() > 0) {
           havepcapred = true;
+        }
+      }
+    }
+
+    if (i.value()->ICACount() > 0) {
+      haveica = true;
+      for (int j = 0; j < i.value()->ICACount(); j++) {
+        if (i.value()->getICAModelAt(j)->ICAPredictionCount() > 0) {
+          haveicapred = true;
         }
       }
     }
@@ -543,6 +554,17 @@ void MainWindow::TopMenuEnableDisable() {
       ui.actionPCA2DScore_Plot_Prediction->setEnabled(false);
     } else {
       ui.actionPCA2DScore_Plot_Prediction->setEnabled(true);
+    }
+  }
+
+  if (ProjectsHaveICA() == false) {
+    ui.menuPlot_ICA_Model->setEnabled(false);
+  } else {
+    ui.menuPlot_ICA_Model->setEnabled(true);
+    if (ProjectsHaveICAPrediction() == false) {
+      ui.actionICA2DScore_Plot_Prediction->setEnabled(false);
+    } else {
+      ui.actionICA2DScore_Plot_Prediction->setEnabled(true);
     }
   }
 
@@ -1611,6 +1633,13 @@ void MainWindow::DowngradePredictionID() {
                 ->getPCAModel(mid)
                 ->getPCAPrediction(childid)
                 ->setPredID(childid - 1);
+          } else if (childmodeltype.compare("ICA Prediction") == 0) {
+            ui.treeWidget->currentItem()->parent()->child(i)->setText(
+                6, QString::number(childid - 1));
+            projects->value(pid)
+                ->getICAModel(mid)
+                ->getICAPrediction(childid)
+                ->setPredID(childid - 1);
           } else if (childmodeltype.compare("PLS Prediction") == 0) {
             ui.treeWidget->currentItem()->parent()->child(i)->setText(
                 6, QString::number(childid - 1));
@@ -1673,6 +1702,10 @@ void MainWindow::removePrediction() {
           updateLog(QString("Deleting PCA Prediction %1\n")
                         .arg(getCurrentPredictionName()));
           projects->value(pid)->getPCAModel(mid)->delPCAPredictionAt(predid);
+        } else if (getCurrentPredictionType().compare("ICA Prediction") == 0) {
+          updateLog(QString("Deleting ICA Prediction %1\n")
+                        .arg(getCurrentPredictionName()));
+          projects->value(pid)->getICAModel(mid)->delICAPredictionAt(predid);
         } else if (getCurrentPredictionType().compare("CPCA Prediction") == 0) {
           updateLog(QString("Deleting CPCA Prediction %1\n")
                         .arg(getCurrentPredictionName()));
@@ -1738,6 +1771,10 @@ void MainWindow::DowngradeModelID() {
           ui.treeWidget->currentItem()->parent()->child(i)->setText(
               9, QString::number(childid - 1));
           projects->value(pid)->getPCAModel(childid)->setModelID(childid - 1);
+        } else if (childmodeltype.compare("ICA Model") == 0) {
+          ui.treeWidget->currentItem()->parent()->child(i)->setText(
+              9, QString::number(childid - 1));
+          projects->value(pid)->getICAModel(childid)->setModelID(childid - 1);
         } else if (childmodeltype.compare("CPCA Model") == 0) {
           ui.treeWidget->currentItem()->parent()->child(i)->setText(
               9, QString::number(childid - 1));
@@ -1794,6 +1831,10 @@ void MainWindow::removeModel() {
         updateLog(
             QString("Deleting PCA Model %1\n").arg(getCurrentModelName()));
         projects->value(pid)->delPCAModel(mid);
+      } else if (getCurrentModelType().compare("ICA Model") == 0) {
+        updateLog(
+            QString("Deleting ICA Model %1\n").arg(getCurrentModelName()));
+        projects->value(pid)->delICAModel(mid);
       } else if (ui.treeWidget->currentItem()->text(8).compare("CPCA Model") ==
                  0) {
         updateLog(
@@ -3513,6 +3554,121 @@ void MainWindow::showCPCASuperWeights() {
   }
 }
 
+void MainWindow::showICAScore() {
+  if (CurrentIsModel() == true) {
+    int pid = getCurrentModelProjectID();
+    int mid = getCurrentModelID();
+    int tabid = getCurrentModelTableID();
+    if (pid > -1 && mid > -1 && tabid > -1) {
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getICAModel(mid)->getName();
+
+      QString tabname =
+          QString("%1 | %2 | ICA S Scores").arg(projectname).arg(modelname);
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname,
+                      projects->value(pid)->getICAModel(mid)->Model()->S,
+                      &projects->value(pid)->getObjectLabels(),
+                      &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(
+          projects->value(pid)->getICAModel(mid)->getObjName());
+      QStringList headername;
+      headername << firstcol_name;
+      for (size_t c = 0;
+           c < projects->value(pid)->getICAModel(mid)->Model()->S->col;
+           c++) {
+        headername << QString("IC %1").arg(QString::number(c + 1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)),
+              SLOT(UpdateImageWindow(ImageSignal)));
+    }
+  }
+}
+
+void MainWindow::showICAMixingMatrix() {
+  if (CurrentIsModel() == true) {
+    int pid = getCurrentModelProjectID();
+    int mid = getCurrentModelID();
+    int tabid = getCurrentModelTableID();
+    if (pid > -1 && mid > -1 && tabid > -1) {
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname = projects->value(pid)->getICAModel(mid)->getName();
+
+      QString tabname =
+          QString("%1 | %2 | ICA A Mixing Matrix").arg(projectname).arg(modelname);
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(tabname,
+                      projects->value(pid)->getICAModel(mid)->Model()->W,
+                      &projects->value(pid)->getObjectLabels(),
+                      &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(
+          projects->value(pid)->getICAModel(mid)->getVarName());
+      QStringList headername;
+      headername << "Variables";
+      for (size_t c = 0;
+           c < projects->value(pid)->getICAModel(mid)->Model()->W->col;
+           c++) {
+        headername << QString("IC %1").arg(QString::number(c + 1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)),
+              SLOT(UpdateImageWindow(ImageSignal)));
+    }
+  }
+}
+
+void MainWindow::showICAPredScore() {
+  if (CurrentIsPrediction() == true) {
+    int pid = getCurrentPredictionProjectID();
+    int mid = getCurrentPredictionModelID();
+    int predid = getCurrentPredictionID();
+    int tabid = getCurrentPredictionTableID();
+    if (pid > -1 && mid > -1 && predid > -1 && tabid > -1) {
+      QString projectname = projects->value(pid)->getProjectName();
+      QString modelname =
+          projects->value(pid)->getICAModel(mid)->getICAPrediction(predid)->getName();
+
+      QString tabname =
+          QString("%1 | %2 | ICA Predicted Scores").arg(projectname).arg(modelname);
+      MDIChild *child = createMdiChild();
+      child->setWindowID(tabid);
+      child->newTable(
+          tabname, projects->value(pid)
+                       ->getICAModel(mid)
+                       ->getICAPrediction(predid)
+                       ->getPredScores(),
+          &projects->value(pid)->getObjectLabels(),
+          &projects->value(pid)->getVariableLabels());
+      child->getTable()->model()->setObjNames(projects->value(pid)
+                                                  ->getICAModel(mid)
+                                                  ->getICAPrediction(predid)
+                                                  ->getObjName());
+      QStringList headername;
+      headername << firstcol_name;
+      for (size_t c = 0; c < projects->value(pid)
+                                ->getICAModel(mid)
+                                ->getICAPrediction(predid)
+                                ->getPredScores()
+                                ->col;
+           c++) {
+        headername << QString("IC %1").arg(QString::number(c + 1));
+      }
+      child->getTable()->model()->setHorizontalHeaderLabels(headername);
+      child->show();
+      child->getTable()->setPID(pid);
+      connect(child->getTable(), SIGNAL(TabImageSignalChanged(ImageSignal)),
+              SLOT(UpdateImageWindow(ImageSignal)));
+    }
+  }
+}
+
 void MainWindow::showCPCASuperScore() {
   if (CurrentIsModel() == true) {
     int pid = getCurrentModelProjectID();
@@ -3741,6 +3897,10 @@ void MainWindow::ModelInfo() {
         textlst.append(QString("N. PCs: %1").arg(getCurrentModelNComponents()));
         nobj = projects->value(pid)->getPCAModel(mid)->getObjName().size();
         nvars = projects->value(pid)->getPCAModel(mid)->getVarName().size();
+      } else if (getCurrentModelType().compare("ICA Model") == 0) {
+        textlst.append(QString("N. ICs: %1").arg(getCurrentModelNComponents()));
+        nobj = projects->value(pid)->getICAModel(mid)->getObjName().size();
+        nvars = projects->value(pid)->getICAModel(mid)->getVarName().size();
       } else if (getCurrentModelType().compare("CPCA Model") == 0) {
         textlst.append(QString("N. PCs: %1").arg(getCurrentModelNComponents()));
         nobj = projects->value(pid)->getCPCAModel(mid)->getObjName().size();
@@ -3797,6 +3957,7 @@ void MainWindow::ModelInfo() {
       }
 
       if (getCurrentModelType().compare("PCA Model") == 0 ||
+          getCurrentModelType().compare("ICA Model") == 0 ||
           getCurrentModelType().compare("CPCA Model") == 0) {
         textlst.append(QString("X centered"));
       } else if (getCurrentModelType().compare("PLS Model") == 0) {
@@ -3810,6 +3971,7 @@ void MainWindow::ModelInfo() {
       }
 
       if (getCurrentModelType().compare("PCA Model") == 0 ||
+          getCurrentModelType().compare("ICA Model") == 0 ||
           getCurrentModelType().compare("CPCA Model") == 0 ||
           getCurrentModelType().compare("PLS Model") == 0) {
         if (xscaling == 0)
@@ -3926,6 +4088,10 @@ void MainWindow::ShowContextMenu(const QPoint &pos) {
       menu.addAction("&Show P Loadings", this, SLOT(showPCALoadings()));
       menu.addAction("&Show Explained Variance", this, SLOT(showPCAExpVar()));
 
+    } else if (modeltype == "ICA Model") {
+      menu.addAction("&Show S Scores", this, SLOT(showICAScore()));
+      menu.addAction("&Show A Mixing Matrix", this, SLOT(showICAMixingMatrix()));
+
     } else if (modeltype == "CPCA Model") {
       menu.addAction("&Show Super Score", this, SLOT(showCPCASuperScore()));
       menu.addAction("&Show Super Weights", this, SLOT(showCPCASuperWeights()));
@@ -3988,7 +4154,10 @@ void MainWindow::ShowContextMenu(const QPoint &pos) {
     QString predictiontype = getCurrentPredictionType();
 
     if (predictiontype == "PCA Prediction") {
-      menu.addAction("&Show Prediction Score", this, SLOT(showPCAPredScore()));
+      menu.addAction("&Show Predicted Scores", this, SLOT(showPCAPredScore()));
+
+    } else if (predictiontype == "ICA Prediction") {
+      menu.addAction("&Show Predicted Scores", this, SLOT(showICAPredScore()));
 
     } else if (predictiontype == "CPCA Prediction") {
       menu.addAction("&Show Prediction Super Score", this, SLOT(showCPCASuperScorePred()));
@@ -4505,6 +4674,41 @@ void MainWindow::GetPCAProjects(ProjectTree *pjtree) {
         m.ptree.last().id = projects->value(pid)
                                 ->getPCAModelAt(j)
                                 ->getPCAPrediction(k)
+                                ->getPredID();
+      }
+      a.mtree << m;
+    }
+
+    if (a.mtree.size() > 0) {
+      (*pjtree) << a;
+    } else {
+      continue;
+    }
+  }
+}
+
+void MainWindow::GetICAProjects(ProjectTree *pjtree) {
+  int i, j, k;
+  for (i = 0; i < projects->keys().size(); i++) {
+    PROJECT a;
+    int pid = projects->keys()[i];
+    a.name = projects->value(pid)->getProjectName();
+    a.id = pid;
+    for (j = 0; j < projects->value(pid)->ICACount(); j++) {
+      MODELTREE m;
+      m.name = projects->value(pid)->getICAModelAt(j)->getName();
+      m.id = projects->value(pid)->getICAModelAt(j)->getModelID();
+      for (k = 0;
+           k < projects->value(pid)->getICAModelAt(j)->ICAPredictionCount();
+           k++) {
+        m.ptree.append(PREDICTIONTREE());
+        m.ptree.last().name = projects->value(pid)
+                                  ->getICAModelAt(j)
+                                  ->getICAPrediction(k)
+                                  ->getName();
+        m.ptree.last().id = projects->value(pid)
+                                ->getICAModelAt(j)
+                                ->getICAPrediction(k)
                                 ->getPredID();
       }
       a.mtree << m;
@@ -7074,6 +7278,249 @@ void MainWindow::DoPCAPrediction() {
   }
 }
 
+void MainWindow::DoICA() {
+  if (!projects->isEmpty()) {
+
+    ModelDialogWizard doica(projects, ICA_);
+    if (doica.exec() == QDialog::Accepted && doica.compute() == true) {
+      StartRun();
+
+      int pid = doica.getselectedProject();
+      int did = doica.getselectedData();
+      int xscaling = doica.getXScalingType();
+      int nic = doica.getNumberOfComponent();
+      QString modelname = "ICA - " + doica.getModelName();
+      QStringList objsel = doica.getObjectSelected();
+      QStringList varsel = doica.getXVarSelected();
+
+      if (did != -1 && pid != -1) {
+        CalculationMenuDisable(pid);
+
+        QString str = "--------------------\n Computing ICA for: ";
+        str.append(QString("%1").arg(projects->value(pid)->getProjectName()));
+
+        updateLog(str);
+
+        projects->value(pid)->addICAModel();
+
+        projects->value(pid)->getLastICAModel()->setDID(did);
+        projects->value(pid)->getLastICAModel()->setDataHash(
+            projects->value(pid)->getMatrix(did)->getHash());
+        projects->value(pid)->getLastICAModel()->setXScaling(xscaling);
+        projects->value(pid)->getLastICAModel()->setNIC(nic);
+        projects->value(pid)->getLastICAModel()->setModelID(mid_);
+        projects->value(pid)->getLastICAModel()->setName(modelname);
+        projects->value(pid)->getLastICAModel()->setObjName(objsel);
+        projects->value(pid)->getLastICAModel()->setVarName(varsel);
+
+        matrix *x;
+        initMatrix(&x);
+
+        if (objsel.size() ==
+                projects->value(pid)->getMatrix(did)->getObjName().size() &&
+            varsel.size() ==
+                projects->value(pid)->getMatrix(did)->getVarName().size()) {
+          MatrixCopy(projects->value(pid)->getMatrix(did)->Matrix(), &x);
+        } else {
+          PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel,
+                        x);
+        }
+
+        if (stoprun) {
+          int removeid = projects->value(pid)->ICACount() - 1;
+          projects->value(pid)->delICAModelAt(removeid);
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          return;
+        }
+
+        RUN obj;
+        obj.setXMatrix(x);
+        obj.setICAModel(projects->value(pid)->getLastICAModel());
+        obj.setXScalingType(xscaling);
+        obj.setICAMaxIterations(5000);
+        obj.setICAAlpha(1.0);
+        obj.setICAThreshold(1e-8);
+
+        QFuture<void> future = obj.RunICA();
+        while (!future.isFinished()) {
+          if (stoprun == true) {
+            obj.AbortRun();
+            QApplication::processEvents();
+          } else {
+            QApplication::processEvents();
+          }
+        }
+
+        if (stoprun == false) {
+          WaitRun();
+
+          QTreeWidgetItem *subitem = new QTreeWidgetItem;
+          subitem->setText(0, modelname);
+          subitem->setText(1, QString::number(tabcount_));
+          subitem->setText(2, QString::number(pid));
+          subitem->setText(3, projects->value(pid)->getMatrix(did)->getHash());
+          subitem->setText(4, QString("-"));
+          subitem->setText(5, QString::number(xscaling));
+          subitem->setText(6, QString("-"));
+          subitem->setText(7, QString::number(nic));
+          subitem->setText(8, QString("ICA Model"));
+          subitem->setText(9, QString::number(mid_));
+
+          getProjectItem(pid)->child(1)->addChild(subitem);
+
+          tabcount_++;
+          mid_++;
+        } else {
+          int removeid = projects->value(pid)->ICACount() - 1;
+          projects->value(pid)->delICAModelAt(removeid);
+        }
+
+        TopMenuEnableDisable();
+        CalculationMenuEnable();
+        FinalizeRun();
+        DelMatrix(&x);
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
+      }
+    }
+  }
+}
+
+void MainWindow::DoICAPrediction() {
+  if (!projects->isEmpty()) {
+    int nica = 0;
+    for (int i = 0; i < projects->values().size(); i++) {
+      if (projects->values()[i]->ICACount() > 0)
+        nica++;
+    }
+
+    if (nica > 0) {
+      DoPredictionDialog p(projects, ICA_);
+      if (p.exec() == QDialog::Accepted && p.compute() == true) {
+
+        int pid = p.getselectedProject();
+        int mid = p.getselectedModel();
+        int did = p.getselectedData();
+
+        StartRun();
+        CalculationMenuDisable(pid);
+        TopMenuEnableDisable();
+
+        QString modelname = p.getPredictionName();
+        QStringList objsel = p.getObjectSelected();
+        QStringList varsel =
+            projects->value(pid)->getICAModel(mid)->getVarName();
+
+        matrix *x;
+
+        NewMatrix(&x, objsel.size(), varsel.size());
+        bool mxok = PrepareMatrix(projects->value(pid)->getMatrix(did), objsel,
+                                  varsel, x);
+
+        if (stoprun) {
+          TopMenuEnableDisable();
+          CalculationMenuEnable();
+          FinalizeRun();
+          DelMatrix(&x);
+          return;
+        }
+
+        if (x->col == (size_t)varsel.size() && mxok == true) {
+          QString str = "--------------------\n Computing ICA Prediction for: ";
+          str.append(QString("%1").arg(
+              projects->value(p.getselectedProject())->getProjectName()));
+          updateLog(str);
+
+          projects->value(pid)->getICAModel(mid)->addICAPrediction();
+
+          projects->value(pid)
+              ->getICAModel(mid)
+              ->getLastICAPrediction()
+              ->setName("ICA Prediction - " + modelname);
+          projects->value(pid)
+              ->getICAModel(mid)
+              ->getLastICAPrediction()
+              ->setPredID(
+                  projects->value(pid)->getICAModel(mid)->ICAPredictionCount() -
+                  1);
+          projects->value(pid)
+              ->getICAModel(mid)
+              ->getLastICAPrediction()
+              ->setDID(did);
+          projects->value(pid)
+              ->getICAModel(mid)
+              ->getLastICAPrediction()
+              ->setDataHash(projects->value(pid)->getMatrix(did)->getHash());
+          projects->value(pid)
+              ->getICAModel(mid)
+              ->getLastICAPrediction()
+              ->setObjName(objsel);
+
+          RUN obj;
+
+          obj.setXMatrix(x);
+          obj.setICAModel(projects->value(pid)->getICAModel(mid));
+
+          QFuture<void> future = obj.RunICAPrediction();
+
+          while (!future.isFinished()) {
+            if (stoprun == true) {
+              obj.AbortRun();
+              QApplication::processEvents();
+            } else {
+              QApplication::processEvents();
+            }
+          }
+
+          if (stoprun == false) {
+            QTreeWidgetItem *subitem = new QTreeWidgetItem;
+            subitem->setText(0, projects->value(pid)
+                                    ->getICAModel(mid)
+                                    ->getLastICAPrediction()
+                                    ->getName());
+            subitem->setText(1, QString::number(tabcount_));
+            subitem->setText(2, QString::number(pid));
+            subitem->setText(3, QString::number(mid));
+            subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+            subitem->setText(5, "");
+            subitem->setText(6, QString::number(projects->value(pid)
+                                                    ->getICAModel(mid)
+                                                    ->getLastICAPrediction()
+                                                    ->getPredID()));
+            subitem->setText(7, QString("ICA Prediction"));
+
+            tabcount_++;
+            getModelItem(pid, mid)->addChild(subitem);
+          } else {
+            int removeid =
+                projects->value(pid)->getICAModel(mid)->ICAPredictionCount() -
+                1;
+            projects->value(pid)->getICAModel(mid)->delICAPredictionAt(removeid);
+          }
+        } else {
+          QMessageBox::critical(
+              this, tr("ICA Prediction Error"),
+              tr("Unable to compute ICA Prediction.\n"
+                 "The number of variables differ. Please check your data."),
+              QMessageBox::Ok);
+          updateLog(
+              QString("Error!! Unable to compute ICA Prediction. The number of "
+                      "variables differ. Please check your data.\n"));
+        }
+        TopMenuEnableDisable();
+        CalculationMenuEnable();
+        FinalizeRun();
+        DelMatrix(&x);
+        GenericProgressDialog pbdialog;
+        projects->value(pid)->AutoSave(&pbdialog);
+      }
+    }
+  }
+}
+
 void MainWindow::DoPCA() {
   if (!projects->isEmpty()) {
 
@@ -8638,6 +9085,10 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0) {
   connect(ui.actionPCA, SIGNAL(triggered(bool)), SLOT(DoPCA()));
   connect(ui.actionPCA_Prediction, SIGNAL(triggered(bool)),
           SLOT(DoPCAPrediction()));
+
+  connect(ui.actionICA, SIGNAL(triggered(bool)), SLOT(DoICA()));
+  connect(ui.actionICA_Prediction, SIGNAL(triggered(bool)),
+          SLOT(DoICAPrediction()));
 
   connect(ui.actionCPCA, SIGNAL(triggered(bool)), SLOT(DoCPCA()));
   connect(ui.actionCPCA_Prediction, SIGNAL(triggered(bool)),

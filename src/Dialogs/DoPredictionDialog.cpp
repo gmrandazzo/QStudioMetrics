@@ -277,6 +277,23 @@ void DoPredictionDialog::setProject(QModelIndex current) {
             projects_->value(selectedproject_)->getMatrix(i)->getName()));
         tab3->appendRow(row);
       }
+    } else if (type == ICA_) {
+      for (int i = 0; i < projects_->value(selectedproject_)->ICACount(); i++) {
+        QList<QStandardItem *> row;
+        row.append(new QStandardItem(
+            projects_->value(selectedproject_)->getICAModelAt(i)->getName()));
+        mids.append(
+            projects_->value(selectedproject_)->getICAModelAt(i)->getModelID());
+        tab2->appendRow(row);
+      }
+
+      for (int i = 0; i < projects_->value(selectedproject_)->MatrixCount();
+           i++) {
+        QList<QStandardItem *> row;
+        row.append(new QStandardItem(
+            projects_->value(selectedproject_)->getMatrix(i)->getName()));
+        tab3->appendRow(row);
+      }
     } else if (type == CPCA_) {
       for (int i = 0; i < projects_->value(selectedproject_)->CPCACount();
            i++) {
@@ -367,8 +384,8 @@ void DoPredictionDialog::next() {
     // Generate Object listview and Variable listview
     tab4->clear();
     tab5->clear();
-    if (type == PCA_ || type == CPCA_ || type == PLS_ || type == PLS_DA_ ||
-       type == MLR_ || type == LDA_) {
+    if (type == PCA_ || type == ICA_ || type == CPCA_ || type == PLS_ ||
+        type == PLS_DA_ || type == MLR_ || type == LDA_) {
       for (int i = 0; i < projects_->value(selectedproject_)
                               ->getMatrix(selecteddata_)
                               ->getObjName()
@@ -482,8 +499,10 @@ DoPredictionDialog::DoPredictionDialog(PROJECTS *projects, int type_) {
   ui.okButton->setEnabled(false);
 
   if (type == PCA_) {
-    setWindowTitle("Model Prediction - PCA");
-  } else if (type == CPCA_) {
+    setWindowTitle("Model Prediction (PCA)");
+  } else if (type == ICA_) {
+    setWindowTitle("Model Prediction (ICA)");
+  } else if (type == PLS_) {
     setWindowTitle("Model Prediction - CPCA");
   } else if (type == PLS_ || type == PLS_DA_) {
     setWindowTitle("Model Prediction - PLS");

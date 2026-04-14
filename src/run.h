@@ -36,6 +36,9 @@ public:
           pc(5),                             // Initialize pc
           ngroup(5),                         // Initialize ngroup
           niter(-1),                         // Initialize niter
+          ica_max_iter(5000),                // Initialize ica_max_iter
+          ica_alpha(1.0),                    // Initialize ica_alpha
+          ica_thresh(1e-8),                  // Initialize ica_thresh
           n_yscrambling(-1),                 // Initialize n_yscrambling
           metric(-1),                        // Initialize metric
           nobjects(-1),                      // Initialize nobjects
@@ -56,6 +59,7 @@ public:
           ay(nullptr),                       // Initialize ay to nullptr
           dv(nullptr),                       // Initialize dv to nullptr
           pcamod(nullptr),                   // Initialize pcamod to nullptr
+          icamod(nullptr),                   // Initialize icamod to nullptr
           cpcamod(nullptr),                  // Initialize cpcamod to nullptr
           plsmod(nullptr),                   // Initialize plsmod to nullptr
           mlrmodel(nullptr),                 // Initialize mlrmodel to nullptr
@@ -72,6 +76,7 @@ public:
   void setXTensor(tensor *ax_);
   void setYTensor(tensor *ay_);
   void setPCAModel(PCAModel *pcamod_);
+  void setICAModel(ICAModel *icamod_);
   void setCPCAModel(CPCAModel *cpcamod_);
   void setPLSModel(PLSModel *plsmod_);
   void setMLRModel(MLRModel *mlrmodel_);
@@ -83,6 +88,9 @@ public:
   void setValidationType(int vt_);
   void setNumberOfGroups(int ngroup_);
   void setNumberOfIterations(int niter_);
+  void setICAMaxIterations(size_t ica_max_iter_);
+  void setICAAlpha(double ica_alpha_);
+  void setICAThreshold(double ica_thresh_);
   void setModelYScrambling(bool yscrambling_);
   void setModelYScramblingModels(int n_yscrambling);
 
@@ -105,6 +113,8 @@ public:
 
   QFuture<void> RunPCA();
   QFuture<void> RunPCAPrediction();
+  QFuture<void> RunICA();
+  QFuture<void> RunICAPrediction();
   QFuture<void> RunCPCA();
   QFuture<void> RunCPCAPrediction();
   QFuture<void> RunPLS(int algtype_);
@@ -131,6 +141,9 @@ private:
   int pc;
   int ngroup;
   int niter;
+  size_t ica_max_iter;
+  double ica_alpha;
+  double ica_thresh;
   int n_yscrambling;
   int metric;
   int nobjects;
@@ -152,6 +165,7 @@ private:
   tensor* ay;        
   dvector* dv;        
   PCAModel* pcamod;    
+  ICAModel* icamod;
   CPCAModel* cpcamod;   
   PLSModel* plsmod;     
   MLRModel* mlrmodel;  
@@ -164,6 +178,8 @@ private:
 
   void DoPCA();
   void DoPCAPrediction();
+  void DoICA();
+  void DoICAPrediction();
   void DoCPCA();
   void DoCPCAPrediction();
   void DoPLS();

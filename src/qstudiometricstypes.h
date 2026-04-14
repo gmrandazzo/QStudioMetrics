@@ -40,6 +40,7 @@ enum {
   // Calculations
   PCA_,
   CPCA_,
+  ICA_,
   PLS_,
   PLS_DA_,
   PLSValidation,
@@ -54,6 +55,8 @@ enum {
   LDAPrediction_,
 
   PCAPrediction,
+  CPCAPrediction,
+  ICAPrediction_,
   // UPCAPrediction,
 
   PLSPrediction,

@@ -105,7 +105,7 @@ void RUN::DoMaxDisSelection() {
 }
 
 void RUN::DoMDCSelection() {
-  MDC(m, nobjects, metric, uiv, QThread::idealThreadCount());
+  MDC_Fast(m, nobjects, metric, uiv, QThread::idealThreadCount());
 }
 
 void RUN::DoLDAPrediction() {
@@ -348,6 +348,22 @@ void RUN::DoCPCAPrediction() {
 
 void RUN::DoCPCA() { CPCA(ax, xscaling, pc, cpcamod->Model()); }
 
+void RUN::DoICA() { 
+  ICA_ext(x,
+          xscaling,
+          icamod->getNIC(),
+          ica_alpha,
+          ica_thresh,
+          ica_max_iter,
+          icamod->Model()); 
+}
+
+void RUN::DoICAPrediction() {
+  ICASignalPredictor(x,
+                     icamod->Model(),
+                     icamod->getLastICAPrediction()->getPredScores());
+}
+
 QFuture<void> RUN::RunClusterValidation() {
   return QtConcurrent::run([this] { RUN::DoClusterValidation(); });
 }
@@ -416,6 +432,14 @@ QFuture<void> RUN::RunCPCA() {
 
 QFuture<void> RUN::RunPCAPrediction() {
   return QtConcurrent::run([this] { RUN::DoPCAPrediction(); });
+}
+
+QFuture<void> RUN::RunICA() {
+  return QtConcurrent::run([this] { RUN::DoICA(); });
+}
+
+QFuture<void> RUN::RunICAPrediction() {
+  return QtConcurrent::run([this] { RUN::DoICAPrediction(); });
 }
 
 QFuture<void> RUN::RunPCA() {
@@ -488,6 +512,8 @@ void RUN::setPLSModel(PLSModel *plsmod_) { plsmod = plsmod_; }
 
 void RUN::setPCAModel(PCAModel *pcamod_) { pcamod = pcamod_; }
 
+void RUN::setICAModel(ICAModel *icamod_) { icamod = icamod_; }
+
 void RUN::setCPCAModel(CPCAModel *cpcamod_) { cpcamod = cpcamod_; }
 
 void RUN::setYTensor(tensor *ay_) { ay = ay_; }
@@ -497,6 +523,14 @@ void RUN::setXTensor(tensor *ax_) { ax = ax_; }
 void RUN::setYMatrix(matrix *y_) { y = y_; }
 
 void RUN::setXMatrix(matrix *x_) { x = x_; }
+
+void RUN::setICAMaxIterations(size_t ica_max_iter_) { ica_max_iter = ica_max_iter_; }
+
+void RUN::setICAAlpha(double ica_alpha_) { ica_alpha = ica_alpha_; }
+
+void RUN::setICAThreshold(double ica_thresh_) { ica_thresh = ica_thresh_; }
+
+
 
 void RUN::Test() {
 #ifdef DEBUG

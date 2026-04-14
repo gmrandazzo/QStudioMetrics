@@ -81,6 +81,8 @@ private slots:
 
   void DoPCA();
   void DoPCAPrediction();
+  void DoICA();
+  void DoICAPrediction();
   void DoCPCA();
   void DoCPCAPrediction();
   void DoPLS(int algtype);
@@ -178,6 +180,10 @@ private slots:
   void showPCAExpVar();
   void showPCAPredScore();
 
+  void showICAScore();
+  void showICAMixingMatrix();
+  void showICAPredScore();
+
   void showCPCASuperScore();
   void showCPCASuperWeights();
   void showCPCABlockScores();
@@ -274,6 +280,7 @@ private:
   void WriteRecentsModelsFile();
   void DebugProjectTree(ProjectTree pjtree);
   void GetPCAProjects(ProjectTree *pjtree);
+  void GetICAProjects(ProjectTree *pjtree);
   void GetCPCAProjects(ProjectTree *pjtree);
   void GetPLSProjects(ProjectTree *pjtree);
   void GetMLRProjects(ProjectTree *pjtree);
@@ -281,9 +288,9 @@ private:
 
   int ProjectOpen(QString);
   void CheckProjects();
-  bool havepca, havepcapred, havecpca, havecpcapred, havepls, haveplspred,
-      haveplsvalid, haveplsyscrambling, havemlr, havemlrpred, havemlrvalid,
-      havemlryscrambling, havelda, haveldapred, haveldavalid;
+  bool havepca, havepcapred, haveica, haveicapred, havecpca, havecpcapred, havepls,
+      haveplspred, haveplsvalid, haveplsyscrambling, havemlr, havemlrpred,
+      havemlrvalid, havemlryscrambling, havelda, haveldapred, haveldavalid;
 
   void TopMenuEnableDisable();
   void CalculationMenuEnable();
@@ -295,6 +302,8 @@ private:
 
   bool ProjectsHavePCA() { return havepca; }
   bool ProjectsHavePCAPrediction() { return havepcapred; }
+  bool ProjectsHaveICA() { return haveica; }
+  bool ProjectsHaveICAPrediction() { return haveicapred; }
   bool ProjectsHaveCPCA() { return havecpca; }
   bool ProjectsHaveCPCAPrediction() { return havecpcapred; }
   bool ProjectsHavePLS() { return havepls; }

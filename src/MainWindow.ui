@@ -127,7 +127,7 @@
      <x>0</x>
      <y>0</y>
      <width>916</width>
-     <height>30</height>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -164,6 +164,9 @@
     <addaction name="separator"/>
     <addaction name="actionCPCA"/>
     <addaction name="actionCPCA_Prediction"/>
+    <addaction name="separator"/>
+    <addaction name="actionICA"/>
+    <addaction name="actionICA_Prediction"/>
     <addaction name="separator"/>
     <addaction name="actionPLS_Regression"/>
     <addaction name="actionPLS_Discriminant_Analysis"/>
@@ -301,8 +304,20 @@
      <addaction name="actionCPCA2DSuperScores_Plot_Prediction"/>
      <addaction name="actionCPCA2DBlockScores_Plot_Prediction"/>
     </widget>
+    <widget class="QMenu" name="menuPlot_ICA_Model">
+     <property name="title">
+      <string>ICA Analysis Plots</string>
+     </property>
+     <addaction name="actionICA2DScore_Plot"/>
+     <addaction name="actionICA_Time_series_Plot"/>
+     <addaction name="actionICA_Unmixing_Weights_Heatmap_Plot"/>
+     <addaction name="separator"/>
+     <addaction name="actionICA2DScore_Plot_Prediction"/>
+     <addaction name="actionICA_Time_series_Plot_Prediction"/>
+    </widget>
     <addaction name="menuVariable"/>
     <addaction name="menuPlot_PCA_Model"/>
+    <addaction name="menuPlot_ICA_Model"/>
     <addaction name="menuPlot_CPCA_Model"/>
     <addaction name="menuPlot_PLS_Model"/>
     <addaction name="menuPlot_MLR"/>
@@ -1559,6 +1574,49 @@
   <action name="actionPCA2DRelative_Tsq_Contribution_Plot">
    <property name="text">
     <string>Relative T² Contribution Plot</string>
+   </property>
+  </action>
+  <action name="actionICA">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/scatter.png</normaloff>:/scatter.png</iconset>
+   </property>
+   <property name="text">
+    <string>Independent Component Analysis (ICA)</string>
+   </property>
+  </action>
+  <action name="actionICA_Prediction">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/prediction.png</normaloff>:/prediction.png</iconset>
+   </property>
+   <property name="text">
+    <string>Model Prediction (ICA)</string>
+   </property>
+  </action>
+  <action name="actionICA2DScore_Plot">
+   <property name="text">
+    <string>Independent component plot</string>
+   </property>
+  </action>
+  <action name="actionICA_Time_series_Plot">
+   <property name="text">
+    <string>Time series independent component plot</string>
+   </property>
+  </action>
+  <action name="actionICA2DScore_Plot_Prediction">
+   <property name="text">
+    <string>Independent component plot with prediction</string>
+   </property>
+  </action>
+  <action name="actionICA_Time_series_Plot_Prediction">
+   <property name="text">
+    <string>Time series independent component plot with prediction</string>
+   </property>
+  </action>
+  <action name="actionICA_Unmixing_Weights_Heatmap_Plot">
+   <property name="text">
+    <string>Unmixing weights heatmap plot</string>
    </property>
   </action>
  </widget>

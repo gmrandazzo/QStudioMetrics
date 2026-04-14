@@ -405,10 +405,10 @@ void ModelDialogWizard::EnableDisableButtons() {
     this->button(QWizard::NextButton)->setEnabled(true);
     this->button(QWizard::FinishButton)->setEnabled(false);
     if (ui.listView_3->selectionModel()->selectedRows(0).size() > 0) {
-      // PCA_ CPCA_ PLS_ MLR_ PLS_DA_ LDA_ MLR_
-      if (type == PCA_ || type == PLS_ || type == PLS_DA_ || type == MLR_ || type == LDA_) {
+      // PCA_ ICA CPCA_ PLS_ MLR_ PLS_DA_ LDA_ MLR_
+      if (type == PCA_ || type == ICA_ || type == PLS_ || type == PLS_DA_ || type == MLR_ || type == LDA_) {
         if (ui.listView_4->selectionModel()->selectedRows(0).size() > 0) {
-          if (type == PCA_) {
+          if (type == PCA_ || type == ICA_) {
             this->button(QWizard::FinishButton)->setEnabled(true);
           } else {
             if (type == PLS_ || type == MLR_) {
@@ -796,7 +796,7 @@ void ModelDialogWizard::OK() {
 
     if (objsel.size() > 0) {
       if (xvarsel.size() > 0) {
-        if (type == PCA_) {
+        if (type == PCA_ || type == ICA_) {
           compute_ = true;
           accept();
         } else {
@@ -836,6 +836,15 @@ ModelDialogWizard::ModelDialogWizard(PROJECTS *projects, int type_,
   type = type_;
   if (type == PCA_) {
     setWindowTitle("Principal Component Analysis (PCA)");
+    ui.groupBox->setTitle("N. of Principal Components");
+    ui.yScaling->hide();
+    ui.YvariableGroupBox->hide();
+    ui.YclassGroupBox->hide();
+    ui.XBlockGroupBox->hide();
+    ui.ELearningMethodGroupBox->hide();
+  } else if (type == ICA_) {
+    setWindowTitle("Independent Component Analysis (ICA)");
+    ui.groupBox->setTitle("N. of Independent Components");
     ui.yScaling->hide();
     ui.YvariableGroupBox->hide();
     ui.YclassGroupBox->hide();

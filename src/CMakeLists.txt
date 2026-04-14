@@ -3,6 +3,7 @@ set(PLUGINS_PATH "" CACHE PATH "Path to the QStudioMetrics-Plugins directory")
 
 set(QSTUDIOMETRICS_SRC
     PCA/pcamodel.cpp
+    ICA/icamodel.cpp
     CPCA/cpcamodel.cpp
     PLS/plsmodel.cpp
     MLR/mlrmodel.cpp
@@ -66,6 +67,7 @@ set(QSTUDIOMETRICS_H
     qstudiometricsdataoperations.h
     qsmdata.h
     PCA/pcamodel.h
+    ICA/icamodel.h
     CPCA/cpcamodel.h
     PLS/plsmodel.h
     VariableSelectionModel.h
@@ -328,6 +330,7 @@ if(cmake_build_type_tolower STREQUAL "debug")
       DATAIO.cpp 
       qstudiometricsdataoperations.cpp 
       PCA/pcamodel.cpp 
+      ICA/icamodel.cpp 
       PLS/plsmodel.cpp 
       MLR/mlrmodel.cpp 
       LDA/ldamodel.cpp 
@@ -347,6 +350,7 @@ if(cmake_build_type_tolower STREQUAL "debug")
       DATAIO.cpp 
       qstudiometricsdataoperations.cpp 
       PCA/pcamodel.cpp 
+      ICA/icamodel.cpp 
       PLS/plsmodel.cpp 
       MLR/mlrmodel.cpp 
       LDA/ldamodel.cpp 
@@ -380,6 +384,7 @@ if(cmake_build_type_tolower STREQUAL "debug")
       DATAIO.cpp 
       qstudiometricsdataoperations.cpp
       PCA/pcamodel.cpp
+      ICA/icamodel.cpp
       PLS/plsmodel.cpp
       MLR/mlrmodel.cpp
       LDA/ldamodel.cpp
