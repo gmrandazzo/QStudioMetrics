@@ -41,3 +41,4 @@ build/*
 
 # Debug files
 *.dSYM/
+.DS_Store
