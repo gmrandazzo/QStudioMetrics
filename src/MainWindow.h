@@ -107,6 +107,9 @@ private slots:
   void PCA2DLoadingsMVANDPlot();
   void PCA2DScorePlotPrediction();
 
+  void ICA2DScorePlot();
+  void ICA2DScorePlotPrediction();
+
   void CPCA2DSuperScorePlot();
   void CPCA2DSuperWeightsPlot();
   void CPCA2DBlockScoresPlot();

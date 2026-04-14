@@ -15,6 +15,7 @@ set(QSTUDIOMETRICS_SRC
     Dialogs/DialogPlots.cpp
     Dialogs/ClassPlotDialog.cpp
     PCA/PCAPlot.cpp
+    ICA/ICAPlot.cpp
     CPCA/CPCAPlot.cpp
     PLS/PLSPlot.cpp
     MLR/MLRPlot.cpp
@@ -75,6 +76,7 @@ set(QSTUDIOMETRICS_H
     Dialogs/DialogPlots.h
     Dialogs/ClassPlotDialog.h
     PCA/PCAPlot.h
+    ICA/ICAPlot.h
     PLS/PLSPlot.h
     MLR/MLRPlot.h
     LDA/LDAPlot.h

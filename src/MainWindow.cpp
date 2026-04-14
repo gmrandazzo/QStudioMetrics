@@ -67,6 +67,7 @@
 #include "LDA/LDAPlot.h"
 #include "MLR/MLRPlot.h"
 #include "PCA/PCAPlot.h"
+#include "ICA/ICAPlot.h"
 #include "PLS/PLSPlot.h"
 #include "Plotlib/BarPlot.h"
 #include "Plotlib/ScatterPlot.h"
@@ -563,8 +564,10 @@ void MainWindow::TopMenuEnableDisable() {
     ui.menuPlot_ICA_Model->setEnabled(true);
     if (ProjectsHaveICAPrediction() == false) {
       ui.actionICA2DScore_Plot_Prediction->setEnabled(false);
+      ui.actionICA_Time_series_Plot_Prediction->setEnabled(false);
     } else {
       ui.actionICA2DScore_Plot_Prediction->setEnabled(true);
+      ui.actionICA_Time_series_Plot_Prediction->setEnabled(true);
     }
   }
 
@@ -5527,6 +5530,62 @@ void MainWindow::PCA2DScorePlotPrediction() {
   }
 }
 
+void MainWindow::ICA2DScorePlot() {
+  if (ProjectsHaveICA() == true) {
+    ProjectTree pjtree;
+    GetICAProjects(&pjtree);
+    DebugProjectTree(pjtree);
+    DialogPlots dp(pjtree, DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if (dp.exec() == QDialog::Accepted) {
+      ICAPlot icaplot(projects);
+      icaplot.setPID(dp.getProjectID());
+      icaplot.setMID(dp.getModelID());
+      MDIChild *graphchild = createMdiChild();
+      ScatterPlot *plot2D;
+      icaplot.ScorePlot2D(&plot2D);
+      graphchild->setWidget(plot2D);
+      graphchild->setWindowID(
+          getModelTableID(dp.getProjectID(), dp.getModelID()));
+      graphchild->resize(default_window_size_w, default_window_size_h);
+      graphchild->show();
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
+              SLOT(UpdateImageWindow(ImageSignal)));
+    }
+  } else {
+    QMessageBox::warning(this, tr("Warning"), tr("No ICA models found."),
+                         QMessageBox::Close);
+  }
+}
+
+void MainWindow::ICA2DScorePlotPrediction() {
+  if (ProjectsHaveICA() == true) {
+    ProjectTree pjtree;
+    GetICAProjects(&pjtree);
+    DialogPlots dp(pjtree, DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if (dp.exec() == QDialog::Accepted) {
+      ICAPlot icaplot(projects);
+      icaplot.setPID(dp.getProjectID());
+      icaplot.setMID(dp.getModelID());
+      icaplot.setPREDID(dp.getPredictionID());
+      MDIChild *graphchild = createMdiChild();
+      ScatterPlot *plot2D;
+      icaplot.ScorePlotPrediction2D(&plot2D);
+      graphchild->setWidget(plot2D);
+      graphchild->setWindowID(
+          getModelTableID(dp.getProjectID(), dp.getModelID()));
+      graphchild->resize(default_window_size_w, default_window_size_h);
+      graphchild->show();
+      connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
+              SLOT(UpdateImageWindow(ImageSignal)));
+    }
+  } else {
+    QMessageBox::warning(this, tr("Warning"), tr("No ICA models found."),
+                         QMessageBox::Close);
+  }
+}
+
 void MainWindow::CPCA2DSuperScorePlot() {
   if (ProjectsHaveCPCA() == true) {
     ProjectTree pjtree;
@@ -9133,6 +9192,11 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0) {
   // SLOT(PCA2DLoadingsMVANDPlot()));
   connect(ui.actionPCA2DScore_Plot_Prediction, SIGNAL(triggered(bool)),
           SLOT(PCA2DScorePlotPrediction()));
+
+  connect(ui.actionICA2DScore_Plot, SIGNAL(triggered(bool)),
+          SLOT(ICA2DScorePlot()));
+  connect(ui.actionICA2DScore_Plot_Prediction, SIGNAL(triggered(bool)),
+          SLOT(ICA2DScorePlotPrediction()));
 
   connect(ui.actionCPCA2DSuperScores_Plot, SIGNAL(triggered(bool)),
           SLOT(CPCA2DSuperScorePlot()));
