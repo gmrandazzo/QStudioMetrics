@@ -1,9 +1,11 @@
 /*
- * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ * This project uses Qt under the GNU General Public License version 3.0
+ * (GPL‑3.0).
  *
  * Visualization component for simpleline2dplot.
  *
- * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco
+ * Randazzo <gmrandazzo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -94,6 +96,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QString curvename,
   chart->setYaxisName(yaxestitle);
   chart->LoadSettings();
   chart->Plot();
+  chart->readjustPlot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
 }
@@ -129,7 +132,8 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames,
                       5);
       curve.append(QPointF(x, y));
     }
-    chart->addCurve(curve, QString("%1").arg(curvenames[j - 1]), colors[j - 1], smooth);
+    chart->addCurve(curve, QString("%1").arg(curvenames[j - 1]), colors[j - 1],
+                    smooth);
     // chart->setCurveStyle(j-1, LM);
   }
 
@@ -137,7 +141,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(matrix *m, QStringList curvenames,
   chart->setYaxisName(yaxestitle);
   chart->LoadSettings();
   chart->Plot();
-
+  chart->readjustPlot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
 }
@@ -179,6 +183,7 @@ SimpleLine2DPlot::SimpleLine2DPlot(QList<matrix *> mlst, QStringList curvenames,
   chart->setYaxisName(yaxestitle);
   chart->LoadSettings();
   chart->Plot();
+  chart->readjustPlot();
   connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(ui.saveimageButton, SIGNAL(clicked(bool)), SLOT(SavePlotImage()));
 }

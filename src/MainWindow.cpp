@@ -1,9 +1,11 @@
 /*
- * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ * This project uses Qt under the GNU General Public License version 3.0
+ * (GPL‑3.0).
  *
  * Main window implementation for the GUI.
  *
- * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco
+ * Randazzo <gmrandazzo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -38,14 +40,14 @@
 #include <scientific.h>
 #include <unistd.h>
 
-#include <QInputDialog>
-#include <QTextEdit>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QDialog>
 #include "MainWindow.h"
 #include "qsmdata.h"
 #include "run.h"
+#include <QDialog>
+#include <QInputDialog>
+#include <QPushButton>
+#include <QTextEdit>
+#include <QVBoxLayout>
 
 #include "CPCA/CPCAPlot.h"
 #include "Dialogs/AboutDialog.h"
@@ -64,10 +66,10 @@
 #include "Dialogs/SaveDialog.h"
 #include "Dialogs/ValidatorDialog.h"
 #include "Dialogs/VariablePlotDialog.h"
+#include "ICA/ICAPlot.h"
 #include "LDA/LDAPlot.h"
 #include "MLR/MLRPlot.h"
 #include "PCA/PCAPlot.h"
-#include "ICA/ICAPlot.h"
 #include "PLS/PLSPlot.h"
 #include "Plotlib/BarPlot.h"
 #include "Plotlib/ScatterPlot.h"
@@ -174,21 +176,22 @@ void MainWindow::CheckProjects() {
 }
 
 /*Fast implementation of index_of for QStringList*/
-// Removed _index_of_ as it was inefficient and replaced with QHash lookups in caller functions
+// Removed _index_of_ as it was inefficient and replaced with QHash lookups in
+// caller functions
 
 bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
                                QStringList varsel, matrix *x) {
   ResizeMatrix(x, objnames.size(), varsel.size());
 
   QHash<QString, int> objmap;
-  const QStringList& dataObjNames = indata->getObjName();
+  const QStringList &dataObjNames = indata->getObjName();
   objmap.reserve(dataObjNames.size());
   for (int i = 0; i < dataObjNames.size(); ++i) {
     objmap.insert(dataObjNames[i], i);
   }
 
   QHash<QString, int> varmap;
-  const QStringList& dataVarNames = indata->getVarName();
+  const QStringList &dataVarNames = indata->getVarName();
   varmap.reserve(dataVarNames.size());
   for (int i = 1; i < dataVarNames.size(); ++i) {
     varmap.insert(dataVarNames[i], i - 1);
@@ -196,11 +199,11 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
 
   QList<int> aligned_varid;
   aligned_varid.reserve(varsel.size());
-  
+
   QList<int> aligned_objid;
   aligned_objid.reserve(objnames.size());
 
-  for (const QString& obj : objnames) {
+  for (const QString &obj : objnames) {
     auto it = objmap.find(obj);
     if (it != objmap.end()) {
       aligned_objid.append(it.value());
@@ -208,7 +211,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   }
 
   QStringList varnotfound;
-  for (const QString& var : varsel) {
+  for (const QString &var : varsel) {
     auto it = varmap.find(var);
     if (it != varmap.end()) {
       aligned_varid.append(it.value());
@@ -220,15 +223,17 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   // Copy the data
   int progressCounter = 0;
   for (int i = 0; i < aligned_objid.size(); ++i) {
-    if (stoprun) return false;
-    
+    if (stoprun)
+      return false;
+
     int ii = aligned_objid[i];
     for (int j = 0; j < aligned_varid.size(); ++j) {
       int jx = aligned_varid[j];
       x->data[i][j] = indata->Matrix()->data[ii][jx];
     }
-    
-    if (++progressCounter % 100 == 0) QApplication::processEvents();
+
+    if (++progressCounter % 100 == 0)
+      QApplication::processEvents();
   }
 
   if (!varnotfound.isEmpty()) {
@@ -249,14 +254,14 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   ResizeMatrix(y, objnames.size(), yvarsel.size());
 
   QHash<QString, int> objmap;
-  const QStringList& dataObjNames = indata->getObjName();
+  const QStringList &dataObjNames = indata->getObjName();
   objmap.reserve(dataObjNames.size());
   for (int i = 0; i < dataObjNames.size(); ++i) {
     objmap.insert(dataObjNames[i], i);
   }
 
   QHash<QString, int> varmap;
-  const QStringList& dataVarNames = indata->getVarName();
+  const QStringList &dataVarNames = indata->getVarName();
   varmap.reserve(dataVarNames.size());
   for (int i = 1; i < dataVarNames.size(); ++i) {
     varmap.insert(dataVarNames[i], i - 1);
@@ -267,7 +272,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   aligned_yvarid.reserve(yvarsel.size());
   aligned_objid.reserve(objnames.size());
 
-  for (const QString& obj : objnames) {
+  for (const QString &obj : objnames) {
     auto it = objmap.find(obj);
     if (it != objmap.end()) {
       aligned_objid.append(it.value());
@@ -275,7 +280,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   }
 
   QStringList xvarnotfound;
-  for (const QString& var : xvarsel) {
+  for (const QString &var : xvarsel) {
     auto it = varmap.find(var);
     if (it != varmap.end()) {
       aligned_xvarid.append(it.value());
@@ -285,7 +290,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   }
 
   QStringList yvarnotfound;
-  for (const QString& var : yvarsel) {
+  for (const QString &var : yvarsel) {
     auto it = varmap.find(var);
     if (it != varmap.end()) {
       aligned_yvarid.append(it.value());
@@ -297,8 +302,9 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   // Copy the data
   int progressCounter = 0;
   for (int i = 0; i < aligned_objid.size(); ++i) {
-    if (stoprun) return false;
-    
+    if (stoprun)
+      return false;
+
     int ii = aligned_objid[i];
     for (int j = 0; j < aligned_xvarid.size(); ++j) {
       int jx = aligned_xvarid[j];
@@ -309,8 +315,9 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
       int jy = aligned_yvarid[j];
       y->data[i][j] = indata->Matrix()->data[ii][jy];
     }
-    
-    if (++progressCounter % 100 == 0) QApplication::processEvents();
+
+    if (++progressCounter % 100 == 0)
+      QApplication::processEvents();
   }
 
   bool retval = true;
@@ -347,14 +354,14 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   }
 
   QHash<QString, int> objmap;
-  const QStringList& dataObjNames = indata->getObjName();
+  const QStringList &dataObjNames = indata->getObjName();
   objmap.reserve(dataObjNames.size());
   for (int i = 0; i < dataObjNames.size(); ++i) {
     objmap.insert(dataObjNames[i], i);
   }
 
   QHash<QString, int> varmap;
-  const QStringList& dataVarNames = indata->getVarName();
+  const QStringList &dataVarNames = indata->getVarName();
   varmap.reserve(dataVarNames.size());
   for (int i = 1; i < dataVarNames.size(); ++i) {
     varmap.insert(dataVarNames[i], i - 1);
@@ -364,7 +371,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   aligned_xvarid.reserve(xvarsel.size());
   aligned_objid.reserve(objnames.size());
 
-  for (const QString& obj : objnames) {
+  for (const QString &obj : objnames) {
     auto it = objmap.find(obj);
     if (it != objmap.end()) {
       aligned_objid.append(it.value());
@@ -372,7 +379,7 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   }
 
   QStringList xvarnotfound;
-  for (const QString& var : xvarsel) {
+  for (const QString &var : xvarsel) {
     auto it = varmap.find(var);
     if (it != varmap.end()) {
       aligned_xvarid.append(it.value());
@@ -384,25 +391,28 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
   // Pre-process classes for faster lookup
   QHash<QString, int> classMap; // Map object name to class index (or presence)
   // Since an object can belong to only one class in standard classification,
-  // we can map object -> class index. 
+  // we can map object -> class index.
   // However, LABELS structure suggests list of objects per class.
-  // We can invert this mapping: Object -> List of Class Indices (if multilabel) or just Class Index.
-  // Assuming standard classification (one class per object) for simplicity based on matrix resize logic.
-  
+  // We can invert this mapping: Object -> List of Class Indices (if multilabel)
+  // or just Class Index. Assuming standard classification (one class per
+  // object) for simplicity based on matrix resize logic.
+
   // Actually, 'classes' is a list of LABEL (name, list of objects).
-  // Optimization: Create a Hash<QString, QVector<int>> mapping ObjectName -> ClassIndices.
+  // Optimization: Create a Hash<QString, QVector<int>> mapping ObjectName ->
+  // ClassIndices.
   QHash<QString, QVector<int>> objectClassMap;
   for (int j = 0; j < classes.size(); ++j) {
-      for (const QString& objName : classes[j].objects) {
-          objectClassMap[objName].append(j);
-      }
+    for (const QString &objName : classes[j].objects) {
+      objectClassMap[objName].append(j);
+    }
   }
 
   // Copy the data
   int progressCounter = 0;
   for (int i = 0; i < aligned_objid.size(); ++i) {
-    if (stoprun) return false;
-    
+    if (stoprun)
+      return false;
+
     int ii = aligned_objid[i];
     QString currentObjName = indata->getObjName()[ii];
 
@@ -422,11 +432,12 @@ bool MainWindow::PrepareMatrix(MATRIX *indata, QStringList objnames,
       // Multi-class
       QVector<int> belongTo = objectClassMap.value(currentObjName);
       for (int j = 0; j < classes.size(); ++j) {
-          y->data[i][j] = belongTo.contains(j) ? 1 : 0;
+        y->data[i][j] = belongTo.contains(j) ? 1 : 0;
       }
     }
-    
-    if (++progressCounter % 100 == 0) QApplication::processEvents();
+
+    if (++progressCounter % 100 == 0)
+      QApplication::processEvents();
   }
 
   if (!xvarnotfound.isEmpty()) {
@@ -446,14 +457,14 @@ bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames,
   // ResizeMatrix(x, objnames.size(), varsel.size());
 
   QHash<QString, int> objmap;
-  const QStringList& dataObjNames = indata->getObjName();
+  const QStringList &dataObjNames = indata->getObjName();
   objmap.reserve(dataObjNames.size());
   for (int i = 0; i < dataObjNames.size(); ++i) {
     objmap.insert(dataObjNames[i], i);
   }
 
   QHash<QString, int> varmap;
-  const QStringList& dataVarNames = indata->getVarName();
+  const QStringList &dataVarNames = indata->getVarName();
   varmap.reserve(dataVarNames.size());
   for (int i = 1; i < dataVarNames.size(); ++i) {
     varmap.insert(dataVarNames[i], i - 1);
@@ -461,7 +472,7 @@ bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames,
 
   QList<int> aligned_objid;
   aligned_objid.reserve(objnames.size());
-  for (const QString& obj : objnames) {
+  for (const QString &obj : objnames) {
     auto it = objmap.find(obj);
     if (it != objmap.end()) {
       aligned_objid.append(it.value());
@@ -471,11 +482,11 @@ bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames,
   QList<QList<int>> aligned_varid;
   aligned_varid.reserve(block_varsel.size());
   QStringList varnotfound;
-  
+
   for (int k = 0; k < block_varsel.size(); ++k) {
     QList<int> current_vars;
     current_vars.reserve(block_varsel[k].objects.size());
-    for (const QString& var : block_varsel[k].objects) {
+    for (const QString &var : block_varsel[k].objects) {
       auto it = varmap.find(var);
       if (it != varmap.end()) {
         current_vars.append(it.value());
@@ -494,8 +505,9 @@ bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames,
   // Copy the data
   int progressCounter = 0;
   for (int i = 0; i < aligned_objid.size(); ++i) {
-    if (stoprun) return false;
-    
+    if (stoprun)
+      return false;
+
     int ii = aligned_objid[i];
     for (int k = 0; k < aligned_varid.size(); ++k) {
       for (int j = 0; j < aligned_varid[k].size(); ++j) {
@@ -503,8 +515,9 @@ bool MainWindow::PrepareTensor(MATRIX *indata, QStringList objnames,
         x->m[k]->data[i][j] = indata->Matrix()->data[ii][jx];
       }
     }
-    
-    if (++progressCounter % 100 == 0) QApplication::processEvents();
+
+    if (++progressCounter % 100 == 0)
+      QApplication::processEvents();
   }
 
   if (!varnotfound.isEmpty()) {
@@ -1878,8 +1891,10 @@ void MainWindow::showLDACovarianceGroupMatrix() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
 
-      QString tabname =
-          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("LDA Covariance Group Matrix");
+      QString tabname = QString("%1 | %2 | %3")
+                            .arg(projectname)
+                            .arg(modelname)
+                            .arg("LDA Covariance Group Matrix");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname,
@@ -1909,8 +1924,10 @@ void MainWindow::showLDAPriorProbabilities() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
 
-      QString tabname =
-          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("LDA Prior Probabilities");
+      QString tabname = QString("%1 | %2 | %3")
+                            .arg(projectname)
+                            .arg(modelname)
+                            .arg("LDA Prior Probabilities");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       matrix *pprob;
@@ -1952,8 +1969,10 @@ void MainWindow::showLDAFeatures() {
       for (size_t k = 0;
            k < projects->value(pid)->getLDAModel(mid)->Model()->features->order;
            k++) { /* for each class */
-        QString tabname =
-            QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg(QString("LDA Features Class %1").arg(k + 1));
+        QString tabname = QString("%1 | %2 | %3")
+                              .arg(projectname)
+                              .arg(modelname)
+                              .arg(QString("LDA Features Class %1").arg(k + 1));
         MDIChild *child = createMdiChild();
         child->setWindowID(tabid);
         QStringList headername, objname;
@@ -2003,11 +2022,13 @@ void MainWindow::showLDAMVNormDistrib() {
       for (size_t k = 0;
            k < projects->value(pid)->getLDAModel(mid)->Model()->mnpdf->order;
            k++) { /* for each class */
-        QString tabname = QString("%1 | %2 | %3")
-                              .arg(projectname)
-                              .arg(modelname)
-                              .arg(QString("LDA Multivariate Normal Distribution of Probabilities Class %1")
-                                       .arg(k + 1));
+        QString tabname =
+            QString("%1 | %2 | %3")
+                .arg(projectname)
+                .arg(modelname)
+                .arg(QString("LDA Multivariate Normal Distribution of "
+                             "Probabilities Class %1")
+                         .arg(k + 1));
         MDIChild *child = createMdiChild();
         child->setWindowID(tabid);
         QStringList headername, objname;
@@ -2050,8 +2071,10 @@ void MainWindow::showLDAValidation() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
 
-      QString tabname =
-          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("LDA Validation");
+      QString tabname = QString("%1 | %2 | %3")
+                            .arg(projectname)
+                            .arg(modelname)
+                            .arg("LDA Validation");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       matrix *valid;
@@ -2152,8 +2175,10 @@ void MainWindow::showLDAPredictionFeatures() {
       QString modelname = projects->value(pid)->getLDAModel(mid)->getName();
       int predid = getCurrentPredictionID();
 
-      QString tabname =
-          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("LDA Predicted Feature");
+      QString tabname = QString("%1 | %2 | %3")
+                            .arg(projectname)
+                            .arg(modelname)
+                            .arg("LDA Predicted Feature");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       QStringList headername, objname;
@@ -2226,8 +2251,10 @@ void MainWindow::showMLRCoeff() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
-      QString tabname =
-          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("MLR Regression Coefficients");
+      QString tabname = QString("%1 | %2 | %3")
+                            .arg(projectname)
+                            .arg(modelname)
+                            .arg("MLR Regression Coefficients");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname,
@@ -2271,8 +2298,10 @@ void MainWindow::showMLRValidation() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
-      QString tabname =
-          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("MLR Correlation Coefficient");
+      QString tabname = QString("%1 | %2 | %3")
+                            .arg(projectname)
+                            .arg(modelname)
+                            .arg("MLR Correlation Coefficient");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname);
@@ -2323,8 +2352,10 @@ void MainWindow::showMLRRecalcY() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
-      QString tabname =
-          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("MLR Recalculated Y");
+      QString tabname = QString("%1 | %2 | %3")
+                            .arg(projectname)
+                            .arg(modelname)
+                            .arg("MLR Recalculated Y");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(
@@ -2358,8 +2389,10 @@ void MainWindow::showMLRValidatedPrediction() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
-      QString tabname =
-          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("MLR Validated Predicted Y");
+      QString tabname = QString("%1 | %2 | %3")
+                            .arg(projectname)
+                            .arg(modelname)
+                            .arg("MLR Validated Predicted Y");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(
@@ -2394,12 +2427,11 @@ void MainWindow::showMLRPrediction() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
       int predid = getCurrentPredictionID();
-      QString tabname =
-          QString("%1 | %2 | %3")
-              .arg(projectname)
-              .arg(modelname)
-              .arg("MLR Predicted Dependent Value - " +
-                   ui.treeWidget->currentItem()->text(0));
+      QString tabname = QString("%1 | %2 | %3")
+                            .arg(projectname)
+                            .arg(modelname)
+                            .arg("MLR Predicted Dependent Value - " +
+                                 ui.treeWidget->currentItem()->text(0));
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname,
@@ -2444,8 +2476,10 @@ void MainWindow::showMLRPredictionRSquared() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getMLRModel(mid)->getName();
 
-      QString tabname =
-          QString("%1 | %2 | %3").arg(projectname).arg(modelname).arg("MLR Prediction Error");
+      QString tabname = QString("%1 | %2 | %3")
+                            .arg(projectname)
+                            .arg(modelname)
+                            .arg("MLR Prediction Error");
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname);
@@ -2689,8 +2723,9 @@ void MainWindow::showPLSValidatedPrediction() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getPLSModel(mid)->getName();
 
-      QString tabname =
-          QString("%1 | %2 | PLS Model Prediction").arg(projectname).arg(modelname);
+      QString tabname = QString("%1 | %2 | PLS Model Prediction")
+                            .arg(projectname)
+                            .arg(modelname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(
@@ -3579,8 +3614,7 @@ void MainWindow::showICAScore() {
       QStringList headername;
       headername << firstcol_name;
       for (size_t c = 0;
-           c < projects->value(pid)->getICAModel(mid)->Model()->S->col;
-           c++) {
+           c < projects->value(pid)->getICAModel(mid)->Model()->S->col; c++) {
         headername << QString("IC %1").arg(QString::number(c + 1));
       }
       child->getTable()->model()->setHorizontalHeaderLabels(headername);
@@ -3601,8 +3635,9 @@ void MainWindow::showICAMixingMatrix() {
       QString projectname = projects->value(pid)->getProjectName();
       QString modelname = projects->value(pid)->getICAModel(mid)->getName();
 
-      QString tabname =
-          QString("%1 | %2 | ICA A Mixing Matrix").arg(projectname).arg(modelname);
+      QString tabname = QString("%1 | %2 | ICA A Mixing Matrix")
+                            .arg(projectname)
+                            .arg(modelname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
       child->newTable(tabname,
@@ -3614,8 +3649,7 @@ void MainWindow::showICAMixingMatrix() {
       QStringList headername;
       headername << "Variables";
       for (size_t c = 0;
-           c < projects->value(pid)->getICAModel(mid)->Model()->W->col;
-           c++) {
+           c < projects->value(pid)->getICAModel(mid)->Model()->W->col; c++) {
         headername << QString("IC %1").arg(QString::number(c + 1));
       }
       child->getTable()->model()->setHorizontalHeaderLabels(headername);
@@ -3635,20 +3669,23 @@ void MainWindow::showICAPredScore() {
     int tabid = getCurrentPredictionTableID();
     if (pid > -1 && mid > -1 && predid > -1 && tabid > -1) {
       QString projectname = projects->value(pid)->getProjectName();
-      QString modelname =
-          projects->value(pid)->getICAModel(mid)->getICAPrediction(predid)->getName();
+      QString modelname = projects->value(pid)
+                              ->getICAModel(mid)
+                              ->getICAPrediction(predid)
+                              ->getName();
 
-      QString tabname =
-          QString("%1 | %2 | ICA Predicted Scores").arg(projectname).arg(modelname);
+      QString tabname = QString("%1 | %2 | ICA Predicted Scores")
+                            .arg(projectname)
+                            .arg(modelname);
       MDIChild *child = createMdiChild();
       child->setWindowID(tabid);
-      child->newTable(
-          tabname, projects->value(pid)
-                       ->getICAModel(mid)
-                       ->getICAPrediction(predid)
-                       ->getPredScores(),
-          &projects->value(pid)->getObjectLabels(),
-          &projects->value(pid)->getVariableLabels());
+      child->newTable(tabname,
+                      projects->value(pid)
+                          ->getICAModel(mid)
+                          ->getICAPrediction(predid)
+                          ->getPredScores(),
+                      &projects->value(pid)->getObjectLabels(),
+                      &projects->value(pid)->getVariableLabels());
       child->getTable()->model()->setObjNames(projects->value(pid)
                                                   ->getICAModel(mid)
                                                   ->getICAPrediction(predid)
@@ -3656,10 +3693,10 @@ void MainWindow::showICAPredScore() {
       QStringList headername;
       headername << firstcol_name;
       for (size_t c = 0; c < projects->value(pid)
-                                ->getICAModel(mid)
-                                ->getICAPrediction(predid)
-                                ->getPredScores()
-                                ->col;
+                                 ->getICAModel(mid)
+                                 ->getICAPrediction(predid)
+                                 ->getPredScores()
+                                 ->col;
            c++) {
         headername << QString("IC %1").arg(QString::number(c + 1));
       }
@@ -4082,7 +4119,7 @@ void MainWindow::ShowContextMenu(const QPoint &pos) {
     QString modeltype = getCurrentModelType();
     int pid = getCurrentModelProjectID();
     int mid = getCurrentModelID();
-    auto* project = projects->value(pid);
+    auto *project = projects->value(pid);
 
     menu.addAction("&Model Info", this, SLOT(ModelInfo()));
 
@@ -4093,13 +4130,14 @@ void MainWindow::ShowContextMenu(const QPoint &pos) {
 
     } else if (modeltype == "ICA Model") {
       menu.addAction("&Show S Scores", this, SLOT(showICAScore()));
-      menu.addAction("&Show A Mixing Matrix", this, SLOT(showICAMixingMatrix()));
-
+      menu.addAction("&Show A Mixing Matrix", this,
+                     SLOT(showICAMixingMatrix()));
     } else if (modeltype == "CPCA Model") {
       menu.addAction("&Show Super Score", this, SLOT(showCPCASuperScore()));
       menu.addAction("&Show Super Weights", this, SLOT(showCPCASuperWeights()));
       menu.addAction("&Show Block Scores", this, SLOT(showCPCABlockScores()));
-      menu.addAction("&Show Block Loadings", this, SLOT(showCPCABlockLoadings()));
+      menu.addAction("&Show Block Loadings", this,
+                     SLOT(showCPCABlockLoadings()));
       menu.addAction("&Show Explained Variance", this, SLOT(showCPCAExpVar()));
 
     } else if (modeltype == "PLS Model") {
@@ -4108,37 +4146,45 @@ void MainWindow::ShowContextMenu(const QPoint &pos) {
       menu.addAction("&Show P Loadings", this, SLOT(showPLSPLoadings()));
       menu.addAction("&Show Q Loadings", this, SLOT(showPLSQLoadings()));
       menu.addAction("&Show W Weights", this, SLOT(showPLSWWeights()));
-      menu.addAction("&Show Regression Coefficient", this, SLOT(showPLSRegCoeff()));
+      menu.addAction("&Show Regression Coefficient", this,
+                     SLOT(showPLSRegCoeff()));
       menu.addAction("&Show Explained Variance", this, SLOT(showPLSExpVar()));
       menu.addAction("&Show Recalculated Y", this, SLOT(showPLSRecalcY()));
 
       if (project->getPLSModel(mid)->getValidation() > 0) {
-        menu.addAction("&Show Predicted Y", this, SLOT(showPLSValidatedPrediction()));
+        menu.addAction("&Show Predicted Y", this,
+                       SLOT(showPLSValidatedPrediction()));
         menu.addAction("&Show Validation", this, SLOT(showPLSValidation()));
       }
 
 #ifdef ENABLE_PLUGINS
-      foreach (IContextMenuPlugin* plugin, PluginManager::instance().contextMenuPlugins()) {
-          if (plugin->supportedForModel(modeltype)) {
-              menu.addAction(plugin->getAction(pid, mid, this));
-          }
+      foreach (IContextMenuPlugin *plugin,
+               PluginManager::instance().contextMenuPlugins()) {
+        if (plugin->supportedForModel(modeltype)) {
+          menu.addAction(plugin->getAction(pid, mid, this));
+        }
       }
 #endif
 
     } else if (modeltype == "MLR Model") {
-      menu.addAction("&Show Regression Coefficient", this, SLOT(showMLRCoeff()));
+      menu.addAction("&Show Regression Coefficient", this,
+                     SLOT(showMLRCoeff()));
       menu.addAction("&Show Recalculated Y", this, SLOT(showMLRRecalcY()));
 
       if (project->getMLRModel(mid)->getValidation() > 0) {
-        menu.addAction("&Show Predicted Y", this, SLOT(showMLRValidatedPrediction()));
+        menu.addAction("&Show Predicted Y", this,
+                       SLOT(showMLRValidatedPrediction()));
         menu.addAction("&Show Validation", this, SLOT(showMLRValidation()));
       }
 
     } else if (modeltype == "LDA Model") {
-      menu.addAction("&Show Covariance Group Matrix", this, SLOT(showLDACovarianceGroupMatrix()));
-      menu.addAction("&Show Prior Probabilities", this, SLOT(showLDAPriorProbabilities()));
+      menu.addAction("&Show Covariance Group Matrix", this,
+                     SLOT(showLDACovarianceGroupMatrix()));
+      menu.addAction("&Show Prior Probabilities", this,
+                     SLOT(showLDAPriorProbabilities()));
       menu.addAction("&Show Features", this, SLOT(showLDAFeatures()));
-      menu.addAction("&Show MVA Normal Distribution", this, SLOT(showLDAMVNormDistrib()));
+      menu.addAction("&Show MVA Normal Distribution", this,
+                     SLOT(showLDAMVNormDistrib()));
 
       if (project->getLDAModel(mid)->getValidation() > 0) {
         menu.addAction("&Show Validation", this, SLOT(showLDAValidation()));
@@ -4161,27 +4207,34 @@ void MainWindow::ShowContextMenu(const QPoint &pos) {
 
     } else if (predictiontype == "ICA Prediction") {
       menu.addAction("&Show Predicted Scores", this, SLOT(showICAPredScore()));
+      menu.addAction("&Show Predicted Time Series", this,
+                     SLOT(ICATimeSeriesPlotPrediction()));
 
     } else if (predictiontype == "CPCA Prediction") {
-      menu.addAction("&Show Prediction Super Score", this, SLOT(showCPCASuperScorePred()));
-      menu.addAction("&Show Prediction Block Score", this, SLOT(showCPCABlockScoresPred()));
+      menu.addAction("&Show Prediction Super Score", this,
+                     SLOT(showCPCASuperScorePred()));
+      menu.addAction("&Show Prediction Block Score", this,
+                     SLOT(showCPCABlockScoresPred()));
 
     } else if (predictiontype == "PLS Prediction") {
       menu.addAction("&Show Prediction Score", this, SLOT(showPLSPredScore()));
       menu.addAction("&Show Predicted Y", this, SLOT(showPLSPrediction()));
       if (getCurrentPredictionYhash() != "None") {
-        menu.addAction("&Show Prediction Error", this, SLOT(showPLSPredictionRSquared()));
+        menu.addAction("&Show Prediction Error", this,
+                       SLOT(showPLSPredictionRSquared()));
       }
 
     } else if (predictiontype == "MLR Prediction") {
       menu.addAction("&Show Predicted Y", this, SLOT(showMLRPrediction()));
       if (getCurrentPredictionYhash() != "None") {
-        menu.addAction("&Show Prediction Error", this, SLOT(showMLRPredictionRSquared()));
+        menu.addAction("&Show Prediction Error", this,
+                       SLOT(showMLRPredictionRSquared()));
       }
 
     } else if (predictiontype == "LDA Prediction") {
       menu.addAction("&Show Predicted Class", this, SLOT(showLDAPrediction()));
-      menu.addAction("&Show Predicted Features", this, SLOT(showLDAPredictionFeatures()));
+      menu.addAction("&Show Predicted Features", this,
+                     SLOT(showLDAPredictionFeatures()));
 
     } else {
       return;
@@ -4331,7 +4384,9 @@ void MainWindow::showData() {
       QString projectname = projects->value(pid)->getProjectName();
       if (getCurrentDataType().compare("Matrix") == 0) {
 
-        QString tabname = QString("%1 | Data | %2").arg(projectname).arg(getCurrentDataName());
+        QString tabname = QString("%1 | Data | %2")
+                              .arg(projectname)
+                              .arg(getCurrentDataName());
 
         MDIChild *child = createMdiChild();
 
@@ -5064,8 +5119,9 @@ void MainWindow::SaveAs() {
     savedialog.setPath(lastpath);
     if (savedialog.exec() == QDialog::Accepted) {
       GenericProgressDialog pbdialog;
-      QString fproject = projects->value(savedialog.getProjectID())
-                             ->SaveSQLData(savedialog.getPathToSave(), &pbdialog);
+      QString fproject =
+          projects->value(savedialog.getProjectID())
+              ->SaveSQLData(savedialog.getPathToSave(), &pbdialog);
       if (fproject.isEmpty()) {
         QMessageBox::warning(this, tr("Warning"),
                              tr("Unable to save the project."),
@@ -5501,7 +5557,6 @@ void MainWindow::PCA2DExpVarPlot() {
   }
 }
 
-
 void MainWindow::PCA2DScorePlotPrediction() {
   if (ProjectsHavePCA() == true) {
     ProjectTree pjtree;
@@ -5579,6 +5634,85 @@ void MainWindow::ICA2DScorePlotPrediction() {
       graphchild->show();
       connect(plot2D, SIGNAL(ScatterPlotImageSignalChanged(ImageSignal)),
               SLOT(UpdateImageWindow(ImageSignal)));
+    }
+  } else {
+    QMessageBox::warning(this, tr("Warning"), tr("No ICA models found."),
+                         QMessageBox::Close);
+  }
+}
+
+void MainWindow::ICAMixingWeightsPlot() {
+  if (ProjectsHaveICA() == true) {
+    ProjectTree pjtree;
+    GetICAProjects(&pjtree);
+    DialogPlots dp(pjtree, DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if (dp.exec() == QDialog::Accepted) {
+      ICAPlot icaplot(projects);
+      icaplot.setPID(dp.getProjectID());
+      icaplot.setMID(dp.getModelID());
+      QList<BarPlot *> plots = icaplot.UnmixingWeightsPlot2D();
+      for (int i = 0; i < plots.size(); i++) {
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(
+            getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(default_window_size_w, default_window_size_h);
+        graphchild->show();
+      }
+    }
+  } else {
+    QMessageBox::warning(this, tr("Warning"), tr("No ICA models found."),
+                         QMessageBox::Close);
+  }
+}
+
+void MainWindow::ICATimeSeriesPlot() {
+  if (ProjectsHaveICA() == true) {
+    ProjectTree pjtree;
+    GetICAProjects(&pjtree);
+    DialogPlots dp(pjtree, DialogPlots::TwoColumns);
+    dp.hideOptions(true);
+    if (dp.exec() == QDialog::Accepted) {
+      ICAPlot icaplot(projects);
+      icaplot.setPID(dp.getProjectID());
+      icaplot.setMID(dp.getModelID());
+      QList<SimpleLine2DPlot *> plots = icaplot.TimeSeriesPlot2D();
+      for (int i = 0; i < plots.size(); i++) {
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(
+            getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(default_window_size_w, default_window_size_h);
+        graphchild->show();
+      }
+    }
+  } else {
+    QMessageBox::warning(this, tr("Warning"), tr("No ICA models found."),
+                         QMessageBox::Close);
+  }
+}
+
+void MainWindow::ICATimeSeriesPlotPrediction() {
+  if (ProjectsHaveICA() == true) {
+    ProjectTree pjtree;
+    GetICAProjects(&pjtree);
+    DialogPlots dp(pjtree, DialogPlots::ThreeColumns);
+    dp.hideOptions(true);
+    if (dp.exec() == QDialog::Accepted) {
+      ICAPlot icaplot(projects);
+      icaplot.setPID(dp.getProjectID());
+      icaplot.setMID(dp.getModelID());
+      icaplot.setPREDID(dp.getPredictionID());
+      QList<SimpleLine2DPlot *> plots = icaplot.TimeSeriesPlotPrediction2D();
+      for (int i = 0; i < plots.size(); i++) {
+        MDIChild *graphchild = createMdiChild();
+        graphchild->setWidget(plots[i]);
+        graphchild->setWindowID(
+            getModelTableID(dp.getProjectID(), dp.getModelID()));
+        graphchild->resize(default_window_size_w, default_window_size_h);
+        graphchild->show();
+      }
     }
   } else {
     QMessageBox::warning(this, tr("Warning"), tr("No ICA models found."),
@@ -7062,7 +7196,8 @@ void MainWindow::DoCPCAPrediction() {
             subitem->setText(1, QString::number(tabcount_));
             subitem->setText(2, QString::number(pid));
             subitem->setText(3, QString::number(mid));
-            subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+            subitem->setText(4,
+                             projects->value(pid)->getMatrix(did)->getHash());
             subitem->setText(5, "");
             subitem->setText(6, QString::number(projects->value(pid)
                                                     ->getCPCAModel(mid)
@@ -7300,7 +7435,8 @@ void MainWindow::DoPCAPrediction() {
             subitem->setText(1, QString::number(tabcount_));
             subitem->setText(2, QString::number(pid));
             subitem->setText(3, QString::number(mid));
-            subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+            subitem->setText(4,
+                             projects->value(pid)->getMatrix(did)->getHash());
             subitem->setText(5, "");
             subitem->setText(6, QString::number(projects->value(pid)
                                                     ->getPCAModel(mid)
@@ -7314,7 +7450,8 @@ void MainWindow::DoPCAPrediction() {
             int removeid =
                 projects->value(pid)->getPCAModel(mid)->PCAPredictionCount() -
                 1;
-            projects->value(pid)->getPCAModel(mid)->delPCAPredictionAt(removeid);
+            projects->value(pid)->getPCAModel(mid)->delPCAPredictionAt(
+                removeid);
           }
         } else {
           QMessageBox::critical(
@@ -7361,12 +7498,10 @@ void MainWindow::DoICA() {
         updateLog(str);
 
         projects->value(pid)->addICAModel();
-
         projects->value(pid)->getLastICAModel()->setDID(did);
         projects->value(pid)->getLastICAModel()->setDataHash(
             projects->value(pid)->getMatrix(did)->getHash());
         projects->value(pid)->getLastICAModel()->setXScaling(xscaling);
-        projects->value(pid)->getLastICAModel()->setNIC(nic);
         projects->value(pid)->getLastICAModel()->setModelID(mid_);
         projects->value(pid)->getLastICAModel()->setName(modelname);
         projects->value(pid)->getLastICAModel()->setObjName(objsel);
@@ -7384,6 +7519,11 @@ void MainWindow::DoICA() {
           PrepareMatrix(projects->value(pid)->getMatrix(did), objsel, varsel,
                         x);
         }
+
+        if (nic > x->col) {
+          nic = x->col;
+        }
+        projects->value(pid)->getLastICAModel()->setNIC(nic);
 
         if (stoprun) {
           int removeid = projects->value(pid)->ICACount() - 1;
@@ -7543,7 +7683,8 @@ void MainWindow::DoICAPrediction() {
             subitem->setText(1, QString::number(tabcount_));
             subitem->setText(2, QString::number(pid));
             subitem->setText(3, QString::number(mid));
-            subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+            subitem->setText(4,
+                             projects->value(pid)->getMatrix(did)->getHash());
             subitem->setText(5, "");
             subitem->setText(6, QString::number(projects->value(pid)
                                                     ->getICAModel(mid)
@@ -7557,7 +7698,8 @@ void MainWindow::DoICAPrediction() {
             int removeid =
                 projects->value(pid)->getICAModel(mid)->ICAPredictionCount() -
                 1;
-            projects->value(pid)->getICAModel(mid)->delICAPredictionAt(removeid);
+            projects->value(pid)->getICAModel(mid)->delICAPredictionAt(
+                removeid);
           }
         } else {
           QMessageBox::critical(
@@ -7787,8 +7929,8 @@ void MainWindow::DoPLSPrediction() {
 
           if (stoprun == false) {
             //         ModelPrediction Name - Tab Count - pid - Model ID - xdata
-            //         id - ydata id - Data Position - Data Type (PCA Prediction,
-            //         PLS Prediction, ...) (8)
+            //         id - ydata id - Data Position - Data Type (PCA
+            //         Prediction, PLS Prediction, ...) (8)
             QTreeWidgetItem *subitem = new QTreeWidgetItem;
             subitem->setText(0, projects->value(pid)
                                     ->getPLSModel(mid)
@@ -7797,7 +7939,8 @@ void MainWindow::DoPLSPrediction() {
             subitem->setText(1, QString::number(tabcount_));
             subitem->setText(2, QString::number(pid));
             subitem->setText(3, QString::number(mid));
-            subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+            subitem->setText(4,
+                             projects->value(pid)->getMatrix(did)->getHash());
 
             if (ysel.size() > 0) {
               subitem->setText(5,
@@ -7824,7 +7967,8 @@ void MainWindow::DoPLSPrediction() {
                             ->getLastPLSPrediction()
                             ->getYDipVar());
             qDebug() << subitem->text(0) << subitem->text(1) << subitem->text(2)
-                     << subitem->text(3) << subitem->text(4) << subitem->text(5);
+                     << subitem->text(3) << subitem->text(4)
+                     << subitem->text(5);
 #endif
 
             tabcount_++;
@@ -7833,7 +7977,8 @@ void MainWindow::DoPLSPrediction() {
             int removeid =
                 projects->value(pid)->getPLSModel(mid)->PLSPredictionCount() -
                 1;
-            projects->value(pid)->getPLSModel(mid)->delPLSPredictionAt(removeid);
+            projects->value(pid)->getPLSModel(mid)->delPLSPredictionAt(
+                removeid);
           }
         } else {
           QMessageBox::critical(
@@ -8628,107 +8773,98 @@ void MainWindow::DoMLRPrediction() {
               ->getLastMLRPrediction()
               ->setYVarName(ysel);
 
-                    RUN obj;
+          RUN obj;
 
-                    obj.setXMatrix(x);
+          obj.setXMatrix(x);
 
-                    obj.setYMatrix(y);
+          obj.setYMatrix(y);
 
-                    obj.setMLRModel(projects->value(pid)->getMLRModel(mid));
+          obj.setMLRModel(projects->value(pid)->getMLRModel(mid));
 
-          
+          QFuture<void> future = obj.RunMLRPrediction();
 
-                    QFuture<void> future = obj.RunMLRPrediction();
+          while (!future.isFinished()) {
 
-                    while (!future.isFinished()) {
+            if (stoprun == true) {
 
-                      if (stoprun == true) {
+              obj.AbortRun();
 
-                        obj.AbortRun();
+              QApplication::processEvents();
 
-                        QApplication::processEvents();
+            } else {
 
-                      } else {
+              QApplication::processEvents();
+            }
+          }
 
-                        QApplication::processEvents();
+          if (stoprun == false) {
 
-                      }
+            //         ModelPrediction Name - Tab Count - pid - Model ID - xdata
 
-                    }
+            //         id - ydata id - Data Position - Data Type (PCA
+            //         Prediction,
 
-          
+            //         PLS Prediction, ...) (8)
 
-                    if (stoprun == false) {
+            QTreeWidgetItem *subitem = new QTreeWidgetItem;
 
-                      //         ModelPrediction Name - Tab Count - pid - Model ID - xdata
+            subitem->setText(0, projects
+                                    ->value(pid)
 
-                      //         id - ydata id - Data Position - Data Type (PCA Prediction,
+                                    ->getMLRModel(mid)
 
-                      //         PLS Prediction, ...) (8)
+                                    ->getLastMLRPrediction()
 
-                      QTreeWidgetItem *subitem = new QTreeWidgetItem;
+                                    ->getName());
 
-                      subitem->setText(0, projects->value(pid)
+            subitem->setText(1, QString::number(tabcount_));
 
-                                              ->getMLRModel(mid)
+            subitem->setText(2, QString::number(pid));
 
-                                              ->getLastMLRPrediction()
+            subitem->setText(3, QString::number(mid));
 
-                                              ->getName());
+            subitem->setText(4,
+                             projects->value(pid)->getMatrix(did)->getHash());
 
-                      subitem->setText(1, QString::number(tabcount_));
+            if (ysel.size() > 0) {
 
-                      subitem->setText(2, QString::number(pid));
+              subitem->setText(5,
 
-                      subitem->setText(3, QString::number(mid));
+                               projects->value(pid)->getMatrix(did)->getHash());
 
-                      subitem->setText(4, projects->value(pid)->getMatrix(did)->getHash());
+            } else {
 
-          
+              subitem->setText(5, "None");
+            }
 
-                      if (ysel.size() > 0) {
+            subitem->setText(6, QString::number(projects
+                                                    ->value(pid)
 
-                        subitem->setText(5,
+                                                    ->getMLRModel(mid)
 
-                                         projects->value(pid)->getMatrix(did)->getHash());
+                                                    ->getLastMLRPrediction()
 
-                      } else {
+                                                    ->getPredID()));
 
-                        subitem->setText(5, "None");
+            subitem->setText(7, QString("MLR Prediction"));
 
-                      }
+            tabcount_++;
 
-          
+            getModelItem(pid, mid)->addChild(subitem);
 
-                      subitem->setText(6, QString::number(projects->value(pid)
+          } else {
 
-                                                              ->getMLRModel(mid)
+            int removeid =
 
-                                                              ->getLastMLRPrediction()
+                projects->value(pid)->getMLRModel(mid)->MLRPredictionCount() -
 
-                                                              ->getPredID()));
+                1;
 
-                      subitem->setText(7, QString("MLR Prediction"));
+            projects->value(pid)->getMLRModel(mid)->delMLRPredictionAt(
+                removeid);
+          }
 
-          
-
-                      tabcount_++;
-
-                      getModelItem(pid, mid)->addChild(subitem);
-
-                    } else {
-
-                      int removeid =
-
-                          projects->value(pid)->getMLRModel(mid)->MLRPredictionCount() -
-
-                          1;
-
-                      projects->value(pid)->getMLRModel(mid)->delMLRPredictionAt(removeid);
-
-                    }
-
-                  } else {
+        } else {
           QMessageBox::critical(
               this, tr("MLR Prediction Error"),
               tr("Unable to compute MLR Prediction.\n"
@@ -9184,7 +9320,7 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0) {
   connect(ui.actionPCA2DLoadings_Plot, SIGNAL(triggered(bool)),
           SLOT(PCA2DLoadingsPlot()));
   connect(ui.actionPCA2DDModX_Plot, SIGNAL(triggered(bool)),
-        SLOT(PCADModXPlot()));
+          SLOT(PCADModXPlot()));
 
   connect(ui.actionPCA2DExpVarPlot, SIGNAL(triggered(bool)),
           SLOT(PCA2DExpVarPlot()));
@@ -9197,6 +9333,12 @@ MainWindow::MainWindow(QString confdir_, QString key_) : QMainWindow(0) {
           SLOT(ICA2DScorePlot()));
   connect(ui.actionICA2DScore_Plot_Prediction, SIGNAL(triggered(bool)),
           SLOT(ICA2DScorePlotPrediction()));
+  connect(ui.actionICA_Time_series_Plot, SIGNAL(triggered(bool)),
+          SLOT(ICATimeSeriesPlot()));
+  connect(ui.actionICA_Time_series_Plot_Prediction, SIGNAL(triggered(bool)),
+          SLOT(ICATimeSeriesPlotPrediction()));
+  connect(ui.actionICA_Mixing_Weights_Plot, SIGNAL(triggered(bool)),
+          SLOT(ICAMixingWeightsPlot()));
 
   connect(ui.actionCPCA2DSuperScores_Plot, SIGNAL(triggered(bool)),
           SLOT(CPCA2DSuperScorePlot()));
@@ -9333,8 +9475,9 @@ MainWindow::~MainWindow() {
 #ifdef ENABLE_PLUGINS
 void MainWindow::setupPlugins() {
   PluginManager::instance().loadPlugins(projects, this);
-  
-  QList<IReportGenerator*> reports = PluginManager::instance().reportGenerators();
+
+  QList<IReportGenerator *> reports =
+      PluginManager::instance().reportGenerators();
   if (!reports.isEmpty()) {
     QMenu *pluginsMenu = nullptr;
     foreach (QAction *action, ui.menubar->actions()) {
@@ -9343,32 +9486,35 @@ void MainWindow::setupPlugins() {
         break;
       }
     }
-    
+
     if (!pluginsMenu) {
       pluginsMenu = ui.menubar->addMenu(tr("&Plugins"));
     }
 
     QMenu *reportsMenu = pluginsMenu->addMenu(tr("&Reports"));
-    
-    foreach (IReportGenerator* reportGen, reports) {
-      QAction* action = reportGen->getAction(this);
+
+    foreach (IReportGenerator *reportGen, reports) {
+      QAction *action = reportGen->getAction(this);
       reportsMenu->addAction(action);
-      
+
       connect(action, &QAction::triggered, [this, reportGen]() {
         int pid = getCurrentProjectID();
         int mid = getCurrentModelID();
         if (pid != -1 && mid != -1) {
           reportGen->generateReport(pid, mid);
         } else {
-          QMessageBox::warning(this, tr("No Selection"), 
-            tr("Please select a model in the project tree to generate a report."));
+          QMessageBox::warning(this, tr("No Selection"),
+                               tr("Please select a model in the project tree "
+                                  "to generate a report."));
         }
       });
     }
   }
 
-  // Handle generic plugins and context menu plugins that want to be in the main menu
-  QList<QSMPluginInterface*> genericPlugins = PluginManager::instance().genericPlugins();
+  // Handle generic plugins and context menu plugins that want to be in the main
+  // menu
+  QList<QSMPluginInterface *> genericPlugins =
+      PluginManager::instance().genericPlugins();
   if (!genericPlugins.isEmpty()) {
     QMenu *pluginsMenu = nullptr;
     foreach (QAction *action, ui.menubar->actions()) {
@@ -9381,25 +9527,28 @@ void MainWindow::setupPlugins() {
       pluginsMenu = ui.menubar->addMenu(tr("&Plugins"));
     }
 
-    QMap<QString, QMenu*> categoryMenus;
-    foreach (QSMPluginInterface* plugin, genericPlugins) {
-      if (qobject_cast<IReportGenerator*>(dynamic_cast<QObject*>(plugin))) continue;
+    QMap<QString, QMenu *> categoryMenus;
+    foreach (QSMPluginInterface *plugin, genericPlugins) {
+      if (qobject_cast<IReportGenerator *>(dynamic_cast<QObject *>(plugin)))
+        continue;
 
       QString cat = plugin->category();
-      if (cat.isEmpty()) continue; // Skip if no category (keep menu clean)
+      if (cat.isEmpty())
+        continue; // Skip if no category (keep menu clean)
 
       if (!categoryMenus.contains(cat)) {
         categoryMenus[cat] = pluginsMenu->addMenu(cat);
       }
 
-      auto* contextPlugin = qobject_cast<IContextMenuPlugin*>(dynamic_cast<QObject*>(plugin));
+      auto *contextPlugin =
+          qobject_cast<IContextMenuPlugin *>(dynamic_cast<QObject *>(plugin));
       if (contextPlugin) {
-         // Pass -1, -1 to indicate this is the generic main menu action
-         QAction* action = contextPlugin->getAction(-1, -1, this);
-         if (action) {
-           action->setText(plugin->pluginName());
-           categoryMenus[cat]->addAction(action);
-         }
+        // Pass -1, -1 to indicate this is the generic main menu action
+        QAction *action = contextPlugin->getAction(-1, -1, this);
+        if (action) {
+          action->setText(plugin->pluginName());
+          categoryMenus[cat]->addAction(action);
+        }
       }
     }
   }

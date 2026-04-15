@@ -72,6 +72,7 @@ public:
 
   void Center() override;
   void Refresh() override;
+  void readjustPlot();
 
   void SelectAll() override;
   void ClearSelection() override;

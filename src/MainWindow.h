@@ -1,9 +1,11 @@
 /*
- * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ * This project uses Qt under the GNU General Public License version 3.0
+ * (GPL‑3.0).
  *
  * Main window implementation for the GUI.
  *
- * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco
+ * Randazzo <gmrandazzo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,7 +23,6 @@
 
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
 
 #include <QMainWindow>
 #include <QMap>
@@ -109,6 +110,9 @@ private slots:
 
   void ICA2DScorePlot();
   void ICA2DScorePlotPrediction();
+  void ICATimeSeriesPlot();
+  void ICATimeSeriesPlotPrediction();
+  void ICAMixingWeightsPlot();
 
   void CPCA2DSuperScorePlot();
   void CPCA2DSuperWeightsPlot();
@@ -241,6 +245,7 @@ private slots:
 
 public:
   MDIChild *createMdiChild();
+
 private:
   Ui::MainWindow ui;
   void closeMDI(const int &id);
@@ -267,6 +272,7 @@ public:
 
   bool PrepareMatrix(MATRIX *indata, QStringList objnames, QStringList varsel,
                      matrix *x);
+
 private:
   int tabcount_;
   int pid_;    // Prediction ID that is unique for each project and increment
@@ -291,14 +297,14 @@ private:
 
   int ProjectOpen(QString);
   void CheckProjects();
-  bool havepca, havepcapred, haveica, haveicapred, havecpca, havecpcapred, havepls,
-      haveplspred, haveplsvalid, haveplsyscrambling, havemlr, havemlrpred,
-      havemlrvalid, havemlryscrambling, havelda, haveldapred, haveldavalid;
+  bool havepca, havepcapred, haveica, haveicapred, havecpca, havecpcapred,
+      havepls, haveplspred, haveplsvalid, haveplsyscrambling, havemlr,
+      havemlrpred, havemlrvalid, havemlryscrambling, havelda, haveldapred,
+      haveldavalid;
 
   void TopMenuEnableDisable();
   void CalculationMenuEnable();
   void CalculationMenuDisable(int calcpid_);
-
 
   void PrepareKFoldClasses(QStringList objects, LABELS kfclasses,
                            uivector *classes);
@@ -376,8 +382,10 @@ private:
   int getModelCount(int pid);
   QTreeWidgetItem *getModelItem(int pid, int mid);
   QString getModelName(int pid, int mid);
+
 public:
   int getModelTableID(int pid, int mid);
+
 private:
   int getModelProjectID(int pid, int mid);
   QString getModelXhash(int pid, int mid);

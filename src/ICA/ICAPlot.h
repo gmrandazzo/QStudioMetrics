@@ -21,7 +21,9 @@
 
 #ifndef ICAPLOT_H
 #define ICAPLOT_H
+#include "../Plotlib/BarPlot.h"
 #include "../Plotlib/ScatterPlot.h"
+#include "../Plotlib/SimpleLine2DPlot.h"
 #include "qsmdata.h"
 
 #include "qstudiometricstypes.h"
@@ -37,6 +39,9 @@ public:
   void setPREDID(int predid_) { predid = predid_; }
   void ScorePlot2D(ScatterPlot **plot2D);
   void ScorePlotPrediction2D(ScatterPlot **plot2D);
+  QList<SimpleLine2DPlot *> TimeSeriesPlot2D();
+  QList<SimpleLine2DPlot *> TimeSeriesPlotPrediction2D();
+  QList<BarPlot *> UnmixingWeightsPlot2D();
 
 private:
   PROJECTS *projects;

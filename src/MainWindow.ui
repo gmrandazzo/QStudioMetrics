@@ -308,9 +308,13 @@
      <property name="title">
       <string>ICA Analysis Plots</string>
      </property>
+     <property name="icon">
+      <iconset resource="icons/icons.qrc">
+       <normaloff>:/scatter.png</normaloff>:/scatter.png</iconset>
+     </property>
      <addaction name="actionICA2DScore_Plot"/>
      <addaction name="actionICA_Time_series_Plot"/>
-     <addaction name="actionICA_Unmixing_Weights_Heatmap_Plot"/>
+     <addaction name="actionICA_Mixing_Weights_Plot"/>
      <addaction name="separator"/>
      <addaction name="actionICA2DScore_Plot_Prediction"/>
      <addaction name="actionICA_Time_series_Plot_Prediction"/>
@@ -1614,9 +1618,9 @@
     <string>Time series independent component plot with prediction</string>
    </property>
   </action>
-  <action name="actionICA_Unmixing_Weights_Heatmap_Plot">
+  <action name="actionICA_Mixing_Weights_Plot">
    <property name="text">
-    <string>Unmixing weights heatmap plot</string>
+    <string>Mixing weights plot</string>
    </property>
   </action>
  </widget>

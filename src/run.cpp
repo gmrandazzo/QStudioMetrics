@@ -1,9 +1,11 @@
 /*
- * This project uses Qt under the GNU General Public License version 3.0 (GPL‑3.0).
+ * This project uses Qt under the GNU General Public License version 3.0
+ * (GPL‑3.0).
  *
  * Implementation file for run.
  *
- * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco Randazzo <gmrandazzo@gmail.com>
+ * Copyright (C) 2016-2026 designed, written and mantained by Giuseppe Marco
+ * Randazzo <gmrandazzo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -18,7 +20,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 
 #include "run.h"
 #include "qstudiometricstypes.h"
@@ -186,14 +187,8 @@ void RUN::DoMLRValidation() {
   initMatrix(&mlrmodel->Model()->predicted_y);
   initMatrix(&mlrmodel->Model()->r2q2scrambling);
 
-
   MODELINPUT minpt = {
-    .mx = x,
-    .my = y,
-    .nlv = 0,
-    .xautoscaling = 0,
-    .yautoscaling = 0
-  };
+      .mx = x, .my = y, .nlv = 0, .xautoscaling = 0, .yautoscaling = 0};
 
   if (vt == LOO_) { // Leave One Out
     LeaveOneOut(&minpt, _MLR_, mlrmodel->Model()->predicted_y,
@@ -235,7 +230,8 @@ void RUN::DoPLSPrediction() {
                      plsmod->getLastPLSPrediction()->getXPredScores(),
                      plsmod->getLastPLSPrediction()->getYDipVar());
 
-  if (y != nullptr && y->row == x->row && y->col > 0) { // calculate the R2 for the prediction
+  if (y != nullptr && y->row == x->row &&
+      y->col > 0) { // calculate the R2 for the prediction
     PLSRegressionStatistics(y, plsmod->getLastPLSPrediction()->getYDipVar(),
                             plsmod->getLastPLSPrediction()->getR2Y(),
                             plsmod->getLastPLSPrediction()->getSDEC(), NULL);
@@ -272,12 +268,11 @@ void RUN::DoPLSValidation() {
   */
 
   MODELINPUT minpt = {
-    .mx = x,
-    .my = y,
-    .nlv = static_cast<size_t>(plsmod->getNPC()),
-    .xautoscaling = static_cast<size_t>(plsmod->getXScaling()),
-    .yautoscaling = static_cast<size_t>(plsmod->getYScaling())
-  };
+      .mx = x,
+      .my = y,
+      .nlv = static_cast<size_t>(plsmod->getNPC()),
+      .xautoscaling = static_cast<size_t>(plsmod->getXScaling()),
+      .yautoscaling = static_cast<size_t>(plsmod->getYScaling())};
 
   if (vt == LOO_) { // Leave One Out
     LeaveOneOut(&minpt, _PLS_, plsmod->Model()->predicted_y,
@@ -296,14 +291,14 @@ void RUN::DoPLSValidation() {
 
   if (algtype == PLS_) {
     PLSRegressionStatistics(y, plsmod->Model()->predicted_y,
-                              plsmod->Model()->q2y, plsmod->Model()->sdep,
-                              plsmod->Model()->bias);
+                            plsmod->Model()->q2y, plsmod->Model()->sdep,
+                            plsmod->Model()->bias);
   } else {
     PLSDiscriminantAnalysisStatistics(
-      y, plsmod->Model()->predicted_y, plsmod->Model()->roc_validation,
-      plsmod->Model()->roc_auc_validation,
-      plsmod->Model()->precision_recall_validation,
-      plsmod->Model()->precision_recall_ap_validation);
+        y, plsmod->Model()->predicted_y, plsmod->Model()->roc_validation,
+        plsmod->Model()->roc_auc_validation,
+        plsmod->Model()->precision_recall_validation,
+        plsmod->Model()->precision_recall_ap_validation);
   }
 
   if (yscrambling == true) {
@@ -314,8 +309,9 @@ void RUN::DoPLSValidation() {
     varg.vtype = (vt == LOO_) ? LOO : BootstrapRGCV;
     varg.rgcv_group = (vt == LOO_) ? 0 : ngroup;
     varg.rgcv_iterations = (vt == LOO_) ? 0 : niter;
-    YScrambling(&minpt, _PLS_, varg, n_yscrambling, plsmod->Model()->yscrambling,
-                    QThread::idealThreadCount(), &scientifisignal);
+    YScrambling(&minpt, _PLS_, varg, n_yscrambling,
+                plsmod->Model()->yscrambling, QThread::idealThreadCount(),
+                &scientifisignal);
   }
 }
 
@@ -348,19 +344,13 @@ void RUN::DoCPCAPrediction() {
 
 void RUN::DoCPCA() { CPCA(ax, xscaling, pc, cpcamod->Model()); }
 
-void RUN::DoICA() { 
-  ICA_ext(x,
-          xscaling,
-          icamod->getNIC(),
-          ica_alpha,
-          ica_thresh,
-          ica_max_iter,
-          icamod->Model()); 
+void RUN::DoICA() {
+  ICA_ext(x, xscaling, icamod->getNIC(), ica_alpha, ica_thresh, ica_max_iter,
+          icamod->Model());
 }
 
 void RUN::DoICAPrediction() {
-  ICASignalPredictor(x,
-                     icamod->Model(),
+  ICASignalPredictor(x, icamod->Model(),
                      icamod->getLastICAPrediction()->getPredScores());
 }
 
@@ -524,13 +514,13 @@ void RUN::setYMatrix(matrix *y_) { y = y_; }
 
 void RUN::setXMatrix(matrix *x_) { x = x_; }
 
-void RUN::setICAMaxIterations(size_t ica_max_iter_) { ica_max_iter = ica_max_iter_; }
+void RUN::setICAMaxIterations(size_t ica_max_iter_) {
+  ica_max_iter = ica_max_iter_;
+}
 
 void RUN::setICAAlpha(double ica_alpha_) { ica_alpha = ica_alpha_; }
 
 void RUN::setICAThreshold(double ica_thresh_) { ica_thresh = ica_thresh_; }
-
-
 
 void RUN::Test() {
 #ifdef DEBUG
