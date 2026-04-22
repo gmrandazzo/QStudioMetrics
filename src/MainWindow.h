@@ -261,6 +261,12 @@ public:
   int default_window_size_w;
   int default_window_size_h;
 
+  // Public API for Plugins to update UI
+  int createNewProject(QString name);
+  void addMatrixToProject(int pid, MATRIX *mx);
+  int getTabCount() const { return tabcount_; }
+  void incrementTabCount() { tabcount_++; }
+
   bool PrepareTensor(MATRIX *indata, QStringList objnames, LABELS block_varsel,
                      tensor *x);
 
@@ -365,6 +371,7 @@ private:
   bool CurrentIsProject();
 
   // Data Section
+
   int getDataCount(int pid);
   QTreeWidgetItem *getDataItem(int pid, int did);
   QString getDataType(int pid, int did);

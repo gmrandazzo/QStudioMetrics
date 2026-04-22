@@ -9528,6 +9528,7 @@ void MainWindow::setupPlugins() {
     }
 
     QMap<QString, QMenu *> categoryMenus;
+    
     foreach (QSMPluginInterface *plugin, genericPlugins) {
       if (qobject_cast<IReportGenerator *>(dynamic_cast<QObject *>(plugin)))
         continue;
@@ -9554,3 +9555,52 @@ void MainWindow::setupPlugins() {
   }
 }
 #endif
+
+int MainWindow::createNewProject(QString name) {
+    int newPid = pid_;
+    projects->insert(newPid, new DATA());
+    projects->value(newPid)->setProjectID(newPid);
+    projects->value(newPid)->setProjectName(name);
+
+    QTreeWidgetItem *item = new QTreeWidgetItem;
+    item->setText(0, name);
+    item->setText(1, QString::number(newPid));
+
+    QTreeWidgetItem *subitem1 = new QTreeWidgetItem;
+    subitem1->setText(0, "Data");
+    QTreeWidgetItem *subitem2 = new QTreeWidgetItem;
+    subitem2->setText(0, "Models");
+
+    item->addChild(subitem1);
+    item->addChild(subitem2);
+    ui.treeWidget->addTopLevelItem(item);
+
+    pid_++;
+    updateLog(QString("Plugin Created New Project: %1 (ID: %2)").arg(name).arg(newPid));
+    return newPid;
+}
+
+void MainWindow::addMatrixToProject(int pid, MATRIX *mx) {
+    if (!projects->contains(pid)) return;
+    
+    DATA *project = projects->value(pid);
+    project->addMatrix(mx);
+    int matrixIdx = project->MatrixCount() - 1;
+
+    QTreeWidgetItem *projectItem = getProjectItem(pid);
+    if (projectItem) {
+        QTreeWidgetItem *dataItem = projectItem->child(0);
+        if (dataItem) {
+            QTreeWidgetItem *matrixItem = new QTreeWidgetItem;
+            matrixItem->setText(0, mx->getName());
+            matrixItem->setText(1, "Matrix");
+            matrixItem->setText(2, QString::number(tabcount_));
+            matrixItem->setText(3, QString::number(matrixIdx));
+            matrixItem->setText(4, QString::number(pid));
+            dataItem->addChild(matrixItem);
+            
+            tabcount_++;
+            updateLog(QString("Plugin Added Data: %1 to Project: %2").arg(mx->getName()).arg(project->getProjectName()));
+        }
+    }
+}
