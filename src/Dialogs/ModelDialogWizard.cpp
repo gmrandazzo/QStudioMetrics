@@ -645,41 +645,48 @@ void ModelDialogWizard::next() {
     tab5->clear();
     tab6->clear();
     tab8->clear();
-    for (int i = 0; i < projects_->value(selectedproject_)
-                            ->getMatrix(selecteddata_)
-                            ->getObjName()
-                            .size();
-         i++) {
+    
+    tab3->blockSignals(true);
+    tab4->blockSignals(true);
+    tab5->blockSignals(true);
+    tab6->blockSignals(true);
+    tab8->blockSignals(true);
+
+    int objSize = projects_->value(selectedproject_)->getMatrix(selecteddata_)->getObjName().size();
+    const QStringList& objNames = projects_->value(selectedproject_)->getMatrix(selecteddata_)->getObjName();
+    for (int i = 0; i < objSize; i++) {
       QList<QStandardItem *> row_tab3, row_tab6;
-      row_tab3.append(new QStandardItem(projects_->value(selectedproject_)
-                                            ->getMatrix(selecteddata_)
-                                            ->getObjName()[i]));
-      row_tab6.append(new QStandardItem(projects_->value(selectedproject_)
-                                            ->getMatrix(selecteddata_)
-                                            ->getObjName()[i]));
+      row_tab3.append(new QStandardItem(objNames[i]));
+      row_tab6.append(new QStandardItem(objNames[i]));
       tab3->appendRow(row_tab3);
       tab6->appendRow(row_tab6);
     }
 
-    for (int i = 1; i < projects_->value(selectedproject_)
-                            ->getMatrix(selecteddata_)
-                            ->getVarName()
-                            .size();
-         i++) {
+    int varSize = projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName().size();
+    const QStringList& varNames = projects_->value(selectedproject_)->getMatrix(selecteddata_)->getVarName();
+    for (int i = 1; i < varSize; i++) {
       QList<QStandardItem *> xvname, yvname, xblockvname;
-      xvname.append(new QStandardItem(projects_->value(selectedproject_)
-                                          ->getMatrix(selecteddata_)
-                                          ->getVarName()[i]));
-      xblockvname.append(new QStandardItem(projects_->value(selectedproject_)
-                                               ->getMatrix(selecteddata_)
-                                               ->getVarName()[i]));
-      yvname.append(new QStandardItem(projects_->value(selectedproject_)
-                                          ->getMatrix(selecteddata_)
-                                          ->getVarName()[i]));
+      xvname.append(new QStandardItem(varNames[i]));
+      xblockvname.append(new QStandardItem(varNames[i]));
+      yvname.append(new QStandardItem(varNames[i]));
       tab4->appendRow(xvname);
       tab8->appendRow(xblockvname);
       tab5->appendRow(yvname);
     }
+
+    tab3->blockSignals(false);
+    tab4->blockSignals(false);
+    tab5->blockSignals(false);
+    tab6->blockSignals(false);
+    tab8->blockSignals(false);
+    
+    // Emit a data changed signal to trigger an update now that all items are populated
+    emit tab3->layoutChanged();
+    emit tab4->layoutChanged();
+    emit tab5->layoutChanged();
+    emit tab6->layoutChanged();
+    emit tab8->layoutChanged();
+
     EnableDisableButtons();
   } else {
     return;
